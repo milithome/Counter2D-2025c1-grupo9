@@ -43,3 +43,9 @@ ni scripts adicionales (como correr valgrind).
 
 **Eso esta a cargo de los estudiantes,** tal como fue mostrado
 en los tps individuales, recaps y hands-on.
+
+# Licencia
+
+Se utilizó el repositorio https://github.com/eldipa/hands-on-sockets-in-cpp otorgado por la cátedra para la implementación de la clase Sockets con fines didácticos.
+
+Se utilizó el repositorio https://github.com/eldipa/hands-on-threads otorgado por la cátedra para la implementación de la clase Threads con fines didácticos.
