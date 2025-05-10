@@ -10,11 +10,10 @@ private:
   Role currentRole;
   std::vector<Player> players;
   int roundsWon = 0;
+  int size = 0;
 
 public:
   void addPlayer(const Player &player);
-
-  const std::vector<Player> &getPlayers() const;
 
   int getRoundsWon() const;
 
@@ -22,7 +21,9 @@ public:
 
   void setRole(Role rol);
 
-  bool invertRole();
+  void invertRole();
+
+  int getTeamSize();
 };
 
 #endif

@@ -9,7 +9,7 @@ int Team::getRoundsWon() const { return roundsWon; }
 
 void Team::incrementRoundsWon() { roundsWon++; }
 
-bool Team::invertRole() {
+void Team::invertRole() {
   // cambia el rol de todos los jugadores del equipo al opuesto
   // llamar al cambiar de ronda
   Role newRole;

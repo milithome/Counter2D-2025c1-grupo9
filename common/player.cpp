@@ -1,10 +1,8 @@
 #include "player.h"
-
-Player::Player(const std::string &playerName, int playerId)
-    : name(playerName), id(playerId) {}
+#include <iostream>
 
 std::string Player::getName() const { return name; }
-int Player::getId() const { return id; }
+uint Player::getId() const { return id; }
 void Player::setRole(Role new_role) { role = new_role; }
 
 float Player::getX() const { return x; }
@@ -16,4 +14,9 @@ void Player::move(float x, float y) {
   // porque se vincula con el presionar de una sola tecla
   this->x += x;
   this->y += y;
+}
+
+void Player::setPosition(float x, float y){
+    this->x = x;
+    this->y = y;
 }
