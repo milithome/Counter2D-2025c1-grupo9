@@ -100,20 +100,7 @@ void Protocol::send_response(const Response& response) {
     if (response.type == Type::CREATE || response.type == Type::JOIN) {
         buffer.push_back(response.result);
     } else if (response.type == Type::LIST) {
-        uint16_t size = htons(response.entities.size());
-        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
-
-        for (const auto& entity : response.entities) {
-            buffer.push_back(static_cast<uint8_t>(entity.type));
-            buffer.push_back(entity.id);
-            uint16_t x = htons(static_cast<uint16_t>(entity.x));
-            buffer.push_back(reinterpret_cast<uint8_t*>(&x)[0]);
-            buffer.push_back(reinterpret_cast<uint8_t*>(&x)[1]);
-            uint16_t y = htons(static_cast<uint16_t>(entity.y));
-            buffer.push_back(reinterpret_cast<uint8_t*>(&y)[0]);
-            buffer.push_back(reinterpret_cast<uint8_t*>(&y)[1]);
-        }
+        // TO DO: Implementar el envío de la lista de partidas
     } else {
         throw std::runtime_error("Invalid response type");
     } 
@@ -156,7 +143,7 @@ std::vector<Entity>& Protocol::recv_state() {
         }
         entities[i].type = static_cast<EntityType>(entity_type);
 
-        uint8_t id;
+        uint id;
         if (skt.recvall(&id, sizeof(id)) == 0) {
             throw std::runtime_error("Error receiving entity ID");
         }
@@ -208,6 +195,11 @@ Response Protocol::recv_response() {
                 throw std::runtime_error("Error receiving entity type");
             }
             entity.type = static_cast<EntityType>(type);
+
+            uint id;
+            if (skt.recvall(&id, sizeof(id)) == 0) {
+                throw std::runtime_error("Error receiving entity ID");
+            }
 
             uint16_t x, y;
             if (skt.recvall(&x, sizeof(x)) == 0 || skt.recvall(&y, sizeof(y)) == 0) {
