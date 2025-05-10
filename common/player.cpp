@@ -16,7 +16,7 @@ void Player::move(float x, float y) {
   this->y += y;
 }
 
-void Player::setPosition(float x, float y){
-    this->x = x;
-    this->y = y;
+void Player::setPosition(float x, float y) {
+  this->x = x;
+  this->y = y;
 }
