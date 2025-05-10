@@ -79,6 +79,7 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
 
     for (const auto& entity : entities) {
         buffer.push_back(static_cast<uint8_t>(entity.type));
+        buffer.push_back(entity.id);
         uint16_t x = htons(static_cast<uint16_t>(entity.x));
         buffer.push_back(reinterpret_cast<uint8_t*>(&x)[0]);
         buffer.push_back(reinterpret_cast<uint8_t*>(&x)[1]);
@@ -104,7 +105,8 @@ void Protocol::send_response(const Response& response) {
         buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
 
         for (const auto& entity : response.entities) {
-            buffer.push_back(static_cast<uint8_t>(entity.type)); 
+            buffer.push_back(static_cast<uint8_t>(entity.type));
+            buffer.push_back(entity.id);
             uint16_t x = htons(static_cast<uint16_t>(entity.x));
             buffer.push_back(reinterpret_cast<uint8_t*>(&x)[0]);
             buffer.push_back(reinterpret_cast<uint8_t*>(&x)[1]);
@@ -153,6 +155,12 @@ std::vector<Entity>& Protocol::recv_state() {
             throw std::runtime_error("Error receiving entity type");
         }
         entities[i].type = static_cast<EntityType>(entity_type);
+
+        uint8_t id;
+        if (skt.recvall(&id, sizeof(id)) == 0) {
+            throw std::runtime_error("Error receiving entity ID");
+        }
+        entities[i].id = id;
 
         uint32_t x_net, y_net;
         if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0) {

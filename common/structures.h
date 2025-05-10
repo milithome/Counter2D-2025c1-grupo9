@@ -32,6 +32,7 @@ enum EntityType {
 // Representación de una entidad en el mundo del juego
 struct Entity {
     EntityType type;
+    uint8_t id;
     float x;
     float y;
 };
