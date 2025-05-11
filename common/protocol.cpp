@@ -79,13 +79,21 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
 
     for (const auto& entity : entities) {
         buffer.push_back(static_cast<uint8_t>(entity.type));
-        buffer.push_back(entity.id);
-        uint16_t x = htons(static_cast<uint16_t>(entity.x));
-        buffer.push_back(reinterpret_cast<uint8_t*>(&x)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&x)[1]);
-        uint16_t y = htons(static_cast<uint16_t>(entity.y));
-        buffer.push_back(reinterpret_cast<uint8_t*>(&y)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&y)[1]);
+
+        uint32_t id_net = htonl(entity.id);
+        uint8_t* id_ptr = reinterpret_cast<uint8_t*>(&id_net);
+        buffer.insert(buffer.end(), id_ptr, id_ptr + sizeof(uint32_t));
+
+        uint32_t x_net, y_net;
+        std::memcpy(&x_net, &entity.x, sizeof(float));
+        std::memcpy(&y_net, &entity.y, sizeof(float));
+        x_net = htonl(x_net);
+        y_net = htonl(y_net);
+
+        uint8_t* x_ptr = reinterpret_cast<uint8_t*>(&x_net);
+        uint8_t* y_ptr = reinterpret_cast<uint8_t*>(&y_net);
+        buffer.insert(buffer.end(), x_ptr, x_ptr + sizeof(float));
+        buffer.insert(buffer.end(), y_ptr, y_ptr + sizeof(float)); 
     }
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
@@ -151,11 +159,11 @@ std::vector<Entity>& Protocol::recv_state() {
         }
         entities[i].type = static_cast<EntityType>(entity_type);
 
-        uint id;
+        uint32_t id;
         if (skt.recvall(&id, sizeof(id)) == 0) {
             throw std::runtime_error("Error receiving entity ID");
         }
-        entities[i].id = id;
+        entities[i].id = ntohl(id);
 
         uint32_t x_net, y_net;
         if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0) {
