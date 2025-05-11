@@ -22,10 +22,3 @@ void Acceptor::stop() {
     skt.close();
    
 }
-
-Acceptor::~Acceptor() {
-    if (active) {
-        stop();
-    }
-    this->join();
-}

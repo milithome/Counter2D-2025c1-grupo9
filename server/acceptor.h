@@ -7,7 +7,7 @@
 class Acceptor : public Thread {
 public:
     explicit Acceptor(const std::string& port);
-
+    
     virtual void run() override;
     
     void stop() override;

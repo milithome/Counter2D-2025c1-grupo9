@@ -135,7 +135,7 @@ if(TALLER_SERVER)
     set_project_warnings(taller_server ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
     # Link the taller_common lib target
-    target_link_libraries(taller_server taller_common)
+    target_link_libraries(taller_server taller_common pthread)
 endif()
 
 if(TALLER_EDITOR)
