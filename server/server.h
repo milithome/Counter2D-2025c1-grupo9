@@ -3,6 +3,8 @@
 
 #include "acceptor.h"
 
+#define DEFAULT_PORT "12345"
+
 class Server {
 public:
     Server();

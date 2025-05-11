@@ -1,6 +1,8 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#include <sys/socket.h>
+
 /*
  * TDA Socket.
  * Por simplificación este TDA se enfocará solamente
