@@ -1,5 +1,13 @@
-#include "common/foo.h"
+#include "server.h"
 
 int main() {
-    return foo(6);
+    try {
+        Server server;
+        server.start();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+    
+    return 0;
 }
