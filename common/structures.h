@@ -50,6 +50,7 @@ struct Response {
     Type type;
     uint16_t size;
     std::vector<Entity> entities;
+    std::vector<std::string> partidas;
     uint8_t result;
     std::string message;
 };

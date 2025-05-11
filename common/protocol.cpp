@@ -100,7 +100,15 @@ void Protocol::send_response(const Response& response) {
     if (response.type == Type::CREATE || response.type == Type::JOIN) {
         buffer.push_back(response.result);
     } else if (response.type == Type::LIST) {
-        // TO DO: Implementar el envío de la lista de partidas
+        uint16_t size = htons(response.size);
+        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+        for (const auto& partida : response.partidas) {
+            uint16_t size = htons(partida.size());
+            buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+            buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+            buffer.insert(buffer.end(), partida.begin(), partida.end());
+        }
     } else {
         throw std::runtime_error("Invalid response type");
     } 
@@ -187,28 +195,18 @@ Response Protocol::recv_response() {
             throw std::runtime_error("Error receiving response size");
         }
         size = ntohs(size);
-
         for (uint16_t i = 0; i < size; ++i) {
-            Entity entity;
-            uint8_t type;
-            if (skt.recvall(&type, sizeof(type)) == 0) {
-                throw std::runtime_error("Error receiving entity type");
+            uint16_t name_size;
+            if (skt.recvall(&name_size, sizeof(name_size)) == 0) {
+                throw std::runtime_error("Error receiving partida name size");
             }
-            entity.type = static_cast<EntityType>(type);
+            name_size = ntohs(name_size);
 
-            uint id;
-            if (skt.recvall(&id, sizeof(id)) == 0) {
-                throw std::runtime_error("Error receiving entity ID");
+            std::vector<uint8_t> name(name_size);
+            if (skt.recvall(name.data(), name_size) == 0) {
+                throw std::runtime_error("Error receiving partida name");
             }
-
-            uint16_t x, y;
-            if (skt.recvall(&x, sizeof(x)) == 0 || skt.recvall(&y, sizeof(y)) == 0) {
-                throw std::runtime_error("Error receiving entity coordinates");
-            }
-            entity.x = ntohs(x);
-            entity.y = ntohs(y);
-
-            response.entities.push_back(entity);
+            response.partidas.emplace_back(name.begin(), name.end());
         }
     } else {
         throw std::runtime_error("Invalid response type");
