@@ -62,11 +62,11 @@ void Protocol::send_leave() {
 void Protocol::send_initial_data() {
     uint8_t type = Type::INITIAL_DATA;
 
-    // mapa ???
-
     if (skt.sendall(&type, sizeof(type)) <= 0) {
         throw std::runtime_error("Error sending INITIAL_DATA message");
     }
+
+    // mapa ???
 }
 
 void Protocol::send_state(const std::vector<Entity>& entities) {
