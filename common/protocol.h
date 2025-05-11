@@ -30,7 +30,7 @@ public:
 
     // Metodos para recibir mensajes (cliente)
     void recv_initial_data();
-    std::vector<Entity>& recv_state();
+    std::vector<Entity> recv_state();
     Response recv_response();
 
     // Metodos para recibir mensajes (servidor)

@@ -135,7 +135,7 @@ void Protocol::recv_initial_data() {
     // mapa ???
 }
 
-std::vector<Entity>& Protocol::recv_state() {
+std::vector<Entity> Protocol::recv_state() {
     uint8_t type;
     if (skt.recvall(&type, sizeof(type)) == 0) {
         throw std::runtime_error("Error receiving STATE message");
