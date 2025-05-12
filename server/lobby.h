@@ -28,6 +28,6 @@ private:
     std::string name;
     std::map<std::string, Protocol> players;
     size_t maxPlayers;
-    Queue<std::string> eventQueue;
+    Queue<LobbyEvent> eventQueue;
 };
 #endif
