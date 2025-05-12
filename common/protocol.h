@@ -21,7 +21,7 @@ public:
     void send_join(const std::string& name);
     void send_list();
     void send_accion(Action action);
-    void send_leave();
+    void send_leave_lobby();
 
     // Metodos para enviar mensajes (servidor)
     // Podria incluir send_initial_data y send_state en send_response pero me salio hacerlo asi pq no son respuestas a peticiones q hizo el cliente

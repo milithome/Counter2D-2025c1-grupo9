@@ -61,7 +61,7 @@ void Protocol::send_accion(Action action) {
     }
 }
 
-void Protocol::send_leave() {
+void Protocol::send_leave_lobby() {
     uint8_t type = Type::LEAVE;
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
@@ -115,7 +115,7 @@ void Protocol::send_response(const Response& response) {
     std::vector<uint8_t> buffer;
     buffer.push_back(response.type);
 
-    if (response.type == Type::CREATE || response.type == Type::JOIN) {
+    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
         buffer.push_back(response.result);
     } else if (response.type == Type::LIST) {
         uint16_t size = htons(response.partidas.size());
@@ -207,7 +207,7 @@ Response Protocol::recv_response() {
     Response response;
     response.type = static_cast<Type>(type);
 
-    if (response.type == Type::CREATE || response.type == Type::JOIN) {
+    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
         if (skt.recvall(&response.result, sizeof(response.result)) == 0) {
             throw std::runtime_error("Error receiving response result");
         }
@@ -265,8 +265,8 @@ Message Protocol::recv_message() {
         if (skt.recvall(&message.action, sizeof(message.action)) == 0) {
             throw std::runtime_error("Error receiving action");
         }
-    } else if (message.type == Type::LIST) {
-        // No hay datos adicionales para LIST
+    } else if (message.type == Type::LIST || message.type == Type::LEAVE) {
+        // No hay datos adicionales para LIST ni LEAVE 
     } else {
         throw std::runtime_error("Invalid message type");
     }
