@@ -8,14 +8,17 @@
 #include <memory>
 #include "lobby.h"
 #include "game_loop.h"
-#include "clientHandler.h"
+
+class ClientHandler;
 
 class Admin {
 public:
+    Admin();
+
     void createLobby(const std::string& name);
     void joinLobby(const std::string& name, const std::string& clientName, Protocol&& protocol);
     void leaveLobby(const std::string& name, const std::string& clientName);
-    void listLobbies(std::vector<std::string>& lobbies);
+    std::vector<std::string> listLobbies();
     void removeLobby(const std::string& name);
 
     void createHandler(const std::string& clientName, Protocol&& protocol);

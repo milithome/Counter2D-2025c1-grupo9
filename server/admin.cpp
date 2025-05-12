@@ -1,6 +1,7 @@
 #include "admin.h"
+#include "clientHandler.h"
 
-Admin::Admin() : lobbies() {}
+Admin::Admin() : mtx(), lobbies(), games(), handlers() {}
 
 void Admin::createLobby(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
@@ -31,12 +32,13 @@ void Admin::leaveLobby(const std::string& name, const std::string& clientName) {
     it->second->remove_player(clientName);
 }
 
-void Admin::listLobbies(std::vector<std::string>& lobbiesList) {
-    lobbiesList.clear();
+std::vector<std::string> Admin::listLobbies() {
     std::lock_guard<std::mutex> lock(mtx);
-    for (const auto& lobby : lobbies) {
-        lobbiesList.push_back(lobby.first);
+    std::vector<std::string> lobbyNames;
+    for (const auto& pair : lobbies) {
+        lobbyNames.push_back(pair.first);
     }
+    return lobbyNames;
 }
 
 void Admin::removeLobby(const std::string& name) {

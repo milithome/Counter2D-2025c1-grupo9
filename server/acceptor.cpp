@@ -8,7 +8,7 @@ void Acceptor::run() {
         try {
             Socket client = skt.accept();
             Protocol protocol(std::move(client));
-            std::string clientName = "Client";
+            std::string clientName = "Client"; // aca falta establecer en el protocolo que se pase el nombre
             admin.createHandler(clientName, std::move(protocol));
             admin.startHandler(clientName);
             std::cout << "Accepted connection from client." << std::endl;

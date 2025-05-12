@@ -3,10 +3,16 @@
 ClientHandler::ClientHandler(Protocol protocol, std::string clientName, Admin& admin) : 
     protocol(std::move(protocol)), clientName(clientName), active(true), admin(admin) {}
 
+ClientHandler::~ClientHandler() {
+    std::cout << "ClientHandler for " << clientName << " stopped" << std::endl;
+}
+
 void ClientHandler::run() {
     while (active) {
         try {
+            std::cout << "Waiting for message..." << std::endl;
             Message message = protocol.recv_message();
+            std::cout << "Message received: " << message.type << std::endl;
             switch (message.type) {
                 case Type::CREATE:
                     handle_create(message.name);
@@ -42,6 +48,7 @@ void ClientHandler::handle_create(const std::string& name) {
             "Error creating lobby"
         };
         protocol.send_response(response);
+        std::cout << "Lobby creation failed" << std::endl;
         return;
     }
     Response response = {
@@ -53,6 +60,7 @@ void ClientHandler::handle_create(const std::string& name) {
         ""
     };
     protocol.send_response(response);
+    std::cout << "Lobby created successfully" << std::endl;
 }
 
 bool ClientHandler::handle_join(const std::string& name) {
@@ -68,29 +76,26 @@ bool ClientHandler::handle_join(const std::string& name) {
 
 void ClientHandler::handle_list() {
     try {
-        std::vector<std::string> lobbies;
-        admin.listLobbies(lobbies);
+        std::vector<std::string> lobbies = admin.listLobbies();
+        Response response = {
+            Type::LIST,
+            static_cast<uint16_t>(lobbies.size()),
+            {},
+            lobbies,
+            0,  // 0 para éxito
+            ""
+        };
+        protocol.send_response(response);
     } catch (const std::exception& e) {
         std::cerr << "Error listing lobbies: " << e.what() << std::endl;
         Response response = {
             Type::LIST,
-            0,
+            0,  // Tamaño 0 en caso de error
             {},
             {},
-            1, // error
+            1,  // 1 para error
             "Error listing lobbies"
         };
         protocol.send_response(response);
-        return;
     }
-    
-    Response response = {
-        Type::LIST,
-        0,
-        {},
-        {"partida1", "partida2"},
-        0, // exito
-        ""
-    };
-    protocol.send_response(response);
 }

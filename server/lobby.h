@@ -17,6 +17,6 @@ public:
 private:
     std::string name;
     std::map<std::string, Protocol> players;
-    int maxPlayers;  
+    size_t maxPlayers;  
 };
 #endif

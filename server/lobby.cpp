@@ -23,7 +23,7 @@ bool Lobby::add_player(Protocol&& player, const std::string& playerName) {
         return false;
     }
     
-    players[playerName] = std::move(player);
+    players.emplace(playerName, std::move(player));
     
     Response response = {
         Type::JOIN,
@@ -33,8 +33,14 @@ bool Lobby::add_player(Protocol&& player, const std::string& playerName) {
         0, // success
         ""
     };
-    players[playerName].send_response(response);
+    auto it = players.find(playerName);
+    if (it != players.end()) {
+        it->second.send_response(response);
+    }
+
     
+    std::cout << "Player " << playerName << " joined the lobby." << std::endl;
+
     if (players.size() == maxPlayers) {
         return true;
     }
@@ -42,6 +48,13 @@ bool Lobby::add_player(Protocol&& player, const std::string& playerName) {
 }
 
 void Lobby::remove_player(const std::string& playerName) {
-    
+    auto it = players.find(playerName);
+    if (it != players.end()) {
+        players.erase(it);
+        std::cout << "Player " << playerName << " left the lobby." << std::endl;
+    } else {
+        std::cerr << "Player " << playerName << " not found in the lobby." << std::endl;
+    }
 }
+
 Lobby::~Lobby() {}
