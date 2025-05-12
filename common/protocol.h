@@ -30,11 +30,13 @@ public:
     // y no tienen sentido como respuesta a una peticion
     void send_initial_data();
     void send_state(const std::vector<Entity>& entities);
+    void send_state_lobby(const std::vector<std::string>& players);
     void send_response(const Response& response);
 
     // Metodos para recibir mensajes (cliente)
     void recv_initial_data();
     std::vector<Entity> recv_state();
+    std::vector<std::string> recv_state_lobby();
     Response recv_response();
 
     // Metodos para recibir mensajes (servidor)

@@ -115,6 +115,26 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
     }
 }
 
+void Protocol::send_state_lobby(const std::vector<std::string>& players) {
+    std::vector<uint8_t> buffer;
+    buffer.push_back(Type::STATE_LOBBY);
+
+    uint16_t size = htons(players.size());
+    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+
+    for (const auto& player : players) {
+        uint16_t name_size = htons(player.size());
+        buffer.push_back(reinterpret_cast<uint8_t*>(&name_size)[0]);
+        buffer.push_back(reinterpret_cast<uint8_t*>(&name_size)[1]);
+        buffer.insert(buffer.end(), player.begin(), player.end());
+    }
+
+    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
+        throw std::runtime_error("Error sending STATE_LOBBY message");
+    }
+}
+
 void Protocol::send_response(const Response& response) {
     std::vector<uint8_t> buffer;
     buffer.push_back(response.type);
@@ -200,6 +220,40 @@ std::vector<Entity> Protocol::recv_state() {
     }
 
     return entities;
+}
+
+std::vector<std::string> Protocol::recv_state_lobby() {
+    uint8_t type;
+    if (skt.recvall(&type, sizeof(type)) == 0) {
+        throw std::runtime_error("Error receiving STATE_LOBBY message");
+    }
+
+    if (type != Type::STATE_LOBBY) {
+        throw std::runtime_error("Invalid STATE_LOBBY message type");
+    }
+
+    uint16_t size;
+    if (skt.recvall(&size, sizeof(size)) == 0) {
+        throw std::runtime_error("Error receiving STATE_LOBBY size");
+    }
+    size = ntohs(size);
+
+    std::vector<std::string> players(size);
+    for (uint16_t i = 0; i < size; ++i) {
+        uint16_t name_size;
+        if (skt.recvall(&name_size, sizeof(name_size)) == 0) {
+            throw std::runtime_error("Error receiving player name size");
+        }
+        name_size = ntohs(name_size);
+
+        std::vector<uint8_t> name(name_size);
+        if (skt.recvall(name.data(), name_size) == 0) {
+            throw std::runtime_error("Error receiving player name");
+        }
+        players[i].assign(name.begin(), name.end());
+    }
+
+    return players;
 }
 
 Response Protocol::recv_response() {

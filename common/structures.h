@@ -13,7 +13,8 @@ enum Type {
     ACTION,
     LEAVE,
     INITIAL_DATA,
-    STATE
+    STATE,
+    STATE_LOBBY,
 };
 
 // Acciones posibles del jugador
