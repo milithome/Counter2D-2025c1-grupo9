@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include "acceptor.h"
+#include "admin.h"
 
 #define DEFAULT_PORT "12345"
 
@@ -13,7 +14,8 @@ public:
     void start();
 
 private:
-   Acceptor acceptor;
+    Acceptor acceptor;
+    Admin admin;
 };
 
 #endif

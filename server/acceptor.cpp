@@ -1,7 +1,7 @@
 #include "acceptor.h"
 
 
-Acceptor::Acceptor(const std::string& port) : skt(port.c_str()), active(true) {}
+Acceptor::Acceptor(const std::string& port, Admin& admin) : skt(port.c_str()), active(true), admin(admin) {}
 
 void Acceptor::run() {
     while (active) {
@@ -9,8 +9,8 @@ void Acceptor::run() {
             Socket client = skt.accept();
             Protocol protocol(std::move(client));
             std::string clientName = "Client";
-            ClientHandler* clientHandler = new ClientHandler(std::move(protocol), clientName);
-            clientHandler->start();
+            admin.createHandler(clientName, std::move(protocol));
+            admin.startHandler(clientName);
             std::cout << "Accepted connection from client." << std::endl;
         } catch (const std::exception& e) {
             if (active) {

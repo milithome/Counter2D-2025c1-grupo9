@@ -52,7 +52,7 @@ void Protocol::send_list() {
 void Protocol::send_accion(Action action) {
     std::vector<uint8_t> buffer;
 
-    buffer.push_back(Type::ACCION);
+    buffer.push_back(Type::ACTION);
     buffer.push_back(static_cast<uint8_t>(action));
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
@@ -256,7 +256,7 @@ Message Protocol::recv_message() {
         message.name.assign(name.begin(), name.end());
         // si no funciona usar:
         // message.name = std::string(name.begin(), name.end());
-    } else if (message.type == Type::ACCION) {
+    } else if (message.type == Type::ACTION) {
         if (skt.recvall(&message.action, sizeof(message.action)) == 0) {
             throw std::runtime_error("Error receiving action");
         }
