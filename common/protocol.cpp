@@ -118,7 +118,7 @@ void Protocol::send_response(const Response& response) {
     if (response.type == Type::CREATE || response.type == Type::JOIN) {
         buffer.push_back(response.result);
     } else if (response.type == Type::LIST) {
-        uint16_t size = htons(response.size);
+        uint16_t size = htons(response.partidas.size());
         buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
         buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
         for (const auto& partida : response.partidas) {
@@ -212,11 +212,11 @@ Response Protocol::recv_response() {
             throw std::runtime_error("Error receiving response result");
         }
     } else if (response.type == Type::LIST) {
-        uint16_t size;
-        if (skt.recvall(&size, sizeof(size)) == 0) {
+        uint16_t size_net;
+        if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
             throw std::runtime_error("Error receiving response size");
         }
-        size = ntohs(size);
+        uint16_t size = ntohs(size_net);
         for (uint16_t i = 0; i < size; ++i) {
             uint16_t name_size;
             if (skt.recvall(&name_size, sizeof(name_size)) == 0) {
