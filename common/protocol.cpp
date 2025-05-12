@@ -129,6 +129,10 @@ void Protocol::send_response(const Response& response) {
     } else {
         throw std::runtime_error("Invalid response type");
     } 
+
+    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
+        throw std::runtime_error("Error sending response");
+    }
 }
 
 void Protocol::recv_initial_data() {
