@@ -10,7 +10,7 @@ enum Type {
     CREATE,
     JOIN,
     LIST,
-    ACCION,
+    ACTION,
     LEAVE,
     INITIAL_DATA,
     STATE

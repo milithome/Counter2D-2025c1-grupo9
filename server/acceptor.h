@@ -3,6 +3,8 @@
 
 #include "thread.h"
 #include "../common/socket.h"
+#include "../common/protocol.h"
+#include "clientHandler.h"
 
 class Acceptor : public Thread {
 public:
