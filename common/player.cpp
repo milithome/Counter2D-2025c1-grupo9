@@ -20,7 +20,7 @@ void Player::move(float x, float y) {
 }
 
 void Player::setPosition(float x, float y) {
-  // cordenadas literales en las que quiero que se encuentre
+  // coordenadas literales en las que quiero que se encuentre
   this->x = x;
   this->y = y;
 }
