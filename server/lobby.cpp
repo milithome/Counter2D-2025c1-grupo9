@@ -1,6 +1,6 @@
 #include "lobby.h"
 
-Lobby::Lobby(const std::string& name) : name(name), maxPlayers(4) {}
+Lobby::Lobby(const std::string& name) : name(name), maxPlayers(4), eventQueue(100) {}
 
 void Lobby::run() {
     while (maxPlayers < players.size()) {
