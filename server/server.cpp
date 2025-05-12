@@ -1,6 +1,6 @@
 #include "server.h"
 
-Server::Server() : acceptor(DEFAULT_PORT, matches) {} 
+Server::Server() : acceptor(DEFAULT_PORT, admin) {} 
 
 Server::~Server() {}
 
