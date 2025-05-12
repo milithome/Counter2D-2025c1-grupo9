@@ -1,0 +1,15 @@
+.vscode
+bin
+build
+taller_client
+taller_server
+taller_editor
+taller_tests
+cmake_install.cmake
+cmake-install.sh
+CMakeCache.txt
+libtaller_common.a
+lib
+CMakeFiles
+compile_commands.json
+_deps

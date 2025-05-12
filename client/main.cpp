@@ -1,10 +1,16 @@
 #include "common/foo.h"
+#include "client/views/GameView.h"
+#include "client/controllers/GameController.h"
+#include "client/game.h"
 
 #include <iostream>
 #include <exception>
 
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2/SDL.h>
+
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 using namespace SDL2pp;
 
@@ -20,15 +26,19 @@ int main() try {
 
 	// Create accelerated video renderer with default driver
 	Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-	// Clear screen
-	renderer.Clear();
-
-	// Show rendered frame
-	renderer.Present();
-
-	// 5 second delay
-	SDL_Delay(5000);
+	renderer.SetDrawColor(0, 0, 0, 255); // Fondo negro
+	
+	Game game;
+	Player player;
+	GameView gameView = GameView(window, renderer, game, player);
+	GameController gameController = GameController(gameView, game, player);
+	float lastTime = 0.0f;
+	while (game.running()) {
+		Uint32 currentTime = SDL_GetTicks();
+		float deltaTime = (currentTime - lastTime) / 1000.0f;
+		lastTime = currentTime;
+		gameView.update(deltaTime);
+	}
 
 	// Here all resources are automatically released and library deinitialized
 	return 0;
