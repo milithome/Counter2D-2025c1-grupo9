@@ -13,6 +13,8 @@ class Protocol {
 public:
     Protocol(Socket skt);
     ~Protocol();
+    Protocol(Protocol&& other) noexcept;
+    Protocol& operator=(Protocol&& other) noexcept;
 
     // Metodos para enviar mensajes (cliente)
     void send_create(const std::string& name);

@@ -4,6 +4,15 @@ Protocol::Protocol(Socket skt) : skt(std::move(skt)) {}
 
 Protocol::~Protocol() {}
 
+Protocol::Protocol(Protocol&& other) noexcept: skt(std::move(other.skt)) {}
+
+Protocol& Protocol::operator=(Protocol&& other) noexcept {
+    if (this != &other) {
+        skt = std::move(other.skt);
+    }
+    return *this;
+}
+
 void Protocol::send_create(const std::string& name) {
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::CREATE);
