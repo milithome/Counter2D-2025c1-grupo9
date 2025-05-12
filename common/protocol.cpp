@@ -13,6 +13,10 @@ Protocol& Protocol::operator=(Protocol&& other) noexcept {
     return *this;
 }
 
+bool Protocol::has_data(int timeout_ms) const {
+    return skt.has_data(timeout_ms);
+}
+
 void Protocol::send_create(const std::string& name) {
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::CREATE);
