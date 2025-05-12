@@ -34,6 +34,12 @@ Lobby::Lobby(const std::string& name, Admin& admin)
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
             }
+            
+            for (auto& pair : handlers) {
+                pair.second->stop();
+                pair.second->join();
+            }
+
         } catch (const std::exception& e) {
             std::cerr << "Exception in Lobby::run: " << e.what() << std::endl;
         } catch (...) {

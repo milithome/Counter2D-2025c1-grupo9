@@ -6,16 +6,13 @@ LobbyClientHandler::LobbyClientHandler(Protocol& player, const std::string& play
 void LobbyClientHandler::run() {
     try {
         while (active) {
-            if (player.has_data(100)) {
-                Message msg = player.recv_message();
-                if (msg.type == Type::LEAVE) {
-                    active = false;
-                    eventQueue.push({LobbyEventType::LEAVE, playerName});
-                    continue;
-                } 
+            Message msg = player.recv_message();
+            if (msg.type == Type::LEAVE) {
+                std::cout << "Player " << playerName << " sent LEAVE." << std::endl;
+                eventQueue.push({LobbyEventType::LEAVE, playerName});
+                active = false;
+                continue; 
             }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     } catch (const std::exception& e) {
         std::cerr << "Error in LobbyClientHandler: " << e.what() << std::endl;
@@ -24,6 +21,7 @@ void LobbyClientHandler::run() {
         std::cerr << "Unknown error in LobbyClientHandler." << std::endl;
         eventQueue.push({LobbyEventType::LEAVE, playerName});
     }
+    active = false;
 }
 
 void LobbyClientHandler::stop() {
