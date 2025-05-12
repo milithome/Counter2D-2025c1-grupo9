@@ -16,6 +16,8 @@ public:
     Protocol(Protocol&& other) noexcept;
     Protocol& operator=(Protocol&& other) noexcept;
 
+    bool has_data(int timeout_ms = 0) const;
+
     // Metodos para enviar mensajes (cliente)
     void send_create(const std::string& name);
     void send_join(const std::string& name);
