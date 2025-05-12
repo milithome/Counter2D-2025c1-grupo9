@@ -1,14 +1,37 @@
 #include "admin.h"
 #include "clientHandler.h"
+#include "lobby.h"
 
 Admin::Admin() : mtx(), lobbies(), games(), handlers() {}
+
+void Admin::stop() {
+    std::lock_guard<std::mutex> lock(mtx);
+    for (auto& pair : lobbies) {
+        pair.second->stop();
+        pair.second->join();
+    }
+    for (auto& pair : handlers) {
+        pair.second->stop();
+        pair.second->join();
+    }
+    for (auto& pair : games) {
+        pair.second->stop();
+        pair.second->join();
+    }
+
+    lobbies.clear();
+    handlers.clear();
+    games.clear();
+    std::cout << "Admin stopped." << std::endl;
+}
 
 void Admin::createLobby(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
     if (lobbies.find(name) != lobbies.end()) {
         throw std::runtime_error("Lobby already exists");
     }
-    lobbies[name] = std::make_shared<Lobby>(name);
+    lobbies[name] = std::make_shared<Lobby>(name, *this);
+    lobbies[name]->start();
 }
 
 void Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol&& protocol) {
@@ -18,18 +41,7 @@ void Admin::joinLobby(const std::string& name, const std::string& clientName, Pr
         throw std::runtime_error("Lobby not found");
     }
     
-    if (it->second->add_player(std::move(protocol), clientName)) {
-        startGame(name);
-    } 
-}
-
-void Admin::leaveLobby(const std::string& name, const std::string& clientName) {
-    std::lock_guard<std::mutex> lock(mtx);
-    auto it = lobbies.find(name);
-    if (it == lobbies.end()) {
-        throw std::runtime_error("Lobby not found");
-    }
-    it->second->remove_player(clientName);
+    it->second->add_player(std::move(protocol), clientName);
 }
 
 std::vector<std::string> Admin::listLobbies() {

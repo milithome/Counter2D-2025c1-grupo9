@@ -1,6 +1,6 @@
 #include "protocol.h"
 
-Protocol::Protocol(Socket skt) : skt(std::move(skt)) {}
+Protocol::Protocol(Socket skt) : skt(std::move(skt)), mtx() {}
 
 Protocol::~Protocol() {}
 
@@ -14,6 +14,7 @@ Protocol& Protocol::operator=(Protocol&& other) noexcept {
 }
 
 bool Protocol::has_data(int timeout_ms) const {
+    std::lock_guard<std::mutex> lock(mtx);
     return skt.has_data(timeout_ms);
 }
 
@@ -116,6 +117,7 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
 }
 
 void Protocol::send_state_lobby(const std::vector<std::string>& players) {
+    std::lock_guard<std::mutex> lock(mtx);
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::STATE_LOBBY);
 
@@ -223,6 +225,7 @@ std::vector<Entity> Protocol::recv_state() {
 }
 
 std::vector<std::string> Protocol::recv_state_lobby() {
+    std::lock_guard<std::mutex> lock(mtx);
     uint8_t type;
     if (skt.recvall(&type, sizeof(type)) == 0) {
         throw std::runtime_error("Error receiving STATE_LOBBY message");
@@ -296,6 +299,7 @@ Response Protocol::recv_response() {
 }
 
 Message Protocol::recv_message() {
+    std::lock_guard<std::mutex> lock(mtx);
     uint8_t type;
     if (skt.recvall(&type, sizeof(type)) == 0) {
         throw std::runtime_error("Error receiving message type");

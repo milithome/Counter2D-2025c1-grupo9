@@ -8,5 +8,9 @@ public:
     GameLoop();
     void run() override;
     ~GameLoop() override;
+
+    void stop() override;
+private:
+    bool active = true;
 };
 #endif

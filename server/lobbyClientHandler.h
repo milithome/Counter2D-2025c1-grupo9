@@ -5,12 +5,12 @@
 #include "../common/protocol.h"
 #include "queue.h"
 #include "../common/structures.h"
-#include "lobby.h"
 
 class LobbyClientHandler : public Thread {
 public:
     explicit LobbyClientHandler(Protocol& player, const std::string& playerName, Queue<LobbyEvent>& eventQueue);
     void run() override;
+    void stop() override;
     ~LobbyClientHandler() override;
 private:
     Protocol& player;

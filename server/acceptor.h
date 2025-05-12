@@ -14,6 +14,8 @@ public:
     virtual void run() override;
     
     void stop() override;
+
+    ~Acceptor() override;
 private:
     Socket skt;
     std::atomic<bool> active;

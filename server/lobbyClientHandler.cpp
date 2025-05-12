@@ -11,17 +11,25 @@ void LobbyClientHandler::run() {
                 if (msg.type == Type::LEAVE) {
                     active = false;
                     eventQueue.push({LobbyEventType::LEAVE, playerName});
+                    continue;
                 } 
             }
-
-
-            // enviar el estado del lobby a todos los jugadores
-            player.send_state_lobby();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     } catch (const std::exception& e) {
         std::cerr << "Error in LobbyClientHandler: " << e.what() << std::endl;
         eventQueue.push({LobbyEventType::LEAVE, playerName});
+    } catch (...) {
+        std::cerr << "Unknown error in LobbyClientHandler." << std::endl;
+        eventQueue.push({LobbyEventType::LEAVE, playerName});
     }
+}
+
+void LobbyClientHandler::stop() {
+    active = false;
+}
+
+LobbyClientHandler::~LobbyClientHandler() {
+    std::cout << "LobbyClientHandler destructor called." << std::endl;
 }

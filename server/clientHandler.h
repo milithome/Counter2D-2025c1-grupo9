@@ -14,6 +14,8 @@ public:
     void run() override;
 
     ~ClientHandler() override;
+
+    void stop() override;
 private:
     Protocol protocol;
     std::string clientName;

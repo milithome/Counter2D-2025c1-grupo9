@@ -56,4 +56,14 @@ struct Response {
     std::string message;
 };
 
+enum class LobbyEventType {
+    LEAVE,
+    JOIN,
+};
+
+struct LobbyEvent {
+    LobbyEventType type;
+    std::string playerName;
+};
+
 #endif

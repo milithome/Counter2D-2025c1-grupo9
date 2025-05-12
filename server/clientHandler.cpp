@@ -4,15 +4,16 @@ ClientHandler::ClientHandler(Protocol protocol, std::string clientName, Admin& a
     protocol(std::move(protocol)), clientName(clientName), active(true), admin(admin) {}
 
 ClientHandler::~ClientHandler() {
-    std::cout << "ClientHandler for " << clientName << " stopped" << std::endl;
+    std::cout << "ClientHandler destructor called." << std::endl;
 }
 
 void ClientHandler::run() {
-    while (active) {
-        try {
+    try {
+        while (active) {
             std::cout << "Waiting for message..." << std::endl;
             Message message = protocol.recv_message();
             std::cout << "Message received: " << message.type << std::endl;
+
             switch (message.type) {
                 case Type::CREATE:
                     handle_create(message.name);
@@ -26,14 +27,13 @@ void ClientHandler::run() {
                 default:
                     std::cerr << "Unknown message type received." << std::endl;
             }
-        } catch (const std::exception& e) {
-            std::cerr << "Error receiving message: " << e.what() << std::endl;
-            active = false;
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Exception in ClientHandler: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown exception in ClientHandler." << std::endl;
     }
-     
 }
-
 void ClientHandler::handle_create(const std::string& name) {
     try {
         admin.createLobby(name);
@@ -98,4 +98,8 @@ void ClientHandler::handle_list() {
         };
         protocol.send_response(response);
     }
+}
+
+void ClientHandler::stop() {
+    active = false;
 }

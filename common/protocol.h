@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <stdexcept>
 #include <cstring>
+#include <mutex>
 #include "socket.h"
 #include "structures.h"
 
@@ -44,6 +45,7 @@ public:
 
 private:
     Socket skt;
+    mutable std::mutex mtx;
 };
 
 #endif

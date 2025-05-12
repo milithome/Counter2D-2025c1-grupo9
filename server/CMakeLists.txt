@@ -6,6 +6,7 @@ target_sources(taller_server
     clientHandler.cpp
     lobby.cpp
     game_loop.cpp
+    lobbyClientHandler.cpp
     admin.cpp
     main.cpp
     PUBLIC
@@ -13,8 +14,10 @@ target_sources(taller_server
     acceptor.h
     server.h
     thread.h
+    queue.h
     clientHandler.h
     lobby.h
     game_loop.h
+    lobbyClientHandler.h
     admin.h
     )
