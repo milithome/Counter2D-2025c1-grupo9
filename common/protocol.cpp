@@ -42,9 +42,10 @@ void Protocol::send_join(const std::string& name) {
 }
 
 void Protocol::send_list() {
-    uint8_t type = Type::LIST;
+    std::vector<uint8_t> buffer;
+    buffer.push_back(Type::LIST);
 
-    if (skt.sendall(&type, sizeof(type)) <= 0) {
+    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
         throw std::runtime_error("Error sending LIST message");
     }
 }
@@ -264,6 +265,8 @@ Message Protocol::recv_message() {
         if (skt.recvall(&message.action, sizeof(message.action)) == 0) {
             throw std::runtime_error("Error receiving action");
         }
+    } else if (message.type == Type::LIST) {
+        // No hay datos adicionales para LIST
     } else {
         throw std::runtime_error("Invalid message type");
     }
