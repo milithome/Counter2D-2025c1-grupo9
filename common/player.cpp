@@ -10,13 +10,17 @@ float Player::getX() const { return x; }
 float Player::getY() const { return y; }
 
 void Player::move(float x, float y) {
-  // siempre mover será para una sola dirección
-  // porque se vincula con el presionar de una sola tecla
+  // x,y pueden valer 0, 1 o -1 y representan hacia donde moverse
+  if (x != 0 && y != 0) { // si va en diagonal, normalizo
+    x /= std::sqrt(2);
+    y /= std::sqrt(2);
+  }
   this->x += x;
   this->y += y;
 }
 
 void Player::setPosition(float x, float y) {
+  // coordenadas literales en las que quiero que se encuentre
   this->x = x;
   this->y = y;
 }

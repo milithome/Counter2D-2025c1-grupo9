@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "gameConstants.h"
+#include <cmath>
 #include <string>
 class Player {
 private:
