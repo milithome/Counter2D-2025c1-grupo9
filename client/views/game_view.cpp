@@ -101,13 +101,13 @@ void GameView::show() {
             renderer.Copy(mapTiles, src, dst);
         }
     }
-    Rect src(0, 0, 32, 32); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
 
         float playerX = gameState[i].x;
         float playerY = gameState[i].y;
         Rect dst(cameraX - playerX * BLOCK_SIZE, cameraY - playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        renderer.Copy(playerTiles, src, dst);
+        renderer.Copy(playerTiles, src, dst, gameState[i].rotation, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
     }
 
 }
