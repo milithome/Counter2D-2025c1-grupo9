@@ -46,3 +46,13 @@ std::vector<Entity> Game::getState() {
 
   return state;
 }
+
+bool Game::isRunning(){
+  return running;
+}
+
+void Game::stop(){
+  running=false;
+}
+
+
