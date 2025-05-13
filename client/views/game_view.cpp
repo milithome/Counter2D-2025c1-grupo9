@@ -78,10 +78,10 @@ void GameView::update(float deltaTime) {
 }
 
 void GameView::show() {
-    auto map = getPlaceholderMap();
+    auto map = getPlaceholderMap(); // temporal, hasta que definamos bien el mapa
     auto gameState = game.getState();
-    uint32_t clientPlayerX;
-    uint32_t clientPlayerY;
+    float clientPlayerX;
+    float clientPlayerY;
     for (size_t i = 0; i < gameState.size(); i++) {
         if (gameState[i].id == player_id) {
             clientPlayerX = gameState[i].x;
@@ -90,31 +90,23 @@ void GameView::show() {
         }
     }
     SDL_Point center = getCenterPoint();
-    uint32_t cameraX = center.y;
-    uint32_t cameraY = center.x;
-    // uint32_t cameraX = clientPlayerY + center.y - BLOCK_SIZE/2;
-    // uint32_t cameraY = clientPlayerX + center.x - BLOCK_SIZE/2;
-    // std::cout << "cameraX: " << cameraX << ", " << "cameraY: " << cameraY << std::endl;
+    float cameraX = clientPlayerX * BLOCK_SIZE + center.x - BLOCK_SIZE/2;
+    float cameraY = clientPlayerY * BLOCK_SIZE + center.y - BLOCK_SIZE/2;
 
-    // for (size_t i = 0; i < map.size(); i++) {
-    //     for (size_t j = 0; j < map[i].size(); j++) {
-    //         std::pair<uint32_t, uint32_t> clip = map[i][j] == 0 ? std::pair(0, 0) : std::pair(32, 0); // temporal, hasta que definamos bien el mapa
-    //         Rect src(clip.first, clip.second, CLIP_SIZE, CLIP_SIZE);
-    //         Rect dst((cameraY - j) * BLOCK_SIZE, (cameraX - i) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-    //         renderer.Copy(mapTiles, src, dst);
-    //     }
-    // }
-    (void)clientPlayerX;
-    (void)clientPlayerY;
-    Rect src(0, 0, 32, 32);
+    for (size_t i = 0; i < map.size(); i++) {
+        for (size_t j = 0; j < map[i].size(); j++) {
+            std::pair<uint32_t, uint32_t> clip = map[i][j] == 0 ? std::pair(0, 0) : std::pair(32, 0); // temporal, hasta que definamos bien el mapa
+            Rect src(clip.first, clip.second, CLIP_SIZE, CLIP_SIZE);
+            Rect dst(cameraX - j * BLOCK_SIZE, cameraY - i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            renderer.Copy(mapTiles, src, dst);
+        }
+    }
+    Rect src(0, 0, 32, 32); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
 
-        uint32_t playerX = gameState[i].x;
-        uint32_t playerY = gameState[i].y;
-
-        std::cout << "playerX: " << playerX << ", " << "playerY: " << playerY << std::endl;
-        //Rect dst(cameraY - playerY, cameraX - playerX, BLOCK_SIZE, BLOCK_SIZE);
-        Rect dst(cameraX - playerX, cameraY - playerY, BLOCK_SIZE, BLOCK_SIZE);
+        float playerX = gameState[i].x;
+        float playerY = gameState[i].y;
+        Rect dst(cameraX - playerX * BLOCK_SIZE, cameraY - playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
         renderer.Copy(playerTiles, src, dst);
     }
 

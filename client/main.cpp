@@ -29,6 +29,7 @@ int main() try {
 	
 	Game game(10, 10);
 	game.addPlayer("clientplayer", PLAYER_ID);
+	game.addPlayer("player2", 2);
 	GameView gameView = GameView(window, renderer, game, PLAYER_ID);
 	GameController gameController = GameController(gameView, game, PLAYER_ID);
 	uint32_t lastTime = 0;

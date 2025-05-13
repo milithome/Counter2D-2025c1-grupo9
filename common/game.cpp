@@ -28,8 +28,8 @@ Player &Game::findPlayerById(uint id) {
   throw std::runtime_error("Player not found");
 }
 
-void Game::movePlayer(uint player_id, int x, int y) {
-  findPlayerById(player_id).move(x, y);
+void Game::movePlayer(uint player_id, int x, int y, float deltaTime) {
+  findPlayerById(player_id).move(x, y, deltaTime);
 }
 
 std::vector<Entity> Game::getState() {

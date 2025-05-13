@@ -28,9 +28,9 @@ void GameController::listen() {
 }
 
 void GameController::update(float deltaTime) {
-    // game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
-    game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1]);
-    (void)deltaTime;
+    game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+    //game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1]);
+    //(void)deltaTime;
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {

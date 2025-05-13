@@ -17,7 +17,7 @@ public:
   void setRole(Role new_role);
   float getX() const;
   float getY() const;
-  void move(float deltaX, float deltaY);
+  void move(float deltaX, float deltaY, float deltaTime);
   void setPosition(float x, float y);
 };
 
