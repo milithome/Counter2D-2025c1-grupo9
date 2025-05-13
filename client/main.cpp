@@ -11,6 +11,7 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+#define PLAYER_ID 1 // temporal
 
 using namespace SDL2pp;
 
@@ -28,6 +29,7 @@ int main() try {
 	Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
 	renderer.SetDrawColor(0, 0, 0, 255); // Fondo negro
 	
+<<<<<<< Updated upstream
 	Game game;
 	Player player;
 	GameView gameView = GameView(window, renderer, game, player);
@@ -35,6 +37,15 @@ int main() try {
 	float lastTime = 0.0f;
 	while (game.running()) {
 		Uint32 currentTime = SDL_GetTicks();
+=======
+	Game game(10, 10);
+	game.addPlayer("clientplayer", PLAYER_ID);
+	GameView gameView = GameView(window, renderer, game, PLAYER_ID);
+	GameController gameController = GameController(gameView, game, PLAYER_ID);
+	uint32_t lastTime = 0;
+	while (game.isRunning()) {
+		uint32_t currentTime = SDL_GetTicks();
+>>>>>>> Stashed changes
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);

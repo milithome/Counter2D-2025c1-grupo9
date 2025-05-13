@@ -6,8 +6,8 @@
 namespace fs = std::filesystem;
 
 
-GameView::GameView(Window& window, Renderer& renderer, Game& game, Player& player)
-    : window(window), renderer(renderer), game(game), player(player) {
+GameView::GameView(Window& window, Renderer& renderer, Game& game, uint player_id)
+    : window(window), renderer(renderer), game(game), player_id(player_id) {
 
         // loadMapTiles(game.getMapEnum());
         // loadPlayerTiles(player.getType());
@@ -39,8 +39,9 @@ GameView::GameView(Window& window, Renderer& renderer, Game& game, Player& playe
 // }
 
 
-void GameView::update(Uint32 deltaTime) {
+void GameView::update(float deltaTime) {
     renderer.Clear();
+
 
     std::vector<SDL_Event> eventQueue;
     SDL_Event e;
@@ -50,8 +51,13 @@ void GameView::update(Uint32 deltaTime) {
     for (size_t i = 0; i < eventQueue.size(); ++i) {
         const SDL_Event& e = eventQueue[i];
         SDL_EventType etype = static_cast<SDL_EventType>(e.type);
-        std::function<void(const SDL_Event&, Uint32, bool)> handler = eventHandlers[etype];
-        handler(e, deltaTime, i == eventQueue.size() - 1);
+        if (eventHandlers.contains(etype)) {
+            std::function<void(const SDL_Event&, float, bool)> handler = eventHandlers[etype];
+            handler(e, deltaTime, i == eventQueue.size() - 1);
+        }
+    }
+    for (size_t i = 0; i < gameLoopListeners.size(); i++) {
+        gameLoopListeners[i](deltaTime);
     }
 
     // graficar
@@ -64,27 +70,56 @@ void GameView::update(Uint32 deltaTime) {
 }
 
 void GameView::show() {
-    //std::vector<std::vector<BlockType>> map = game.getMap();
     auto map = getPlaceholderMap();
-
-    for (size_t i = 0; i < map.size(); i++) {
-        for (size_t j = 0; j < map[i].size(); j++) {
-            //std::pair<uint32_t, uint32_t> clip = tileClipMap[map[i][j]];
-            std::pair<uint32_t, uint32_t> clip = map[i][j] == 0 ? std::pair(0, 0) : std::pair(32, 0);
-            Rect src(clip.first, clip.second, CLIP_SIZE, CLIP_SIZE);
-            Rect dst((player.getY() - j) * BLOCK_SIZE, (player.getX() - i) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            renderer.Copy(mapTiles, src, dst);
+    auto gameState = game.getState();
+    uint32_t clientPlayerX;
+    uint32_t clientPlayerY;
+    for (size_t i = 0; i < gameState.size(); i++) {
+        if (gameState[i].id == player_id) {
+            clientPlayerX = gameState[i].x;
+            clientPlayerY = gameState[i].y;
+            break;
         }
     }
-    Rect src(0, 0, 32, 32);
     SDL_Point center = getCenterPoint();
-    Rect dst(center.x, center.y, BLOCK_SIZE, BLOCK_SIZE);
-    renderer.Copy(playerTiles, src, dst);
+    uint32_t cameraX = center.y;
+    uint32_t cameraY = center.x;
+    // uint32_t cameraX = clientPlayerY + center.y - BLOCK_SIZE/2;
+    // uint32_t cameraY = clientPlayerX + center.x - BLOCK_SIZE/2;
+    // std::cout << "cameraX: " << cameraX << ", " << "cameraY: " << cameraY << std::endl;
+
+    // for (size_t i = 0; i < map.size(); i++) {
+    //     for (size_t j = 0; j < map[i].size(); j++) {
+    //         std::pair<uint32_t, uint32_t> clip = map[i][j] == 0 ? std::pair(0, 0) : std::pair(32, 0); // temporal, hasta que definamos bien el mapa
+    //         Rect src(clip.first, clip.second, CLIP_SIZE, CLIP_SIZE);
+    //         Rect dst((cameraY - j) * BLOCK_SIZE, (cameraX - i) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+    //         renderer.Copy(mapTiles, src, dst);
+    //     }
+    // }
+    (void)clientPlayerX;
+    (void)clientPlayerY;
+    Rect src(0, 0, 32, 32);
+    for (size_t i = 0; i < gameState.size(); i++) {
+
+        uint32_t playerX = gameState[i].x;
+        uint32_t playerY = gameState[i].y;
+
+        std::cout << "playerX: " << playerX << ", " << "playerY: " << playerY << std::endl;
+        //Rect dst(cameraY - playerY, cameraX - playerX, BLOCK_SIZE, BLOCK_SIZE);
+        Rect dst(cameraX - playerX, cameraY - playerY, BLOCK_SIZE, BLOCK_SIZE);
+        renderer.Copy(playerTiles, src, dst);
+    }
+
 }
 
-void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&, Uint32, bool)> callback) {
+void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&, float, bool)> callback) {
     eventHandlers[eventType] = callback;
 }
+
+void GameView::bindLoop(const std::function<void(float)> callback) {
+    gameLoopListeners.push_back(callback);
+}
+
 
 
 SDL_Point GameView::getCenterPoint() {
