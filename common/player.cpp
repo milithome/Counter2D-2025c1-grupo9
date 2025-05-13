@@ -1,8 +1,6 @@
 #include "player.h"
 #include <iostream>
 
-
-
 std::string Player::getName() const { return name; }
 uint Player::getId() const { return id; }
 void Player::setRole(Role new_role) { role = new_role; }
@@ -19,12 +17,16 @@ void Player::move(float x, float y, float deltaTime) {
   }
   this->x += x * deltaTime * SPEED;
   this->y += y * deltaTime * SPEED;
+  hitbox.x=this->x;
+  hitbox.y=this->y;
 }
 
 void Player::setPosition(float x, float y) {
   // coordenadas literales en las que quiero que se encuentre
   this->x = x;
   this->y = y;
+  hitbox.x=x;
+  hitbox.y=y;
 }
 
 float Player::getRotation() const{

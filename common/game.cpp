@@ -67,3 +67,18 @@ void Game::updateRotation(uint player_id, float currentRotation){
 float Game::getRotation(uint player_id){
   return findPlayerById(player_id).getRotation();
 }
+
+void Game::update(float deltaTime){ 
+  //actualiza el estado de las entidades que ya no dependen de inputs
+  for (auto& bullet : activeBullets) {
+    bullet.update(deltaTime);
+  }
+  //chequear colisiones y borrar balas que ya impactaron y se destruyeron
+}
+
+void Game::shoot(uint player_id) {
+  Player& player = findPlayerById(player_id);
+  float angle = player.getRotation();
+  Bullet bullet(player.getX(), player.getY(), angle);
+  activeBullets.push_back(bullet);
+}

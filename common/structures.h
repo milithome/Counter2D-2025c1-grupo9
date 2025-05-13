@@ -27,7 +27,8 @@ enum Action {
 
 // Tipos de entidades del juego
 enum EntityType {
-    PLAYER
+    PLAYER,
+    BULLET
 };
 
 // Representación de una entidad en el mundo del juego

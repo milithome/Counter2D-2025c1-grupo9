@@ -1,6 +1,7 @@
 #include "player.h"
 #include "structures.h"
 #include "team.h"
+#include "bullet.h"
 #include <cstdint>
 #ifndef GAME_H
 #define GAME_H
@@ -8,6 +9,7 @@
 class Game {
 private:
   std::vector<Player> players;
+  std::vector<Bullet> activeBullets;
   Team team1;
   Team team2;
   int map_width;
@@ -26,6 +28,8 @@ public:
   void updateTime(float currentTime);
   void updateRotation(uint player_id, float currentRotation);
   float getRotation(uint player_id);
+  void update(float deltaTime);
+  void shoot(uint player_id);
 };
 
 #endif
