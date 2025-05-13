@@ -12,7 +12,7 @@ private:
   Team team2;
   int map_width;
   int map_height;
-  Player &findPlayerById(int id);
+  Player &findPlayerById(uint id);
   bool running;
 
 public:

@@ -20,7 +20,7 @@ bool Game::addPlayer(const std::string &name, const int id) {
   return false;
 }
 
-Player &Game::findPlayerById(int id) {
+Player &Game::findPlayerById(uint id) {
   for (auto &player : players) {
     if (player.getId() == id)
       return player;

@@ -7,20 +7,20 @@ GameController::GameController(GameView& view, Game& game, uint player_id)
 }
 
 void GameController::listen() {
-    view.bind(SDL_KEYDOWN, [this](const SDL_Event& e, float deltaTime, bool is_last_event_this_frame) {
-        this->onKeyPressed(e, deltaTime, is_last_event_this_frame);
+    view.bind(SDL_KEYDOWN, [this](const SDL_Event& e) {
+        this->onKeyPressed(e);
     });
-    view.bind(SDL_KEYUP, [this](const SDL_Event& e, float deltaTime, bool is_last_event_this_frame) {
-        this->onKeyReleased(e, deltaTime, is_last_event_this_frame);
+    view.bind(SDL_KEYUP, [this](const SDL_Event& e) {
+        this->onKeyReleased(e);
     });
-    view.bind(SDL_QUIT, [this](const SDL_Event& e, float, bool) {
-        this->onQuitPressed(e);
+    view.bind(SDL_QUIT, [this](const SDL_Event&) {
+        this->onQuitPressed();
     });
-    view.bind(SDL_MOUSEMOTION, [this](const SDL_Event& e, float deltaTime, bool) {
-        this->onMouseMovement(e, deltaTime);
+    view.bind(SDL_MOUSEMOTION, [this](const SDL_Event& e) {
+        this->onMouseMovement(e);
     });
-    view.bind(SDL_MOUSEBUTTONDOWN, [this](const SDL_Event& e, float deltaTime, bool is_last_event_this_frame) {
-        this->onMouseLeftClick(e, deltaTime, is_last_event_this_frame);
+    view.bind(SDL_MOUSEBUTTONDOWN, [this](const SDL_Event& e) {
+        this->onMouseLeftClick(e);
     });
     view.bindLoop([this](float deltaTime) {
         this->update(deltaTime);
@@ -28,10 +28,12 @@ void GameController::listen() {
 }
 
 void GameController::update(float deltaTime) {
-    game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+    // game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+    game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1]);
+    (void)deltaTime;
 }
 
-void GameController::onKeyPressed(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame) {
+void GameController::onKeyPressed(const SDL_Event& event) {
     if (event.key.repeat > 0) {
         return;
     }
@@ -57,12 +59,10 @@ void GameController::onKeyPressed(const SDL_Event& event, float deltaTime, bool 
             break;
         }
     }
-    (void)is_last_event_this_frame;
-    (void)deltaTime;
 }
 
 
-void GameController::onKeyReleased(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame) {
+void GameController::onKeyReleased(const SDL_Event& event) {
     switch (event.key.keysym.sym) {
         case SDLK_UP: {
             movement_keys_vector[1] -= 1;
@@ -85,36 +85,27 @@ void GameController::onKeyReleased(const SDL_Event& event, float deltaTime, bool
             break;
         }
     }
-    (void)deltaTime;
-    (void)is_last_event_this_frame;
 }
 
-void GameController::onQuitPressed(const SDL_Event& event) {
+void GameController::onQuitPressed() {
     game.stop();
 }
 
-void GameController::onMouseMovement(const SDL_Event& event, float deltaTime) {
-    (void)event;
-    (void)deltaTime;
+void GameController::onMouseMovement(const SDL_Event& event) {
+    (void)event; // creo que es innecesario en principio
     SDL_Point center = view.getCenterPoint();
     SDL_Point mouse_position = SDL_Point();
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    // deberia rotar al jugador
+    (void)angleDegrees; // va a ser usado para rotar al jugador
 }
 
-void GameController::onMouseLeftClick(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame) {
-    (void)deltaTime;
+void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
         SDL_Point center = view.getCenterPoint();
         float angle = std::atan2(event.button.y - center.y, event.button.x - center.x);
         float angleDegrees = angle * 180.0f / 3.14159f;
-        // logica complicada q deberia hacer cosas distintas dependiendo si el arma es automatica
-        // semiautomatica o manual
-        pressed_shoot_button_this_frame = true;
-    }
-    if (is_last_event_this_frame) {
-        pressed_plant_button_this_frame = false;
+        (void)angleDegrees; // va a ser usado en otro momento para disparar
     }
 }

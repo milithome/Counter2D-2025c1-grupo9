@@ -20,17 +20,13 @@ private:
     Game& game;        
     uint player_id;    
     void listen();
-    void onKeyPressed(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame);
-    void onKeyReleased(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame);
-    void onQuitPressed(const SDL_Event& event);
-    void onMouseMovement(const SDL_Event& event, float deltaTime);
-    void onMouseLeftClick(const SDL_Event& event, float deltaTime, bool is_last_event_this_frame);
+    void onKeyPressed(const SDL_Event& event);
+    void onKeyReleased(const SDL_Event& event);
+    void onQuitPressed();
+    void onMouseMovement(const SDL_Event& event);
+    void onMouseLeftClick(const SDL_Event& event);
     void update(float deltaTime);
-    std::vector<float> movement_keys_vector =std::vector<float>(2, 0.0f);
-    SDL_Point mouse_position;
-    bool pressed_plant_button_this_frame = false;
-    bool pressed_shoot_button_this_frame = false;
-    uint32_t frames_elapsed_since_planting_started = 0;
+    std::vector<float> movement_keys_vector = std::vector<float>(2, 0.0f);
 };
 
 #endif

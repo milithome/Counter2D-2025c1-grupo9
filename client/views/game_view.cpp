@@ -43,17 +43,25 @@ void GameView::update(float deltaTime) {
     renderer.Clear();
 
 
-    std::vector<SDL_Event> eventQueue;
+    // std::vector<SDL_Event> eventQueue;
+    // SDL_Event e;
+    // while (SDL_PollEvent(&e)) {
+    //     eventQueue.push_back(e);
+    // }
+    // for (size_t i = 0; i < eventQueue.size(); ++i) {
+    //     const SDL_Event& e = eventQueue[i];
+    //     SDL_EventType etype = static_cast<SDL_EventType>(e.type);
+    //     if (eventHandlers.contains(etype)) {
+    //         std::function<void(const SDL_Event&)> handler = eventHandlers[etype];
+    //         handler(e);
+    //     }
+    // }
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-        eventQueue.push_back(e);
-    }
-    for (size_t i = 0; i < eventQueue.size(); ++i) {
-        const SDL_Event& e = eventQueue[i];
         SDL_EventType etype = static_cast<SDL_EventType>(e.type);
         if (eventHandlers.contains(etype)) {
-            std::function<void(const SDL_Event&, float, bool)> handler = eventHandlers[etype];
-            handler(e, deltaTime, i == eventQueue.size() - 1);
+            std::function<void(const SDL_Event&)> handler = eventHandlers[etype];
+            handler(e);
         }
     }
     for (size_t i = 0; i < gameLoopListeners.size(); i++) {
@@ -112,7 +120,7 @@ void GameView::show() {
 
 }
 
-void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&, float, bool)> callback) {
+void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback) {
     eventHandlers[eventType] = callback;
 }
 
