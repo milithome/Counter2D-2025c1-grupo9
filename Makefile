@@ -411,6 +411,30 @@ gtest_main/fast:
 	$(MAKE) $(MAKESILENT) -f _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/build.make _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/build
 .PHONY : gtest_main/fast
 
+client/controllers/GameController.o: client/controllers/GameController.cpp.o
+.PHONY : client/controllers/GameController.o
+
+# target to build an object file
+client/controllers/GameController.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/controllers/GameController.cpp.o
+.PHONY : client/controllers/GameController.cpp.o
+
+client/controllers/GameController.i: client/controllers/GameController.cpp.i
+.PHONY : client/controllers/GameController.i
+
+# target to preprocess a source file
+client/controllers/GameController.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/controllers/GameController.cpp.i
+.PHONY : client/controllers/GameController.cpp.i
+
+client/controllers/GameController.s: client/controllers/GameController.cpp.s
+.PHONY : client/controllers/GameController.s
+
+# target to generate assembly for a file
+client/controllers/GameController.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/controllers/GameController.cpp.s
+.PHONY : client/controllers/GameController.cpp.s
+
 client/main.o: client/main.cpp.o
 .PHONY : client/main.o
 
@@ -434,6 +458,54 @@ client/main.s: client/main.cpp.s
 client/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/main.cpp.s
 .PHONY : client/main.cpp.s
+
+client/views/game_view.o: client/views/game_view.cpp.o
+.PHONY : client/views/game_view.o
+
+# target to build an object file
+client/views/game_view.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/game_view.cpp.o
+.PHONY : client/views/game_view.cpp.o
+
+client/views/game_view.i: client/views/game_view.cpp.i
+.PHONY : client/views/game_view.i
+
+# target to preprocess a source file
+client/views/game_view.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/game_view.cpp.i
+.PHONY : client/views/game_view.cpp.i
+
+client/views/game_view.s: client/views/game_view.cpp.s
+.PHONY : client/views/game_view.s
+
+# target to generate assembly for a file
+client/views/game_view.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/game_view.cpp.s
+.PHONY : client/views/game_view.cpp.s
+
+client/views/view.o: client/views/view.cpp.o
+.PHONY : client/views/view.o
+
+# target to build an object file
+client/views/view.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/view.cpp.o
+.PHONY : client/views/view.cpp.o
+
+client/views/view.i: client/views/view.cpp.i
+.PHONY : client/views/view.i
+
+# target to preprocess a source file
+client/views/view.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/view.cpp.i
+.PHONY : client/views/view.cpp.i
+
+client/views/view.s: client/views/view.cpp.s
+.PHONY : client/views/view.s
+
+# target to generate assembly for a file
+client/views/view.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/view.cpp.s
+.PHONY : client/views/view.cpp.s
 
 common/foo.o: common/foo.cpp.o
 .PHONY : common/foo.o
@@ -562,9 +634,18 @@ help:
 	@echo "... taller_editor"
 	@echo "... taller_server"
 	@echo "... taller_tests"
+	@echo "... client/controllers/GameController.o"
+	@echo "... client/controllers/GameController.i"
+	@echo "... client/controllers/GameController.s"
 	@echo "... client/main.o"
 	@echo "... client/main.i"
 	@echo "... client/main.s"
+	@echo "... client/views/game_view.o"
+	@echo "... client/views/game_view.i"
+	@echo "... client/views/game_view.s"
+	@echo "... client/views/view.o"
+	@echo "... client/views/view.i"
+	@echo "... client/views/view.s"
 	@echo "... common/foo.o"
 	@echo "... common/foo.i"
 	@echo "... common/foo.s"

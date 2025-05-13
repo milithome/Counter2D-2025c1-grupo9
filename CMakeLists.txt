@@ -52,6 +52,7 @@ target_include_directories(taller_common PUBLIC .)
 
 # Install libSDL2 and libSDL2pp (for client or editor)
 # HEY!! TODO XXX: add more dependendies (either for client, server or editor)
+
 if(TALLER_CLIENT OR TALLER_EDITOR)
     include(FetchContent)
     FetchContent_Declare(
@@ -95,8 +96,10 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         OVERRIDE_FIND_PACKAGE
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
+    
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
+
 endif()
 
 # Program section
@@ -111,6 +114,8 @@ if(TALLER_CLIENT)
     # Add source files and enable warnings
     # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(client)
+    add_subdirectory(client/views)
+    add_subdirectory(client/controllers)
 
     set_project_warnings(taller_client ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 

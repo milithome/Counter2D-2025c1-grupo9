@@ -1,6 +1,6 @@
 #include "common/foo.h"
-#include "client/views/GameView.h"
-#include "client/controllers/GameController.h"
+#include "client/views/game_view.h"
+#include "client/controllers/game_controller.h"
 #include "client/game.h"
 
 #include <iostream>
