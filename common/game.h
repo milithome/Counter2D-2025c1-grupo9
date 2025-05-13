@@ -14,6 +14,7 @@ private:
   int map_height;
   Player &findPlayerById(uint id);
   bool running = true;
+  float time;
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
@@ -22,6 +23,9 @@ public:
   std::vector<Entity> getState();
   bool isRunning();
   void stop();
+  void updateTime(float currentTime);
+  void updateRotation(uint player_id, float currentRotation);
+  float getRotation(uint player_id);
 };
 
 #endif

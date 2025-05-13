@@ -6,9 +6,10 @@
 
 #include <iostream>
 #include <exception>
+#include <iostream>
 
-#include <SDL2pp/SDL2pp.hh>
 #include <SDL2/SDL.h>
+#include <SDL2pp/SDL2pp.hh>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480

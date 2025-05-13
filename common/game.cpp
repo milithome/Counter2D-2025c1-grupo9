@@ -41,6 +41,7 @@ std::vector<Entity> Game::getState() {
     entity.id = player.getId();
     entity.x = player.getX();
     entity.y = player.getY();
+    entity.rotation = player.getRotation();
     state.push_back(entity);
   }
 
@@ -55,3 +56,14 @@ void Game::stop(){
   running=false;
 }
 
+void Game::updateTime(float currentTime){
+  time=currentTime;
+}
+
+void Game::updateRotation(uint player_id, float currentRotation){
+  findPlayerById(player_id).setRotation(currentRotation);
+}
+
+float Game::getRotation(uint player_id){
+  return findPlayerById(player_id).getRotation();
+}

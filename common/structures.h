@@ -36,6 +36,7 @@ struct Entity {
     uint id;
     float x;
     float y;
+    float rotation;
 };
 
 // Mensaje enviado por el cliente al servidor

@@ -26,3 +26,11 @@ void Player::setPosition(float x, float y) {
   this->x = x;
   this->y = y;
 }
+
+float Player::getRotation() const{
+  return rotation;
+}
+
+void Player::setRotation(float currentRotation){
+  rotation=currentRotation;
+}

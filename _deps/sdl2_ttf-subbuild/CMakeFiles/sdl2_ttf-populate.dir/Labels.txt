@@ -1,0 +1,14 @@
+# Target labels
+ sdl2_ttf-populate
+# Source files and their labels
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/CMakeFiles/sdl2_ttf-populate
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/CMakeFiles/sdl2_ttf-populate.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/CMakeFiles/sdl2_ttf-populate-complete.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-build.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-configure.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-download.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-install.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-mkdir.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-patch.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-test.rule
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2_ttf-subbuild/sdl2_ttf-populate-prefix/src/sdl2_ttf-populate-stamp/sdl2_ttf-populate-update.rule
