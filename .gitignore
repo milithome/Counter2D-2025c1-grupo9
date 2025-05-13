@@ -1,0 +1,93 @@
+taller_client
+taller_editor
+taller_server
+taller_tests
+cmake-install.sh
+lib
+compile_commands.json
+_deps
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+client.exe
+server.exe
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux / Vim
+.*.swp
+*~
+
+# Visual Studio
+.vs/
+.vscode/
+*.vcxproj*
+*.sln
+*.user
+*.suo
+*.ncb
+*.opendb
+*.VC.db
+*.pdb
+*.idb
+*.ipch
+*.cache
+*.log
+*.tlog
+*.lastbuildstate
+*.obj
+*.iobj
+*.ipdb
+*.dbmdl
+*.VC.opendb
+*.class
+*.unsuccessfulbuild
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Others (optional)
+build/
+Debug/
+Release/
+x64/
+x86/
+*.bak
+*.tmp
