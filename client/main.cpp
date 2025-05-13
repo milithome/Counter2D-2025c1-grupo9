@@ -1,7 +1,8 @@
-#include "common/foo.h"
 #include "client/views/game_view.h"
 #include "client/controllers/game_controller.h"
-#include "client/game.h"
+#include "common/game.h"
+#include "common/player.h"
+
 
 #include <iostream>
 #include <exception>
@@ -28,8 +29,8 @@ int main() try {
 	Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
 	renderer.SetDrawColor(0, 0, 0, 255); // Fondo negro
 	
-	Game game;
-	Player player;
+	Game game(10, 10);
+	Player player("hola", 1);
 	GameView gameView = GameView(window, renderer, game, player);
 	GameController gameController = GameController(gameView, game, player);
 	float lastTime = 0.0f;
