@@ -74,9 +74,11 @@ void Game::update(float deltaTime){
 
     for (auto& player : players) {
       Hitbox bulletHitbox{bullet.getX(), bullet.getY(), BULLET_WIDTH, BULLET_HEIGHT};
-      if (bulletHitbox.intersects(player.getHitbox())) {
-        bullet.destroy(); // asumimos que implementaste esto
-        // opcional: marcar al jugador como herido o eliminado
+      if (bulletHitbox.intersects(player.getHitbox())) { 
+        //tendria que saber el daño, propongo que bala tenga posicion
+        //inicial y final para calcular distancia
+        bullet.destroy();
+        //player.updateHealth();
       }
     }
   }
