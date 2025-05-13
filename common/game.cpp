@@ -20,7 +20,7 @@ bool Game::addPlayer(const std::string &name, const int id) {
   return false;
 }
 
-Player &Game::findPlayerById(uint id) {
+Player &Game::findPlayerById(int id) {
   for (auto &player : players) {
     if (player.getId() == id)
       return player;
@@ -28,8 +28,8 @@ Player &Game::findPlayerById(uint id) {
   throw std::runtime_error("Player not found");
 }
 
-void Game::movePlayer(uint player_id, int x, int y, float deltaTime) {
-  findPlayerById(player_id).move(x, y, deltaTime);
+void Game::movePlayer(uint player_id, int x, int y) {
+  findPlayerById(player_id).move(x, y);
 }
 
 std::vector<Entity> Game::getState() {
@@ -46,13 +46,3 @@ std::vector<Entity> Game::getState() {
 
   return state;
 }
-
-bool Game::isRunning(){
-  return running;
-}
-
-void Game::stop(){
-  running=false;
-}
-
-

@@ -16,28 +16,16 @@
 using namespace SDL2pp;
 
 int main() try {
-	// Initialize SDL library
 	SDL sdl(SDL_INIT_VIDEO);
 
-	// Create main window: 640x480 dimensions, resizable, "SDL2pp demo" title
-	Window window("SDL2pp demo",
+	Window window("Counter Strike 2D",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			640, 480,
 			SDL_WINDOW_RESIZABLE);
 
-	// Create accelerated video renderer with default driver
 	Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
-	renderer.SetDrawColor(0, 0, 0, 255); // Fondo negro
+	renderer.SetDrawColor(0, 0, 0, 255);
 	
-<<<<<<< Updated upstream
-	Game game;
-	Player player;
-	GameView gameView = GameView(window, renderer, game, player);
-	GameController gameController = GameController(gameView, game, player);
-	float lastTime = 0.0f;
-	while (game.running()) {
-		Uint32 currentTime = SDL_GetTicks();
-=======
 	Game game(10, 10);
 	game.addPlayer("clientplayer", PLAYER_ID);
 	GameView gameView = GameView(window, renderer, game, PLAYER_ID);
@@ -45,16 +33,13 @@ int main() try {
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {
 		uint32_t currentTime = SDL_GetTicks();
->>>>>>> Stashed changes
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);
 	}
 
-	// Here all resources are automatically released and library deinitialized
 	return 0;
 } catch (std::exception& e) {
-	// If case of error, print it and exit with error
 	std::cerr << e.what() << std::endl;
 	return 1;
 }

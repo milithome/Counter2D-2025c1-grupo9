@@ -9,14 +9,14 @@ float Player::getX() const { return x; }
 
 float Player::getY() const { return y; }
 
-void Player::move(float x, float y, float deltaTime) {
+void Player::move(float x, float y) {
   // x,y pueden valer 0, 1 o -1 y representan hacia donde moverse
   if (x != 0 && y != 0) { // si va en diagonal, normalizo
     x /= std::sqrt(2);
     y /= std::sqrt(2);
   }
-  this->x += x * deltaTime * 200;
-  this->y += y * deltaTime * 200;
+  this->x += x;
+  this->y += y;
 }
 
 void Player::setPosition(float x, float y) {

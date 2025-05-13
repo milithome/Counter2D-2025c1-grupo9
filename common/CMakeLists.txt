@@ -1,12 +1,6 @@
 target_sources(taller_common
     PRIVATE
     # .cpp files
-<<<<<<< Updated upstream
-    foo.cpp
-    PUBLIC
-    # .h files
-    foo.h
-=======
     liberror.cpp
     protocol.cpp
     resolver.cpp
@@ -28,5 +22,4 @@ target_sources(taller_common
     player.h
     team.h
     weapon.h
->>>>>>> Stashed changes
     )
