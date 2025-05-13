@@ -69,16 +69,35 @@ float Game::getRotation(uint player_id){
 }
 
 void Game::update(float deltaTime){ 
-  //actualiza el estado de las entidades que ya no dependen de inputs
   for (auto& bullet : activeBullets) {
     bullet.update(deltaTime);
+
+    for (auto& player : players) {
+      Hitbox bulletHitbox{bullet.getX(), bullet.getY(), BULLET_WIDTH, BULLET_HEIGHT};
+      if (bulletHitbox.intersects(player.getHitbox())) {
+        bullet.destroy(); // asumimos que implementaste esto
+        // opcional: marcar al jugador como herido o eliminado
+      }
+    }
   }
-  //chequear colisiones y borrar balas que ya impactaron y se destruyeron
+
+  activeBullets.erase(std::remove_if(activeBullets.begin(), activeBullets.end(),
+                                     [](const Bullet& b) { return b.isDestroyed(); }),
+                      activeBullets.end());
 }
+
 
 void Game::shoot(uint player_id) {
   Player& player = findPlayerById(player_id);
   float angle = player.getRotation();
-  Bullet bullet(player.getX(), player.getY(), angle);
+
+  float radians = angle * M_PI / 180.0f;
+  float offset = PLAYER_WIDTH / 2.0f;
+
+  float bulletX = player.getX() + std::cos(radians) * offset;
+  float bulletY = player.getY() + std::sin(radians) * offset;
+
+  Bullet bullet(bulletX, bulletY, angle);
   activeBullets.push_back(bullet);
 }
+

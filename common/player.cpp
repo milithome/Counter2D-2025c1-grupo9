@@ -1,6 +1,7 @@
 #include "player.h"
 #include <iostream>
 
+
 std::string Player::getName() const { return name; }
 uint Player::getId() const { return id; }
 void Player::setRole(Role new_role) { role = new_role; }
@@ -35,4 +36,8 @@ float Player::getRotation() const{
 
 void Player::setRotation(float currentRotation){
   rotation=currentRotation;
+}
+
+const Hitbox& Player::getHitbox() const {
+    return hitbox;
 }

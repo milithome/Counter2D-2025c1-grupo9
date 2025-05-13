@@ -26,6 +26,7 @@ public:
   void setPosition(float x, float y);
   float getRotation() const;
   void setRotation(float currentRotation);
+  const Hitbox& getHitbox() const;
 };
 
 #endif

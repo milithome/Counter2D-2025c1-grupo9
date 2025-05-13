@@ -21,6 +21,10 @@ bool Bullet::isDestroyed() const {
     return destroyed;
 }
 
+void Bullet::destroy(){
+    destroyed=true;
+}
+
 float Bullet::getX() const {
     return x;
 }

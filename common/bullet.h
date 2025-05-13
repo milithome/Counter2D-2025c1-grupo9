@@ -15,6 +15,7 @@ public:
 
     void update(float deltaTime);
     bool isDestroyed() const;
+    void destroy();
 
     float getX() const;
     float getY() const;
