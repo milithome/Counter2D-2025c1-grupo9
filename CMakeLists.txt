@@ -16,7 +16,7 @@ project(taller_tp
     LANGUAGES CXX
     )
 
-option(TALLER_TESTS "Enable / disable tests." ON)
+option(TALLER_TESTS "Enable / disable tests." OFF)
 option(TALLER_CLIENT "Enable / disable client program." ON)
 option(TALLER_SERVER "Enable / disable server program." ON)
 option(TALLER_EDITOR "Enable / disable editor program." ON)
@@ -143,7 +143,7 @@ if(TALLER_SERVER)
     set_project_warnings(taller_server ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
     # Link the taller_common lib target
-    target_link_libraries(taller_server taller_common)
+    target_link_libraries(taller_server taller_common pthread)
 endif()
 
 if(TALLER_EDITOR)

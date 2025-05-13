@@ -1,7 +1,8 @@
-#include "common/foo.h"
 #include "client/views/game_view.h"
 #include "client/controllers/game_controller.h"
-#include "client/game.h"
+#include "common/game.h"
+#include "common/player.h"
+
 
 #include <iostream>
 #include <exception>
