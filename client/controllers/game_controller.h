@@ -22,7 +22,7 @@ private:
     Player& player;    
     void listen();
     void onKeyPressed(const SDL_Event& event, Uint32 deltaTime, bool is_last_event_this_frame);
-    void onQuitPressed(const SDL_Event& event, Uint32 deltaTime);
+    void onQuitPressed(const SDL_Event& event);
     void onMouseMovement(const SDL_Event& event, Uint32 deltaTime);
     void onMouseLeftClick(const SDL_Event& event, Uint32 deltaTime, bool is_last_event_this_frame);
     std::vector<float> movement_keys_vector =std::vector<float>(2, 0.0f);

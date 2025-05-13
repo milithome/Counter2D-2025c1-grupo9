@@ -34,8 +34,8 @@ int main() try {
 	GameView gameView = GameView(window, renderer, game, player);
 	GameController gameController = GameController(gameView, game, player);
 	float lastTime = 0.0f;
-	while (game.running()) {
-		Uint32 currentTime = SDL_GetTicks();
+	while (game.isRunning()) {
+		uint32_t currentTime = SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);

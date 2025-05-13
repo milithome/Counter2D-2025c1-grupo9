@@ -1,7 +1,6 @@
 #ifndef GAMEVIEW_H
 #define GAMEVIEW_H
 
-#include "view.h"
 #include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
 #include "common/game.h"
@@ -14,11 +13,11 @@
 
 using namespace SDL2pp;
 
-class GameView : public View {
+class GameView {
 public:
     GameView(Window& window, Renderer& renderer, Game& game, Player& player);
-    void init() override;
-    void update(Uint32 deltaTime) override;
+    void init();
+    void update(Uint32 deltaTime);
     // void loadMapTiles(Map map);
     void bind(SDL_EventType eventType, const std::function<void(const SDL_Event&, Uint32, bool)> callback);
     SDL_Point getCenterPoint();
@@ -30,8 +29,8 @@ private:
     Player& player;
     std::unordered_map<SDL_EventType, std::function<void(const SDL_Event&, Uint32, bool)>> eventHandlers;
     // std::unordered_map<BlockType, std::pair<uint32_t, uint32_t>> tileClipMap;
-    Texture mapTiles = Texture(renderer, MAP_TILES_PATH + "aztec.bpm");
-    Texture playerTiles = Texture(renderer, PLAYER_TILES_PATH + "ct1.bmp");
+    Texture mapTiles = Texture(renderer, "assets/gfx/tiles/aztec.bmp");
+    Texture playerTiles = Texture(renderer, "assets/gfx/player/ct1.bpm");
 
     void show();
     std::vector<std::vector<uint32_t>> getPlaceholderMap();
