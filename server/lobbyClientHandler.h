@@ -2,7 +2,7 @@
 #define LOBBY_CLIENT_HANDLER_H
 
 #include "thread.h"
-#include "../common/protocol.h"
+#include "../common/communication/protocol.h"
 #include "queue.h"
 #include "../common/structures.h"
 

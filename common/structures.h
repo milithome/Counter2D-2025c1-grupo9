@@ -25,6 +25,13 @@ enum Action {
     MOVE_DOWN
 };
 
+struct ActionEvent
+{
+    Action type;
+    std::string playerName;
+};
+
+
 // Tipos de entidades del juego
 enum EntityType {
     PLAYER

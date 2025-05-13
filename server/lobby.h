@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include "thread.h"
-#include "../common/protocol.h"
+#include "../common/communication/protocol.h"
 #include "queue.h"
 #include "lobbyClientHandler.h"
 #include "admin.h"

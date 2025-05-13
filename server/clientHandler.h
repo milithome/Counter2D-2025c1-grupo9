@@ -2,7 +2,7 @@
 #define CLIENT_HANDLER_H
 
 #include <string>
-#include "../common/protocol.h"
+#include "../common/communication/protocol.h"
 #include "../common/structures.h"
 #include "admin.h"
 #include "thread.h"

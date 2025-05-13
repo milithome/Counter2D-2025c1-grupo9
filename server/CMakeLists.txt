@@ -2,22 +2,24 @@ target_sources(taller_server
     PRIVATE
     # .cpp files
     acceptor.cpp
-    server.cpp
     clientHandler.cpp
-    lobby.cpp
-    game_loop.cpp
     lobbyClientHandler.cpp
+    lobby.cpp
+    gameReceiver.cpp
+    gameLoop.cpp
     admin.cpp
+    server.cpp
     main.cpp
     PUBLIC
     # .h files
-    acceptor.h
-    server.h
     thread.h
     queue.h
+    acceptor.h
     clientHandler.h
-    lobby.h
-    game_loop.h
     lobbyClientHandler.h
+    lobby.h
+    gameReceiver.h
+    gameLoop.h
     admin.h
+    server.h
     )

@@ -17,19 +17,12 @@ Lobby::Lobby(const std::string& name, Admin& admin)
                             break;
                     }
     
-                    std::cout << "Lobby " << name << " has " << players.size() << " players." << std::endl;
                     broadcast_lobby_state();
     
                     if (players.size() == maxPlayers) {
-                        std::cout << "Lobby " << name << " is full." << std::endl;
-                        admin.startGame(name);
-    
-                        for (auto& pair : handlers) {
-                            pair.second->stop();
-                        }
-    
                         active = false;
                     }
+                
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
@@ -37,8 +30,13 @@ Lobby::Lobby(const std::string& name, Admin& admin)
             
             for (auto& pair : handlers) {
                 pair.second->stop();
+            }
+
+            for (auto& pair : handlers) {
                 pair.second->join();
             }
+
+            admin.startGame(name,players);
 
         } catch (const std::exception& e) {
             std::cerr << "Exception in Lobby::run: " << e.what() << std::endl;

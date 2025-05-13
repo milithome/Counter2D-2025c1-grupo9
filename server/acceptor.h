@@ -2,8 +2,8 @@
 #define ACCEPTOR_H
 
 #include "thread.h"
-#include "../common/socket.h"
-#include "../common/protocol.h"
+#include "../common/communication/socket.h"
+#include "../common/communication/protocol.h"
 #include "clientHandler.h"
 #include "admin.h"
 

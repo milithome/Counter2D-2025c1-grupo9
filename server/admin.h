@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "game_loop.h"
-#include "../common/protocol.h"
+#include "gameLoop.h"
+#include "../common/communication/protocol.h"
 
 class ClientHandler;
 class Lobby;
@@ -28,7 +28,8 @@ public:
     void startHandler(const std::string& clientName);
     void removeHandler(const std::string& clientName);
 
-    void startGame(const std::string& name);
+    void startGame(const std::string& name, std::map<std::string, Protocol>& players);
+    void endGame(const std::string& name, std::map<std::string, Protocol>& players);
 private:
     std::mutex mtx;
     std::map<std::string, std::shared_ptr<Lobby>> lobbies;
