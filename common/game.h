@@ -22,6 +22,8 @@ public:
   std::vector<Entity> getState();
   bool isRunning();
   void stop();
+  void shoot(uint shooter_id);
+  void Game::update(float deltaTime);
 };
 
 #endif
