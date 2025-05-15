@@ -5,8 +5,10 @@
 #include "thread.h"
 #include "queue.h"
 #include "../common/communication/protocol.h"
-#include "admin.h"
 #include "gameReceiver.h"
+#include "../common/game.h"
+
+class Admin;
 
 class GameLoop : public Thread {
 public:

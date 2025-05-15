@@ -1,6 +1,7 @@
 #include "admin.h"
 #include "clientHandler.h"
 #include "lobby.h"
+#include "gameLoop.h"
 
 Admin::Admin() : mtx(), lobbies(), games(), handlers() {}
 
@@ -82,16 +83,16 @@ void Admin::removeHandler(const std::string& clientName) {
     }
 }
 
-void Admin::startGame(const std::string& name, std::map<std::string, Protocol>& players) {
+void Admin::startGame(const std::string& name, std::map<std::string, Protocol>&& players) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = lobbies.find(name);
     if (it != lobbies.end()) {
-        games[name] = std::make_shared<GameLoop>(name, *this, players);
+        games[name] = std::make_shared<GameLoop>(name, *this, std::move(players));
         games[name]->start();
     }
 }
 
-void Admin::endGame(const std::string& name, std::map<std::string, Protocol>& players) {
+void Admin::endGame(const std::string& name, std::map<std::string, Protocol>&& players) {
     std::lock_guard<std::mutex> lock(mtx);
 
     auto gameIt = games.find(name);
@@ -105,7 +106,7 @@ void Admin::endGame(const std::string& name, std::map<std::string, Protocol>& pl
         const std::string& playerName = pair.first;
         Protocol& protocol = pair.second;
 
-        auto handler = std::make_shared<ClientHandler>(protocol, playerName, *this);
+        auto handler = std::make_shared<ClientHandler>(std::move(protocol), playerName, *this);
         handler->start();
     }
 }

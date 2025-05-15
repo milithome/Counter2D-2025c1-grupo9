@@ -1,4 +1,5 @@
 #include "gameLoop.h"
+#include "admin.h"
 
 GameLoop::GameLoop(std::string name, Admin& admin, std::map<std::string, Protocol>&& players)
     : name(name), admin(admin), players(std::move(players)), eventQueue(500) , active(true) {
@@ -13,43 +14,30 @@ GameLoop::GameLoop(std::string name, Admin& admin, std::map<std::string, Protoco
 
 void GameLoop::run() {
     try {
-        //falta inicilizar la logica del juego
-        // game = Game()
+        Game game = Game(10,10);
 
         std::cout << "GameLoop started" << std::endl;
+        uint count = 0;
         for (std::pair<const std::string, std::shared_ptr<GameReceiver>>& pair : handlers) {
             pair.second->start();
+            game.addPlayer(pair.first,count);
+            count++;
         }
 
         const std::chrono::milliseconds TICK_DURATION(100);
+        const uint MAX_EVENTS_PER_CLICK = 20;
 
         while (active) {
             auto start_time = std::chrono::steady_clock::now();
             
+            int processedCounter = 0;
             ActionEvent event;
-            while(eventQueue.try_pop(event)) {
-                switch (event.type)
-                {
-                case Action::MOVE_LEFT:
-                    // game.executeAction(nameplayer, action)
-                    std::cout << "The player" << event.playerName << "has moved to the left" << std::endl;
-                    break;
-                case Action::MOVE_RIGHT:
-                    std::cout << "The player" << event.playerName << "has moved to the right" << std::endl;
-                    break;
-                case Action::MOVE_DOWN:
-                    std::cout << "The player" << event.playerName << "has moved down" << std::endl;
-                    break;
-                case Action::MOVE_UP:
-                    std::cout << "The player" << event.playerName << "has moved up" << std::endl;
-                    break;
-                default:
-                    std::cout << "The player" << event.playerName << "has taken an action" << std::endl;
-                    break;
-                }
+            while(processedCounter < MAX_EVENTS_PER_CLICK && eventQueue.try_pop(event)) {
+                game.execute(event.playerName, event.type);
+                processedCounter++;
             }
 
-            std::vector<Entity> entities = {}; // = game.getState();
+            std::vector<Entity> entities = game.getState();
             broadcast_game_state(entities);
 
             auto end_time = std::chrono::steady_clock::now();
@@ -59,7 +47,11 @@ void GameLoop::run() {
                 std::this_thread::sleep_for(TICK_DURATION - elapsed);
             }
 
-            // if game.finalize() {active = false} 
+            game.stop(); // BORRAR EN ALGUN MOMENTO
+
+            if (game.isRunning()) {
+                active = false;
+            }
         }
 
         for (auto& pair : handlers) {
@@ -69,7 +61,7 @@ void GameLoop::run() {
             pair.second->join();
         }
 
-        admin.endGame(name,players);
+        admin.endGame(name,std::move(players));
 
     } catch (const std::exception& e) {
         std::cerr << "Exception in GameLoop::run: " << e.what() << std::endl;
