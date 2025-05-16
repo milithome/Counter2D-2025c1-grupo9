@@ -97,7 +97,7 @@ void GameController::onMouseMovement(const SDL_Event& event) {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    (void)angleDegrees; // va a ser usado para rotar al jugador
+    game.updateRotation(player_id, angleDegrees);
 }
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {

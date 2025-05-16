@@ -16,7 +16,8 @@ using namespace SDL2pp;
 class GameView {
 public:
     GameView(Window& window, Renderer& renderer, Game& game, uint player_id);
-    void init();
+    static Window createWindow();
+    static Renderer createRenderer(Window& window);
     void update(float deltaTime);
     void bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback);
     void bindLoop(const std::function<void(float)> callback);
@@ -36,4 +37,4 @@ private:
     std::vector<std::vector<uint32_t>> getPlaceholderMap();
 };
 
-#endif // GAMEVIEW_H
+#endif
