@@ -104,8 +104,14 @@ CMakeFiles/
 cmake_install.cmake
 cmake-3.27.9-linux-x86_64/
 cmake-install.sh
-**/Makefile
-!Makefile
+
+client/Makefile
+client/controllers/Makefile
+client/views/Makefile
+server/Makefile
+tests/Makefile
+editor/Makefile
+common/Makefile
 
 # Others (optional)
 build/
@@ -118,7 +124,3 @@ x86/
 libtaller_common.a
 
 
-client/Makefile
-client/controllers/Makefile
-client/views/Makefile
-server/Makefile
