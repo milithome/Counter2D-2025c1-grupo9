@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/taller_editor.dir/editor/main.cpp.o -o taller_editor  -Wl,-rpath,/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/libsdl2pp-build:/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2-build libtaller_common.a _deps/libsdl2pp-build/libSDL2pp.so.8.3.0 _deps/sdl2-build/libSDL2main.a _deps/sdl2-build/libSDL2-2.0.so.0.3000.8 

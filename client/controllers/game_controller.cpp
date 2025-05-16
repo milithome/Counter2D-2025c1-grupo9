@@ -29,8 +29,7 @@ void GameController::listen() {
 
 void GameController::update(float deltaTime) {
     game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
-    //game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1]);
-    //(void)deltaTime;
+    //game.updateTime(deltaTime);
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
@@ -98,7 +97,7 @@ void GameController::onMouseMovement(const SDL_Event& event) {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    (void)angleDegrees; // va a ser usado para rotar al jugador
+    game.updateRotation(player_id, angleDegrees);
 }
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
@@ -107,5 +106,12 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
         float angle = std::atan2(event.button.y - center.y, event.button.x - center.x);
         float angleDegrees = angle * 180.0f / 3.14159f;
         (void)angleDegrees; // va a ser usado en otro momento para disparar
+        // game.shoot();
     }
 }
+
+// void GameController::onMouseLeftClickReleased(const SDL_Event& event) {
+//     if (event.button.button == SDL_BUTTON_LEFT) {
+//         game.stopShooting();
+//     }
+// }

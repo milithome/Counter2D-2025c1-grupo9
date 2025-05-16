@@ -1,11 +1,14 @@
-taller_client
-taller_editor
-taller_server
-taller_tests
-cmake-install.sh
-lib
-compile_commands.json
-_deps
+
+# configuracion de qt
+config.*
+config.redo
+
+
+# qt creator
+*.qmake.stash
+*.pro.user*
+*.autosave
+
 
 /build/
 /CMakeFiles/
@@ -88,9 +91,18 @@ server.exe
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-Makefile
+cmake-3.27.9-linux-x86_64/
+cmake-install.sh
 
-# Others (optional)
+client/Makefile
+client/controllers/Makefile
+client/views/Makefile
+server/Makefile
+tests/Makefile
+editor/Makefile
+common/Makefile
+
+# others
 build/
 Debug/
 Release/
@@ -98,3 +110,6 @@ x64/
 x86/
 *.bak
 *.tmp
+libtaller_common.a
+
+

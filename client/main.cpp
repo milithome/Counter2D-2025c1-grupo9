@@ -1,5 +1,8 @@
 #include "client/views/game_view.h"
+#include "client/views/main_view.h"
+#include "client/views/qtwindow.h"
 #include "client/controllers/game_controller.h"
+#include "client/controllers/menu_controller.h"
 #include "common/game.h"
 #include "common/player.h"
 
@@ -7,6 +10,9 @@
 #include <iostream>
 #include <exception>
 #include <iostream>
+
+#include <QApplication>
+#include <QWidget>
 
 #include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
@@ -17,22 +23,25 @@
 
 using namespace SDL2pp;
 
-int main() try {
-	SDL sdl(SDL_INIT_VIDEO);
+int main(int argc, char **argv) try {
 
-	Window window("Counter Strike 2D",
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			640, 480,
-			SDL_WINDOW_RESIZABLE);
 
-	Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
-	renderer.SetDrawColor(0, 0, 0, 255);
-	
+    QApplication app(argc, argv);
+	QtWindow mainWindow = QtWindow(app, "Counter Strike 2D", 640, 480);
+	MenuController menuController(mainWindow);
+	//MainView mainView = MainView(app);
+	//mainView.run();
+
+	app.exec();
+
+
+	Window window = GameView::createWindow();
+	Renderer renderer = GameView::createRenderer(window);
 	Game game(10, 10);
 	game.addPlayer("clientplayer", PLAYER_ID);
-	game.addPlayer("player2", 2);
 	GameView gameView = GameView(window, renderer, game, PLAYER_ID);
 	GameController gameController = GameController(gameView, game, PLAYER_ID);
+
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {
 		uint32_t currentTime = SDL_GetTicks();

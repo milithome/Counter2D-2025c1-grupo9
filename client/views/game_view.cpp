@@ -8,11 +8,23 @@ namespace fs = std::filesystem;
 
 GameView::GameView(Window& window, Renderer& renderer, Game& game, uint player_id)
     : window(window), renderer(renderer), game(game), player_id(player_id) {
-
+        renderer.SetDrawColor(0, 0, 0, 255);
         // loadMapTiles(game.getMapEnum());
         // loadPlayerTiles(player.getType());
 }
 
+Window GameView::createWindow() {
+	SDL sdl(SDL_INIT_VIDEO);
+
+	return Window("Counter Strike 2D",
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			640, 480,
+			SDL_WINDOW_RESIZABLE);
+};
+
+Renderer GameView::createRenderer(Window& window) {
+    return Renderer(window, -1, SDL_RENDERER_ACCELERATED);
+};
 // void GameView::loadMapTiles(Map map) {
 
 //     std::string path = mapToTilesFilename(map);
@@ -101,13 +113,13 @@ void GameView::show() {
             renderer.Copy(mapTiles, src, dst);
         }
     }
-    Rect src(0, 0, 32, 32); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
 
         float playerX = gameState[i].x;
         float playerY = gameState[i].y;
         Rect dst(cameraX - playerX * BLOCK_SIZE, cameraY - playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        renderer.Copy(playerTiles, src, dst);
+        renderer.Copy(playerTiles, src, dst, gameState[i].rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
     }
 
 }
