@@ -10,6 +10,8 @@ config.redo
 _deps/
 lib/
 libexec/
+include/
+modules/
 
 # binaros
 bin/
@@ -100,8 +102,10 @@ server.exe
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-Makefile
 cmake-3.27.9-linux-x86_64/
+cmake-install.sh
+**/Makefile
+!Makefile
 
 # Others (optional)
 build/
@@ -112,3 +116,9 @@ x86/
 *.bak
 *.tmp
 libtaller_common.a
+
+
+client/Makefile
+client/controllers/Makefile
+client/views/Makefile
+server/Makefile
