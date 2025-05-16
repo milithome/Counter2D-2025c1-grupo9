@@ -1,0 +1,64 @@
+@startuml diagramaDeClaseClientHandler
+class ClientHandler {
+    - clientName : const std::string
+    - active : atomic_bool
+    - handleCreate(name : const std::string&) : void
+    - handlerJoin(name : const std::string&) : void
+    - handleList() : void
+
+    + ClientHandler(protocol : Protocol, clientName : const std::string, admin : Admin&)
+    + run() : void
+    + ~ClientHandler()
+}
+class Admin {
+  - mtx : mutex
+  - lobbies : map<string, shared_ptr<Lobby>>
+  - games : std::map<std::string, std::shared_ptr<GameLoop>>
+  - handlers : std::map<std::string, std::shared_ptr<ClientHandler>>
+
+  + startGame(name : const std::string&) : void
+  + createLobby(name : const std::string&) : void
+  + joinLobby(name : const std::string&, clientName : const std::string&, protocol : Protocol&&) : void
+  + leaveLobby(name : const std::string&, clientName : const std::string&) : void
+  + listLobbies() : std::vector<std::string>
+  + removeLobby(name : const std::string&) : void
+  + createHandler(clientName : const std::string&, protocol : Protocol&&) : void
+  + startHandler(clientName : const std::string&) : void
+  + removeHandler(clientName : const std::string&) : void
+}
+
+class Protocol {
+  - skt : Socket
+
+  + Protocol(skt : Socket)
+  + ~Protocol()
+  + Protocol(Protocol&& other)
+  + operator=(Protocol&& other) : Protocol&
+
+  + has_data(timeout_ms : int = 0) : bool
+
+  
+  + send_create(name : const std::string&) : void
+  + send_join(name : const std::string&) : void
+  + send_list() : void
+  + send_accion(action : Action) : void
+  + send_leave_lobby() : void
+
+  + recv_initial_data() : void
+  + recv_state() : std::vector<Entity>
+  + recv_state_lobby() : std::vector<std::string>
+  + recv_response() : Response
+
+  
+  + send_initial_data() : void
+  + send_state(entities : const std::vector<Entity>&) : void
+  + send_state_lobby(players : const std::vector<std::string>&) : void
+  + send_response(response : const Response&) : void
+
+  + recv_message() : Message
+}
+
+ClientHandler *-- Admin
+ClientHandler *-- Protocol
+
+@enduml
