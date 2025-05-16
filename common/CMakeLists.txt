@@ -6,6 +6,10 @@ target_sources(taller_common
     resolver.cpp
     resolvererror.cpp
     socket.cpp
+    game.cpp
+    player.cpp
+    team.cpp
+    weapon.cpp
     PUBLIC
     # .h files
     liberror.h
@@ -14,4 +18,8 @@ target_sources(taller_common
     resolvererror.h
     socket.h
     structures.h
+    game.h
+    player.h
+    team.h
+    weapon.h
     )

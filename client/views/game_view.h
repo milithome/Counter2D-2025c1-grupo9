@@ -15,27 +15,25 @@ using namespace SDL2pp;
 
 class GameView {
 public:
-    GameView(Window& window, Renderer& renderer, Game& game, Player& player);
+    GameView(Window& window, Renderer& renderer, Game& game, uint player_id);
     void init();
-    void update(Uint32 deltaTime);
-    // void loadMapTiles(Map map);
-    void bind(SDL_EventType eventType, const std::function<void(const SDL_Event&, Uint32, bool)> callback);
+    void update(float deltaTime);
+    void bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback);
+    void bindLoop(const std::function<void(float)> callback);
     SDL_Point getCenterPoint();
 
 private:
     Window& window;
     Renderer& renderer;
     Game& game;
-    Player& player;
-    std::unordered_map<SDL_EventType, std::function<void(const SDL_Event&, Uint32, bool)>> eventHandlers;
-    // std::unordered_map<BlockType, std::pair<uint32_t, uint32_t>> tileClipMap;
+    uint player_id;
+    std::unordered_map<SDL_EventType, std::function<void(const SDL_Event&)>> eventHandlers;
     Texture mapTiles = Texture(renderer, "assets/gfx/tiles/aztec.bmp");
-    Texture playerTiles = Texture(renderer, "assets/gfx/player/ct1.bpm");
+    Texture playerTiles = Texture(renderer, "assets/gfx/player/ct1.bmp");
+    std::vector<std::function<void(float)>> gameLoopListeners;
 
     void show();
     std::vector<std::vector<uint32_t>> getPlaceholderMap();
-    // BlockType filenameToBlockType(std::string path);
-    // std::string mapToTilesFilename(Map map);
 };
 
 #endif // GAMEVIEW_H

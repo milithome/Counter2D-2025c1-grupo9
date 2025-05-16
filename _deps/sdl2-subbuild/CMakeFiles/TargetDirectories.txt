@@ -1,0 +1,3 @@
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2-subbuild/CMakeFiles/sdl2-populate.dir
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2-subbuild/CMakeFiles/edit_cache.dir
+/home/marina/taller/tpg/Counter2D-2025c1-grupo9/_deps/sdl2-subbuild/CMakeFiles/rebuild_cache.dir

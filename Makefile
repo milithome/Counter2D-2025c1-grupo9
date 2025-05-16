@@ -483,6 +483,30 @@ client/views/game_view.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_client.dir/build.make CMakeFiles/taller_client.dir/client/views/game_view.cpp.s
 .PHONY : client/views/game_view.cpp.s
 
+common/game.o: common/game.cpp.o
+.PHONY : common/game.o
+
+# target to build an object file
+common/game.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/game.cpp.o
+.PHONY : common/game.cpp.o
+
+common/game.i: common/game.cpp.i
+.PHONY : common/game.i
+
+# target to preprocess a source file
+common/game.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/game.cpp.i
+.PHONY : common/game.cpp.i
+
+common/game.s: common/game.cpp.s
+.PHONY : common/game.s
+
+# target to generate assembly for a file
+common/game.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/game.cpp.s
+.PHONY : common/game.cpp.s
+
 common/liberror.o: common/liberror.cpp.o
 .PHONY : common/liberror.o
 
@@ -506,6 +530,30 @@ common/liberror.s: common/liberror.cpp.s
 common/liberror.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/liberror.cpp.s
 .PHONY : common/liberror.cpp.s
+
+common/player.o: common/player.cpp.o
+.PHONY : common/player.o
+
+# target to build an object file
+common/player.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/player.cpp.o
+.PHONY : common/player.cpp.o
+
+common/player.i: common/player.cpp.i
+.PHONY : common/player.i
+
+# target to preprocess a source file
+common/player.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/player.cpp.i
+.PHONY : common/player.cpp.i
+
+common/player.s: common/player.cpp.s
+.PHONY : common/player.s
+
+# target to generate assembly for a file
+common/player.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/player.cpp.s
+.PHONY : common/player.cpp.s
 
 common/protocol.o: common/protocol.cpp.o
 .PHONY : common/protocol.o
@@ -602,6 +650,54 @@ common/socket.s: common/socket.cpp.s
 common/socket.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/socket.cpp.s
 .PHONY : common/socket.cpp.s
+
+common/team.o: common/team.cpp.o
+.PHONY : common/team.o
+
+# target to build an object file
+common/team.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/team.cpp.o
+.PHONY : common/team.cpp.o
+
+common/team.i: common/team.cpp.i
+.PHONY : common/team.i
+
+# target to preprocess a source file
+common/team.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/team.cpp.i
+.PHONY : common/team.cpp.i
+
+common/team.s: common/team.cpp.s
+.PHONY : common/team.s
+
+# target to generate assembly for a file
+common/team.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/team.cpp.s
+.PHONY : common/team.cpp.s
+
+common/weapon.o: common/weapon.cpp.o
+.PHONY : common/weapon.o
+
+# target to build an object file
+common/weapon.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/weapon.cpp.o
+.PHONY : common/weapon.cpp.o
+
+common/weapon.i: common/weapon.cpp.i
+.PHONY : common/weapon.i
+
+# target to preprocess a source file
+common/weapon.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/weapon.cpp.i
+.PHONY : common/weapon.cpp.i
+
+common/weapon.s: common/weapon.cpp.s
+.PHONY : common/weapon.s
+
+# target to generate assembly for a file
+common/weapon.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_common.dir/build.make CMakeFiles/taller_common.dir/common/weapon.cpp.s
+.PHONY : common/weapon.cpp.s
 
 editor/main.o: editor/main.cpp.o
 .PHONY : editor/main.o
@@ -819,30 +915,6 @@ server/server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_server.dir/build.make CMakeFiles/taller_server.dir/server/server.cpp.s
 .PHONY : server/server.cpp.s
 
-tests/foo.o: tests/foo.cpp.o
-.PHONY : tests/foo.o
-
-# target to build an object file
-tests/foo.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_tests.dir/build.make CMakeFiles/taller_tests.dir/tests/foo.cpp.o
-.PHONY : tests/foo.cpp.o
-
-tests/foo.i: tests/foo.cpp.i
-.PHONY : tests/foo.i
-
-# target to preprocess a source file
-tests/foo.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_tests.dir/build.make CMakeFiles/taller_tests.dir/tests/foo.cpp.i
-.PHONY : tests/foo.cpp.i
-
-tests/foo.s: tests/foo.cpp.s
-.PHONY : tests/foo.s
-
-# target to generate assembly for a file
-tests/foo.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/taller_tests.dir/build.make CMakeFiles/taller_tests.dir/tests/foo.cpp.s
-.PHONY : tests/foo.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -883,9 +955,15 @@ help:
 	@echo "... client/views/game_view.o"
 	@echo "... client/views/game_view.i"
 	@echo "... client/views/game_view.s"
+	@echo "... common/game.o"
+	@echo "... common/game.i"
+	@echo "... common/game.s"
 	@echo "... common/liberror.o"
 	@echo "... common/liberror.i"
 	@echo "... common/liberror.s"
+	@echo "... common/player.o"
+	@echo "... common/player.i"
+	@echo "... common/player.s"
 	@echo "... common/protocol.o"
 	@echo "... common/protocol.i"
 	@echo "... common/protocol.s"
@@ -898,6 +976,12 @@ help:
 	@echo "... common/socket.o"
 	@echo "... common/socket.i"
 	@echo "... common/socket.s"
+	@echo "... common/team.o"
+	@echo "... common/team.i"
+	@echo "... common/team.s"
+	@echo "... common/weapon.o"
+	@echo "... common/weapon.i"
+	@echo "... common/weapon.s"
 	@echo "... editor/main.o"
 	@echo "... editor/main.i"
 	@echo "... editor/main.s"
@@ -925,9 +1009,6 @@ help:
 	@echo "... server/server.o"
 	@echo "... server/server.i"
 	@echo "... server/server.s"
-	@echo "... tests/foo.o"
-	@echo "... tests/foo.i"
-	@echo "... tests/foo.s"
 .PHONY : help
 
 
