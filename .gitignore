@@ -1,31 +1,14 @@
 # Archivos de comandos de compilación
-compile_commands.json
-compile_commands2.json
 
 # configuracion de qt
 config.*
 config.redo
 
-# Dependencias
-_deps/
-lib/
-libexec/
-include/
-modules/
-
-# binaros
-bin/
-taller_client
-taller_server
-taller_editor
-taller_tests
 
 # qt creator
 *.qmake.stash
 *.pro.user*
 *.autosave
-
-
 
 
 # Prerequisites
@@ -113,7 +96,7 @@ tests/Makefile
 editor/Makefile
 common/Makefile
 
-# Others (optional)
+# others
 build/
 Debug/
 Release/
