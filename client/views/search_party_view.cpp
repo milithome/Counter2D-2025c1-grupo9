@@ -11,8 +11,14 @@
 #include <QFrame>
 
 
-SearchPartyView::SearchPartyView() {};
+SearchPartyView::SearchPartyView() {
+    buildLayout();
+}
 
+void SearchPartyView::addParty(const std::string& party) {
+    parties.push_back(party);
+    addPartyToList(party);
+}
 
 std::unordered_map<std::string, QPushButton *> SearchPartyView::getJoinButtons() {
     return joinButtons;
@@ -44,28 +50,30 @@ void SearchPartyView::buildBackButton() {
 }
 
 void SearchPartyView::buildPartyList() {
-    std::vector<std::string> parties = {"party uno", "party dos", "party tres"};
     partyList = new QListWidget();
 
     for (const std::string& partyName : parties) {
-        QWidget *itemWidget = new QWidget();
-        QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
-        itemLayout->setContentsMargins(5, 2, 5, 2);
-
-        QLabel *label = new QLabel(QString::fromStdString(partyName), itemWidget);
-        QPushButton *joinButton = new QPushButton("Unirse", itemWidget);
-        joinButtons[partyName] = joinButton;
-
-        itemLayout->addWidget(label);
-        itemLayout->addStretch();
-        itemLayout->addWidget(joinButton);
-
-        QListWidgetItem *listItem = new QListWidgetItem(partyList);
-        listItem->setSizeHint(itemWidget->sizeHint());
-
-        partyList->addItem(listItem);
-        partyList->setItemWidget(listItem, itemWidget);
-
+        addPartyToList(partyName);
     }
 }
 
+
+void SearchPartyView::addPartyToList(const std::string& partyName) {
+    QWidget *itemWidget = new QWidget();
+    QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
+    itemLayout->setContentsMargins(5, 2, 5, 2);
+
+    QLabel *label = new QLabel(QString::fromStdString(partyName), itemWidget);
+    QPushButton *joinButton = new QPushButton("Unirse", itemWidget);
+    joinButtons[partyName] = joinButton;
+
+    itemLayout->addWidget(label);
+    itemLayout->addStretch();
+    itemLayout->addWidget(joinButton);
+
+    QListWidgetItem *listItem = new QListWidgetItem(partyList);
+    listItem->setSizeHint(itemWidget->sizeHint());
+
+    partyList->addItem(listItem);
+    partyList->setItemWidget(listItem, itemWidget);
+}

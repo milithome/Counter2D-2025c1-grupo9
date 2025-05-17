@@ -12,7 +12,7 @@ public:
     explicit QtWindow(QApplication& app, const std::string& windowName, int width, int height);
     void showView(QtView& view);
     void clearWindow();
-
+    void quit();
 
 private:
     QApplication& app;

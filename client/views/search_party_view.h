@@ -13,14 +13,16 @@ public:
     QPushButton *getBackButton();
     void buildLayout() override;
     QVBoxLayout *getLayout() override;
+    void addParty(const std::string& party);
 private:
+    std::vector<std::string> parties;
     QVBoxLayout *layout = nullptr;
     QListWidget *partyList;
     QPushButton *backButton = nullptr;
     std::unordered_map<std::string, QPushButton *> joinButtons;
     void buildBackButton();
     void buildPartyList();
-
+    void addPartyToList(const std::string& partyName);
 };
 
 #endif

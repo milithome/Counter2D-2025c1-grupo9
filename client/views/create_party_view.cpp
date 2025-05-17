@@ -2,6 +2,7 @@
 #include <QHBoxLayout>
 
 CreatePartyView::CreatePartyView() {
+    buildLayout();
 };
 
 
