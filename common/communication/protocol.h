@@ -24,7 +24,7 @@ public:
     void send_create(const std::string& name);
     void send_join(const std::string& name);
     void send_list();
-    void send_accion(Action action);
+    void send_action(const Action& action);
     void send_leave_lobby();
 
     // Metodos para enviar mensajes (servidor)
