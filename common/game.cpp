@@ -67,3 +67,9 @@ void Game::updateRotation(uint player_id, float currentRotation){
 float Game::getRotation(uint player_id){
   return findPlayerById(player_id).getRotation();
 }
+
+
+void Game::execute(const std::string& name, Action action) {
+  (void) name;
+  (void) action;
+};
