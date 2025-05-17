@@ -30,7 +30,7 @@ void GameLoop::run() {
         while (active) {
             auto start_time = std::chrono::steady_clock::now();
             
-            int processedCounter = 0;
+            uint processedCounter = 0;
             ActionEvent event;
             while(processedCounter < MAX_EVENTS_PER_CLICK && eventQueue.try_pop(event)) {
                 game.execute(event.playerName, event.type);
