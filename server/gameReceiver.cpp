@@ -11,7 +11,7 @@ void GameReceiver::run() {
             switch (msg.type)
             {
             case Type::ACTION:
-                event.type = msg.action;
+                event.action = msg.action;
                 event.playerName = playerName;
                 eventQueue.push(std::move(event));
                 break;

@@ -16,7 +16,7 @@ using namespace SDL2pp;
 class GameView {
 public:
     // GameView(Window& window, Renderer& renderer, Game& game, uint player_id);
-    GameView(Game& game, uint player_id);
+    GameView(Game& game, std::string playerName);
     static Window createWindow();
     static Renderer createRenderer(Window& window);
     void update(float deltaTime);
@@ -30,7 +30,7 @@ private:
     Window window;
     Renderer renderer;
     Game& game;
-    uint player_id;
+    std::string playerName;
     std::unordered_map<SDL_EventType, std::function<void(const SDL_Event&)>> eventHandlers;
     Texture mapTiles = Texture(renderer, "assets/gfx/tiles/aztec.bmp");
     Texture playerTiles = Texture(renderer, "assets/gfx/player/ct1.bmp");

@@ -1,7 +1,24 @@
 #include "clientHandler.h"
 
-ClientHandler::ClientHandler(Protocol protocol, std::string& clientName, Admin& admin) : 
-    protocol(std::move(protocol)), clientName(clientName), active(true), admin(admin) {}
+ClientHandler::ClientHandler(
+    Protocol protocol,
+    Admin& admin,
+    std::function<void(std::string, std::shared_ptr<ClientHandler>)> onRegister)
+    : protocol(std::move(protocol)),
+        clientName(""),
+        active(true),
+        admin(admin),
+        onRegister(std::move(onRegister)) {}
+
+ClientHandler::ClientHandler(
+    Protocol protocol,
+    const std::string& clientName,
+    Admin& admin)
+    : protocol(std::move(protocol)),
+        clientName(clientName),
+        active(true),
+        admin(admin),
+        onRegister(nullptr) {}  // No se usará
 
 ClientHandler::~ClientHandler() {
     std::cout << "ClientHandler destructor called." << std::endl;
@@ -9,6 +26,10 @@ ClientHandler::~ClientHandler() {
 
 void ClientHandler::run() {
     try {
+        if (onRegister) {
+            clientName = protocol.recv_name();
+            onRegister(clientName, std::shared_ptr<ClientHandler>(this));
+        }
         while (active) {
             std::cout << "Waiting for message..." << std::endl;
             Message message = protocol.recv_message();

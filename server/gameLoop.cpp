@@ -33,7 +33,7 @@ void GameLoop::run() {
             uint processedCounter = 0;
             ActionEvent event;
             while(processedCounter < MAX_EVENTS_PER_CLICK && eventQueue.try_pop(event)) {
-                game.execute(event.playerName, event.type);
+                game.execute(event.playerName, event.action);
                 processedCounter++;
             }
 

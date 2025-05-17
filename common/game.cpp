@@ -38,7 +38,7 @@ std::vector<Entity> Game::getState() {
   for (const auto &player : players) {
     Entity entity;
     entity.type = PLAYER;
-    entity.id = player.getId();
+    entity.name = player.getId();
     entity.x = player.getX();
     entity.y = player.getY();
     entity.rotation = player.getRotation();
@@ -72,4 +72,4 @@ float Game::getRotation(uint player_id){
 void Game::execute(const std::string& name, Action action) {
   (void) name;
   (void) action;
-};
+}

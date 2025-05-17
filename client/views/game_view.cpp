@@ -13,8 +13,8 @@ namespace fs = std::filesystem;
 //         // loadPlayerTiles(player.getType());
 // }
 
-GameView::GameView(Game& game, uint player_id)
-    : window(createWindow()), renderer(createRenderer(window)), game(game), player_id(player_id) {
+GameView::GameView(Game& game, std::string playerName)
+    : window(createWindow()), renderer(createRenderer(window)), game(game), playerName(playerName) {
         renderer.SetDrawColor(0, 0, 0, 255);
         // loadMapTiles(game.getMapEnum());
         // loadPlayerTiles(player.getType());
@@ -25,11 +25,11 @@ Window GameView::createWindow() {
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			640, 480,
 			SDL_WINDOW_RESIZABLE);
-};
+}
 
 Renderer GameView::createRenderer(Window& window) {
     return Renderer(window, -1, SDL_RENDERER_ACCELERATED);
-};
+}
 // void GameView::loadMapTiles(Map map) {
 
 //     std::string path = mapToTilesFilename(map);
@@ -100,7 +100,7 @@ void GameView::show() {
     float clientPlayerX;
     float clientPlayerY;
     for (size_t i = 0; i < gameState.size(); i++) {
-        if (gameState[i].id == player_id) {
+        if (gameState[i].name == playerName) {
             clientPlayerX = gameState[i].x;
             clientPlayerY = gameState[i].y;
             break;

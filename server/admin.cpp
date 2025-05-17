@@ -62,17 +62,9 @@ void Admin::removeLobby(const std::string& name) {
     }
 }
 
-void Admin::createHandler(const std::string& clientName, Protocol&& protocol) {
+void Admin::registerHandler(const std::string& clientName, std::shared_ptr<ClientHandler> handler) {
     std::lock_guard<std::mutex> lock(mtx);
-    handlers[clientName] = std::make_shared<ClientHandler>(std::move(protocol), clientName, * this);
-}
-
-void Admin::startHandler(const std::string& clientName) {
-    std::lock_guard<std::mutex> lock(mtx);
-    auto it = handlers.find(clientName);
-    if (it != handlers.end()) {
-        it->second->start();
-    }
+    handlers[clientName] = std::move(handler);
 }
 
 void Admin::removeHandler(const std::string& clientName) {
@@ -106,6 +98,7 @@ void Admin::endGame(const std::string& name, std::map<std::string, Protocol>&& p
         const std::string& playerName = pair.first;
         Protocol& protocol = pair.second;
 
+        // CAMBIARA PROXIMAMENTE
         auto handler = std::make_shared<ClientHandler>(std::move(protocol), playerName, *this);
         handler->start();
     }

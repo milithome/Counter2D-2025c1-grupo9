@@ -25,7 +25,6 @@ public:
     void removeLobby(const std::string& name);
 
     void registerHandler(const std::string& clientName, std::shared_ptr<ClientHandler> handler);
-    void startHandler(std::shared_ptr<ClientHandler> handler);
     void removeHandler(const std::string& clientName);
 
     void startGame(const std::string& name, std::map<std::string, Protocol>&& players);

@@ -8,8 +8,15 @@ void Acceptor::run() {
         while (active) {
             Socket client = skt.accept();
             Protocol protocol(std::move(client));
-            auto handler = std::make_shared<ClientHandler>(std::move(protocol), *this);
-            admin.startHandler(handler);
+
+            auto handler = std::make_shared<ClientHandler>(
+                std::move(protocol),
+                admin,
+                [this](std::string name, std::shared_ptr<ClientHandler> handler) {
+                    admin.registerHandler(name, handler);
+                });
+            handler->start();
+
             std::cout << "Accepted connection from client." << std::endl;
         }
     } catch (const std::exception& e) {

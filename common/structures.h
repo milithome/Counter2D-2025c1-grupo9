@@ -56,6 +56,12 @@ struct Action {
     ActionData data;
 };
 
+// Eventos para las acciones
+struct ActionEvent{
+    Action action;
+    std::string playerName;
+};
+
 // Mensaje enviado por el cliente al servidor
 struct Message {
     Type type;

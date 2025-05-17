@@ -58,7 +58,7 @@ int main(int argc, char **argv) try {
 	Game game(10, 10);
 	game.addPlayer("clientplayer", PLAYER_ID);
 
-	GameView gameView = GameView(game, PLAYER_ID);
+	GameView gameView = GameView(game, "clientplayer");
 	GameController gameController = GameController(gameView, game, PLAYER_ID);
 
 	uint32_t lastTime = 0;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) try {
 		// gameController, para evitar que este loop se trabe al enviar un mensaje.
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
-			protocol.send_accion(action);
+			protocol.send_action(action);
 		}
 	}
 

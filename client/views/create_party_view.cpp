@@ -3,23 +3,23 @@
 
 CreatePartyView::CreatePartyView() {
     buildLayout();
-};
-
+}
 
 QPushButton *CreatePartyView::getCreateButton() {
     return createButton;
-};
+}
+
 QPushButton *CreatePartyView::getBackButton() {
     return backButton;
-};
+}
 
 QLabel *CreatePartyView::getPartyNameLabel() {
     return partyNameLabel;
-};
+}
 
 QLineEdit *CreatePartyView::getPartyNameTextField() {
     return partyNameTextField;
-};
+}
 
 void CreatePartyView::buildPartyNameLabel() {
     partyNameLabel = new QLabel("Nombre de la partida");
