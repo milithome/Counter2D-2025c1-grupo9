@@ -1,5 +1,6 @@
 #include "game_controller.h"
 #include <iostream>
+#include "common/structures.h"
 
 GameController::GameController(GameView& view, Game& game, uint player_id)
     : view(view), game(game), player_id(player_id) {
@@ -28,7 +29,14 @@ void GameController::listen() {
 }
 
 void GameController::update(float deltaTime) {
-    game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+    if (movement_keys_vector[0] || movement_keys_vector[1]) {
+        game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+
+        Action action;
+        action.type = MOVE;
+        action_queue.push(Action());
+        actions.push_back(action);
+    }
     //game.updateTime(deltaTime);
 }
 
@@ -115,3 +123,11 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
 //         game.stopShooting();
 //     }
 // }
+Action& GameController::actionQueuePop() {
+    Action action = action_queue.front();
+    return action;
+}
+
+bool GameController::actionQueueIsEmpty() {
+    return action_queue.empty();
+}
