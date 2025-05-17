@@ -16,7 +16,7 @@
 class GameController {
 public:
     GameController(GameView& view, Game& game, uint player_id);
-    Action& actionQueuePop();
+    Action actionQueuePop();
     bool actionQueueIsEmpty();
     std::vector<Action> getActions();
 
@@ -28,7 +28,7 @@ private:
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
     void onQuitPressed();
-    void onMouseMovement(const SDL_Event& event);
+    void onMouseMovement();
     void onMouseLeftClick(const SDL_Event& event);
     void update(float deltaTime);
     std::vector<float> movement_keys_vector = std::vector<float>(2, 0.0f);

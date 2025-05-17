@@ -17,8 +17,8 @@ void GameController::listen() {
     view.bind(SDL_QUIT, [this](const SDL_Event&) {
         this->onQuitPressed();
     });
-    view.bind(SDL_MOUSEMOTION, [this](const SDL_Event& e) {
-        this->onMouseMovement(e);
+    view.bind(SDL_MOUSEMOTION, [this](const SDL_Event&) {
+        this->onMouseMovement();
     });
     view.bind(SDL_MOUSEBUTTONDOWN, [this](const SDL_Event& e) {
         this->onMouseLeftClick(e);
@@ -32,10 +32,9 @@ void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
         game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
 
-        Action action;
-        action.type = MOVE;
-        action_queue.push(Action());
-        actions.push_back(action);
+        // Action action{MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
+        // action_queue.push(action);
+        // actions.push_back(action);
     }
     //game.updateTime(deltaTime);
 }
@@ -98,14 +97,18 @@ void GameController::onQuitPressed() {
     game.stop();
 }
 
-void GameController::onMouseMovement(const SDL_Event& event) {
-    (void)event; // creo que es innecesario en principio
+void GameController::onMouseMovement() {
     SDL_Point center = view.getCenterPoint();
     SDL_Point mouse_position = SDL_Point();
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
     game.updateRotation(player_id, angleDegrees);
+
+    // Action action{POINT_TO, PointAction{angleDegrees}};
+    // action_queue.push(action);
+    // actions.push_back(action);
+
 }
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
@@ -123,8 +126,9 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
 //         game.stopShooting();
 //     }
 // }
-Action& GameController::actionQueuePop() {
+Action GameController::actionQueuePop() {
     Action action = action_queue.front();
+    action_queue.pop();
     return action;
 }
 

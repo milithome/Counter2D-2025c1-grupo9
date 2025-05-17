@@ -7,41 +7,37 @@
 #include "client/views/main_view.h"
 #include "client/views/create_party_view.h"
 #include "client/views/search_party_view.h"
+#include "client/views/party_view.h"
+#include "message_event.h"
+#include "common/communication/protocol.h"
 
-class MenuController {
+class MenuController : public QWidget {
+    Q_OBJECT
 public:
-    // using Callback = std::function<void(const std::string&)>;
-
-    MenuController(QtWindow& window);
-
-    // // Set a callback to be called when a menu option is selected
-    // void setOptionSelectedCallback(Callback callback);
-
-    // // Process user input (e.g., key press or mouse click)
-    // void processInput(const std::string& input);
-
-    // // Render the menu (implementation depends on your UI framework)
-    // void render() const;
+    MenuController(QtWindow& window, Protocol& protocol);
 
 private:
     QtWindow& window;
-    MainView mainView;
-    CreatePartyView createPartyView;
-    SearchPartyView searchPartyView;
-
-
+    Protocol& protocol;
 
     void onMainViewCreatePartyButtonClicked();
     void onMainViewSearchPartyButtonClicked();
-    void onCreatePartyViewCreateButtonClicked();
+    void onCreatePartyViewCreateButtonClicked(const std::string& partyName);
     void onCreatePartyViewBackButtonClicked();
     void onSearchPartyViewJoinButtonClicked(const std::string& partyName);
     void onSearchPartyViewBackButtonClicked();
+    void onPartyViewLeaveButtonClicked();
+    void onPartyViewStartButtonClicked();
 
-    void listenToMainView();
-    void listenToSearchPartyView();
-    void listenToCreatePartyView();
+    void listenToMainView(MainView& mainView);
+    void listenToSearchPartyView(SearchPartyView& searchPartyView);
+    void listenToCreatePartyView(CreatePartyView& createPartyView);
+    void listenToPartyView(PartyView& createPartyView);
 
+
+signals:
+    void partidaIniciada();
+    void nuevoEvento(const MessageEvent& event);
 };
 
 #endif 

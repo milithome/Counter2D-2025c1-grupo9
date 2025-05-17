@@ -15,7 +15,8 @@ using namespace SDL2pp;
 
 class GameView {
 public:
-    GameView(Window& window, Renderer& renderer, Game& game, uint player_id);
+    // GameView(Window& window, Renderer& renderer, Game& game, uint player_id);
+    GameView(Game& game, uint player_id);
     static Window createWindow();
     static Renderer createRenderer(Window& window);
     void update(float deltaTime);
@@ -24,8 +25,10 @@ public:
     SDL_Point getCenterPoint();
 
 private:
-    Window& window;
-    Renderer& renderer;
+    // Window& window;
+    // Renderer& renderer;
+    Window window;
+    Renderer renderer;
     Game& game;
     uint player_id;
     std::unordered_map<SDL_EventType, std::function<void(const SDL_Event&)>> eventHandlers;

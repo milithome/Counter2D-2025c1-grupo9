@@ -3,6 +3,7 @@
 #include <QDir>
 
 MainView::MainView() {
+    buildLayout();
 }
 
 void MainView::buildLayout() {
