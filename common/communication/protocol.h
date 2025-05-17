@@ -8,7 +8,7 @@
 #include <cstring>
 #include <mutex>
 #include "socket.h"
-#include "structures.h"
+#include "../structures.h"
 
 class Protocol {
 public:
