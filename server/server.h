@@ -14,8 +14,9 @@ public:
     void start();
 
 private:
-    Acceptor acceptor;
+    std::vector<std::shared_ptr<ClientHandler>> handlers;
     Admin admin;
+    Acceptor acceptor;
 };
 
 #endif

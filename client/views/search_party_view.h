@@ -8,7 +8,7 @@
 
 class SearchPartyView : public QtView {
 public:
-    SearchPartyView();
+    SearchPartyView(std::vector<std::string> parties);
     std::unordered_map<std::string, QPushButton *> getJoinButtons();
     QPushButton *getBackButton();
     void buildLayout() override;

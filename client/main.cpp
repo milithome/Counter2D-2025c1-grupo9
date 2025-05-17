@@ -23,18 +23,26 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 #define PLAYER_ID 1 // temporal
+#define NAME_SERVER "localhost"
+#define PORT "12345"
 
 using namespace SDL2pp;
 
 int main(int argc, char **argv) try {
+	if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
+        return 1;
+    }
 
 	// TODO: Debera haber un hilo encargado de recibir mensajes del server tanto durante la partida como cuando
 	// el cliente se encuentre en un lobby, y de alguna forma se debe comunicar con MenuController y GameController
 	// para actualizar las views cuando corresponden (en el caso de GameController tambien hay que checkear q el
 	// cliente se encuentre sincronizado con el server)
 	bool partida_iniciada = false;
-	Socket serverSocket("12345");
+	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
+	std::string clientName = argv[1];
+	protocol.send_name(clientName);
 
 	SDL sdl(SDL_INIT_VIDEO);
 

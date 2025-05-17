@@ -11,7 +11,7 @@
 #include <QFrame>
 
 
-SearchPartyView::SearchPartyView() {
+SearchPartyView::SearchPartyView(std::vector<std::string> parties) : parties(parties) {
     buildLayout();
 }
 

@@ -18,7 +18,7 @@ ClientHandler::ClientHandler(
         clientName(clientName),
         active(true),
         admin(admin),
-        onRegister(nullptr) {}  // No se usará
+        onRegister(nullptr) {}
 
 ClientHandler::~ClientHandler() {
     std::cout << "ClientHandler destructor called." << std::endl;
@@ -28,12 +28,10 @@ void ClientHandler::run() {
     try {
         if (onRegister) {
             clientName = protocol.recv_name();
-            onRegister(clientName, std::shared_ptr<ClientHandler>(this));
+            onRegister(clientName, shared_from_this());
         }
         while (active) {
-            std::cout << "Waiting for message..." << std::endl;
             Message message = protocol.recv_message();
-            std::cout << "Message received: " << message.type << std::endl;
 
             switch (message.type) {
                 case Type::CREATE:
@@ -55,6 +53,7 @@ void ClientHandler::run() {
         std::cerr << "Unknown exception in ClientHandler." << std::endl;
     }
 }
+
 void ClientHandler::handle_create(const std::string& name) {
     try {
         admin.createLobby(name);

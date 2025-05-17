@@ -1,7 +1,8 @@
 #include "acceptor.h"
 #include <thread>
 
-Acceptor::Acceptor(const std::string& port, Admin& admin) : skt(port.c_str()), active(true), admin(admin) {}
+Acceptor::Acceptor(const std::string& port, Admin& admin,std::vector<std::shared_ptr<ClientHandler>>& handlers) 
+    : skt(port.c_str()), active(true), admin(admin), handlers(handlers) {}
 
 void Acceptor::run() {
     try {
@@ -15,8 +16,8 @@ void Acceptor::run() {
                 [this](std::string name, std::shared_ptr<ClientHandler> handler) {
                     admin.registerHandler(name, handler);
                 });
+            handlers.push_back(handler);
             handler->start();
-
             std::cout << "Accepted connection from client." << std::endl;
         }
     } catch (const std::exception& e) {

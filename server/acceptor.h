@@ -9,7 +9,7 @@
 
 class Acceptor : public Thread {
 public:
-    explicit Acceptor(const std::string& port, Admin& admin);
+    Acceptor(const std::string& port, Admin& admin, std::vector<std::shared_ptr<ClientHandler>>& handlers);
     
     virtual void run() override;
     
@@ -20,6 +20,7 @@ private:
     Socket skt;
     std::atomic<bool> active;
     Admin& admin;
+    std::vector<std::shared_ptr<ClientHandler>>& handlers;
 };
 
 #endif

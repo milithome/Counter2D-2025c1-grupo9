@@ -81,6 +81,7 @@ void MenuController::onPartyViewStartButtonClicked() {
 
 void MenuController::onMainViewCreatePartyButtonClicked() {
     window.clearWindow();
+    Response r = protocol.recv_response(); // aca tenes q ver r.result . 0 para exito, 1 si fallo.
     CreatePartyView createPartyView = CreatePartyView();
     listenToCreatePartyView(createPartyView);
     window.showView(createPartyView);
@@ -88,8 +89,9 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
     emit nuevoEvento(ListEvent());
+    Response r = protocol.recv_response();
     window.clearWindow();
-    SearchPartyView searchPartyView = SearchPartyView();
+    SearchPartyView searchPartyView = SearchPartyView(r.partidas);
     listenToSearchPartyView(searchPartyView);
     window.showView(searchPartyView);
 }

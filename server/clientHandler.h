@@ -8,7 +8,7 @@
 #include "admin.h"
 #include "thread.h"
 
-class ClientHandler : public Thread {
+class ClientHandler : public Thread, public std::enable_shared_from_this<ClientHandler> {
 public:
     explicit ClientHandler(Protocol protocol, Admin& admin, std::function<void(std::string, std::shared_ptr<ClientHandler>)> onRegister);
     ClientHandler(Protocol protocol, const std::string& clientName, Admin& admin);

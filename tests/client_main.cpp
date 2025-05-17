@@ -3,8 +3,8 @@
 #include <iostream>
 #include <exception>
 
-#include "../common/socket.h"
-#include "../common/protocol.h"
+#include "../common/communication/socket.h"
+#include "../common/communication/protocol.h"
 
 
 int main() try {
