@@ -7,7 +7,6 @@
 class Player {
 private:
   std::string name;
-  uint id;
   float x, y;
   Hitbox hitbox;
   Role role;
@@ -15,13 +14,12 @@ private:
   float health;
 
 public:
-  Player(const std::string &name, uint id)
-      : name(name), id(id), x(0), y(0), rotation(0),
+  Player(const std::string &name)
+      : name(name), x(0), y(0), rotation(0),
         role(Role::COUNTER_TERRORIST), hitbox{x, y, PLAYER_WIDTH,
                                               PLAYER_HEIGHT} {}
 
   std::string getName() const;
-  uint getId() const;
   void setRole(Role new_role);
   float getX() const;
   float getY() const;

@@ -12,18 +12,23 @@ private:
   Team team2;
   int map_width;
   int map_height;
-  Player &findPlayerById(uint id);
+  Player &findPlayerByName(const std::string &name);
   bool running = true;
+  float time;
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
-  bool addPlayer(const std::string &name, const int player_id);
-  void movePlayer(const uint player_id, int x, int y, float deltaTime);
+  bool addPlayer(const std::string &name);
+  void movePlayer(const std::string &name, int x, int y, float deltaTime);
   std::vector<Entity> getState();
   bool isRunning();
   void stop();
-  void shoot(uint shooter_id);
-  void Game::update(float deltaTime);
+  void shoot(const std::string &shooterName);
+  void update(float deltaTime);
+  void execute(const std::string &name, Action action);
+  void updateTime(float currentTime);
+  void updateRotation(const std::string &name, float currentRotation);
+  float getRotation(const std::string &name);
 };
 
 #endif

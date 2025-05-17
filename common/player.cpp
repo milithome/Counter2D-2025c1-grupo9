@@ -2,7 +2,6 @@
 #include <iostream>
 
 std::string Player::getName() const { return name; }
-uint Player::getId() const { return id; }
 void Player::setRole(Role new_role) { role = new_role; }
 
 float Player::getX() const { return x; }
