@@ -54,11 +54,40 @@ void Protocol::send_list() {
     }
 }
 
-void Protocol::send_accion(Action action) {
+void Protocol::send_accion(const Action& action) {
     std::vector<uint8_t> buffer;
 
     buffer.push_back(Type::ACTION);
-    buffer.push_back(static_cast<uint8_t>(action));
+    buffer.push_back(static_cast<uint8_t>(action.type));
+
+    switch (action.type) {
+        case ActionType::MOVE: {
+            const MoveAction& move = std::get<MoveAction>(action.data);
+            int32_t x = htonl(move.x);
+            int32_t y = htonl(move.y);
+            buffer.insert(buffer.end(),
+                          reinterpret_cast<uint8_t*>(&x),
+                          reinterpret_cast<uint8_t*>(&x) + sizeof(x));
+            buffer.insert(buffer.end(),
+                          reinterpret_cast<uint8_t*>(&y),
+                          reinterpret_cast<uint8_t*>(&y) + sizeof(y));
+            break;
+        }
+        case ActionType::POINT_TO: {
+            const PointAction& point = std::get<PointAction>(action.data);
+            // Convert float to bytes
+            static_assert(sizeof(float) == 4, "Unexpected float size");
+            uint32_t fbits;
+            std::memcpy(&fbits, &point.value, sizeof(float));
+            fbits = htonl(fbits);
+            buffer.insert(buffer.end(),
+                          reinterpret_cast<uint8_t*>(&fbits),
+                          reinterpret_cast<uint8_t*>(&fbits) + sizeof(fbits));
+            break;
+        }
+        default:
+            throw std::runtime_error("Unsupported ActionType in send_accion");
+    }
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
         throw std::runtime_error("Error sending ACCION message");
@@ -320,9 +349,38 @@ Message Protocol::recv_message() {
         // si no funciona usar:
         // message.name = std::string(name.begin(), name.end());
     } else if (message.type == Type::ACTION) {
-        if (skt.recvall(&message.action, sizeof(message.action)) == 0) {
-            throw std::runtime_error("Error receiving action");
+        uint8_t action_type;
+        if (skt.recvall(&action_type, sizeof(action_type)) == 0) {
+            throw std::runtime_error("Error receiving action type");
         }
+
+        Action action;
+        action.type = static_cast<ActionType>(action_type);
+
+        if (action.type == ActionType::MOVE) {
+            int32_t x, y;
+            if (skt.recvall(&x, sizeof(x)) == 0 || skt.recvall(&y, sizeof(y)) == 0) {
+                throw std::runtime_error("Error receiving MOVE parameters");
+            }
+            x = ntohl(x);
+            y = ntohl(y);
+            action.data = MoveAction{x, y};
+
+        } else if (action.type == ActionType::POINT_TO) {
+            uint32_t fbits;
+            if (skt.recvall(&fbits, sizeof(fbits)) == 0) {
+                throw std::runtime_error("Error receiving POINT parameter");
+            }
+            fbits = ntohl(fbits);
+            float value;
+            std::memcpy(&value, &fbits, sizeof(float));
+            action.data = PointAction{value};
+
+        } else {
+            throw std::runtime_error("Unknown ActionType received");
+        }
+
+        message.action = std::move(action);
     } else if (message.type == Type::LIST || message.type == Type::LEAVE) {
         // No hay datos adicionales para LIST ni LEAVE 
     } else {

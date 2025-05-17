@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <variant>
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -17,14 +18,6 @@ enum Type {
     STATE_LOBBY,
 };
 
-// Acciones posibles del jugador
-enum Action {
-    MOVE_LEFT,
-    MOVE_RIGHT,
-    MOVE_UP,
-    MOVE_DOWN
-};
-
 // Tipos de entidades del juego
 enum EntityType {
     PLAYER
@@ -36,6 +29,28 @@ struct Entity {
     uint id;
     float x;
     float y;
+};
+
+// Acciones posibles del jugador
+enum class ActionType {
+    MOVE,
+    POINT_TO
+};
+
+struct MoveAction {
+    int x;
+    int y;
+};
+
+struct PointAction {
+    float value;
+};
+
+using ActionData = std::variant<MoveAction, PointAction>;
+
+struct Action {
+    ActionType type;
+    ActionData data;
 };
 
 // Mensaje enviado por el cliente al servidor
