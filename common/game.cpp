@@ -38,7 +38,7 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
   for (const auto &player : players) {
     Entity entity;
     entity.type = PLAYER;
-    entity.id = player.getName();
+    entity.name = player.getName();
     entity.x = player.getX();
     entity.y = player.getY();
     state.push_back(entity);

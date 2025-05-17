@@ -3,8 +3,8 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -18,27 +18,23 @@ enum Type {
   STATE_LOBBY,
 };
 
-enum class ActionType {
-    MOVE,
-    POINT_TO,
-    SHOOT
-};
+enum class ActionType { MOVE, POINT_TO, SHOOT };
 
 struct MoveAction {
-    int x;
-    int y;
-    float deltaTime;
+  int x;
+  int y;
+  float deltaTime;
 };
 
 struct PointToAction {
-    float value;
+  float value;
 };
 
 using ActionData = std::variant<MoveAction, PointToAction>;
 
 struct Action {
-    ActionType type;
-    ActionData data;
+  ActionType type;
+  ActionData data;
 };
 
 // Tipos de entidades del juego
@@ -47,7 +43,7 @@ enum EntityType { PLAYER };
 // Representación de una entidad en el mundo del juego
 struct Entity {
   EntityType type;
-  uint id;
+  std::string id;
   float x;
   float y;
 };
