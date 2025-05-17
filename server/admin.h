@@ -11,7 +11,7 @@
 
 class ClientHandler;
 class Lobby;
-
+class GameLoop;
 
 class Admin {
 public:
@@ -24,12 +24,12 @@ public:
     std::vector<std::string> listLobbies();
     void removeLobby(const std::string& name);
 
-    void createHandler(const std::string& clientName, Protocol&& protocol);
-    void startHandler(const std::string& clientName);
+    void registerHandler(const std::string& clientName, std::shared_ptr<ClientHandler> handler);
+    void startHandler(std::shared_ptr<ClientHandler> handler);
     void removeHandler(const std::string& clientName);
 
-    void startGame(const std::string& name, std::map<std::string, Protocol>& players);
-    void endGame(const std::string& name, std::map<std::string, Protocol>& players);
+    void startGame(const std::string& name, std::map<std::string, Protocol>&& players);
+    void endGame(const std::string& name, std::map<std::string, Protocol>&& players);
 private:
     std::mutex mtx;
     std::map<std::string, std::shared_ptr<Lobby>> lobbies;

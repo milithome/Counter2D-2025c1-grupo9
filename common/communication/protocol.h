@@ -8,7 +8,7 @@
 #include <cstring>
 #include <mutex>
 #include "socket.h"
-#include "structures.h"
+#include "../structures.h"
 
 class Protocol {
 public:
@@ -20,10 +20,11 @@ public:
     bool has_data(int timeout_ms = 0) const;
 
     // Metodos para enviar mensajes (cliente)
+    void send_name(const std::string& name);
     void send_create(const std::string& name);
     void send_join(const std::string& name);
     void send_list();
-    void send_accion(Action action);
+    void send_action(const Action& action);
     void send_leave_lobby();
 
     // Metodos para enviar mensajes (servidor)
@@ -35,6 +36,7 @@ public:
     void send_response(const Response& response);
 
     // Metodos para recibir mensajes (cliente)
+    std::string recv_name();
     void recv_initial_data();
     std::vector<Entity> recv_state();
     std::vector<std::string> recv_state_lobby();

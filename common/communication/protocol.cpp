@@ -18,6 +18,21 @@ bool Protocol::has_data(int timeout_ms) const {
     return skt.has_data(timeout_ms);
 }
 
+void Protocol::send_name(const std::string& name) {
+    std::vector<uint8_t> buffer;
+    buffer.push_back(Type::NAME);
+
+    uint16_t size = htons(name.size());
+    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+
+    buffer.insert(buffer.end(), name.begin(), name.end());
+
+    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
+        throw std::runtime_error("Error sending name");
+    }
+}
+
 void Protocol::send_create(const std::string& name) {
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::CREATE);
@@ -55,11 +70,46 @@ void Protocol::send_list() {
     }
 }
 
-void Protocol::send_accion(Action action) {
+void Protocol::send_action(const Action& action) {
     std::vector<uint8_t> buffer;
 
     buffer.push_back(Type::ACTION);
-    buffer.push_back(static_cast<uint8_t>(action));
+    buffer.push_back(static_cast<uint8_t>(action.type));
+
+    switch (action.type) {
+        case ActionType::MOVE: {
+            const MoveAction& move = std::get<MoveAction>(action.data);
+            int32_t x = htonl(move.x);
+            int32_t y = htonl(move.y);
+            uint32_t delta_bits;
+            std::memcpy(&delta_bits, &move.deltaTime, sizeof(float));
+            delta_bits = htonl(delta_bits);
+            buffer.insert(buffer.end(),
+                        reinterpret_cast<uint8_t*>(&x),
+                        reinterpret_cast<uint8_t*>(&x) + sizeof(x));
+            buffer.insert(buffer.end(),
+                        reinterpret_cast<uint8_t*>(&y),
+                        reinterpret_cast<uint8_t*>(&y) + sizeof(y));
+            buffer.insert(buffer.end(),
+                        reinterpret_cast<uint8_t*>(&delta_bits),
+                        reinterpret_cast<uint8_t*>(&delta_bits) + sizeof(delta_bits));
+            break;
+        }
+        case ActionType::POINT_TO: {
+            const PointToAction& point = std::get<PointToAction>(action.data);
+            // Convert float to bytes
+            static_assert(sizeof(float) == 4, "Unexpected float size");
+            uint32_t fbits;
+            std::memcpy(&fbits, &point.value, sizeof(float));
+            fbits = htonl(fbits);
+            buffer.insert(buffer.end(),
+                          reinterpret_cast<uint8_t*>(&fbits),
+                          reinterpret_cast<uint8_t*>(&fbits) + sizeof(fbits));
+            break;
+        }
+        default:
+            throw std::runtime_error("Unsupported ActionType in send_accion");
+    }
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
         throw std::runtime_error("Error sending ACCION message");
@@ -95,9 +145,10 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
     for (const auto& entity : entities) {
         buffer.push_back(static_cast<uint8_t>(entity.type));
 
-        uint32_t id_net = htonl(entity.id);
-        uint8_t* id_ptr = reinterpret_cast<uint8_t*>(&id_net);
-        buffer.insert(buffer.end(), id_ptr, id_ptr + sizeof(uint32_t));
+        uint16_t name_len = htons(entity.name.size());
+        buffer.push_back(reinterpret_cast<uint8_t*>(&name_len)[0]);
+        buffer.push_back(reinterpret_cast<uint8_t*>(&name_len)[1]);
+        buffer.insert(buffer.end(), entity.name.begin(), entity.name.end());
 
         uint32_t x_net, y_net;
         std::memcpy(&x_net, &entity.x, sizeof(float));
@@ -162,6 +213,30 @@ void Protocol::send_response(const Response& response) {
     }
 }
 
+std::string Protocol::recv_name() {
+    uint8_t type;
+    if (skt.recvall(&type, sizeof(type)) == 0) {
+        throw std::runtime_error("Error receiving name type");
+    }
+
+    if (type != Type::NAME) {
+        throw std::runtime_error("Invalid message type, expected NAME");
+    }
+
+    uint16_t size_net;
+    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
+        throw std::runtime_error("Error receiving name size");
+    }
+    uint16_t size = ntohs(size_net);
+
+    std::vector<char> name(size);
+    if (skt.recvall(name.data(), size) == 0) {
+        throw std::runtime_error("Error receiving name data");
+    }
+
+    return std::string(name.begin(), name.end());
+}
+
 void Protocol::recv_initial_data() {
     uint8_t type;
     if (skt.recvall(&type, sizeof(type)) == 0) {
@@ -199,11 +274,16 @@ std::vector<Entity> Protocol::recv_state() {
         }
         entities[i].type = static_cast<EntityType>(entity_type);
 
-        uint32_t id;
-        if (skt.recvall(&id, sizeof(id)) == 0) {
-            throw std::runtime_error("Error receiving entity ID");
+        uint16_t name_len;
+        if (skt.recvall(&name_len, sizeof(name_len)) == 0) {
+            throw std::runtime_error("Error receiving entity name size");
         }
-        entities[i].id = ntohl(id);
+        name_len = ntohs(name_len);
+        std::vector<uint8_t> name_buf(name_len);
+        if (skt.recvall(name_buf.data(), name_len) == 0) {
+            throw std::runtime_error("Error receiving entity name");
+        }
+        entities[i].name.assign(name_buf.begin(), name_buf.end());
 
         uint32_t x_net, y_net;
         if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0) {
@@ -324,9 +404,46 @@ Message Protocol::recv_message() {
         // si no funciona usar:
         // message.name = std::string(name.begin(), name.end());
     } else if (message.type == Type::ACTION) {
-        if (skt.recvall(&message.action, sizeof(message.action)) == 0) {
-            throw std::runtime_error("Error receiving action");
+        uint8_t action_type;
+        if (skt.recvall(&action_type, sizeof(action_type)) == 0) {
+            throw std::runtime_error("Error receiving action type");
         }
+
+        Action action;
+        action.type = static_cast<ActionType>(action_type);
+
+        if (action.type == ActionType::MOVE) {
+            int32_t x, y;
+            uint32_t delta_bits;
+            if (skt.recvall(&x, sizeof(x)) == 0 || 
+                skt.recvall(&y, sizeof(y)) == 0 ||
+                skt.recvall(&delta_bits, sizeof(delta_bits))) {
+                throw std::runtime_error("Error receiving MOVE parameters");
+            }
+            x = ntohl(x);
+            y = ntohl(y);
+            delta_bits = ntohl(delta_bits);
+
+            float deltaTime;
+            std::memcpy(&deltaTime, &delta_bits, sizeof(float));
+
+            action.data = MoveAction{x, y, deltaTime};
+
+        } else if (action.type == ActionType::POINT_TO) {
+            uint32_t fbits;
+            if (skt.recvall(&fbits, sizeof(fbits)) == 0) {
+                throw std::runtime_error("Error receiving POINT parameter");
+            }
+            fbits = ntohl(fbits);
+            float value;
+            std::memcpy(&value, &fbits, sizeof(float));
+            action.data = PointToAction{value};
+
+        } else {
+            throw std::runtime_error("Unknown ActionType received");
+        }
+
+        message.action = std::move(action);
     } else if (message.type == Type::LIST || message.type == Type::LEAVE) {
         // No hay datos adicionales para LIST ni LEAVE 
     } else {

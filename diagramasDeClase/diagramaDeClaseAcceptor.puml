@@ -1,0 +1,54 @@
+@startuml DiagramaDeClaseDelAcceptor
+
+class Acceptor { 
+  - active : atomic_bool
+  + Acceptor(port : const std::string&, admin : Admin&)
+  + run() : void
+  + stop() : void
+}
+
+class Admin {
+  - mtx : mutex
+  - lobbies : map<string, shared_ptr<Lobby>>
+  - games : std::map<std::string, std::shared_ptr<GameLoop>>
+  - handlers : std::map<std::string, std::shared_ptr<ClientHandler>>
+
+  + startGame(name : const std::string&) : void
+  + createLobby(name : const std::string&) : void
+  + joinLobby(name : const std::string&, clientName : const std::string&, protocol : Protocol&&) : void
+  + leaveLobby(name : const std::string&, clientName : const std::string&) : void
+  + listLobbies() : std::vector<std::string>
+  + removeLobby(name : const std::string&) : void
+  + createHandler(clientName : const std::string&, protocol : Protocol&&) : void
+  + startHandler(clientName : const std::string&) : void
+  + removeHandler(clientName : const std::string&) : void
+}
+class Socket {
+  - skt : int
+  - closed : bool
+  - stream_status : int
+
+  + Socket(hostname : const char*, servname : const char*)
+  + Socket(servname : const char*)
+  + Socket(Socket&&)
+  + operator=(Socket&&) : Socket&
+  + has_data(timeout_ms : int = 0) : bool
+  + sendsome(data : const void*, sz : unsigned int) : int
+  + recvsome(data : void*, sz : unsigned int) : int
+  + sendall(data : const void*, sz : unsigned int) : int
+  + recvall(data : void*, sz : unsigned int) : int
+  + accept() : Socket
+  + shutdown(how : int) : void
+  + is_stream_send_closed() : bool
+  + is_stream_recv_closed() : bool
+  + close() : int
+  + ~Socket()
+
+  - chk_skt_or_fail() : void
+  - Socket(skt : int)
+}
+
+Acceptor --> Admin
+Acceptor *-- Socket
+
+@enduml

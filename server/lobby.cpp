@@ -36,7 +36,7 @@ Lobby::Lobby(const std::string& name, Admin& admin)
                 pair.second->join();
             }
 
-            admin.startGame(name,players);
+            admin.startGame(name,std::move(players));
 
         } catch (const std::exception& e) {
             std::cerr << "Exception in Lobby::run: " << e.what() << std::endl;

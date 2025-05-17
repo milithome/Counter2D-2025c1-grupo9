@@ -9,7 +9,7 @@
 
 class ClientHandler : public Thread {
 public:
-    explicit ClientHandler(Protocol protocol, std::string clientName, Admin& admin);
+    explicit ClientHandler(Protocol protocol, std::string& clientName, Admin& admin);
 
     void run() override;
 
