@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../common/protocol.h"
-#include "../common/socket.h"
+#include "../common/communication/protocol.h"
+#include "../common/communication/socket.h"
 
 
 TEST(ProtocolIntegrationTest, SendAndReceiveCreateMessage) {
