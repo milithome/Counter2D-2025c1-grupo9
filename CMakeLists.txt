@@ -50,18 +50,21 @@ target_include_directories(taller_common PUBLIC .)
 #
 # sudo apt-get install libopus-dev libopusfile-dev libxmp-dev libfluidsynth-dev fluidsynth libwavpack1 libwavpack-dev libfreetype-dev wavpack
 #
+# Tambien:
+# sudo apt install -y libfontconfig1-dev libfreetype6-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxkbcommon-dev libxkbcommon-x11-dev
+
+
+
+
+
+
+
+# Para generar compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 # Install libSDL2 and libSDL2pp (for client or editor)
 # HEY!! TODO XXX: add more dependendies (either for client, server or editor)
-
-
-# Modo debug
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-# set(CMAKE_PREFIX_PATH ${Qt6_DIR})
-list(APPEND CMAKE_PREFIX_PATH ${Qt6_DIR})
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 if(TALLER_CLIENT OR TALLER_EDITOR)
     include(FetchContent)
     FetchContent_Declare(
@@ -109,9 +112,8 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         OVERRIDE_FIND_PACKAGE
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
-    # unset(Qt6_FEATURE_rpath CACHE)
+
     find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
-    # qt_standard_project_setup()
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
@@ -123,13 +125,13 @@ endif()
 # Program section
 # ---------------
 if(TALLER_CLIENT)
-    # HEY!! TODO XXX: Change the name of the executable to the one you like!
-    #add_executable(taller_client)
     file(GLOB_RECURSE SOURCES
         client/*.cpp
         client/views/*.cpp
         client/controllers/*.cpp
     )
+    # HEY!! TODO XXX: Change the name of the executable to the one you like!
+    #add_executable(taller_client)
     add_executable(taller_client ${SOURCES})
 
     # Make them depend on taller_common lib
