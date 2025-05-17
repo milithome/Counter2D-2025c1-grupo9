@@ -1,6 +1,6 @@
 #include "clientHandler.h"
 
-ClientHandler::ClientHandler(Protocol protocol, std::string clientName, Admin& admin) : 
+ClientHandler::ClientHandler(Protocol protocol, std::string& clientName, Admin& admin) : 
     protocol(std::move(protocol)), clientName(clientName), active(true), admin(admin) {}
 
 ClientHandler::~ClientHandler() {
