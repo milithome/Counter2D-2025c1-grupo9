@@ -20,6 +20,7 @@ public:
     bool has_data(int timeout_ms = 0) const;
 
     // Metodos para enviar mensajes (cliente)
+    void send_name(const std::string& name);
     void send_create(const std::string& name);
     void send_join(const std::string& name);
     void send_list();
@@ -35,6 +36,7 @@ public:
     void send_response(const Response& response);
 
     // Metodos para recibir mensajes (cliente)
+    std::string recv_name();
     void recv_initial_data();
     std::vector<Entity> recv_state();
     std::vector<std::string> recv_state_lobby();

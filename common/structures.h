@@ -15,6 +15,7 @@ enum Type {
     INITIAL_DATA,
     STATE,
     STATE_LOBBY,
+    NAME    
 };
 
 // Acciones posibles del jugador
@@ -40,7 +41,7 @@ enum EntityType {
 // Representación de una entidad en el mundo del juego
 struct Entity {
     EntityType type;
-    uint id;
+    std::string name;
     float x;
     float y;
 };
