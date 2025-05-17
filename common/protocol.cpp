@@ -54,7 +54,7 @@ void Protocol::send_list() {
     }
 }
 
-void Protocol::send_accion(const Action& action) {
+void Protocol::send_action(const Action& action) {
     std::vector<uint8_t> buffer;
 
     buffer.push_back(Type::ACTION);
@@ -65,16 +65,22 @@ void Protocol::send_accion(const Action& action) {
             const MoveAction& move = std::get<MoveAction>(action.data);
             int32_t x = htonl(move.x);
             int32_t y = htonl(move.y);
+            uint32_t delta_bits;
+            std::memcpy(&delta_bits, &move.deltaTime, sizeof(float));
+            delta_bits = htonl(delta_bits);
             buffer.insert(buffer.end(),
-                          reinterpret_cast<uint8_t*>(&x),
-                          reinterpret_cast<uint8_t*>(&x) + sizeof(x));
+                        reinterpret_cast<uint8_t*>(&x),
+                        reinterpret_cast<uint8_t*>(&x) + sizeof(x));
             buffer.insert(buffer.end(),
-                          reinterpret_cast<uint8_t*>(&y),
-                          reinterpret_cast<uint8_t*>(&y) + sizeof(y));
+                        reinterpret_cast<uint8_t*>(&y),
+                        reinterpret_cast<uint8_t*>(&y) + sizeof(y));
+            buffer.insert(buffer.end(),
+                        reinterpret_cast<uint8_t*>(&delta_bits),
+                        reinterpret_cast<uint8_t*>(&delta_bits) + sizeof(delta_bits));
             break;
         }
         case ActionType::POINT_TO: {
-            const PointAction& point = std::get<PointAction>(action.data);
+            const PointToAction& point = std::get<PointToAction>(action.data);
             // Convert float to bytes
             static_assert(sizeof(float) == 4, "Unexpected float size");
             uint32_t fbits;
@@ -359,12 +365,20 @@ Message Protocol::recv_message() {
 
         if (action.type == ActionType::MOVE) {
             int32_t x, y;
-            if (skt.recvall(&x, sizeof(x)) == 0 || skt.recvall(&y, sizeof(y)) == 0) {
+            uint32_t delta_bits;
+            if (skt.recvall(&x, sizeof(x)) == 0 || 
+                skt.recvall(&y, sizeof(y)) == 0 ||
+                skt.recvall(&delta_bits, sizeof(delta_bits))) {
                 throw std::runtime_error("Error receiving MOVE parameters");
             }
             x = ntohl(x);
             y = ntohl(y);
-            action.data = MoveAction{x, y};
+            delta_bits = ntohl(delta_bits);
+
+            float deltaTime;
+            std::memcpy(&deltaTime, &delta_bits, sizeof(float));
+
+            action.data = MoveAction{x, y, deltaTime};
 
         } else if (action.type == ActionType::POINT_TO) {
             uint32_t fbits;
@@ -374,7 +388,7 @@ Message Protocol::recv_message() {
             fbits = ntohl(fbits);
             float value;
             std::memcpy(&value, &fbits, sizeof(float));
-            action.data = PointAction{value};
+            action.data = PointToAction{value};
 
         } else {
             throw std::runtime_error("Unknown ActionType received");

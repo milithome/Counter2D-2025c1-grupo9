@@ -40,13 +40,14 @@ enum class ActionType {
 struct MoveAction {
     int x;
     int y;
+    float deltaTime;
 };
 
-struct PointAction {
+struct PointToAction {
     float value;
 };
 
-using ActionData = std::variant<MoveAction, PointAction>;
+using ActionData = std::variant<MoveAction, PointToAction>;
 
 struct Action {
     ActionType type;
