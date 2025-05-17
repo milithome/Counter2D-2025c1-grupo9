@@ -30,6 +30,7 @@ struct Entity {
     std::string name;
     float x;
     float y;
+    float rotation;
 };
 
 // Acciones posibles del jugador

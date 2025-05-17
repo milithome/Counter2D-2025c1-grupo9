@@ -1,17 +1,15 @@
 target_sources(taller_common
     PRIVATE
     # .cpp files
-    communication/liberror.cpp
-    communication/protocol.cpp
-    communication/resolver.cpp
-    communication/resolvererror.cpp
-    communication/socket.cpp
+    game.cpp
+    player.cpp
+    team.cpp
+    weapon.cpp
     PUBLIC
     # .h files
-    communication/liberror.h
-    communication/protocol.h
-    communication/resolver.h
-    communication/resolvererror.h
-    communication/socket.h
     structures.h
+    game.h
+    player.h
+    team.h
+    weapon.h
     )

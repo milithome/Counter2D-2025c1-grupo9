@@ -31,6 +31,7 @@ add_library(taller_common STATIC)
 # add the source files that make the lib
 # HEY!! TODO XXX: add more subfolders here
 add_subdirectory(common/)
+add_subdirectory(common/communication)
 
 
 # set compiler warnings to the targets
@@ -52,6 +53,14 @@ target_include_directories(taller_common PUBLIC .)
 
 # Install libSDL2 and libSDL2pp (for client or editor)
 # HEY!! TODO XXX: add more dependendies (either for client, server or editor)
+
+
+# Modo debug
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+# set(CMAKE_PREFIX_PATH ${Qt6_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${Qt6_DIR})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(TALLER_CLIENT OR TALLER_EDITOR)
     include(FetchContent)
@@ -91,25 +100,40 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         OVERRIDE_FIND_PACKAGE
     )
 
+    set(SDL2PP_WITH_IMAGE ON CACHE BOOL "" FORCE)
+    set(SDL2PP_WITH_TTF ON CACHE BOOL "" FORCE)
+    set(SDL2PP_WITH_MIXER ON CACHE BOOL "" FORCE)
+
     FetchContent_Declare(
         libSDL2pp
         OVERRIDE_FIND_PACKAGE
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
-    
+    # unset(Qt6_FEATURE_rpath CACHE)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+    # qt_standard_project_setup()
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
+
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
-
 endif()
 
 # Program section
 # ---------------
 if(TALLER_CLIENT)
     # HEY!! TODO XXX: Change the name of the executable to the one you like!
-    add_executable(taller_client)
+    #add_executable(taller_client)
+    file(GLOB_RECURSE SOURCES
+        client/*.cpp
+        client/views/*.cpp
+        client/controllers/*.cpp
+    )
+    add_executable(taller_client ${SOURCES})
 
     # Make them depend on taller_common lib
-    add_dependencies(taller_client taller_common SDL2pp::SDL2pp)
+    add_dependencies(taller_client taller_common SDL2pp::SDL2pp Qt6::Core Qt6::Gui Qt6::Widgets)
 
     # Add source files and enable warnings
     # HEY!! TODO XXX: add more subfolders here
@@ -123,7 +147,12 @@ if(TALLER_CLIENT)
     target_include_directories(taller_client PRIVATE ${libSDL2pp_SOURCE_DIR})
 
     # Link the taller_common lib target
-    target_link_libraries(taller_client taller_common SDL2pp::SDL2pp)
+    target_link_libraries(taller_client
+        PRIVATE
+            taller_common
+            SDL2pp::SDL2pp
+            Qt6::Widgets
+    )
 endif()
 
 if(TALLER_SERVER)
