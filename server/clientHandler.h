@@ -26,8 +26,9 @@ private:
     std::function<void(std::string, std::shared_ptr<ClientHandler>)> onRegister;
 
     void handle_create(const std::string& name);
-    bool handle_join(const std::string& name);
+    void handle_join(const std::string& name);
     void handle_list();
+    void handle_game(const std::string& name);
 };
 
 #endif

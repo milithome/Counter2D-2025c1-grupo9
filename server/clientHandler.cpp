@@ -36,9 +36,10 @@ void ClientHandler::run() {
             switch (message.type) {
                 case Type::CREATE:
                     handle_create(message.name);
+                    handle_join(message.name);
                     break;
                 case Type::JOIN:
-                    active = !handle_join(message.name);
+                    handle_join(message.name);
                     break;
                 case Type::LIST:
                     handle_list();
@@ -58,40 +59,122 @@ void ClientHandler::handle_create(const std::string& name) {
     try {
         admin.createLobby(name);
     } catch (const std::exception& e) {
-        std::cerr << "Error creating lobby: " << e.what() << std::endl;
+        std::cerr << "Error in create lobby" << std::endl;
+    }
+}
+
+void ClientHandler::handle_join(const std::string& name) {
+    try {
+        LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
         Response response = {
-            Type::CREATE,
+            Type::JOIN,
             0,
             {},
             {},
-            1, // error
-            "Error creating lobby"
+            0, // exito
+            ""
         };
         protocol.send_response(response);
-        std::cout << "Lobby creation failed" << std::endl;
-        return;
+
+        Queue<LobbyEvent>& toLobby  = *queues.toLobby;
+        Queue<LobbyEvent>& fromLobby = *queues.fromLobby;
+
+
+        bool inLobby = true;
+        while (inLobby) {
+            if (protocol.has_data()) {
+                Message msg = protocol.recv_message();
+                if (msg.type == Type::LEAVE) {
+                    std::cout << "Player " << clientName << " sent LEAVE." << std::endl;
+                    toLobby.push({LobbyEventType::LEAVE, clientName});
+                    inLobby = false;
+                    continue;
+                }
+            }
+
+            LobbyEvent event;
+            Response response;
+            if (fromLobby.try_pop(event)) {
+                switch (event.type) {
+                    case LobbyEventType::START:
+                        response = {
+                            Type::START,
+                            0, {}, {}, 0, "Game started"
+                        };
+                        protocol.send_response(response);
+                        inLobby = false;
+                        handle_game(name);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error in lobby: " << e.what() << std::endl;
     }
-    Response response = {
-        Type::CREATE,
-        0,
-        {},
-        {},
-        0, // exito
-        ""
-    };
-    protocol.send_response(response);
-    std::cout << "Lobby created successfully" << std::endl;
 }
 
-bool ClientHandler::handle_join(const std::string& name) {
+void ClientHandler::handle_game(const std::string& name){
     try {
-        admin.joinLobby(name, clientName, std::move(protocol));
+        GameChannels queues = admin.joinGame(name, clientName, protocol);
+        Response response = {
+            Type::JOIN,
+            0,
+            {},
+            {},
+            0, // exito
+            ""
+        };
+        protocol.send_response(response);
+        Queue<ActionEvent>& toGame  = *queues.toGame;
+        Queue<ActionEvent>& fromGame = *queues.fromGame;
+
+
+        bool inGame = true;
+        while (inGame) {
+            if (protocol.has_data()) {
+                Message msg = protocol.recv_message();
+
+                if (msg.type == Type::LEAVE) {
+                    std::cout << "Player " << clientName << " left the game." << std::endl;
+                    inGame = false;
+                    break;
+                }
+
+                if (msg.type == Type::ACTION) {
+                    ActionEvent event;
+                    event.action = msg.action;
+                    event.playerName = clientName;
+                    toGame.push(std::move(event));
+                }
+            }
+
+            ActionEvent outgoingEvent;
+            if (fromGame.try_pop(outgoingEvent)) {
+                switch (outgoingEvent.action.type) {
+                    case ActionType::FINISH:
+                        response = {
+                            Type::FINISH,
+                            0, {}, {}, 0, "Game started"
+                        };
+                        protocol.send_response(response);
+                        inGame = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
     } catch (const std::exception& e) {
-        std::cerr << "Error joining lobby: " << e.what() << std::endl;
-        return false;
+        std::cerr << "Exception in GameReceiver::run for " << clientName << ": " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown exception in GameReceiver::run for " << clientName << std::endl;
     }
-    
-    return true;
 }
 
 void ClientHandler::handle_list() {

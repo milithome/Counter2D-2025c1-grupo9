@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 #include "../common/communication/protocol.h"
 #include "../common/communication/socket.h"
+#include <thread>
 
 
 TEST(ProtocolIntegrationTest, SendAndReceiveCreateMessage) {
-    Socket listening_socket("12345");
+    Socket listening_socket("12346");
 
-    Socket client_socket("localhost", "12345");
+    Socket client_socket("localhost", "12346");
 
     Socket server_socket = listening_socket.accept();
 
@@ -25,9 +26,9 @@ TEST(ProtocolIntegrationTest, SendAndReceiveCreateMessage) {
 }
 
 TEST(ProtocolIntegrationTest, SendAndReceiveJoinMessage) {
-    Socket listening_socket("12345");
+    Socket listening_socket("12346");
 
-    Socket client_socket("localhost", "12345");
+    Socket client_socket("localhost", "12346");
 
     Socket server_socket = listening_socket.accept();
 
@@ -53,9 +54,9 @@ TEST(ProtocolIntegrationTest, SendAndReceiveJoinMessage) {
 }
 
 TEST(ProtocolIntegrationTest, SendAndReceiveListMessage) {
-    Socket listening_socket("12345");
+    Socket listening_socket("12346");
 
-    Socket client_socket("localhost", "12345");
+    Socket client_socket("localhost", "12346");
 
     Socket server_socket = listening_socket.accept();
 
@@ -93,3 +94,45 @@ TEST(ProtocolIntegrationTest, SendAndReceiveListMessage) {
     EXPECT_EQ(response.partidas[0], "Partida1");
 }
 
+TEST(ProtocolIntegrationTest, CreateAndJoinGameBetweenTwoClients) {
+    const char* port = "12345";
+
+    std::thread client_thread1([port]() {
+        Socket client_socket("localhost", port);
+        Protocol client_protocol(std::move(client_socket));
+        client_protocol.send_name("aaa");
+
+        std::string game_name = "PartidaTest";
+        client_protocol.send_create(game_name);
+        Response response = client_protocol.recv_response();
+        EXPECT_EQ(response.type, Type::JOIN);
+
+        auto players = client_protocol.recv_state_lobby();
+        EXPECT_EQ(players.size(), 1);
+
+        players = client_protocol.recv_state_lobby();
+        EXPECT_EQ(players.size(), 2);
+    });
+
+
+    std::thread client_thread2([port]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        Socket client_socket("localhost", port);
+        Protocol client_protocol(std::move(client_socket));
+        client_protocol.send_name("bbb");
+
+        std::string game_name = "PartidaTest";
+        client_protocol.send_join(game_name);
+
+        Response response = client_protocol.recv_response();
+        EXPECT_EQ(response.type, Type::JOIN);
+
+        auto players = client_protocol.recv_state_lobby();
+        EXPECT_EQ(players.size(), 2);
+    });
+
+
+    client_thread1.join();
+    client_thread2.join();
+}

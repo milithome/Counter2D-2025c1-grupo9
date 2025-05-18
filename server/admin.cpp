@@ -35,14 +35,14 @@ void Admin::createLobby(const std::string& name) {
     lobbies[name]->start();
 }
 
-void Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol&& protocol) {
+LobbyChannels Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = lobbies.find(name);
     if (it == lobbies.end()) {
         throw std::runtime_error("Lobby not found");
     }
     
-    it->second->add_player(std::move(protocol), clientName);
+    return it->second->add_player(protocol, clientName);
 }
 
 std::vector<std::string> Admin::listLobbies() {
@@ -75,31 +75,31 @@ void Admin::removeHandler(const std::string& clientName) {
     }
 }
 
-void Admin::startGame(const std::string& name, std::map<std::string, Protocol>&& players) {
+void Admin::startGame(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = lobbies.find(name);
     if (it != lobbies.end()) {
-        games[name] = std::make_shared<GameLoop>(name, *this, std::move(players));
+        games[name] = std::make_shared<GameLoop>(name, *this);
         games[name]->start();
     }
 }
 
-void Admin::endGame(const std::string& name, std::map<std::string, Protocol>&& players) {
+GameChannels Admin::joinGame(const std::string& gameName, const std::string& clientName, Protocol& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
+    auto it = games.find(gameName);
+    if (it == games.end()) {
+        throw std::runtime_error("Game not found");
+    }
 
+    return it->second->add_player(protocol, clientName);
+}
+
+void Admin::endGame(const std::string& name) {
+    std::lock_guard<std::mutex> lock(mtx);
     auto gameIt = games.find(name);
     if (gameIt != games.end()) {
         gameIt->second->stop();
         gameIt->second->join();
         games.erase(gameIt);
-    }
-
-    for (auto& pair : players) {
-        const std::string& playerName = pair.first;
-        Protocol& protocol = pair.second;
-
-        // CAMBIARA PROXIMAMENTE
-        auto handler = std::make_shared<ClientHandler>(std::move(protocol), playerName, *this);
-        handler->start();
     }
 }

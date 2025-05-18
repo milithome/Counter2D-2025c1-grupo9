@@ -1,38 +1,26 @@
 #include "gameLoop.h"
 #include "admin.h"
 
-GameLoop::GameLoop(std::string name, Admin& admin, std::map<std::string, Protocol>&& players)
-    : name(name), admin(admin), players(std::move(players)), eventQueue(500) , active(true) {
-        for (std::pair<const std::string, Protocol>& pair : this->players) {
-            const std::string& name = pair.first;
-            Protocol& protocol = pair.second;
-        
-            auto receiver = std::make_shared<GameReceiver>(protocol, name, eventQueue);
-            handlers.emplace(name, std::move(receiver));
-        }
-    }
+GameLoop::GameLoop(std::string name, Admin& admin)
+    : name(name), admin(admin), toGame(100), fromPlayers(), active(true), game(10,10) {}
 
 void GameLoop::run() {
     try {
-        Game game = Game(10,10);
-
         std::cout << "GameLoop started" << std::endl;
-        uint count = 0;
-        for (std::pair<const std::string, std::shared_ptr<GameReceiver>>& pair : handlers) {
-            pair.second->start();
-            game.addPlayer(pair.first,count);
-            count++;
-        }
 
         const std::chrono::milliseconds TICK_DURATION(100);
         const uint MAX_EVENTS_PER_CLICK = 20;
+
+        while(players.size() < 4){
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
 
         while (active) {
             auto start_time = std::chrono::steady_clock::now();
             
             uint processedCounter = 0;
             ActionEvent event;
-            while(processedCounter < MAX_EVENTS_PER_CLICK && eventQueue.try_pop(event)) {
+            while(processedCounter < MAX_EVENTS_PER_CLICK && toGame.try_pop(event)) {
                 game.execute(event.playerName, event.action);
                 processedCounter++;
             }
@@ -49,25 +37,38 @@ void GameLoop::run() {
 
             game.stop(); // BORRAR EN ALGUN MOMENTO
 
-            if (game.isRunning()) {
+            if (!game.isRunning()) {
                 active = false;
             }
         }
 
-        for (auto& pair : handlers) {
-            pair.second->stop();
+        admin.endGame(name);
+        for (auto& [name, queue] : fromPlayers) {
+            ActionEvent event = {
+                { ActionType::FINISH, std::monostate{} },
+                name
+            };
+            queue.push(event);
         }
-        for (auto& pair : handlers) {
-            pair.second->join();
-        }
-
-        admin.endGame(name,std::move(players));
 
     } catch (const std::exception& e) {
         std::cerr << "Exception in GameLoop::run: " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in GameLoop::run" << std::endl;
     }
+}
+
+GameChannels GameLoop::add_player(Protocol& player, const std::string& name) {
+    auto toGame = std::make_unique<Queue<LobbyEvent>>();
+    auto fromGame = std::make_unique<Queue<LobbyEvent>>();
+
+    players.emplace(name, player);
+    game.addPlayer(name,0);
+
+    return GameChannels{
+        std::make_unique<Queue<ActionEvent>>(100),
+        std::make_unique<Queue<ActionEvent>>(100)
+    };
 }
 
 void GameLoop::broadcast_game_state(std::vector<Entity>& entities) {

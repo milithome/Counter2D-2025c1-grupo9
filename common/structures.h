@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include <variant>
+#include "../server/queue.h"
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -16,7 +17,9 @@ enum Type {
     INITIAL_DATA,
     STATE,
     STATE_LOBBY,
-    NAME    
+    NAME,
+    START,
+    FINISH
 };
 
 // Tipos de entidades del juego
@@ -36,7 +39,8 @@ struct Entity {
 // Acciones posibles del jugador
 enum class ActionType {
     MOVE,
-    POINT_TO
+    POINT_TO,
+    FINISH
 };
 
 struct MoveAction {
@@ -49,7 +53,7 @@ struct PointToAction {
     float value;
 };
 
-using ActionData = std::variant<MoveAction, PointToAction>;
+using ActionData = std::variant<std::monostate,MoveAction, PointToAction>;
 
 struct Action {
     ActionType type;
@@ -83,11 +87,22 @@ struct Response {
 enum class LobbyEventType {
     LEAVE,
     JOIN,
+    START
 };
 
 struct LobbyEvent {
     LobbyEventType type;
     std::string playerName;
+};
+
+struct LobbyChannels {
+    std::unique_ptr<Queue<LobbyEvent>> toLobby;
+    std::unique_ptr<Queue<LobbyEvent>> fromLobby;
+};
+
+struct GameChannels {
+    std::unique_ptr<Queue<ActionEvent>> toGame;
+    std::unique_ptr<Queue<ActionEvent>> fromGame;
 };
 
 #endif
