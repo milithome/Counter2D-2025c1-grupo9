@@ -1,8 +1,12 @@
 #include "server.h"
 
-Server::Server() : handlers(), admin(), acceptor(DEFAULT_PORT, admin, handlers) {} 
+Server::Server() : admin(), acceptor(DEFAULT_PORT, admin) {} 
 
-Server::~Server() {}
+Server::Server(std::string& port) : admin(), acceptor(port, admin) {} 
+
+Server::~Server() {
+
+}
 
 void Server::start() {
     acceptor.start();
@@ -15,11 +19,11 @@ void Server::start() {
         if (command == "q") {
             active = false;
             acceptor.stop();
-            std::cout << "Server shutting down..." << std::endl;
         } else {
             std::cout << "Unknown command." << std::endl;
         }
     }
-    acceptor.join();
+    
     admin.stop();
+    acceptor.join();
 }

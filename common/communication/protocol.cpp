@@ -192,7 +192,11 @@ void Protocol::send_response(const Response& response) {
     std::vector<uint8_t> buffer;
     buffer.push_back(response.type);
 
-    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
+    if (response.type == Type::CREATE || 
+        response.type == Type::JOIN || 
+        response.type == Type::LEAVE || 
+        response.type == Type::START || 
+        response.type == Type::FINISH ) {
         buffer.push_back(response.result);
     } else if (response.type == Type::LIST) {
         uint16_t size = htons(response.partidas.size());

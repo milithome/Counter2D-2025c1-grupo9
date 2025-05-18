@@ -1,13 +1,13 @@
 #include "lobby.h"
 
 Lobby::Lobby(const std::string& name, Admin& admin) 
-    : name(name), players(), admin(admin), maxPlayers(4), toLobby(100), fromPlayers(), active(true) {}
+    : name(name), players(), admin(admin), maxPlayers(2), toLobby(std::make_shared<Queue<LobbyEvent>>(100)), fromPlayers(), active(true) {}
 
 void Lobby::run() {
         try {
             while (active) {
                 LobbyEvent event;
-                if (toLobby.try_pop(event)) {
+                if (toLobby->try_pop(event)) {
                     switch (event.type) {
                         case LobbyEventType::JOIN:
                             handle_join_event(event.playerName);
@@ -23,20 +23,21 @@ void Lobby::run() {
     
                     if (players.size() == maxPlayers) {
                         active = false;
+
+                        admin.startGame(name);
+
+                        for (auto& [name, queue] : fromPlayers) {
+                            LobbyEvent event = {
+                                LobbyEventType::START,
+                                name
+                            };
+                            queue->push(event);
+                        }
                     }
                 
                 } else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
-            }
-
-            admin.startGame(name);
-            for (auto& [name, queue] : fromPlayers) {
-                LobbyEvent event = {
-                    LobbyEventType::START,
-                    name
-                };
-                queue.push(event);
             }
 
         } catch (const std::exception& e) {
@@ -57,15 +58,6 @@ void Lobby::handle_join_event(const std::string& playerName) {
 void Lobby::handle_leave_event(const std::string& playerName) {
     auto it = players.find(playerName);
     if (it != players.end()) {
-        Response response = {
-            Type::LEAVE,
-            0,
-            {},
-            {},
-            0, // success
-            ""
-        };
-        it->second.send_response(response);
         players.erase(it);
     } else {
         std::cerr << "Player " << playerName << " not found in the lobby." << std::endl;
@@ -91,19 +83,22 @@ LobbyChannels Lobby::add_player(Protocol& player, const std::string& playerName)
     
     players.emplace(playerName, player);
 
-    toLobby.push({LobbyEventType::JOIN, playerName});
+    auto fromPlayerQueue = std::make_shared<Queue<LobbyEvent>>(100);
+    fromPlayers.emplace(playerName,fromPlayerQueue);
+
+    toLobby->push({LobbyEventType::JOIN, playerName});
 
     return LobbyChannels{
-        std::make_unique<Queue<LobbyEvent>>(100),
-        std::make_unique<Queue<LobbyEvent>>(100)
+        toLobby,
+        fromPlayerQueue
     };
 }
 
 void Lobby::stop() {
     active = false;
-    toLobby.close();
+    toLobby->close();
     for (auto& [_, queue] : fromPlayers) {
-        queue.close();
+        queue->close();
     }
 }
 

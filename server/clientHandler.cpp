@@ -48,6 +48,8 @@ void ClientHandler::run() {
                     std::cerr << "Unknown message type received." << std::endl;
             }
         }
+
+        admin.removeHandler(clientName);
     } catch (const std::exception& e) {
         std::cerr << "Exception in ClientHandler: " << e.what() << std::endl;
     } catch (...) {
@@ -82,18 +84,22 @@ void ClientHandler::handle_join(const std::string& name) {
 
         bool inLobby = true;
         while (inLobby) {
+            Response response;
             if (protocol.has_data()) {
                 Message msg = protocol.recv_message();
                 if (msg.type == Type::LEAVE) {
-                    std::cout << "Player " << clientName << " sent LEAVE." << std::endl;
                     toLobby.push({LobbyEventType::LEAVE, clientName});
                     inLobby = false;
+                    response = {
+                            Type::LEAVE,
+                            0, {}, {}, 0, "Leave successfull"
+                        };
+                    protocol.send_response(response);
                     continue;
                 }
             }
 
             LobbyEvent event;
-            Response response;
             if (fromLobby.try_pop(event)) {
                 switch (event.type) {
                     case LobbyEventType::START:
@@ -121,7 +127,7 @@ void ClientHandler::handle_game(const std::string& name){
     try {
         GameChannels queues = admin.joinGame(name, clientName, protocol);
         Response response = {
-            Type::JOIN,
+            Type::START,
             0,
             {},
             {},
@@ -139,7 +145,6 @@ void ClientHandler::handle_game(const std::string& name){
                 Message msg = protocol.recv_message();
 
                 if (msg.type == Type::LEAVE) {
-                    std::cout << "Player " << clientName << " left the game." << std::endl;
                     inGame = false;
                     break;
                 }
@@ -156,24 +161,25 @@ void ClientHandler::handle_game(const std::string& name){
             if (fromGame.try_pop(outgoingEvent)) {
                 switch (outgoingEvent.action.type) {
                     case ActionType::FINISH:
+                        std::cout << "game finish" << std::endl;
                         response = {
                             Type::FINISH,
-                            0, {}, {}, 0, "Game started"
+                            0, {}, {}, 0, "Game finish"
                         };
                         protocol.send_response(response);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
                         inGame = false;
                         break;
                     default:
                         break;
                 }
             }
-
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     } catch (const std::exception& e) {
-        std::cerr << "Exception in GameReceiver::run for " << clientName << ": " << e.what() << std::endl;
+        std::cerr << "Exception in Game: " << e.what() << std::endl;
     } catch (...) {
-        std::cerr << "Unknown exception in GameReceiver::run for " << clientName << std::endl;
+        std::cerr << "Unknown exception in Game: " << std::endl;
     }
 }
 

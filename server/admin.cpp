@@ -3,27 +3,44 @@
 #include "lobby.h"
 #include "gameLoop.h"
 
-Admin::Admin() : mtx(), lobbies(), games(), handlers() {}
+Admin::Admin(){}
+
+Admin::~Admin(){
+    std::cout << "Admin destructor called" << std::endl;
+}
 
 void Admin::stop() {
     std::lock_guard<std::mutex> lock(mtx);
-    for (auto& pair : lobbies) {
-        pair.second->stop();
-        pair.second->join();
-    }
+    // Paro los hilos
     for (auto& pair : handlers) {
         pair.second->stop();
-        pair.second->join();
     }
+
+    for (auto& pair : lobbies) {
+        pair.second->stop();
+    }
+
     for (auto& pair : games) {
         pair.second->stop();
+    }
+
+    // Espero que paren los hilos
+    for (auto& pair : lobbies) {
         pair.second->join();
     }
 
+    for (auto& pair : games) {
+        pair.second->join();
+    }
+
+    for (auto& pair : handlers) {
+        pair.second->join();
+    }
+
+    // Limpio los arreglos
     lobbies.clear();
-    handlers.clear();
+    //handlers.clear();
     games.clear();
-    std::cout << "Admin stopped." << std::endl;
 }
 
 void Admin::createLobby(const std::string& name) {

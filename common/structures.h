@@ -96,13 +96,13 @@ struct LobbyEvent {
 };
 
 struct LobbyChannels {
-    std::unique_ptr<Queue<LobbyEvent>> toLobby;
-    std::unique_ptr<Queue<LobbyEvent>> fromLobby;
+    std::shared_ptr<Queue<LobbyEvent>> toLobby;
+    std::shared_ptr<Queue<LobbyEvent>> fromLobby;
 };
 
 struct GameChannels {
-    std::unique_ptr<Queue<ActionEvent>> toGame;
-    std::unique_ptr<Queue<ActionEvent>> fromGame;
+    std::shared_ptr<Queue<ActionEvent>> toGame;
+    std::shared_ptr<Queue<ActionEvent>> fromGame;
 };
 
 #endif

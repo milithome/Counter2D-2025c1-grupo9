@@ -22,8 +22,9 @@ private:
     std::map<std::string, Protocol&> players;
     Admin& admin;
     size_t maxPlayers;
-    Queue<LobbyEvent> toLobby;
-    std::map<std::string, Queue<LobbyEvent>> fromPlayers;
+    std::shared_ptr<Queue<LobbyEvent>> toLobby;
+    std::map<std::string, std::shared_ptr<Queue<LobbyEvent>>> fromPlayers;
+
 
     bool active;
 

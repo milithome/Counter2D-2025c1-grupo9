@@ -16,6 +16,7 @@ class GameLoop;
 class Admin {
 public:
     Admin();
+    ~Admin();
  
     void stop();
 

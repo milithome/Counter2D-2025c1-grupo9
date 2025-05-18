@@ -4,8 +4,6 @@
 
 int main() {
     try {
-        std::cout << "Main thread ID: " << std::this_thread::get_id() << std::endl;
-
         Server server;
         server.start();
     } catch (const std::exception& e) {

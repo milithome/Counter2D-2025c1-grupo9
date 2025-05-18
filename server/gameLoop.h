@@ -5,7 +5,6 @@
 #include "thread.h"
 #include "queue.h"
 #include "../common/communication/protocol.h"
-#include "gameReceiver.h"
 #include "../common/game.h"
 
 class Admin;
@@ -23,8 +22,8 @@ private:
     std::string name;
     Admin& admin;
     std::map<std::string, Protocol&> players;
-    Queue<ActionEvent> toGame;
-    std::map<std::string, Queue<ActionEvent>> fromPlayers;
+    std::shared_ptr<Queue<ActionEvent>> toGame;
+    std::map<std::string, std::shared_ptr<Queue<ActionEvent>>> fromPlayers;
     bool active;
     Game game;
 

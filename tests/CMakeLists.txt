@@ -1,7 +1,10 @@
 target_sources(taller_tests
     PRIVATE
-    # .cpp files
     protocolIntegrationTest.cpp
-    PUBLIC
-    # .h files
+    ../server/server.cpp
+    ../server/admin.cpp
+    ../server/acceptor.cpp
+    ../server/clientHandler.cpp
+    ../server/gameLoop.cpp
+    ../server/lobby.cpp
 )

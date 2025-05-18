@@ -2,7 +2,7 @@
 #include "admin.h"
 
 GameLoop::GameLoop(std::string name, Admin& admin)
-    : name(name), admin(admin), toGame(100), fromPlayers(), active(true), game(10,10) {}
+    : name(name), admin(admin), toGame(std::make_shared<Queue<ActionEvent>>(100)), fromPlayers(), active(true), game(10,10) {}
 
 void GameLoop::run() {
     try {
@@ -11,7 +11,7 @@ void GameLoop::run() {
         const std::chrono::milliseconds TICK_DURATION(100);
         const uint MAX_EVENTS_PER_CLICK = 20;
 
-        while(players.size() < 4){
+        while(players.size() < 2){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
@@ -20,12 +20,13 @@ void GameLoop::run() {
             
             uint processedCounter = 0;
             ActionEvent event;
-            while(processedCounter < MAX_EVENTS_PER_CLICK && toGame.try_pop(event)) {
+            while(processedCounter < MAX_EVENTS_PER_CLICK && toGame->try_pop(event)) {
                 game.execute(event.playerName, event.action);
                 processedCounter++;
             }
 
             std::vector<Entity> entities = game.getState();
+            std::cout << "broadcast" << std::endl;
             broadcast_game_state(entities);
 
             auto end_time = std::chrono::steady_clock::now();
@@ -35,7 +36,7 @@ void GameLoop::run() {
                 std::this_thread::sleep_for(TICK_DURATION - elapsed);
             }
 
-            game.stop(); // BORRAR EN ALGUN MOMENTO
+            game.stop();
 
             if (!game.isRunning()) {
                 active = false;
@@ -48,7 +49,7 @@ void GameLoop::run() {
                 { ActionType::FINISH, std::monostate{} },
                 name
             };
-            queue.push(event);
+            queue->push(event);
         }
 
     } catch (const std::exception& e) {
@@ -58,22 +59,26 @@ void GameLoop::run() {
     }
 }
 
-GameChannels GameLoop::add_player(Protocol& player, const std::string& name) {
-    auto toGame = std::make_unique<Queue<LobbyEvent>>();
-    auto fromGame = std::make_unique<Queue<LobbyEvent>>();
+GameChannels GameLoop::add_player(Protocol& player, const std::string& playerName) {
+    players.emplace(playerName, player);
+    game.addPlayer(playerName,0);
 
-    players.emplace(name, player);
-    game.addPlayer(name,0);
+    auto fromPlayerQueue = std::make_shared<Queue<ActionEvent>>(100);
+    fromPlayers.emplace(playerName,fromPlayerQueue);
 
     return GameChannels{
-        std::make_unique<Queue<ActionEvent>>(100),
-        std::make_unique<Queue<ActionEvent>>(100)
+        toGame,
+        fromPlayerQueue
     };
 }
 
 void GameLoop::broadcast_game_state(std::vector<Entity>& entities) {
-    for (auto& pair : players) {
-        pair.second.send_state(entities);
+    for (auto& [name, protocol] : players) {
+        try {
+            protocol.send_state(entities);
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to send to player " << name << ": " << e.what() << std::endl;
+        }
     }
 }
 
@@ -83,4 +88,8 @@ GameLoop::~GameLoop() {
 
 void GameLoop::stop() {
     active = false;
+    toGame->close();
+    for (auto& [_, queue] : fromPlayers) {
+        queue->close();
+    }
 }
