@@ -15,6 +15,14 @@ void GameLoop::run() {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
+        // SIMULO UN MINUTO DE PARTIDA
+        std::thread timeoutThread([this]() {
+            std::this_thread::sleep_for(std::chrono::minutes(1));
+            game.stop();
+            active = false;
+        });
+        timeoutThread.detach();
+
         while (active) {
             auto start_time = std::chrono::steady_clock::now();
             
@@ -36,7 +44,7 @@ void GameLoop::run() {
                 std::this_thread::sleep_for(TICK_DURATION - elapsed);
             }
 
-            game.stop();
+            //game.stop();
 
             if (!game.isRunning()) {
                 active = false;
