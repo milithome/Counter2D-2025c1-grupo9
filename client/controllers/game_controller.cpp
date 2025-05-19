@@ -2,8 +2,8 @@
 #include <iostream>
 #include "common/structures.h"
 
-GameController::GameController(GameView& view, Game& game, uint player_id)
-    : view(view), game(game), player_id(player_id) {
+GameController::GameController(GameView& view, Game& game, const std::string& player_name)
+    : view(view), game(game), player_name(player_name) {
         listen();
 }
 
@@ -30,7 +30,7 @@ void GameController::listen() {
 
 void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
-        game.movePlayer(player_id, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
 
         // Action action{MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
         // action_queue.push(action);
@@ -103,7 +103,7 @@ void GameController::onMouseMovement() {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    game.updateRotation(player_id, angleDegrees);
+    game.updateRotation(player_name, angleDegrees);
 
     // Action action{POINT_TO, PointAction{angleDegrees}};
     // action_queue.push(action);

@@ -8,7 +8,7 @@
 #include "common/player.h"
 #include "common/communication/protocol.h"
 #include "client/clientSenderLoop.h"
-\#include "client/clientReceiverLoop.h"
+#include "client/clientReceiverLoop.h"
 
 
 #include <iostream>
@@ -24,8 +24,8 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define PLAYER_ID 1 // temporal
 #define NAME_SERVER "localhost"
+#define PLAYER_NAME "client"
 #define PORT "12345"
 
 using namespace SDL2pp;
@@ -75,10 +75,10 @@ int main(int argc, char **argv) try {
 	if (!partida_iniciada) return 0;
 
 	Game game(10, 10);
-	game.addPlayer("clientplayer", PLAYER_ID);
+	game.addPlayer(PLAYER_NAME);
 
-	GameView gameView = GameView(game, "clientplayer");
-	GameController gameController = GameController(gameView, game, PLAYER_ID);
+	GameView gameView = GameView(game, PLAYER_NAME);
+	GameController gameController = GameController(gameView, game, PLAYER_NAME);
 
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {

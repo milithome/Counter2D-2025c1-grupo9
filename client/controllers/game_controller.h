@@ -15,7 +15,7 @@
 
 class GameController {
 public:
-    GameController(GameView& view, Game& game, uint player_id);
+    GameController(GameView& view, Game& game, const std::string& player_name);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     std::vector<Action> getActions();
@@ -23,7 +23,7 @@ public:
 private:
     GameView& view;    
     Game& game;        
-    uint player_id;    
+    std::string player_name;
     void listen();
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
