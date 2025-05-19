@@ -1,7 +1,9 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 
+#include <cstdint>
 #include <string>
+#include <variant>
 #include <vector>
 #include <cstdint>
 #include <variant>
@@ -20,9 +22,7 @@ enum Type {
 };
 
 // Tipos de entidades del juego
-enum EntityType {
-    PLAYER
-};
+enum EntityType { PLAYER };
 
 // Representación de una entidad en el mundo del juego
 struct Entity {
@@ -36,7 +36,8 @@ struct Entity {
 // Acciones posibles del jugador
 enum class ActionType {
     MOVE,
-    POINT_TO
+    POINT_TO,
+    SHOOT
 };
 
 struct MoveAction {
@@ -64,30 +65,30 @@ struct ActionEvent{
 
 // Mensaje enviado por el cliente al servidor
 struct Message {
-    Type type;
-    uint16_t size;
-    std::string name;
-    Action action;
+  Type type;
+  uint16_t size;
+  std::string name;
+  Action action;
 };
 
 // Respuesta enviada por el servidor al cliente
 struct Response {
-    Type type;
-    uint16_t size;
-    std::vector<Entity> entities;
-    std::vector<std::string> partidas;
-    uint8_t result;
-    std::string message;
+  Type type;
+  uint16_t size;
+  std::vector<Entity> entities;
+  std::vector<std::string> partidas;
+  uint8_t result;
+  std::string message;
 };
 
 enum class LobbyEventType {
-    LEAVE,
-    JOIN,
+  LEAVE,
+  JOIN,
 };
 
 struct LobbyEvent {
-    LobbyEventType type;
-    std::string playerName;
+  LobbyEventType type;
+  std::string playerName;
 };
 
 #endif

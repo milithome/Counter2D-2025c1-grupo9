@@ -1,20 +1,25 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "gameConstants.h"
+#include "hitbox.h"
 #include <cmath>
 #include <string>
 class Player {
 private:
   std::string name;
-  uint id;
   float x, y;
+  Hitbox hitbox;
   Role role;
   float rotation;
+  float health;
 
 public:
-  Player(const std::string &name, uint id) : name(name), id(id) {}
+  Player(const std::string &name)
+      : name(name), x(0), y(0), rotation(0),
+        role(Role::COUNTER_TERRORIST), hitbox{x, y, PLAYER_WIDTH,
+                                              PLAYER_HEIGHT} {}
+
   std::string getName() const;
-  uint getId() const;
   void setRole(Role new_role);
   float getX() const;
   float getY() const;
@@ -22,6 +27,11 @@ public:
   void setPosition(float x, float y);
   float getRotation() const;
   void setRotation(float currentRotation);
+  const Hitbox &getHitbox() const;
+  void updateHealth(float value);
+  void setHealth(float value);
+  float getHealth() const;
+  bool isAlive() const;
 };
 
 #endif
