@@ -89,25 +89,33 @@ float Game::getRotation(const std::string &name) {
 }
 
 void Game::update(float deltaTime) {
+  (void)deltaTime;
   // al no estar lo de las balas ya, seria supongo la bomba unicamente
 }
 
 void Game::execute(const std::string &name, Action action) {
 
   switch (action.type) {
-  case ActionType::MOVE:
+  case ActionType::MOVE:{
     const MoveAction *data = std::get_if<MoveAction>(&action.data);
     movePlayer(name, data->x, data->y, data->deltaTime);
     break;
-  case ActionType::POINT_TO:
+  }
+    
+  case ActionType::POINT_TO:{
     const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
     updateRotation(name, pointToData->value);
-
-  case ActionType::SHOOT:
+    break;
+  }
+    
+  case ActionType::SHOOT:{
     shoot(name);
     break;
+  }
 
-  default:
+  default:{
     break;
+  }
+    
   }
 }

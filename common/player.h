@@ -15,9 +15,7 @@ private:
 
 public:
   Player(const std::string &name)
-      : name(name), x(0), y(0), rotation(0),
-        role(Role::COUNTER_TERRORIST), hitbox{x, y, PLAYER_WIDTH,
-                                              PLAYER_HEIGHT} {}
+      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
 
   std::string getName() const;
   void setRole(Role new_role);
