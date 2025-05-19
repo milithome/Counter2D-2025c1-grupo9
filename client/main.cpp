@@ -7,6 +7,8 @@
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
+#include "client/clientSenderLoop.h"
+#include "client/clientReceiverLoop.h"
 
 
 #include <iostream>
@@ -22,8 +24,8 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define PLAYER_ID 1 // temporal
 #define NAME_SERVER "localhost"
+#define PLAYER_NAME "client"
 #define PORT "12345"
 
 using namespace SDL2pp;
@@ -33,6 +35,15 @@ int main(int argc, char **argv) try {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
+
+	Queue<std::string> recv_queue(100);
+	Queue<std::string> send_queue(100);
+
+	clientReceiverLoop receiver(protocol, recv_queue);
+	clientSenderLoop sender(protocol, send_queue);
+
+	receiver.start();
+	sender.start();
 
 	// TODO: Debera haber un hilo encargado de recibir mensajes del server tanto durante la partida como cuando
 	// el cliente se encuentre en un lobby, y de alguna forma se debe comunicar con MenuController y GameController
@@ -64,10 +75,10 @@ int main(int argc, char **argv) try {
 	if (!partida_iniciada) return 0;
 
 	Game game(10, 10);
-	game.addPlayer("clientplayer", PLAYER_ID);
+	game.addPlayer(PLAYER_NAME);
 
-	GameView gameView = GameView(game, "clientplayer");
-	GameController gameController = GameController(gameView, game, PLAYER_ID);
+	GameView gameView = GameView(game, PLAYER_NAME);
+	GameController gameController = GameController(gameView, game, PLAYER_NAME);
 
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {
@@ -82,7 +93,23 @@ int main(int argc, char **argv) try {
 			Action action = gameController.actionQueuePop();
 			protocol.send_action(action);
 		}
+
+		void main() {
+			while (not quit) {
+				msj = non_blocking_read_from_keyboard();
+				if (msj) {
+					sender_q.push(msj);
+				}
+				msj = receiver_q.try_pop();
+				draw(msj);
+			}
+		}
 	}
+
+	receiver.stop();
+	sender.stop();
+	receiver.join();
+	sender.join();
 
 	return 0;
 } catch (std::exception& e) {
