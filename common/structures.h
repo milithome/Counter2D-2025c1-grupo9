@@ -18,7 +18,8 @@ enum Type {
     INITIAL_DATA,
     STATE,
     STATE_LOBBY,
-    NAME    
+    NAME,
+    DISCONNECT 
 };
 
 // Tipos de entidades del juego

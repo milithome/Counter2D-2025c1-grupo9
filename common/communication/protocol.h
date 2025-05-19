@@ -26,6 +26,9 @@ public:
     void send_list();
     void send_action(const Action& action);
     void send_leave_lobby();
+    void send_disconnect();
+
+    // void send_message(const Message& mesagge); // -> proximamente
 
     // Metodos para enviar mensajes (servidor)
     // Podria incluir send_initial_data y send_state en send_response pero me salio hacerlo asi pq no son respuestas a peticiones q hizo el cliente

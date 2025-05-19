@@ -124,6 +124,14 @@ void Protocol::send_leave_lobby() {
     }
 }
 
+void Protocol::send_disconnect() {
+    uint8_t type = Type::DISCONNECT;
+
+    if (skt.sendall(&type, sizeof(type)) <= 0) {
+        throw std::runtime_error("Error sending DISCONNECT message");
+    }
+}
+
 void Protocol::send_initial_data() {
     uint8_t type = Type::INITIAL_DATA;
 
