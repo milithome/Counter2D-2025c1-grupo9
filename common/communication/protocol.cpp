@@ -352,7 +352,11 @@ Response Protocol::recv_response() {
     Response response;
     response.type = static_cast<Type>(type);
 
-    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
+    if (response.type == Type::CREATE ||
+        response.type == Type::JOIN || 
+        response.type == Type::LEAVE ||
+        response.type == Type::START ||
+        response.type == Type::FINISH) {
         if (skt.recvall(&response.result, sizeof(response.result)) == 0) {
             throw std::runtime_error("Error receiving response result");
         }

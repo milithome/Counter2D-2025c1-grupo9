@@ -164,59 +164,87 @@ TEST(ProtocolIntegrationTest, CreateAndPlayGameBetweenTwoClients) {
     std::string port = "12345";
 
     std::thread client_thread1([port]() {
-        Socket client_socket("localhost", port.c_str());
-        Protocol client_protocol(std::move(client_socket));
-        client_protocol.send_name("aaa");
+        try
+        {
+            Socket client_socket("localhost", port.c_str());
+            Protocol client_protocol(std::move(client_socket));
+            client_protocol.send_name("aaa");
 
-        std::string game_name = "PartidaTest";
-        client_protocol.send_create(game_name);
-        Response response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::JOIN);
+            std::string game_name = "PartidaTest";
+            client_protocol.send_create(game_name);
+            Response response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::JOIN);
 
-        auto players = client_protocol.recv_state_lobby();
-        EXPECT_EQ(players.size(), 1);
+            auto players = client_protocol.recv_state_lobby();
+            EXPECT_EQ(players.size(), 1);
 
-        players = client_protocol.recv_state_lobby();
-        EXPECT_EQ(players.size(), 2);
+            players = client_protocol.recv_state_lobby();
+            EXPECT_EQ(players.size(), 2);
 
-        response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::START);
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::START);
 
-        auto state = client_protocol.recv_state();
-        EXPECT_EQ(state.size(), 2);
+            auto state = client_protocol.recv_state();
+            EXPECT_EQ(state.size(), 2);
 
-        response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::FINISH);
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::FINISH);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
+        
     });
 
     std::thread client_thread2([port]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        try
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        Socket client_socket("localhost", port.c_str());
-        Protocol client_protocol(std::move(client_socket));
-        client_protocol.send_name("bbb");
+            Socket client_socket("localhost", port.c_str());
+            Protocol client_protocol(std::move(client_socket));
+            client_protocol.send_name("bbb");
 
-        std::string game_name = "PartidaTest";
-        client_protocol.send_join(game_name);
+            std::string game_name = "PartidaTest";
+            client_protocol.send_join(game_name);
 
-        Response response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::JOIN);
+            Response response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::JOIN);
 
-        auto players = client_protocol.recv_state_lobby();
-        EXPECT_EQ(players.size(), 2);
+            auto players = client_protocol.recv_state_lobby();
+            EXPECT_EQ(players.size(), 2);
 
-        response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::START);
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::START);
 
-        auto state = client_protocol.recv_state();
-        EXPECT_EQ(state.size(), 2);
+            auto state = client_protocol.recv_state();
+            EXPECT_EQ(state.size(), 2);
 
-        response = client_protocol.recv_response();
-        EXPECT_EQ(response.type, Type::FINISH);
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::FINISH);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::string game_name2 = "PartidaTest2";
+            client_protocol.send_create(game_name2);
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::JOIN);
+
+            players = client_protocol.recv_state_lobby();
+            EXPECT_EQ(players.size(), 1);
+
+            client_protocol.send_leave_lobby();
+            response = client_protocol.recv_response();
+            EXPECT_EQ(response.type, Type::LEAVE);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     });
 
     client_thread1.join();

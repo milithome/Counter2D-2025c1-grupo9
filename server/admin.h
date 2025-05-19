@@ -36,6 +36,11 @@ private:
     std::map<std::string, std::shared_ptr<Lobby>> lobbies;
     std::map<std::string, std::shared_ptr<GameLoop>> games;
     std::map<std::string, std::shared_ptr<ClientHandler>> handlers;
+
+    std::vector<std::string> completedGames;
+
+    void removeFinishedGames();
+
 };
 
 #endif

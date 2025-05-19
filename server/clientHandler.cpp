@@ -102,12 +102,7 @@ void ClientHandler::handle_join(const std::string& name) {
             LobbyEvent event;
             if (fromLobby.try_pop(event)) {
                 switch (event.type) {
-                    case LobbyEventType::START:
-                        response = {
-                            Type::START,
-                            0, {}, {}, 0, "Game started"
-                        };
-                        protocol.send_response(response);
+                    case LobbyEventType::START:                        
                         inLobby = false;
                         handle_game(name);
                         break;
@@ -125,7 +120,6 @@ void ClientHandler::handle_join(const std::string& name) {
 
 void ClientHandler::handle_game(const std::string& name){
     try {
-        GameChannels queues = admin.joinGame(name, clientName, protocol);
         Response response = {
             Type::START,
             0,
@@ -135,6 +129,7 @@ void ClientHandler::handle_game(const std::string& name){
             ""
         };
         protocol.send_response(response);
+        GameChannels queues = admin.joinGame(name, clientName, protocol);
         Queue<ActionEvent>& toGame  = *queues.toGame;
         Queue<ActionEvent>& fromGame = *queues.fromGame;
 
@@ -161,7 +156,6 @@ void ClientHandler::handle_game(const std::string& name){
             if (fromGame.try_pop(outgoingEvent)) {
                 switch (outgoingEvent.action.type) {
                     case ActionType::FINISH:
-                        std::cout << "game finish" << std::endl;
                         response = {
                             Type::FINISH,
                             0, {}, {}, 0, "Game finish"

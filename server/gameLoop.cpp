@@ -43,7 +43,6 @@ void GameLoop::run() {
             }
         }
 
-        admin.endGame(name);
         for (auto& [name, queue] : fromPlayers) {
             ActionEvent event = {
                 { ActionType::FINISH, std::monostate{} },
@@ -51,6 +50,10 @@ void GameLoop::run() {
             };
             queue->push(event);
         }
+
+        admin.endGame(name);
+        players.clear();
+        std::cout << "Game finish" << std::endl; 
 
     } catch (const std::exception& e) {
         std::cerr << "Exception in GameLoop::run: " << e.what() << std::endl;
@@ -73,23 +76,19 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
 }
 
 void GameLoop::broadcast_game_state(std::vector<Entity>& entities) {
-    for (auto& [name, protocol] : players) {
+    for (auto& pair : players) {
         try {
-            protocol.send_state(entities);
+            pair.second.send_state(entities);
         } catch (const std::exception& e) {
-            std::cerr << "Failed to send to player " << name << ": " << e.what() << std::endl;
+            std::cerr << "Failed to send to player " << pair.first << ": " << e.what() << std::endl;
         }
     }
 }
 
 GameLoop::~GameLoop() {
-    std::cout << "GameLoop stopped" << std::endl;
+    std::cout << "GameLoop destructor called." << std::endl;
 }
 
 void GameLoop::stop() {
     active = false;
-    toGame->close();
-    for (auto& [_, queue] : fromPlayers) {
-        queue->close();
-    }
 }
