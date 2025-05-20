@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <exception>
-#include <iostream>
 
 #include <QApplication>
 #include <QWidget>
@@ -26,7 +25,6 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 #define NAME_SERVER "localhost"
-#define PLAYER_NAME "client"
 #define PORT "12345"
 
 using namespace SDL2pp;
@@ -39,10 +37,6 @@ int main(int argc, char **argv) try {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-	// TODO: Debera haber un hilo encargado de recibir mensajes del server tanto durante la partida como cuando
-	// el cliente se encuentre en un lobby, y de alguna forma se debe comunicar con MenuController y GameController
-	// para actualizar las views cuando corresponden (en el caso de GameController tambien hay que checkear q el
-	// cliente se encuentre sincronizado con el server)
 	bool partida_iniciada = false;
 	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
@@ -63,7 +57,7 @@ int main(int argc, char **argv) try {
 	SDL sdl(SDL_INIT_VIDEO);
 
     QApplication app(argc, argv);
-	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", 640, 480);
+	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	MenuController menuController(menuWindow, protocol);
 
 
@@ -102,12 +96,8 @@ int main(int argc, char **argv) try {
     });
     timer->start(0);
 
-	// QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::unique_ptr<MessageEvent> message) {
-	// 	send_queue.try_push(message);
-	// });
 
 	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
-		//std::unique_ptr<MessageEvent> msg = std::make_shared<MessageEvent>(event)
 		send_queue.try_push(std::shared_ptr<MessageEvent>(event));
 	});
 
@@ -121,10 +111,9 @@ int main(int argc, char **argv) try {
 	};
 
 	Game game(10, 10);
-	game.addPlayer(PLAYER_NAME);
-
-	GameView gameView = GameView(game, PLAYER_NAME);
-	GameController gameController = GameController(gameView, game, PLAYER_NAME);
+	game.addPlayer(clientName);
+	GameView gameView = GameView(game, clientName);
+	GameController gameController = GameController(gameView, game, clientName);
 
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {
@@ -135,7 +124,6 @@ int main(int argc, char **argv) try {
 
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
-			//ActionEvent actionEvent(action);
 			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
 			send_queue.try_push(event);
 		}
@@ -155,17 +143,6 @@ int main(int argc, char **argv) try {
 				}
 			}
 		}
-
-		// void main() {
-		// 	while (not quit) {
-		// 		msj = non_blocking_read_from_keyboard();
-		// 		if (msj) {
-		// 			sender_q.push(msj);
-		// 		}
-		// 		msj = receiver_q.try_pop();
-		// 		draw(msj);
-		// 	}
-		// }
 	}
 
 	receiver.stop();

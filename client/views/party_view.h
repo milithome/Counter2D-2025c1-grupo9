@@ -20,6 +20,7 @@ public:
     QPushButton *getLeaveButton();
     QListWidget *getPlayerList();
     void addPlayer(const std::string& player);
+    void clearPlayers();
 private:
     std::string partyName; 
     std::vector<std::string> players;

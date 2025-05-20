@@ -1,7 +1,7 @@
 #include "lobby.h"
 
 Lobby::Lobby(const std::string& name, Admin& admin) 
-    : name(name), players(), admin(admin), maxPlayers(2), toLobby(std::make_shared<Queue<LobbyEvent>>(100)), fromPlayers(), active(true) {}
+    : name(name), players(), admin(admin), maxPlayers(3), toLobby(std::make_shared<Queue<LobbyEvent>>(100)), fromPlayers(), active(true) {}
 
 void Lobby::run() {
         try {

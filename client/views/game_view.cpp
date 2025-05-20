@@ -6,14 +6,7 @@
 namespace fs = std::filesystem;
 
 
-// GameView::GameView(Window& window, Renderer& renderer, Game& game, uint player_id)
-//     : window(window), renderer(renderer), game(game), player_id(player_id) {
-//         renderer.SetDrawColor(0, 0, 0, 255);
-//         // loadMapTiles(game.getMapEnum());
-//         // loadPlayerTiles(player.getType());
-// }
-
-GameView::GameView(Game& game, std::string playerName)
+GameView::GameView(Game& game, const std::string& playerName)
     : window(createWindow()), renderer(createRenderer(window)), game(game), playerName(playerName) {
         renderer.SetDrawColor(0, 0, 0, 255);
         // loadMapTiles(game.getMapEnum());
@@ -60,19 +53,6 @@ void GameView::update(float deltaTime) {
     renderer.Clear();
 
 
-    // std::vector<SDL_Event> eventQueue;
-    // SDL_Event e;
-    // while (SDL_PollEvent(&e)) {
-    //     eventQueue.push_back(e);
-    // }
-    // for (size_t i = 0; i < eventQueue.size(); ++i) {
-    //     const SDL_Event& e = eventQueue[i];
-    //     SDL_EventType etype = static_cast<SDL_EventType>(e.type);
-    //     if (eventHandlers.contains(etype)) {
-    //         std::function<void(const SDL_Event&)> handler = eventHandlers[etype];
-    //         handler(e);
-    //     }
-    // }
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         SDL_EventType etype = static_cast<SDL_EventType>(e.type);
@@ -87,8 +67,6 @@ void GameView::update(float deltaTime) {
 
     // graficar
     show();
-
-
 
     renderer.Present();
 

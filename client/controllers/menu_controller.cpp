@@ -40,17 +40,9 @@ void MenuController::listenToCreatePartyView(CreatePartyView& createPartyView) {
 
 void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
     QPushButton *backButton = searchPartyView.getBackButton();
-    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView.getJoinButtons(); 
-
     QObject::connect(backButton, &QPushButton::clicked, [this]() {
         onSearchPartyViewBackButtonClicked();
     });
-
-    for (auto [partyName, button] : joinButtons) {
-        QObject::connect(button, &QPushButton::clicked, [this, partyName]() {
-            onSearchPartyViewJoinButtonClicked(partyName);
-        });
-    }
 }
 
 void MenuController::listenToPartyView(PartyView& partyView) {
@@ -135,11 +127,19 @@ void MenuController::onPartyListReceived(const std::vector<std::string>& parties
     for (size_t i = 0; i < parties.size(); i++) {
         searchPartyView.addParty(parties[i]);
     }
+    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView.getJoinButtons(); 
+    for (auto [partyName, button] : joinButtons) {
+
+        QObject::connect(button, &QPushButton::clicked, [this, partyName]() {
+            onSearchPartyViewJoinButtonClicked(partyName);
+        });
+    }
     (void)message;
     (void)result;
 }
 
 void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result) {
+    partyView.clearPlayers();
     for (size_t i = 0; i < players.size(); i++) {
         partyView.addPlayer(players[i]);
     }

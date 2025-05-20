@@ -7,8 +7,11 @@ void SendLoop::run(){
     try {
         while (should_keep_running()) {
             std::shared_ptr<MessageEvent> msg;
-            if (!queue.try_pop(msg)) break;
-            msg->send(protocol);
+            if (queue.try_pop(msg)) {
+                msg->send(protocol);
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
         }
     } catch (const std::exception& e) {
         std::cerr << "SendLoop exception::run() " << e.what() << std::endl;

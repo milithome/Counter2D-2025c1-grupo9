@@ -33,6 +33,7 @@ void ClientHandler::run() {
 
         while (active) {
             Message message = protocol.recv_message();
+            std::cout << "mensaje recibido" << std::endl;
             handle_message(message);
         }
 

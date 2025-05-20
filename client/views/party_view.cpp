@@ -100,3 +100,8 @@ void PartyView::addPlayerToList(const std::string& playerName) {
     playerList->addItem(listItem);
     playerList->setItemWidget(listItem, itemWidget);
 }
+
+void PartyView::clearPlayers() {
+    players.clear();
+    playerList->clear();
+}
