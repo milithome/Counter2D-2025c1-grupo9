@@ -200,7 +200,7 @@ std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
     return buf;
 }
 
-std::vector<uint8_t> serialize_initial_data(const Response& r) {
+std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
     // TODO: Agregar más datos cuando se definan
     return buf;
