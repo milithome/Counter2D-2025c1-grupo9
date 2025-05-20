@@ -16,9 +16,28 @@ class MenuController : public QWidget {
 public:
     MenuController(QtWindow& window, Protocol& protocol);
 
+    // void onEventResponse(std::unique_ptr<MessageEvent> event);
+
+    void onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result);
+
+    void onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result);
+
+    void onJoinPartyResponseReceived(const std::string& message, const uint8_t result);
+
+    void onCreatePartyResponseReceived(const std::string& message, const uint8_t result);
+
+    void onLeavePartyResponseReceived(const std::string& message, const uint8_t result);
+
+    void onGameStarted();
+
+
 private:
     QtWindow& window;
     Protocol& protocol;
+    MainView mainView;
+    SearchPartyView searchPartyView;
+    PartyView partyView;
+    CreatePartyView createPartyView;
 
     void onMainViewCreatePartyButtonClicked();
     void onMainViewSearchPartyButtonClicked();
@@ -36,8 +55,7 @@ private:
 
 
 signals:
-    void partidaIniciada();
-    void nuevoEvento(const MessageEvent& event);
+    void nuevoEvento(std::unique_ptr<MessageEvent> event);
 };
 
 #endif 

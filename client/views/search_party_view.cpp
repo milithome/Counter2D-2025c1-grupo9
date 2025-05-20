@@ -15,6 +15,10 @@ SearchPartyView::SearchPartyView(std::vector<std::string> parties) : parties(par
     buildLayout();
 }
 
+SearchPartyView::SearchPartyView() : parties({}) {
+    buildLayout();
+}
+
 void SearchPartyView::addParty(const std::string& party) {
     parties.push_back(party);
     addPartyToList(party);

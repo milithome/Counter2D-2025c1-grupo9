@@ -10,6 +10,7 @@
 
 class PartyView : public QtView {
 public:
+    PartyView();
     PartyView(const std::string& partyName);
     PartyView(const std::string& partyName, const std::vector<std::string>& players);
     void buildLayout() override;

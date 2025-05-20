@@ -12,6 +12,7 @@ public:
 
     void send(Protocol& protocol) const override;
 
+
 private:
     std::string partyName;
 };

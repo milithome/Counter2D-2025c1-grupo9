@@ -6,3 +6,5 @@ CreateEvent::CreateEvent(const std::string& partyName)
 void CreateEvent::send(Protocol& protocol) const {
     protocol.send_create(partyName);
 }
+
+

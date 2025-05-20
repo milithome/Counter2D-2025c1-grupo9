@@ -20,6 +20,7 @@ public:
   Game(int width, int height) : map_width(width), map_height(height) {}
   bool addPlayer(const std::string &name);
   void movePlayer(const std::string &name, int x, int y, float deltaTime);
+  void updatePlayerPosition(const std::string &name, int x, int y);
   std::vector<Entity> getState();
   bool isRunning();
   void stop();

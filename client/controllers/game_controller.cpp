@@ -32,9 +32,9 @@ void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
         game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
 
-        // Action action{MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
-        // action_queue.push(action);
-        // actions.push_back(action);
+        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
+        action_queue.push(action);
+        actions.push_back(action);
     }
     //game.updateTime(deltaTime);
 }
@@ -105,9 +105,9 @@ void GameController::onMouseMovement() {
     float angleDegrees = angle * 180.0f / 3.14159f;
     game.updateRotation(player_name, angleDegrees);
 
-    // Action action{POINT_TO, PointAction{angleDegrees}};
-    // action_queue.push(action);
-    // actions.push_back(action);
+    Action action{ActionType::POINT_TO, PointToAction{angleDegrees}};
+    action_queue.push(action);
+    actions.push_back(action);
 
 }
 
@@ -135,3 +135,19 @@ Action GameController::actionQueuePop() {
 bool GameController::actionQueueIsEmpty() {
     return action_queue.empty();
 }
+
+
+void GameController::updateGameState(std::vector<Entity> entities) {
+    for (size_t i = 0; i < entities.size(); i++) {
+        Entity entity = entities[i];
+        if (entity.type = PLAYER) {
+            if (entity.name == player_name) {
+                // Proceso de sincronizacion en caso de desincronizacion
+                break;
+            }
+            game.updatePlayerPosition(entity.name, entity.x, entity.y);
+            game.updateRotation(entity.name, entity.rotation);
+        }
+    }
+}
+

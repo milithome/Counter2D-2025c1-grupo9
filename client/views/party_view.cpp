@@ -11,11 +11,14 @@
 #include <QFrame>
 
 
+
+PartyView::PartyView() {}
+
 PartyView::PartyView(const std::string& partyName, const std::vector<std::string>& players) : partyName(partyName), players(players) {
     buildLayout();
 }
 
-PartyView::PartyView(const std::string& partyName) : partyName(partyName) {
+PartyView::PartyView(const std::string& partyName) : partyName(partyName), players({}) {
     buildLayout();
 }
 

@@ -1,21 +1,28 @@
 #include "clientReceiverLoop.h"
+#include "client/controllers/action_event.h"
+#include "client/controllers/join_event.h"
+#include "client/controllers/leave_event.h"
+#include "client/controllers/list_event.h"
+#include "client/controllers/create_event.h"
+#include <functional>
 
-RecvLoop::RecvLoop(Protocol &proto, Queue<ActionEvent> &q) : protocol(proto), queue(q) {}
+RecvLoop::RecvLoop(Protocol &proto, Queue<Response> &q) : protocol(proto), queue(q) {}
 
 void RecvLoop::run() {
     try {
             while (should_keep_running()) {
-                Message msg = protocol.recv_message();
-                ActionEvent event;
-                switch (msg.type)
-                {
-                case Type::ACTION:
-                    event.action = msg.action;
-                    queue.try_push(std::move(event));
-                    break;
-                default:
-                    break;
-                }
+                Response msg = protocol.recv_response();
+                queue.try_push(msg);
+                // ActionEvent event;
+                // switch (msg.type)
+                // {
+                // case Type::ACTION:
+                //     event.action = msg.action;
+                //     queue.try_push(std::move(event));
+                //     break;
+                // default:
+                //     break;
+                // }
             }
     } catch (const std::exception& e) {
         std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;
@@ -27,4 +34,8 @@ void RecvLoop::run() {
 void RecvLoop::stop() {
         Thread::stop();
         queue.close(); //en teoria no se necesita si la cola no es bloqueante
+}
+
+void RecvLoop::bind(std::function<void(const std::unique_ptr<MessageEvent>&)> callback) {
+    listeners.push_back(callback);
 }
