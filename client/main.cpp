@@ -68,10 +68,12 @@ int main(int argc, char **argv) try {
 	// TODO: Esto pasara a ser ejecutado desde otro hilo que contendra a 
 	// menuController, para evitar que el loop de Qt se trabe al enviar un mensaje.
 	QObject::connect(&menuController, &MenuController::nuevoEvento, [&protocol](const MessageEvent& message) {
-		message.send(protocol);
+		send_queue.try_push(message);
+		//message.send(protocol);
 	});
 
 	app.exec();
+	
 	if (!partida_iniciada) return 0;
 
 	Game game(10, 10);
@@ -91,6 +93,7 @@ int main(int argc, char **argv) try {
 		// gameController, para evitar que este loop se trabe al enviar un mensaje.
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
+
 			protocol.send_action(action);
 		}
 
