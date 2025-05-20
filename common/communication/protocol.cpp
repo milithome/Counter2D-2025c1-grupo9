@@ -183,6 +183,29 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     return buf;
 }
 
+std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
+    std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+
+    uint16_t size = htons(r.players.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+
+    for (const auto& player : r.players) {
+        uint16_t name_size = htons(player.size());
+        buf.push_back(reinterpret_cast<uint8_t*>(&name_size)[0]);
+        buf.push_back(reinterpret_cast<uint8_t*>(&name_size)[1]);
+        buf.insert(buf.end(), player.begin(), player.end());
+    }
+
+    return buf;
+}
+
+std::vector<uint8_t> serialize_initial_data(const Response& r) {
+    std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+    // TODO: Agregar más datos cuando se definan
+    return buf;
+}
+
 void Protocol::send_response(const Response& r) {
     std::vector<uint8_t> buffer;
 
