@@ -75,10 +75,11 @@ struct Message {
 // Respuesta enviada por el servidor al cliente
 struct Response {
   Type type;
-  uint16_t size;
+  uint8_t result;
+  uint16_t size; // esto me parece q se puede sacar
   std::vector<Entity> entities;
   std::vector<std::string> partidas;
-  uint8_t result;
+  std::vector<std::string> players;
   std::string message;
 };
 
