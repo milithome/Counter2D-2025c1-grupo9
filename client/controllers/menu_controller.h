@@ -18,15 +18,17 @@ public:
 
     // void onEventResponse(std::unique_ptr<MessageEvent> event);
 
-    void onPartyListReceived(const std::vector<std::string>& parties, const std::string& message);
+    void onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result);
 
-    void onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message);
+    void onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result);
 
-    void onJoinPartyResponseReceived(const std::string& message);
+    void onJoinPartyResponseReceived(const std::string& message, const uint8_t result);
 
-    void onCreatePartyResponseReceived(const std::string& message);
+    void onCreatePartyResponseReceived(const std::string& message, const uint8_t result);
 
-    void onLeavePartyResponseReceived(const std::string& message);
+    void onLeavePartyResponseReceived(const std::string& message, const uint8_t result);
+
+    void onGameStarted();
 
 
 private:
@@ -53,7 +55,6 @@ private:
 
 
 signals:
-    void partidaIniciada();
     void nuevoEvento(std::unique_ptr<MessageEvent> event);
 };
 

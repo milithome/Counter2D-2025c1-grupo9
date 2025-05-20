@@ -69,31 +69,34 @@ int main(int argc, char **argv) try {
 
 	// Menu loop
     QTimer* timer = new QTimer(&menuController);
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController]() {
+    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController, &partida_iniciada] {
         Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case LIST: {
-					menuController.onPartyListReceived(msg.partidas, msg.message);
+					menuController.onPartyListReceived(msg.partidas, msg.message, msg.result);
 				}
 				case JOIN: {
-					menuController.onJoinPartyResponseReceived(msg.message);
-				}
-				case CREATE: {
-					menuController.onCreatePartyResponseReceived(msg.message);
+					menuController.onJoinPartyResponseReceived(msg.message, msg.result);
 				}
 				case LEAVE: {
-					menuController.onLeavePartyResponseReceived(msg.message);
+					menuController.onLeavePartyResponseReceived(msg.message, msg.result);
 				}
-				// Falta un caso para enviar actualizaciones del lobby
+				case STATE_LOBBY: {
+					menuController.onLobbyPlayersReceived(msg.players, msg.message, msg.result);
+				}
+				case START: {
+					partida_iniciada = true;
+					menuController.onGameStarted();
+				}
 			}
         }
     });
     timer->start(0);
 
-	QObject::connect(&menuController, &MenuController::partidaIniciada, [&partida_iniciada]() {
-		partida_iniciada = true;
-	});
+	// QObject::connect(&menuController, &MenuController::partidaIniciada, [&partida_iniciada]() {
+	// 	partida_iniciada = true;
+	// });
 
 	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::unique_ptr<MessageEvent> message) {
 		send_queue.try_push(message);
@@ -101,7 +104,12 @@ int main(int argc, char **argv) try {
 
 	app.exec();
 	
-	if (!partida_iniciada) return 0;
+	if (!partida_iniciada) {
+		protocol.send_disconnect();
+		Response msg = protocol.recv_response();
+		std::cout << msg.message << std::endl;
+		return 0;
+	};
 
 	Game game(10, 10);
 	game.addPlayer(PLAYER_NAME);
@@ -124,7 +132,16 @@ int main(int argc, char **argv) try {
 		}
 		Response msg;
         while (recv_queue.try_pop(msg)) {
-			gameController.updateGameState(msg);
+			switch (msg.type) {
+				case STATE: {
+					gameController.updateGameState(msg.entities);
+					break;
+				}
+				case FINISH: {
+					game.stop();
+					break;
+				}
+			}
 		}
 
 		// void main() {

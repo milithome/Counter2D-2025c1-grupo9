@@ -73,7 +73,11 @@ void MenuController::onPartyViewLeaveButtonClicked() {
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
-    emit partidaIniciada();
+    // window.clearWindow();
+    // window.quit();
+}
+
+void MenuController::onGameStarted() {
     window.clearWindow();
     window.quit();
 }
@@ -127,27 +131,34 @@ void MenuController::onSearchPartyViewBackButtonClicked() {
 
 
 
-void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message) {
+void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result) {
     for (size_t i = 0; i < parties.size(); i++) {
         searchPartyView.addParty(parties[i]);
     }
+    (void)message;
+    (void)result;
 }
 
-void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message) {
+void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result) {
     for (size_t i = 0; i < players.size(); i++) {
         partyView.addPlayer(players[i]);
     }
+    (void)message;
+    (void)result;
 }
 
 
-void MenuController::onJoinPartyResponseReceived(const std::string& message) {
-
+void MenuController::onJoinPartyResponseReceived(const std::string& message, const uint8_t result) {
+    (void)message;
+    (void)result;
 }
 
-void MenuController::onCreatePartyResponseReceived(const std::string& message) {
-
+void MenuController::onCreatePartyResponseReceived(const std::string& message, const uint8_t result) {
+    (void)message;
+    (void)result;
 }
 
-void MenuController::onLeavePartyResponseReceived(const std::string& message) {
-
+void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t result) {
+    (void)message;
+    (void)result;
 }

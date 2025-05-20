@@ -18,7 +18,7 @@ public:
     GameController(GameView& view, Game& game, const std::string& player_name);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
-    void updateGameState(Response msg);
+    void updateGameState(std::vector<Entity> entities);
     // std::vector<Action> getActions();
 
 
