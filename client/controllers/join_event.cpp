@@ -7,3 +7,4 @@ JoinEvent::JoinEvent(const std::string& partyName)
 void JoinEvent::send(Protocol& protocol) const {
     protocol.send_join(partyName);
 }
+

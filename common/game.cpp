@@ -32,6 +32,10 @@ void Game::movePlayer(const std::string &name, int x, int y, float deltaTime) {
   findPlayerByName(name).move(x, y, deltaTime);
 }
 
+void Game::updatePlayerPosition(const std::string &name, int x, int y) {
+  findPlayerByName(name).setPosition(x, y);
+}
+
 std::vector<Entity> Game::getState() { // falta inventario, salud
   std::vector<Entity> state;
 

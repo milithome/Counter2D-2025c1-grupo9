@@ -135,3 +135,20 @@ Action GameController::actionQueuePop() {
 bool GameController::actionQueueIsEmpty() {
     return action_queue.empty();
 }
+
+
+void GameController::updateGameState(Response msg) {
+    std::vector<Entity> entities = msg.entities;
+    for (size_t i = 0; i < entities.size(); i++) {
+        Entity entity = entities[i];
+        if (entity.type = PLAYER) {
+            if (entity.name == player_name) {
+                // Proceso de sincronizacion en caso de desincronizacion
+                break;
+            }
+            game.updatePlayerPosition(entity.name, entity.x, entity.y);
+            game.updateRotation(entity.name, entity.rotation);
+        }
+    }
+}
+

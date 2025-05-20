@@ -4,6 +4,7 @@
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
 #include "client/controllers/message_event.h"
+#include "client/controllers/action_event.h"
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
@@ -30,21 +31,14 @@
 
 using namespace SDL2pp;
 
+#include <variant>
+
+
 int main(int argc, char **argv) try {
 	if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-
-	Queue<std::string> recv_queue(100);
-	Queue<std::string> send_queue(100);
-
-	clientReceiverLoop receiver(protocol, recv_queue);
-	clientSenderLoop sender(protocol, send_queue);
-
-	receiver.start();
-	sender.start();
-
 	// TODO: Debera haber un hilo encargado de recibir mensajes del server tanto durante la partida como cuando
 	// el cliente se encuentre en un lobby, y de alguna forma se debe comunicar con MenuController y GameController
 	// para actualizar las views cuando corresponden (en el caso de GameController tambien hay que checkear q el
@@ -52,6 +46,17 @@ int main(int argc, char **argv) try {
 	bool partida_iniciada = false;
 	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
+
+	
+	Queue<Response> recv_queue(100);
+	Queue<std::unique_ptr<MessageEvent>> send_queue(100);
+
+	RecvLoop receiver(protocol, recv_queue);
+	SendLoop sender(protocol, send_queue);
+
+	receiver.start();
+	sender.start();
+
 	std::string clientName = argv[1];
 	protocol.send_name(clientName);
 
@@ -61,15 +66,37 @@ int main(int argc, char **argv) try {
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", 640, 480);
 	MenuController menuController(menuWindow, protocol);
 
+
+	// Menu loop
+    QTimer* timer = new QTimer(&menuController);
+    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController]() {
+        Response msg;
+        while (recv_queue.try_pop(msg)) {
+			switch (msg.type) {
+				case LIST: {
+					menuController.onPartyListReceived(msg.partidas, msg.message);
+				}
+				case JOIN: {
+					menuController.onJoinPartyResponseReceived(msg.message);
+				}
+				case CREATE: {
+					menuController.onCreatePartyResponseReceived(msg.message);
+				}
+				case LEAVE: {
+					menuController.onLeavePartyResponseReceived(msg.message);
+				}
+				// Falta un caso para enviar actualizaciones del lobby
+			}
+        }
+    });
+    timer->start(0);
+
 	QObject::connect(&menuController, &MenuController::partidaIniciada, [&partida_iniciada]() {
 		partida_iniciada = true;
 	});
 
-	// TODO: Esto pasara a ser ejecutado desde otro hilo que contendra a 
-	// menuController, para evitar que el loop de Qt se trabe al enviar un mensaje.
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&protocol](const MessageEvent& message) {
+	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::unique_ptr<MessageEvent> message) {
 		send_queue.try_push(message);
-		//message.send(protocol);
 	});
 
 	app.exec();
@@ -89,24 +116,27 @@ int main(int argc, char **argv) try {
 		lastTime = currentTime;
 		gameView.update(deltaTime);
 
-		// TODO: Esto pasara a ser ejecutado desde otro hilo que contendra a 
-		// gameController, para evitar que este loop se trabe al enviar un mensaje.
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
-
-			protocol.send_action(action);
+			ActionEvent actionEvent(action);
+			std::unique_ptr<MessageEvent> event = std::make_unique<ActionEvent>();
+			send_queue.try_push(event);
+		}
+		Response msg;
+        while (recv_queue.try_pop(msg)) {
+			gameController.updateGameState(msg);
 		}
 
-		void main() {
-			while (not quit) {
-				msj = non_blocking_read_from_keyboard();
-				if (msj) {
-					sender_q.push(msj);
-				}
-				msj = receiver_q.try_pop();
-				draw(msj);
-			}
-		}
+		// void main() {
+		// 	while (not quit) {
+		// 		msj = non_blocking_read_from_keyboard();
+		// 		if (msj) {
+		// 			sender_q.push(msj);
+		// 		}
+		// 		msj = receiver_q.try_pop();
+		// 		draw(msj);
+		// 	}
+		// }
 	}
 
 	receiver.stop();

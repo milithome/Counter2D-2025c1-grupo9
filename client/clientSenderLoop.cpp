@@ -1,15 +1,14 @@
 #include "clientSenderLoop.h"
 
-SendLoop::SendLoop(Protocol &proto, Queue<MessageEvent> &q)
+SendLoop::SendLoop(Protocol &proto, Queue<std::unique_ptr<MessageEvent>> &q)
         : protocol(proto), queue(q) {}
 
 void SendLoop::run(){
     try {
         while (should_keep_running()) {
-            MessageEvent msg;
+            std::unique_ptr<MessageEvent> msg;
             if (!queue.try_pop(msg)) break;
-            msg.send(protocol);
-            //protocol.send_action(msg);
+            msg->send(protocol);
         }
     } catch (const std::exception& e) {
         std::cerr << "SendLoop exception::run() " << e.what() << std::endl;

@@ -11,10 +11,10 @@
 class SendLoop : public Thread {
 private:    
     Protocol& protocol;
-    Queue<MessageEvent>& queue;
+    Queue<std::unique_ptr<MessageEvent>>& queue;
 
 public:
-    SendLoop(Protocol& proto, Queue<MessageEvent>& q);
+    SendLoop(Protocol& proto, Queue<std::unique_ptr<MessageEvent>>& q);
 
     void run() override;
 

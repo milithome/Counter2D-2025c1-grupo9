@@ -1,19 +1,20 @@
-#ifndef LIST_EVENT_H
-#define LIST_EVENT_H
+#ifndef ACTION_EVENT_H
+#define ACTION_EVENT_H
 
 #include "common/communication/protocol.h"
 #include "client/controllers/message_event.h"
 #include <vector>
 #include <string>
 
-
-class ListEvent : public MessageEvent {
+class ActionEvent : public MessageEvent {
 public:
-    explicit ListEvent();
+    explicit ActionEvent(const Action& action);
 
     void send(Protocol& protocol) const override;
 
+
 private:
+    Action action;
 };
 
 #endif

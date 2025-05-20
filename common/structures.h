@@ -58,7 +58,7 @@ struct Action {
 };
 
 // Eventos para las acciones
-struct ActionEvent{
+struct ActionEventt{
     Action action;
     std::string playerName;
 };

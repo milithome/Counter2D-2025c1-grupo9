@@ -8,7 +8,7 @@
 #include "create_event.h"
 
 MenuController::MenuController(QtWindow& window, Protocol& protocol) : window(window), protocol(protocol) {
-    MainView mainView = MainView();
+    mainView = MainView();
     listenToMainView(mainView);
     window.showView(mainView);
 }
@@ -65,9 +65,9 @@ void MenuController::listenToPartyView(PartyView& partyView) {
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
-    emit nuevoEvento(LeaveEvent());
+    emit nuevoEvento(std::make_unique<LeaveEvent>());
     window.clearWindow();
-    MainView mainView = MainView();
+    mainView = MainView();
     listenToMainView(mainView);
     window.showView(mainView);
 }
@@ -76,30 +76,27 @@ void MenuController::onPartyViewStartButtonClicked() {
     emit partidaIniciada();
     window.clearWindow();
     window.quit();
-    // TODO: hacer algo para que empiece la partida?
 }
 
 void MenuController::onMainViewCreatePartyButtonClicked() {
     window.clearWindow();
-    Response r = protocol.recv_response(); // aca tenes q ver r.result . 0 para exito, 1 si fallo.
-    CreatePartyView createPartyView = CreatePartyView();
+    createPartyView = CreatePartyView();
     listenToCreatePartyView(createPartyView);
     window.showView(createPartyView);
 }
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
-    emit nuevoEvento(ListEvent());
-    Response r = protocol.recv_response();
+    emit nuevoEvento(std::make_unique<ListEvent>());
     window.clearWindow();
-    SearchPartyView searchPartyView = SearchPartyView(r.partidas);
+    searchPartyView = SearchPartyView();
     listenToSearchPartyView(searchPartyView);
     window.showView(searchPartyView);
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(CreateEvent(partyName));
+    emit nuevoEvento(std::make_unique<CreateEvent>(partyName));
     window.clearWindow();
-    PartyView partyView = PartyView(partyName);
+    partyView = PartyView(partyName);
     listenToPartyView(partyView);
     window.showView(partyView);
 
@@ -107,22 +104,50 @@ void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& par
 
 void MenuController::onCreatePartyViewBackButtonClicked() {
     window.clearWindow();
-    MainView mainView = MainView();
+    mainView = MainView();
     listenToMainView(mainView);
     window.showView(mainView);
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(JoinEvent(partyName));
+    emit nuevoEvento(std::make_unique<JoinEvent>(partyName));
     window.clearWindow();
-    PartyView partyView = PartyView(partyName);
+    partyView = PartyView(partyName);
     listenToPartyView(partyView);
     window.showView(partyView);
 }
 
 void MenuController::onSearchPartyViewBackButtonClicked() {
     window.clearWindow();
-    MainView mainView = MainView();
+    mainView = MainView();
     listenToMainView(mainView);
     window.showView(mainView);
+}
+
+
+
+
+void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message) {
+    for (size_t i = 0; i < parties.size(); i++) {
+        searchPartyView.addParty(parties[i]);
+    }
+}
+
+void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message) {
+    for (size_t i = 0; i < players.size(); i++) {
+        partyView.addPlayer(players[i]);
+    }
+}
+
+
+void MenuController::onJoinPartyResponseReceived(const std::string& message) {
+
+}
+
+void MenuController::onCreatePartyResponseReceived(const std::string& message) {
+
+}
+
+void MenuController::onLeavePartyResponseReceived(const std::string& message) {
+
 }
