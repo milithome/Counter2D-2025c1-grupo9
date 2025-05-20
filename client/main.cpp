@@ -59,11 +59,11 @@ int main(int argc, char **argv) try {
     QApplication app(argc, argv);
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	MenuController menuController(menuWindow, protocol);
-
+	std::vector<std::string> players;
 
 	// Menu loop
     QTimer* timer = new QTimer(&menuController);
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController, &partida_iniciada] {
+    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController, &partida_iniciada, &players] {
         Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
@@ -80,6 +80,7 @@ int main(int argc, char **argv) try {
 					break;
 				}
 				case STATE_LOBBY: {
+					players = msg.players;
 					menuController.onLobbyPlayersReceived(msg.players, msg.message, msg.result);
 					break;
 				}
@@ -111,7 +112,9 @@ int main(int argc, char **argv) try {
 	};
 
 	Game game(10, 10);
-	game.addPlayer(clientName);
+	for (size_t i = 0; i < players.size(); i++) {
+		game.addPlayer(players[i]);
+	}
 	GameView gameView = GameView(game, clientName);
 	GameController gameController = GameController(gameView, game, clientName);
 
