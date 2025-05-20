@@ -6,7 +6,6 @@
 #include "thread.h"
 #include "../common/communication/protocol.h"
 #include "queue.h"
-#include "lobbyClientHandler.h"
 #include "admin.h"
 #include "../common/structures.h"
 
@@ -16,15 +15,17 @@ public:
     void run() override;
     ~Lobby() override;
 
-    void add_player(Protocol&& player, const std::string& playerName);
+    LobbyChannels add_player(Protocol& player, const std::string& playerName);
     void stop() override;
 private:
     std::string name;
-    std::map<std::string, Protocol> players;
+    std::map<std::string, Protocol&> players;
     Admin& admin;
-    std::map<std::string, std::shared_ptr<LobbyClientHandler>> handlers;
     size_t maxPlayers;
-    Queue<LobbyEvent> eventQueue;
+    std::shared_ptr<Queue<LobbyEvent>> toLobby;
+    std::map<std::string, std::shared_ptr<Queue<LobbyEvent>>> fromPlayers;
+
+
     bool active;
 
     void handle_join_event(const std::string& playerName);

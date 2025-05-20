@@ -4,9 +4,7 @@ target_sources(taller_server
     acceptor.cpp
     admin.cpp
     clientHandler.cpp
-    lobbyClientHandler.cpp
     lobby.cpp
-    gameReceiver.cpp
     gameLoop.cpp
     server.cpp
     main.cpp
@@ -17,9 +15,7 @@ target_sources(taller_server
     admin.h
     acceptor.h
     clientHandler.h
-    lobbyClientHandler.h
     lobby.h
-    gameReceiver.h
     gameLoop.h
     server.h
     )

@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstdint>
 #include <variant>
+#include "../server/queue.h"
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -18,7 +19,10 @@ enum Type {
     INITIAL_DATA,
     STATE,
     STATE_LOBBY,
-    NAME    
+    NAME,
+    START,
+    FINISH,
+    DISCONNECT 
 };
 
 // Tipos de entidades del juego
@@ -37,6 +41,7 @@ struct Entity {
 enum class ActionType {
     MOVE,
     POINT_TO,
+    FINISH,
     SHOOT
 };
 
@@ -50,7 +55,7 @@ struct PointToAction {
     float value;
 };
 
-using ActionData = std::variant<MoveAction, PointToAction>;
+using ActionData = std::variant<std::monostate,MoveAction, PointToAction>;
 
 struct Action {
     ActionType type;
@@ -74,21 +79,33 @@ struct Message {
 // Respuesta enviada por el servidor al cliente
 struct Response {
   Type type;
-  uint16_t size;
+  uint8_t result;
+  uint16_t size; // esto me parece q se puede sacar
   std::vector<Entity> entities;
   std::vector<std::string> partidas;
-  uint8_t result;
+  std::vector<std::string> players;
   std::string message;
 };
 
 enum class LobbyEventType {
-  LEAVE,
-  JOIN,
+    LEAVE,
+    JOIN,
+    START
 };
 
 struct LobbyEvent {
   LobbyEventType type;
   std::string playerName;
+};
+
+struct LobbyChannels {
+    std::shared_ptr<Queue<LobbyEvent>> toLobby;
+    std::shared_ptr<Queue<LobbyEvent>> fromLobby;
+};
+
+struct GameChannels {
+    std::shared_ptr<Queue<ActionEvent>> toGame;
+    std::shared_ptr<Queue<ActionEvent>> fromGame;
 };
 
 #endif

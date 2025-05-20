@@ -1,8 +1,8 @@
 #include "acceptor.h"
 #include <thread>
 
-Acceptor::Acceptor(const std::string& port, Admin& admin,std::vector<std::shared_ptr<ClientHandler>>& handlers) 
-    : skt(port.c_str()), active(true), admin(admin), handlers(handlers) {}
+Acceptor::Acceptor(const std::string& port, Admin& admin) 
+    : skt(port.c_str()), active(true), admin(admin) {}
 
 void Acceptor::run() {
     try {
@@ -13,10 +13,13 @@ void Acceptor::run() {
             auto handler = std::make_shared<ClientHandler>(
                 std::move(protocol),
                 admin,
-                [this](std::string name, std::shared_ptr<ClientHandler> handler) {
+                [this, weak_handler = std::weak_ptr<ClientHandler>{}](std::string name, std::shared_ptr<ClientHandler> handler) mutable {
+                    weak_handler = handler;
                     admin.registerHandler(name, handler);
-                });
-            handlers.push_back(handler);
+                    unnamedHandlers.erase(handler);
+                }
+            );
+            unnamedHandlers.insert(handler);
             handler->start();
             std::cout << "Accepted connection from client." << std::endl;
         }
@@ -33,6 +36,9 @@ void Acceptor::run() {
 
 void Acceptor::stop() {
     active = false;
+    for (const auto& handler : unnamedHandlers) {
+            handler->stop();
+    }
     skt.shutdown(SHUT_RDWR);
     skt.close();  
 }

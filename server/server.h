@@ -9,12 +9,12 @@
 class Server {
 public:
     Server();
+    Server(std::string& port);
     ~Server();
 
     void start();
 
 private:
-    std::vector<std::shared_ptr<ClientHandler>> handlers;
     Admin admin;
     Acceptor acceptor;
 };

@@ -124,31 +124,49 @@ void Protocol::send_leave_lobby() {
     }
 }
 
-void Protocol::send_initial_data() {
-    uint8_t type = Type::INITIAL_DATA;
+void Protocol::send_disconnect() {
+    uint8_t type = Type::DISCONNECT;
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
-        throw std::runtime_error("Error sending INITIAL_DATA message");
+        throw std::runtime_error("Error sending DISCONNECT message");
     }
-
-    // mapa ???
 }
 
-void Protocol::send_state(const std::vector<Entity>& entities) {
-    std::vector<uint8_t> buffer;
-    buffer.push_back(Type::STATE);
+std::vector<uint8_t> Protocol::serialize_simple(const Response& r) {
+    return {static_cast<uint8_t>(r.type), r.result};
+}
 
-    uint16_t size = htons(entities.size());
-    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
-    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+std::vector<uint8_t> Protocol::serialize_list(const Response& r) {
+    std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
 
-    for (const auto& entity : entities) {
-        buffer.push_back(static_cast<uint8_t>(entity.type));
+    uint16_t size = htons(r.partidas.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+
+    for (const auto& partida : r.partidas) {
+        uint16_t len = htons(partida.size());
+        buf.push_back(reinterpret_cast<uint8_t*>(&len)[0]);
+        buf.push_back(reinterpret_cast<uint8_t*>(&len)[1]);
+        buf.insert(buf.end(), partida.begin(), partida.end());
+    }
+
+    return buf;
+}
+
+std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
+    std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+
+    uint16_t size = htons(r.entities.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+
+    for (const auto& entity : r.entities) {
+        buf.push_back(static_cast<uint8_t>(entity.type));
 
         uint16_t name_len = htons(entity.name.size());
-        buffer.push_back(reinterpret_cast<uint8_t*>(&name_len)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&name_len)[1]);
-        buffer.insert(buffer.end(), entity.name.begin(), entity.name.end());
+        buf.push_back(reinterpret_cast<uint8_t*>(&name_len)[0]);
+        buf.push_back(reinterpret_cast<uint8_t*>(&name_len)[1]);
+        buf.insert(buf.end(), entity.name.begin(), entity.name.end());
 
         uint32_t x_net, y_net;
         std::memcpy(&x_net, &entity.x, sizeof(float));
@@ -158,55 +176,44 @@ void Protocol::send_state(const std::vector<Entity>& entities) {
 
         uint8_t* x_ptr = reinterpret_cast<uint8_t*>(&x_net);
         uint8_t* y_ptr = reinterpret_cast<uint8_t*>(&y_net);
-        buffer.insert(buffer.end(), x_ptr, x_ptr + sizeof(float));
-        buffer.insert(buffer.end(), y_ptr, y_ptr + sizeof(float)); 
+        buf.insert(buf.end(), x_ptr, x_ptr + sizeof(float));
+        buf.insert(buf.end(), y_ptr, y_ptr + sizeof(float));
     }
 
-    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
-        throw std::runtime_error("Error sending STATE message");
-    }
+    return buf;
 }
 
-void Protocol::send_state_lobby(const std::vector<std::string>& players) {
-    std::lock_guard<std::mutex> lock(mtx);
+void Protocol::send_response(const Response& r) {
     std::vector<uint8_t> buffer;
-    buffer.push_back(Type::STATE_LOBBY);
 
-    uint16_t size = htons(players.size());
-    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
-    buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
+    switch (r.type) {
+        case Type::CREATE:
+        case Type::JOIN:
+        case Type::LEAVE:
+        case Type::START:
+        case Type::FINISH:
+            buffer = serialize_simple(r);
+            break;
 
-    for (const auto& player : players) {
-        uint16_t name_size = htons(player.size());
-        buffer.push_back(reinterpret_cast<uint8_t*>(&name_size)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&name_size)[1]);
-        buffer.insert(buffer.end(), player.begin(), player.end());
+        case Type::LIST:
+            buffer = serialize_list(r);
+            break;
+
+        case Type::STATE:
+            buffer = serialize_state(r);
+            break;
+
+        case Type::STATE_LOBBY:
+            buffer = serialize_state_lobby(r);
+            break;
+
+        case Type::INITIAL_DATA:
+            buffer = serialize_initial_data(r);
+            break;
+
+        default:
+            throw std::runtime_error("Invalid response type");
     }
-
-    if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
-        throw std::runtime_error("Error sending STATE_LOBBY message");
-    }
-}
-
-void Protocol::send_response(const Response& response) {
-    std::vector<uint8_t> buffer;
-    buffer.push_back(response.type);
-
-    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
-        buffer.push_back(response.result);
-    } else if (response.type == Type::LIST) {
-        uint16_t size = htons(response.partidas.size());
-        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
-        buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
-        for (const auto& partida : response.partidas) {
-            uint16_t size = htons(partida.size());
-            buffer.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
-            buffer.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
-            buffer.insert(buffer.end(), partida.begin(), partida.end());
-        }
-    } else {
-        throw std::runtime_error("Invalid response type");
-    } 
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
         throw std::runtime_error("Error sending response");
@@ -237,145 +244,146 @@ std::string Protocol::recv_name() {
     return std::string(name.begin(), name.end());
 }
 
-void Protocol::recv_initial_data() {
-    uint8_t type;
-    if (skt.recvall(&type, sizeof(type)) == 0) {
-        throw std::runtime_error("Error receiving INITIAL_DATA message");
+Response Protocol::deserialize_simple(Type type) {
+    Response r;
+    r.type = type;
+    if (skt.recvall(&r.result, sizeof(r.result)) == 0) {
+        throw std::runtime_error("Error receiving result");
     }
-
-    if (type != Type::INITIAL_DATA) {
-        throw std::runtime_error("Invalid INITIAL_DATA message type");
-    }
-
-    // mapa ???
+    return r;
 }
 
-std::vector<Entity> Protocol::recv_state() {
-    uint8_t type;
-    if (skt.recvall(&type, sizeof(type)) == 0) {
-        throw std::runtime_error("Error receiving STATE message");
+Response Protocol::deserialize_list() {
+    Response r;
+    r.type = Type::LIST;
+
+    uint16_t size_net;
+    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
+        throw std::runtime_error("Error receiving list size");
+    }
+    uint16_t size = ntohs(size_net);
+
+    for (uint16_t i = 0; i < size; ++i) {
+        uint16_t name_size_net;
+        if (skt.recvall(&name_size_net, sizeof(name_size_net)) == 0) {
+            throw std::runtime_error("Error receiving name size");
+        }
+        uint16_t name_size = ntohs(name_size_net);
+
+        std::vector<uint8_t> name_buf(name_size);
+        if (skt.recvall(name_buf.data(), name_size) == 0) {
+            throw std::runtime_error("Error receiving name");
+        }
+        r.partidas.emplace_back(name_buf.begin(), name_buf.end());
     }
 
-    if (type != Type::STATE) {
-        throw std::runtime_error("Invalid STATE message type");
-    }
+    return r;
+}
 
-    uint16_t size;
-    if (skt.recvall(&size, sizeof(size)) == 0) {
-        throw std::runtime_error("Error receiving STATE size");
-    }
-    size = ntohs(size);
+Response Protocol::deserialize_initial_data() {
+    Response r;
+    r.type = Type::INITIAL_DATA;
+    // TODO
+    return r;
+}
 
-    std::vector<Entity> entities(size);
+Response Protocol::deserialize_state() {
+    Response r;
+    r.type = Type::STATE;
+
+    uint16_t size_net;
+    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
+        throw std::runtime_error("Error receiving state size");
+    }
+    uint16_t size = ntohs(size_net);
+    r.entities.resize(size);
+
     for (uint16_t i = 0; i < size; ++i) {
         uint8_t entity_type;
         if (skt.recvall(&entity_type, sizeof(entity_type)) == 0) {
             throw std::runtime_error("Error receiving entity type");
         }
-        entities[i].type = static_cast<EntityType>(entity_type);
+        r.entities[i].type = static_cast<EntityType>(entity_type);
 
         uint16_t name_len;
         if (skt.recvall(&name_len, sizeof(name_len)) == 0) {
-            throw std::runtime_error("Error receiving entity name size");
+            throw std::runtime_error("Error receiving name length");
         }
         name_len = ntohs(name_len);
+
         std::vector<uint8_t> name_buf(name_len);
         if (skt.recvall(name_buf.data(), name_len) == 0) {
-            throw std::runtime_error("Error receiving entity name");
+            throw std::runtime_error("Error receiving name");
         }
-        entities[i].name.assign(name_buf.begin(), name_buf.end());
+        r.entities[i].name.assign(name_buf.begin(), name_buf.end());
 
         uint32_t x_net, y_net;
         if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0) {
-            throw std::runtime_error("Error receiving entity coordinates");
+            throw std::runtime_error("Error receiving coordinates");
         }
-
         x_net = ntohl(x_net);
         y_net = ntohl(y_net);
-
-        float x, y;
-        std::memcpy(&x, &x_net, sizeof(float));
-        std::memcpy(&y, &y_net, sizeof(float));
-
-        entities[i].x = x;
-        entities[i].y = y;
+        std::memcpy(&r.entities[i].x, &x_net, sizeof(float));
+        std::memcpy(&r.entities[i].y, &y_net, sizeof(float));
     }
 
-    return entities;
+    return r;
 }
 
-std::vector<std::string> Protocol::recv_state_lobby() {
-    std::lock_guard<std::mutex> lock(mtx);
-    uint8_t type;
-    if (skt.recvall(&type, sizeof(type)) == 0) {
-        throw std::runtime_error("Error receiving STATE_LOBBY message");
-    }
+Response Protocol::deserialize_state_lobby() {
+    Response r;
+    r.type = Type::STATE_LOBBY;
 
-    if (type != Type::STATE_LOBBY) {
-        throw std::runtime_error("Invalid STATE_LOBBY message type");
+    uint16_t size_net;
+    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
+        throw std::runtime_error("Error receiving state_lobby size");
     }
+    uint16_t size = ntohs(size_net);
+    r.players.resize(size);
 
-    uint16_t size;
-    if (skt.recvall(&size, sizeof(size)) == 0) {
-        throw std::runtime_error("Error receiving STATE_LOBBY size");
-    }
-    size = ntohs(size);
-
-    std::vector<std::string> players(size);
     for (uint16_t i = 0; i < size; ++i) {
-        uint16_t name_size;
-        if (skt.recvall(&name_size, sizeof(name_size)) == 0) {
+        uint16_t name_size_net;
+        if (skt.recvall(&name_size_net, sizeof(name_size_net)) == 0) {
             throw std::runtime_error("Error receiving player name size");
         }
-        name_size = ntohs(name_size);
+        uint16_t name_size = ntohs(name_size_net);
 
-        std::vector<uint8_t> name(name_size);
-        if (skt.recvall(name.data(), name_size) == 0) {
+        std::vector<uint8_t> name_buf(name_size);
+        if (skt.recvall(name_buf.data(), name_size) == 0) {
             throw std::runtime_error("Error receiving player name");
         }
-        players[i].assign(name.begin(), name.end());
+        r.players[i].assign(name_buf.begin(), name_buf.end());
     }
 
-    return players;
+    return r;
 }
 
 Response Protocol::recv_response() {
-    uint8_t type;
-    if (skt.recvall(&type, sizeof(type)) == 0) {
-        throw std::runtime_error("Error receiving response type");
+    uint8_t type_byte;
+    if (skt.recvall(&type_byte, sizeof(type_byte)) == 0) {
+        throw std::runtime_error("Error receiving message type");
     }
 
-    Response response;
-    response.type = static_cast<Type>(type);
+    Type type = static_cast<Type>(type_byte);
 
-    if (response.type == Type::CREATE || response.type == Type::JOIN || response.type == Type::LEAVE) {
-        if (skt.recvall(&response.result, sizeof(response.result)) == 0) {
-            throw std::runtime_error("Error receiving response result");
-        }
-    } else if (response.type == Type::LIST) {
-        uint16_t size_net;
-        if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
-            throw std::runtime_error("Error receiving response size");
-        }
-        uint16_t size = ntohs(size_net);
-        for (uint16_t i = 0; i < size; ++i) {
-            uint16_t name_size;
-            if (skt.recvall(&name_size, sizeof(name_size)) == 0) {
-                throw std::runtime_error("Error receiving partida name size");
-            }
-            name_size = ntohs(name_size);
-
-            std::vector<uint8_t> name(name_size);
-            if (skt.recvall(name.data(), name_size) == 0) {
-                throw std::runtime_error("Error receiving partida name");
-            }
-            response.partidas.emplace_back(name.begin(), name.end());
-        }
-    } else {
-        throw std::runtime_error("Invalid response type");
+    switch (type) {
+        case Type::CREATE:
+        case Type::JOIN:
+        case Type::LEAVE:
+        case Type::START:
+        case Type::FINISH:
+            return deserialize_simple(type);
+        case Type::LIST:
+            return deserialize_list();
+        case Type::STATE:
+            return deserialize_state();
+        case Type::STATE_LOBBY:
+            return deserialize_state_lobby();
+        case Type::INITIAL_DATA:
+            return deserialize_initial_data();
+        default:
+            throw std::runtime_error("Unknown response type");
     }
-
-    return response;
 }
 
 Message Protocol::recv_message() {

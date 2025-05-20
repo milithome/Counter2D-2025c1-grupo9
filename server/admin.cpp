@@ -3,46 +3,69 @@
 #include "lobby.h"
 #include "gameLoop.h"
 
-Admin::Admin() : mtx(), lobbies(), games(), handlers() {}
+Admin::Admin(){}
+
+Admin::~Admin(){
+    std::cout << "Admin destructor called" << std::endl;
+}
 
 void Admin::stop() {
-    std::lock_guard<std::mutex> lock(mtx);
-    for (auto& pair : lobbies) {
-        pair.second->stop();
-        pair.second->join();
-    }
+    //std::lock_guard<std::mutex> lock(mtx);
+    // Paro los hilos
     for (auto& pair : handlers) {
         pair.second->stop();
-        pair.second->join();
     }
+
+    for (auto& pair : lobbies) {
+        pair.second->stop();
+    }
+
     for (auto& pair : games) {
         pair.second->stop();
+    }
+
+    // Espero que paren los hilos
+    for (auto& pair : lobbies) {
         pair.second->join();
     }
 
+    for (auto& pair : games) {
+        pair.second->join();
+    }
+
+    for (auto& pair : handlers) {
+        pair.second->join();
+    }
+
+    // Limpio los arreglos
     lobbies.clear();
     handlers.clear();
     games.clear();
-    std::cout << "Admin stopped." << std::endl;
+    completedGames.clear();
 }
 
 void Admin::createLobby(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
+
+    removeFinishedGames();
+    
     if (lobbies.find(name) != lobbies.end()) {
         throw std::runtime_error("Lobby already exists");
     }
     lobbies[name] = std::make_shared<Lobby>(name, *this);
     lobbies[name]->start();
+    
+    
 }
 
-void Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol&& protocol) {
+LobbyChannels Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = lobbies.find(name);
     if (it == lobbies.end()) {
         throw std::runtime_error("Lobby not found");
     }
     
-    it->second->add_player(std::move(protocol), clientName);
+    return it->second->add_player(protocol, clientName);
 }
 
 std::vector<std::string> Admin::listLobbies() {
@@ -75,31 +98,43 @@ void Admin::removeHandler(const std::string& clientName) {
     }
 }
 
-void Admin::startGame(const std::string& name, std::map<std::string, Protocol>&& players) {
+void Admin::startGame(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
+
+    removeFinishedGames();
+
     auto it = lobbies.find(name);
     if (it != lobbies.end()) {
-        games[name] = std::make_shared<GameLoop>(name, *this, std::move(players));
+        games[name] = std::make_shared<GameLoop>(name, *this);
         games[name]->start();
     }
 }
 
-void Admin::endGame(const std::string& name, std::map<std::string, Protocol>&& players) {
+GameChannels Admin::joinGame(const std::string& gameName, const std::string& clientName, Protocol& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
-
-    auto gameIt = games.find(name);
-    if (gameIt != games.end()) {
-        gameIt->second->stop();
-        gameIt->second->join();
-        games.erase(gameIt);
+    auto it = games.find(gameName);
+    if (it == games.end()) {
+        throw std::runtime_error("Game not found");
     }
 
-    for (auto& pair : players) {
-        const std::string& playerName = pair.first;
-        Protocol& protocol = pair.second;
-
-        // CAMBIARA PROXIMAMENTE
-        auto handler = std::make_shared<ClientHandler>(std::move(protocol), playerName, *this);
-        handler->start();
-    }
+    return it->second->add_player(protocol, clientName);
 }
+
+void Admin::endGame(const std::string& name) {
+    std::lock_guard<std::mutex> lock(mtx);
+    completedGames.push_back(name);
+}
+
+void Admin::removeFinishedGames() {
+    for (const auto& name : completedGames) {
+        auto it = games.find(name);
+        if (it != games.end()) {
+            it->second->stop();
+            it->second->join();
+            games.erase(it);
+        }
+    }
+
+    completedGames.clear();
+}
+

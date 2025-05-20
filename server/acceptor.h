@@ -6,10 +6,12 @@
 #include "../common/communication/protocol.h"
 #include "clientHandler.h"
 #include "admin.h"
+#include <unordered_set>
+#include <memory>
 
 class Acceptor : public Thread {
 public:
-    Acceptor(const std::string& port, Admin& admin, std::vector<std::shared_ptr<ClientHandler>>& handlers);
+    Acceptor(const std::string& port, Admin& admin);
     
     virtual void run() override;
     
@@ -20,7 +22,7 @@ private:
     Socket skt;
     std::atomic<bool> active;
     Admin& admin;
-    std::vector<std::shared_ptr<ClientHandler>>& handlers;
+    std::unordered_set<std::shared_ptr<ClientHandler>> unnamedHandlers;
 };
 
 #endif
