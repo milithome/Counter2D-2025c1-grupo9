@@ -10,6 +10,8 @@
 #include "socket.h"
 #include "../structures.h"
 
+
+
 class Protocol {
 public:
     Protocol(Socket skt);
@@ -19,38 +21,45 @@ public:
 
     bool has_data(int timeout_ms = 0) const;
 
-    // Metodos para enviar mensajes (cliente)
+    // Metodos para enviar mensajes al server (cliente)
     void send_name(const std::string& name);
+    /*
+        para estos podria hacer un { void send_message(const Message& mesagge) } para generalizar
+    */
     void send_create(const std::string& name);
     void send_join(const std::string& name);
     void send_list();
     void send_action(const Action& action);
     void send_leave_lobby();
+    /**/
     void send_disconnect();
 
-    // void send_message(const Message& mesagge); // -> proximamente
 
-    // Metodos para enviar mensajes (servidor)
-    // Podria incluir send_initial_data y send_state en send_response pero me salio hacerlo asi pq no son respuestas a peticiones q hizo el cliente
-    // y no tienen sentido como respuesta a una peticion
-    void send_initial_data();
-    void send_state(const std::vector<Entity>& entities);
-    void send_state_lobby(const std::vector<std::string>& players);
+    // Metodos para enviar respuestas a clientes (servidor)
     void send_response(const Response& response);
 
-    // Metodos para recibir mensajes (cliente)
+    // Metodos para recibir respuestas del server (cliente)
     std::string recv_name();
-    void recv_initial_data();
-    std::vector<Entity> recv_state();
-    std::vector<std::string> recv_state_lobby();
     Response recv_response();
 
-    // Metodos para recibir mensajes (servidor)
+    // Metodos para recibir mensajes de clientes (servidor)
     Message recv_message();
 
 private:
     Socket skt;
     mutable std::mutex mtx;
+
+    std::vector<uint8_t> serialize_simple(const Response& r);
+    std::vector<uint8_t> serialize_list(const Response& r);
+    std::vector<uint8_t> serialize_state(const Response& r);
+    std::vector<uint8_t> serialize_state_lobby(const Response& r);
+    std::vector<uint8_t> serialize_initial_data(const Response& r);
+
+    Response deserialize_simple(Type type);
+    Response deserialize_list();
+    Response deserialize_initial_data();
+    Response deserialize_state();
+    Response deserialize_state_lobby();
 };
 
 #endif
