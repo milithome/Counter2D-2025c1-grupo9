@@ -1,9 +1,9 @@
 #ifndef SEND_LOOP_H_
 #define SEND_LOOP_H_
 
-#include "server/thread.h"
+#include "common/utilities/thread.h"
 #include "common/communication/protocol.h"
-#include "queue.h"
+#include "common/utilities/queue.h"
 #include "common/structures.h"
 #include <string>
 #include "client/controllers/message_event.h"
@@ -11,10 +11,10 @@
 class SendLoop : public Thread {
 private:    
     Protocol& protocol;
-    Queue<std::unique_ptr<MessageEvent>>& queue;
+    Queue<std::shared_ptr<MessageEvent>>& queue;
 
 public:
-    SendLoop(Protocol& proto, Queue<std::unique_ptr<MessageEvent>>& q);
+    SendLoop(Protocol& proto, Queue<std::shared_ptr<MessageEvent>>& q);
 
     void run() override;
 

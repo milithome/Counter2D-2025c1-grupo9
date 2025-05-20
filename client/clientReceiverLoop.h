@@ -1,9 +1,9 @@
 #ifndef RECV_LOOP_H_
 #define RECV_LOOP_H_
 
-#include "server/thread.h"
+#include "common/utilities/thread.h"
 #include "common/communication/protocol.h"
-#include "queue.h"
+#include "common/utilities/queue.h"
 #include "common/structures.h"
 #include <string>
 #include "client/controllers/message_event.h"

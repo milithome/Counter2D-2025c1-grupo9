@@ -7,7 +7,7 @@
 #include "../common/communication/protocol.h"
 #include "../common/structures.h"
 #include "admin.h"
-#include "thread.h"
+#include "common/utilities/thread.h"
 
 class ClientHandler : public Thread, public std::enable_shared_from_this<ClientHandler> {
 public:

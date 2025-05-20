@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstdint>
 #include <variant>
-#include "../server/queue.h"
+#include "common/utilities/queue.h"
 
 // Tipos de mensajes que pueden enviarse
 enum Type {

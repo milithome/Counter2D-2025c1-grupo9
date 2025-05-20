@@ -32,7 +32,7 @@ void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
         game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
 
-        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
+        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1], deltaTime}};
         action_queue.push(action);
         actions.push_back(action);
     }
@@ -140,7 +140,7 @@ bool GameController::actionQueueIsEmpty() {
 void GameController::updateGameState(std::vector<Entity> entities) {
     for (size_t i = 0; i < entities.size(); i++) {
         Entity entity = entities[i];
-        if (entity.type = PLAYER) {
+        if (entity.type == PLAYER) {
             if (entity.name == player_name) {
                 // Proceso de sincronizacion en caso de desincronizacion
                 break;

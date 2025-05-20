@@ -2,8 +2,8 @@
 #define GAME_LOOP_H
 
 #include <map>
-#include "thread.h"
-#include "queue.h"
+#include "common/utilities/thread.h"
+#include "common/utilities/queue.h"
 #include "../common/communication/protocol.h"
 #include "../common/game.h"
 

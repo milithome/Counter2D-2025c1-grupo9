@@ -49,7 +49,7 @@ int main(int argc, char **argv) try {
 
 	
 	Queue<Response> recv_queue(100);
-	Queue<std::unique_ptr<MessageEvent>> send_queue(100);
+	Queue<std::shared_ptr<MessageEvent>> send_queue(100);
 
 	RecvLoop receiver(protocol, recv_queue);
 	SendLoop sender(protocol, send_queue);
@@ -75,31 +75,40 @@ int main(int argc, char **argv) try {
 			switch (msg.type) {
 				case LIST: {
 					menuController.onPartyListReceived(msg.partidas, msg.message, msg.result);
+					break;
 				}
 				case JOIN: {
 					menuController.onJoinPartyResponseReceived(msg.message, msg.result);
+					break;
 				}
 				case LEAVE: {
 					menuController.onLeavePartyResponseReceived(msg.message, msg.result);
+					break;
 				}
 				case STATE_LOBBY: {
 					menuController.onLobbyPlayersReceived(msg.players, msg.message, msg.result);
+					break;
 				}
 				case START: {
 					partida_iniciada = true;
 					menuController.onGameStarted();
+					break;
+				}
+				default: {
+					break;
 				}
 			}
         }
     });
     timer->start(0);
 
-	// QObject::connect(&menuController, &MenuController::partidaIniciada, [&partida_iniciada]() {
-	// 	partida_iniciada = true;
+	// QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::unique_ptr<MessageEvent> message) {
+	// 	send_queue.try_push(message);
 	// });
 
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::unique_ptr<MessageEvent> message) {
-		send_queue.try_push(message);
+	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
+		//std::unique_ptr<MessageEvent> msg = std::make_shared<MessageEvent>(event)
+		send_queue.try_push(std::shared_ptr<MessageEvent>(event));
 	});
 
 	app.exec();
@@ -126,8 +135,8 @@ int main(int argc, char **argv) try {
 
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
-			ActionEvent actionEvent(action);
-			std::unique_ptr<MessageEvent> event = std::make_unique<ActionEvent>();
+			//ActionEvent actionEvent(action);
+			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
 			send_queue.try_push(event);
 		}
 		Response msg;
@@ -139,6 +148,9 @@ int main(int argc, char **argv) try {
 				}
 				case FINISH: {
 					game.stop();
+					break;
+				}
+				default: {
 					break;
 				}
 			}

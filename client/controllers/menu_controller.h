@@ -55,7 +55,7 @@ private:
 
 
 signals:
-    void nuevoEvento(std::unique_ptr<MessageEvent> event);
+    void nuevoEvento(MessageEvent *event);
 };
 
 #endif 

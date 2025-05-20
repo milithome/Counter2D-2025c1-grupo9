@@ -65,7 +65,7 @@ void MenuController::listenToPartyView(PartyView& partyView) {
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
-    emit nuevoEvento(std::make_unique<LeaveEvent>());
+    emit nuevoEvento(new LeaveEvent());
     window.clearWindow();
     mainView = MainView();
     listenToMainView(mainView);
@@ -90,7 +90,7 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 }
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
-    emit nuevoEvento(std::make_unique<ListEvent>());
+    emit nuevoEvento(new ListEvent());
     window.clearWindow();
     searchPartyView = SearchPartyView();
     listenToSearchPartyView(searchPartyView);
@@ -98,7 +98,7 @@ void MenuController::onMainViewSearchPartyButtonClicked() {
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(std::make_unique<CreateEvent>(partyName));
+    emit nuevoEvento(new CreateEvent(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);
@@ -114,7 +114,7 @@ void MenuController::onCreatePartyViewBackButtonClicked() {
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(std::make_unique<JoinEvent>(partyName));
+    emit nuevoEvento(new JoinEvent(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);

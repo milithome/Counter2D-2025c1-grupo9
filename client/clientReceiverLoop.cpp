@@ -35,7 +35,3 @@ void RecvLoop::stop() {
         Thread::stop();
         queue.close(); //en teoria no se necesita si la cola no es bloqueante
 }
-
-void RecvLoop::bind(std::function<void(const std::unique_ptr<MessageEvent>&)> callback) {
-    listeners.push_back(callback);
-}

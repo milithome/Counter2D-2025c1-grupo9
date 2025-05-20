@@ -10,8 +10,6 @@ target_sources(taller_server
     main.cpp
     PUBLIC
     # .h files
-    thread.h
-    queue.h
     admin.h
     acceptor.h
     clientHandler.h

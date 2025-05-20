@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <map>
-#include "thread.h"
+#include "common/utilities/thread.h"
 #include "../common/communication/protocol.h"
-#include "queue.h"
+#include "common/utilities/queue.h"
 #include "admin.h"
 #include "../common/structures.h"
 

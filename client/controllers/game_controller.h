@@ -33,7 +33,7 @@ private:
     void onMouseMovement();
     void onMouseLeftClick(const SDL_Event& event);
     void update(float deltaTime);
-    std::vector<float> movement_keys_vector = std::vector<float>(2, 0.0f);
+    std::vector<int> movement_keys_vector = std::vector<int>(2, 0);
     std::queue<Action> action_queue;
     std::vector<Action> actions;
 };
