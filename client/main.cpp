@@ -143,17 +143,6 @@ int main(int argc, char **argv) try {
 				}
 			}
 		}
-
-		// void main() {
-		// 	while (not quit) {
-		// 		msj = non_blocking_read_from_keyboard();
-		// 		if (msj) {
-		// 			sender_q.push(msj);
-		// 		}
-		// 		msj = receiver_q.try_pop();
-		// 		draw(msj);
-		// 	}
-		// }
 	}
 
 	receiver.stop();
