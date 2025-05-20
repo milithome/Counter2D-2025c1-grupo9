@@ -72,7 +72,7 @@ void GameLoop::run() {
 
 GameChannels GameLoop::add_player(Protocol& player, const std::string& playerName) {
     players.emplace(playerName, player);
-    game.addPlayer(playerName,0);
+    game.addPlayer(playerName);
 
     auto fromPlayerQueue = std::make_shared<Queue<ActionEvent>>(100);
     fromPlayers.emplace(playerName,fromPlayerQueue);
@@ -86,7 +86,16 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
 void GameLoop::broadcast_game_state(std::vector<Entity>& entities) {
     for (auto& pair : players) {
         try {
-            pair.second.send_state(entities);
+            Response response = {
+                Type::STATE,
+                0,
+                static_cast<uint16_t>(entities.size()),
+                entities,
+                {},
+                {},
+                ""
+            };
+            pair.second.send_response(response);
         } catch (const std::exception& e) {
             std::cerr << "Failed to send to player " << pair.first << ": " << e.what() << std::endl;
         }

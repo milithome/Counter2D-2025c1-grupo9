@@ -42,7 +42,7 @@ private:
     bool handle_game_client_message(const Message& msg, Queue<ActionEvent>& toGame, bool& inGame);
 
     // Utility
-    void send_simple_response(Type type, const std::string& msg);
+    void send_simple_response(Type type, const std::string& msg, uint8_t result);
 };
 
 #endif

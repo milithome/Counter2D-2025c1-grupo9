@@ -72,7 +72,16 @@ void Lobby::broadcast_lobby_state() {
     }
 
     for (auto& pair : players) {
-        pair.second.send_state_lobby(playerNames);
+        Response response = {
+            Type::STATE_LOBBY,
+            0,
+            static_cast<uint16_t>(playerNames.size()),
+            {},
+            {},
+            playerNames,
+            ""
+        };
+        pair.second.send_response(response);
     }
 }
     

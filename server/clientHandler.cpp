@@ -57,7 +57,7 @@ void ClientHandler::handle_message(const Message& message) {
             handle_list();
             break;
         case Type::DISCONNECT:
-            send_simple_response(Type::DISCONNECT, "Disconnect successful");
+            send_simple_response(Type::DISCONNECT, "Disconnect successful",0);
             active = false;
             break;
         default:
@@ -77,7 +77,7 @@ void ClientHandler::handle_create(const std::string& name) {
 void ClientHandler::handle_join(const std::string& name) {
     try {
         LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
-        send_simple_response(Type::JOIN, "Joined lobby");
+        send_simple_response(Type::JOIN, "Joined lobby",0);
 
         Queue<LobbyEvent>& toLobby = *queues.toLobby;
         Queue<LobbyEvent>& fromLobby = *queues.fromLobby;
@@ -108,12 +108,12 @@ bool ClientHandler::handle_lobby_client_message(const Message& msg, Queue<LobbyE
         case Type::LEAVE:
             toLobby.push({LobbyEventType::LEAVE, clientName});
             inLobby = false;
-            send_simple_response(Type::LEAVE, "Leave successful");
+            send_simple_response(Type::LEAVE, "Leave successful",0);
             return true;
         case Type::DISCONNECT:
             active = false;
             inLobby = false;
-            send_simple_response(Type::DISCONNECT, "Disconnect successful");
+            send_simple_response(Type::DISCONNECT, "Disconnect successful",0);
             return true;
         default:
             break;
@@ -123,7 +123,7 @@ bool ClientHandler::handle_lobby_client_message(const Message& msg, Queue<LobbyE
 
 void ClientHandler::handle_game(const std::string& name) {
     try {
-        send_simple_response(Type::START, "Game started");
+        send_simple_response(Type::START, "Game started",0);
 
         GameChannels queues = admin.joinGame(name, clientName, protocol);
         Queue<ActionEvent>& toGame = *queues.toGame;
@@ -140,7 +140,7 @@ void ClientHandler::handle_game(const std::string& name) {
 
             ActionEvent event;
             if (fromGame.try_pop(event) && event.action.type == ActionType::FINISH) {
-                send_simple_response(Type::FINISH, "Game finished");
+                send_simple_response(Type::FINISH, "Game finished",0);
                 inGame = false;
             }
         }
@@ -165,7 +165,7 @@ bool ClientHandler::handle_game_client_message(const Message& msg, Queue<ActionE
         case Type::DISCONNECT:
             active = false;
             inGame = false;
-            send_simple_response(Type::DISCONNECT, "Disconnect successful");
+            send_simple_response(Type::DISCONNECT, "Disconnect successful",0);
             return true;
         default:
             break;
@@ -178,10 +178,11 @@ void ClientHandler::handle_list() {
         std::vector<std::string> lobbies = admin.listLobbies();
         Response response = {
             Type::LIST,
+            0,
             static_cast<uint16_t>(lobbies.size()),
             {},
             lobbies,
-            0,
+            {},
             ""
         };
         protocol.send_response(response);
@@ -189,23 +190,25 @@ void ClientHandler::handle_list() {
         std::cerr << "Error listing lobbies: " << e.what() << std::endl;
         Response response = {
             Type::LIST,
+            1,
             0,
             {},
             {},
-            1,
+            {},
             "Error listing lobbies"
         };
         protocol.send_response(response);
     }
 }
 
-void ClientHandler::send_simple_response(Type type, const std::string& msg) {
+void ClientHandler::send_simple_response(Type type, const std::string& msg, uint8_t result) {
     Response response = {
         type,
+        result,
         0,
         {},
         {},
-        0,
+        {},
         msg
     };
     protocol.send_response(response);
