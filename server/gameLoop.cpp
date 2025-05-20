@@ -2,7 +2,7 @@
 #include "admin.h"
 
 GameLoop::GameLoop(std::string name, Admin& admin)
-    : name(name), admin(admin), toGame(std::make_shared<Queue<ActionEvent>>(100)), fromPlayers(), active(true), game(10,10) {}
+    : name(name), admin(admin), toGame(std::make_shared<Queue<ActionRequest>>(100)), fromPlayers(), active(true), game(10,10) {}
 
 void GameLoop::run() {
     try {
@@ -27,7 +27,7 @@ void GameLoop::run() {
             auto start_time = std::chrono::steady_clock::now();
             
             uint processedCounter = 0;
-            ActionEvent event;
+            ActionRequest event;
             while(processedCounter < MAX_EVENTS_PER_CLICK && toGame->try_pop(event)) {
                 game.execute(event.playerName, event.action);
                 processedCounter++;
@@ -52,7 +52,7 @@ void GameLoop::run() {
         }
 
         for (auto& [name, queue] : fromPlayers) {
-            ActionEvent event = {
+            ActionRequest event = {
                 { ActionType::FINISH, std::monostate{} },
                 name
             };
@@ -74,7 +74,7 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
     players.emplace(playerName, player);
     game.addPlayer(playerName);
 
-    auto fromPlayerQueue = std::make_shared<Queue<ActionEvent>>(100);
+    auto fromPlayerQueue = std::make_shared<Queue<ActionRequest>>(100);
     fromPlayers.emplace(playerName,fromPlayerQueue);
 
     return GameChannels{

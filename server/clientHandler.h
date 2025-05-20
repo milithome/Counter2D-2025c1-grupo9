@@ -39,7 +39,7 @@ private:
 
     // Lobby and game loops
     bool handle_lobby_client_message(const Message& msg, Queue<LobbyEvent>& toLobby, bool& inLobby);
-    bool handle_game_client_message(const Message& msg, Queue<ActionEvent>& toGame, bool& inGame);
+    bool handle_game_client_message(const Message& msg, Queue<ActionRequest>& toGame, bool& inGame);
 
     // Utility
     void send_simple_response(Type type, const std::string& msg, uint8_t result);

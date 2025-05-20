@@ -126,8 +126,8 @@ void ClientHandler::handle_game(const std::string& name) {
         send_simple_response(Type::START, "Game started",0);
 
         GameChannels queues = admin.joinGame(name, clientName, protocol);
-        Queue<ActionEvent>& toGame = *queues.toGame;
-        Queue<ActionEvent>& fromGame = *queues.fromGame;
+        Queue<ActionRequest>& toGame = *queues.toGame;
+        Queue<ActionRequest>& fromGame = *queues.fromGame;
 
         bool inGame = true;
         while (inGame) {
@@ -138,7 +138,7 @@ void ClientHandler::handle_game(const std::string& name) {
                 }
             }
 
-            ActionEvent event;
+            ActionRequest event;
             if (fromGame.try_pop(event) && event.action.type == ActionType::FINISH) {
                 send_simple_response(Type::FINISH, "Game finished",0);
                 inGame = false;
@@ -151,14 +151,14 @@ void ClientHandler::handle_game(const std::string& name) {
     }
 }
 
-bool ClientHandler::handle_game_client_message(const Message& msg, Queue<ActionEvent>& toGame, bool& inGame) {
+bool ClientHandler::handle_game_client_message(const Message& msg, Queue<ActionRequest>& toGame, bool& inGame) {
     Response response;
     switch (msg.type) {
         case Type::LEAVE:
             inGame = false;
             return true;
         case Type::ACTION: {
-            ActionEvent event{msg.action, clientName};
+            ActionRequest event{msg.action, clientName};
             toGame.push(std::move(event));
             return false;
         }

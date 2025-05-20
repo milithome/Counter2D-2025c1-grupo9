@@ -63,7 +63,7 @@ struct Action {
 };
 
 // Eventos para las acciones
-struct ActionEventt{
+struct ActionRequest {
     Action action;
     std::string playerName;
 };
@@ -104,8 +104,8 @@ struct LobbyChannels {
 };
 
 struct GameChannels {
-    std::shared_ptr<Queue<ActionEvent>> toGame;
-    std::shared_ptr<Queue<ActionEvent>> fromGame;
+    std::shared_ptr<Queue<ActionRequest>> toGame;
+    std::shared_ptr<Queue<ActionRequest>> fromGame;
 };
 
 #endif

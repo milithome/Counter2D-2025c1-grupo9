@@ -22,8 +22,8 @@ private:
     std::string name;
     Admin& admin;
     std::map<std::string, Protocol&> players;
-    std::shared_ptr<Queue<ActionEvent>> toGame;
-    std::map<std::string, std::shared_ptr<Queue<ActionEvent>>> fromPlayers;
+    std::shared_ptr<Queue<ActionRequest>> toGame;
+    std::map<std::string, std::shared_ptr<Queue<ActionRequest>>> fromPlayers;
     bool active;
     Game game;
 
