@@ -1,7 +1,6 @@
 #include "game_controller.h"
 #include <iostream>
 #include "common/structures.h"
-#include 
 
 GameController::GameController(GameView& view, Game& game, const std::string& player_name)
     : view(view), game(game), player_name(player_name) {
