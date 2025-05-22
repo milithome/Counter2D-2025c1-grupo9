@@ -168,16 +168,21 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
         buf.push_back(reinterpret_cast<uint8_t*>(&name_len)[1]);
         buf.insert(buf.end(), entity.name.begin(), entity.name.end());
 
-        uint32_t x_net, y_net;
+        uint32_t x_net, y_net, rotation_net;
         std::memcpy(&x_net, &entity.x, sizeof(float));
         std::memcpy(&y_net, &entity.y, sizeof(float));
+        std::memcpy(&rotation_net, &entity.rotation, sizeof(float));
         x_net = htonl(x_net);
         y_net = htonl(y_net);
+        rotation_net = htonl(rotation_net);
 
         uint8_t* x_ptr = reinterpret_cast<uint8_t*>(&x_net);
         uint8_t* y_ptr = reinterpret_cast<uint8_t*>(&y_net);
+        uint8_t* rot_ptr = reinterpret_cast<uint8_t*>(&rotation_net);
+        
         buf.insert(buf.end(), x_ptr, x_ptr + sizeof(float));
         buf.insert(buf.end(), y_ptr, y_ptr + sizeof(float));
+        buf.insert(buf.end(), rot_ptr, rot_ptr + sizeof(float));
     }
 
     return buf;
