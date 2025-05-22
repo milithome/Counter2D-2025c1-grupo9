@@ -141,9 +141,10 @@ void GameController::updateGameState(std::vector<Entity> entities) {
     for (size_t i = 0; i < entities.size(); i++) {
         Entity entity = entities[i];
         if (entity.type == PLAYER) {
+            std::cout << "PLAYER " << i << " rot:" << entity.rotation + 90.0f << std::endl;
             if (entity.name == player_name) {
                 // Proceso de sincronizacion en caso de desincronizacion
-                break;
+                continue;
             }
             game.updatePlayerPosition(entity.name, entity.x, entity.y);
             game.updateRotation(entity.name, entity.rotation);

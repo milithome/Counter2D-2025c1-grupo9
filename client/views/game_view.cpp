@@ -84,6 +84,7 @@ void GameView::show() {
             break;
         }
     }
+
     SDL_Point center = getCenterPoint();
     float cameraX = clientPlayerX * BLOCK_SIZE + center.x - BLOCK_SIZE/2;
     float cameraY = clientPlayerY * BLOCK_SIZE + center.y - BLOCK_SIZE/2;
@@ -98,7 +99,7 @@ void GameView::show() {
     }
     Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
-
+        
         float playerX = gameState[i].x;
         float playerY = gameState[i].y;
         Rect dst(cameraX - playerX * BLOCK_SIZE, cameraY - playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);

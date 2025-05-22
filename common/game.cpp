@@ -32,7 +32,7 @@ void Game::movePlayer(const std::string &name, int x, int y, float deltaTime) {
   findPlayerByName(name).move(x, y, deltaTime);
 }
 
-void Game::updatePlayerPosition(const std::string &name, int x, int y) {
+void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
 
