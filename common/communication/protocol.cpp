@@ -340,14 +340,18 @@ Response Protocol::deserialize_state() {
         }
         r.entities[i].name.assign(name_buf.begin(), name_buf.end());
 
-        uint32_t x_net, y_net;
-        if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0) {
+        uint32_t x_net, y_net, rotation_net;
+        if (skt.recvall(&x_net, sizeof(x_net)) == 0 || 
+            skt.recvall(&y_net, sizeof(y_net)) == 0 ||
+            skt.recvall(&rotation_net, sizeof(rotation_net)) == 0) {
             throw std::runtime_error("Error receiving coordinates");
         }
         x_net = ntohl(x_net);
         y_net = ntohl(y_net);
+        rotation_net = ntohl(rotation_net);
         std::memcpy(&r.entities[i].x, &x_net, sizeof(float));
         std::memcpy(&r.entities[i].y, &y_net, sizeof(float));
+        std::memcpy(&r.entities[i].rotation, &rotation_net, sizeof(float));
     }
 
     return r;
