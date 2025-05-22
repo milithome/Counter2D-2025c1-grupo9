@@ -448,7 +448,7 @@ Message Protocol::recv_message() {
             uint32_t delta_bits;
             if (skt.recvall(&x, sizeof(x)) == 0 || 
                 skt.recvall(&y, sizeof(y)) == 0 ||
-                skt.recvall(&delta_bits, sizeof(delta_bits))) {
+                skt.recvall(&delta_bits, sizeof(delta_bits)) == 0) {
                 throw std::runtime_error("Error receiving MOVE parameters");
             }
             x = ntohl(x);

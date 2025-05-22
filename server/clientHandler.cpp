@@ -160,7 +160,7 @@ bool ClientHandler::handle_game_client_message(const Message& msg, Queue<ActionR
             return true;
         case Type::ACTION: {
             ActionRequest event{msg.action, clientName};
-            toGame.push(std::move(event));
+            toGame.push(event);
             return false;
         }
         case Type::DISCONNECT:
