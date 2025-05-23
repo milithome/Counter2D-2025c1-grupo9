@@ -9,7 +9,7 @@ void GameLoop::run() {
         std::cout << "GameLoop started" << std::endl;
 
         const std::chrono::milliseconds TICK_DURATION(16);
-        const uint MAX_EVENTS_PER_CLICK = 20;
+        const uint MAX_EVENTS_PER_CLICK = 32;
 
         while(players.size() < 3){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -34,9 +34,6 @@ void GameLoop::run() {
             }
 
             std::vector<Entity> entities = game.getState();
-            std::cout << "PLAYER " << 0 << " rot:" << entities[0].rotation + 90.0f << std::endl;
-            std::cout << "PLAYER " << 1 << " rot:" << entities[1].rotation + 90.0f << std::endl;
-            std::cout << "PLAYER " << 2 << " rot:" << entities[2].rotation + 90.0f << std::endl;
             broadcast_game_state(entities);
 
             auto end_time = std::chrono::steady_clock::now();
