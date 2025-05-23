@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <variant>
 #include "common/utilities/queue.h"
+#include "common/utilities/map.h"
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -23,6 +24,12 @@ enum Type {
     START,
     FINISH,
     DISCONNECT 
+};
+
+enum Phase {
+    PURCHASE,
+    BOMB_PLANTING,
+    BOMB_DEFUSING
 };
 
 // Tipos de entidades del juego
@@ -55,9 +62,7 @@ struct PointToAction {
     float value;
 };
 
-
 struct ShootAction {};
-
 
 using ActionData = std::variant<std::monostate,MoveAction, PointToAction,ShootAction>;
 
@@ -66,10 +71,22 @@ struct Action {
     ActionData data;
 };
 
-// Eventos para las acciones
-struct ActionRequest {
-    Action action;
-    std::string playerName;
+struct StateGame {
+    Phase phase;
+    std::vector<Entity> entities;
+};
+
+struct InitialData {
+    MapData data;
+    std::vector<std::string> players;
+};
+
+struct LobbyList{
+    std::vector<std::string> lobbies;
+};
+
+struct StateLobby{
+    std::vector<std::string> players;
 };
 
 // Mensaje enviado por el cliente al servidor
@@ -84,22 +101,27 @@ struct Message {
 struct Response {
   Type type;
   uint8_t result;
-  uint16_t size; // esto me parece q se puede sacar
-  std::vector<Entity> entities;
-  std::vector<std::string> partidas;
-  std::vector<std::string> players;
+  StateGame stateGame;
+  InitialData initialData;
+  LobbyList lobbyList;
+  StateLobby stateLobby;
   std::string message;
 };
 
-enum class LobbyEventType {
+enum class LobbyRequestType {
     LEAVE,
     JOIN,
     START
 };
 
-struct LobbyEvent {
-  LobbyEventType type;
+struct LobbyRequest {
+  LobbyRequestType type;
   std::string playerName;
+};
+
+struct ActionRequest {
+    Action action;
+    std::string playerName;
 };
 
 struct LobbyChannels {
