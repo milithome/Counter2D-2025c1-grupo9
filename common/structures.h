@@ -55,7 +55,11 @@ struct PointToAction {
     float value;
 };
 
-using ActionData = std::variant<std::monostate,MoveAction, PointToAction>;
+
+struct ShootAction {};
+
+
+using ActionData = std::variant<std::monostate,MoveAction, PointToAction,ShootAction>;
 
 struct Action {
     ActionType type;

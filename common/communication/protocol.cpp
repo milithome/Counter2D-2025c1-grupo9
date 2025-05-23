@@ -94,17 +94,18 @@ void Protocol::send_action(const Action& action) {
                         reinterpret_cast<uint8_t*>(&delta_bits),
                         reinterpret_cast<uint8_t*>(&delta_bits) + sizeof(delta_bits));
             break;
-        }
-        case ActionType::POINT_TO: {
+        } case ActionType::POINT_TO: {
             const PointToAction& point = std::get<PointToAction>(action.data);
-            // Convert float to bytes
-            static_assert(sizeof(float) == 4, "Unexpected float size");
+           
             uint32_t fbits;
             std::memcpy(&fbits, &point.value, sizeof(float));
             fbits = htonl(fbits);
             buffer.insert(buffer.end(),
                           reinterpret_cast<uint8_t*>(&fbits),
                           reinterpret_cast<uint8_t*>(&fbits) + sizeof(fbits));
+            break;
+        } case ActionType::SHOOT: {
+            // Sin parametros de momento
             break;
         }
         default:
@@ -418,77 +419,118 @@ Response Protocol::recv_response() {
     }
 }
 
+Message Protocol::deserialize_message_with_name(Type type) {
+    Message msg;
+    msg.type = type;
+
+    uint16_t size_net;
+    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
+        throw std::runtime_error("Error receiving name size");
+    }
+    uint16_t size = ntohs(size_net);
+    msg.size = size;
+
+    std::vector<uint8_t> name(size);
+    if (skt.recvall(name.data(), size) == 0) {
+        throw std::runtime_error("Error receiving name");
+    }
+
+    msg.name.assign(name.begin(), name.end());
+    return msg;
+}
+
+MoveAction Protocol::recv_move_action() {
+    int32_t x_net, y_net;
+    uint32_t delta_bits;
+
+    if (skt.recvall(&x_net, sizeof(x_net)) == 0 ||
+        skt.recvall(&y_net, sizeof(y_net)) == 0 ||
+        skt.recvall(&delta_bits, sizeof(delta_bits)) == 0) {
+        throw std::runtime_error("Error receiving MOVE parameters");
+    }
+
+    MoveAction move;
+    move.x = ntohl(x_net);
+    move.y = ntohl(y_net);
+    delta_bits = ntohl(delta_bits);
+    std::memcpy(&move.deltaTime, &delta_bits, sizeof(float));
+
+    return move;
+}
+
+PointToAction Protocol::recv_point_to_action() {
+    uint32_t fbits;
+    if (skt.recvall(&fbits, sizeof(fbits)) == 0) {
+        throw std::runtime_error("Error receiving POINT_TO parameter");
+    }
+
+    fbits = ntohl(fbits);
+    float value;
+    std::memcpy(&value, &fbits, sizeof(float));
+    return PointToAction{value};
+}
+
+ShootAction Protocol::recv_shoot_action() {
+    // Si el SHOOT no lleva parámetros:
+    return ShootAction{};
+}
+
+Message Protocol::deserialize_message_action() {
+    Message msg;
+    msg.type = Type::ACTION;
+
+    uint8_t action_type;
+    if (skt.recvall(&action_type, sizeof(action_type)) == 0) {
+        throw std::runtime_error("Error receiving action type");
+    }
+
+    Action action;
+    action.type = static_cast<ActionType>(action_type);
+
+    switch (action.type) {
+        case ActionType::MOVE:
+            action.data = recv_move_action();
+            break;
+
+        case ActionType::POINT_TO:
+            action.data = recv_point_to_action();
+            break;
+
+        case ActionType::SHOOT:
+            action.data = recv_shoot_action();
+            break;
+
+        default:
+            throw std::runtime_error("Unknown ActionType received");
+    }
+
+    msg.action = std::move(action);
+    return msg;
+}
+
 Message Protocol::recv_message() {
     std::lock_guard<std::mutex> lock(mtx);
-    uint8_t type;
-    if (skt.recvall(&type, sizeof(type)) == 0) {
+
+    uint8_t type_byte;
+    if (skt.recvall(&type_byte, sizeof(type_byte)) == 0) {
         throw std::runtime_error("Error receiving message type");
     }
 
-    Message message;
-    message.type = static_cast<Type>(type);
+    Type type = static_cast<Type>(type_byte);
 
-    if (message.type == Type::CREATE || message.type == Type::JOIN) {
-        uint16_t size;
-        if (skt.recvall(&size, sizeof(size)) == 0) {
-            throw std::runtime_error("Error receiving message size");
-        }
-        size = ntohs(size);
-        message.size = size;
-
-        std::vector<uint8_t> name(size);
-        if (skt.recvall(name.data(), size) == 0) {
-            throw std::runtime_error("Error receiving message name");
-        }
-        message.name.assign(name.begin(), name.end());
-        // si no funciona usar:
-        // message.name = std::string(name.begin(), name.end());
-    } else if (message.type == Type::ACTION) {
-        uint8_t action_type;
-        if (skt.recvall(&action_type, sizeof(action_type)) == 0) {
-            throw std::runtime_error("Error receiving action type");
-        }
-
-        Action action;
-        action.type = static_cast<ActionType>(action_type);
-
-        if (action.type == ActionType::MOVE) {
-            int32_t x, y;
-            uint32_t delta_bits;
-            if (skt.recvall(&x, sizeof(x)) == 0 || 
-                skt.recvall(&y, sizeof(y)) == 0 ||
-                skt.recvall(&delta_bits, sizeof(delta_bits)) == 0) {
-                throw std::runtime_error("Error receiving MOVE parameters");
-            }
-            x = ntohl(x);
-            y = ntohl(y);
-            delta_bits = ntohl(delta_bits);
-
-            float deltaTime;
-            std::memcpy(&deltaTime, &delta_bits, sizeof(float));
-
-            action.data = MoveAction{x, y, deltaTime};
-
-        } else if (action.type == ActionType::POINT_TO) {
-            uint32_t fbits;
-            if (skt.recvall(&fbits, sizeof(fbits)) == 0) {
-                throw std::runtime_error("Error receiving POINT parameter");
-            }
-            fbits = ntohl(fbits);
-            float value;
-            std::memcpy(&value, &fbits, sizeof(float));
-            action.data = PointToAction{value};
-
-        } else {
-            throw std::runtime_error("Unknown ActionType received");
-        }
-
-        message.action = std::move(action);
-    } else if (message.type == Type::LIST || message.type == Type::LEAVE) {
-        // No hay datos adicionales para LIST ni LEAVE 
-    } else {
-        throw std::runtime_error("Invalid message type");
+    Message msg{};
+    switch (type) {
+        case Type::CREATE:
+        case Type::JOIN:
+            return deserialize_message_with_name(type);
+        case Type::ACTION:
+            return deserialize_message_action();
+        case Type::LIST:
+        case Type::LEAVE:
+            msg.type = type;
+            return msg;
+        default:
+            throw std::runtime_error("Invalid message type");
     }
-
-    return message;
 }
+

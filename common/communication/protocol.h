@@ -60,6 +60,12 @@ private:
     Response deserialize_initial_data();
     Response deserialize_state();
     Response deserialize_state_lobby();
+
+    Message deserialize_message_with_name(Type type);
+    MoveAction recv_move_action();
+    PointToAction recv_point_to_action();
+    ShootAction recv_shoot_action();
+    Message deserialize_message_action();
 };
 
 #endif
