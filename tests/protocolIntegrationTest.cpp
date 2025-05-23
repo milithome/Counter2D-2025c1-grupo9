@@ -95,3 +95,4 @@ TEST(ProtocolIntegrationTest, SendAndReceiveListMessage) {
     ASSERT_EQ(response.partidas.size(), 1);
     EXPECT_EQ(response.partidas[0], "Partida1");
 }
+

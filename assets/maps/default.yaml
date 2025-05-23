@@ -1,0 +1,61 @@
+map:
+  name: default
+  width: 15
+  height: 10
+  background:
+    - [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    - [1,0,0,0,0,0,0,1,0,0,0,0,0,0,1]
+    - [1,0,1,1,0,1,0,1,0,1,0,1,1,0,1]
+    - [1,0,1,3,0,1,0,0,0,1,0,4,1,0,1]
+    - [1,0,1,1,0,1,1,1,1,1,0,1,1,0,1]
+    - [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
+    - [1,1,1,1,1,1,0,1,0,1,1,1,1,1,1]
+    - [1,2,0,0,0,1,0,1,0,1,0,0,0,5,1]
+    - [1,0,0,0,0,1,0,1,0,1,0,0,0,0,1]
+    - [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+  objects:
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,6,0,0,0,0,0,0,0,7,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,8,0,0,0,0,0,0,0,0,8,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    - [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+legend_background:
+  0:
+    id: sand
+    sprite: ../assets/gfx/backgrounds/sand1.png
+  1:
+    id: water
+    sprite: ../assets/gfx/backgrounds/water1.png
+  2:
+    id: spawn_team_a
+    sprite: ../assets/gfx/backgrounds/dust.png
+  3:
+    id: spike_site_a
+    sprite: ../assets/gfx/backgrounds/dust.png
+  4:
+    id: spike_site_b
+    sprite: ../assets/gfx/backgrounds/dust.png
+  5:
+    id: spawn_team_b
+    sprite: ../assets/gfx/backgrounds/dust.png
+
+legend_objects:
+  0:
+    id: none
+    sprite: null
+  6:
+    id: bush
+    sprite: ../assets/gfx/tiles/bush.png
+  7:
+    id: car
+    sprite: ../assets/gfx/tiles/car.png
+  8:
+    id: palm
+    sprite: ../assets/gfx/tiles/palm.png
