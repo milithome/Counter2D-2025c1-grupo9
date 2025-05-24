@@ -54,8 +54,8 @@ int main(int argc, char **argv) try {
 	std::string clientName = argv[1];
 	protocol.send_name(clientName);
 
-	SDL sdl(SDL_INIT_VIDEO);
-
+	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	
     QApplication app(argc, argv);
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	MenuController menuController(menuWindow, protocol);

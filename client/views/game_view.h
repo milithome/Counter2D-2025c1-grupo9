@@ -38,6 +38,7 @@ public:
     SDL_Point getCenterPoint();
 
 private:
+    Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
     Renderer renderer;
     Game& game;

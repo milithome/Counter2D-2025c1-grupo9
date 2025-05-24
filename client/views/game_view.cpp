@@ -113,6 +113,9 @@ void GameView::show(float deltaTime) {
         ShotEvent shot = game.shotEventQueuePop();
         float angle = atan2(shot.target_y - shot.origin_y, shot.target_x - shot.origin_x) * 180.0 / M_PI - 90.0f;
         shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, angle, SHOT_DURATION});
+
+        Chunk sound("../assets/sfx/weapons/usp_silenced.wav");
+        mixer.PlayChannel(-1, sound, 0);
     }
 
     for (auto it = shot_effects.begin(); it != shot_effects.end();) {
