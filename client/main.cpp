@@ -60,10 +60,11 @@ int main(int argc, char **argv) try {
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	MenuController menuController(menuWindow, protocol);
 	std::vector<std::string> players;
+	QPoint w_pos_when_game_started;
 
 	// Menu loop
     QTimer* timer = new QTimer(&menuController);
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController, &partida_iniciada, &players] {
+    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &w_pos_when_game_started, &menuController, &menuWindow, &partida_iniciada, &players] {
         Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
@@ -86,6 +87,7 @@ int main(int argc, char **argv) try {
 				}
 				case START: {
 					partida_iniciada = true;
+					w_pos_when_game_started = menuWindow.getPosition();
 					menuController.onGameStarted();
 					break;
 				}
@@ -115,7 +117,7 @@ int main(int argc, char **argv) try {
 	for (size_t i = 0; i < players.size(); i++) {
 		game.addPlayer(players[i]);
 	}
-	GameView gameView = GameView(game, clientName);
+	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()});
 	GameController gameController = GameController(gameView, game, clientName);
 
 	uint32_t lastTime = 0;
@@ -132,12 +134,14 @@ int main(int argc, char **argv) try {
 		}
 		Response msg;
         while (recv_queue.try_pop(msg)) {
+			std::cout << "mensaje recibido" << std::endl;
 			switch (msg.type) {
 				case STATE: {
 					gameController.updateGameState(msg.entities);
 					break;
 				}
 				case FINISH: {
+					std::cout << "cerrando" << std::endl;
 					game.stop();
 					break;
 				}
@@ -147,11 +151,12 @@ int main(int argc, char **argv) try {
 			}
 		}
 	}
-
 	receiver.stop();
 	sender.stop();
 	receiver.join();
 	sender.join();
+	recv_queue.close();
+	send_queue.close();
 
 	return 0;
 } catch (std::exception& e) {

@@ -13,6 +13,7 @@ public:
     void showView(QtView& view);
     void clearWindow();
     void quit();
+    QPoint getPosition();
 
 private:
     QApplication& app;

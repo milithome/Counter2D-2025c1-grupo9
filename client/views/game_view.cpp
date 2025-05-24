@@ -6,16 +6,18 @@
 namespace fs = std::filesystem;
 
 
-GameView::GameView(Game& game, const std::string& playerName)
-    : window(createWindow()), renderer(createRenderer(window)), game(game), playerName(playerName) {
+GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos)
+    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName) {
         renderer.SetDrawColor(0, 0, 0, 255);
         // loadMapTiles(game.getMapEnum());
         // loadPlayerTiles(player.getType());
 }
 
-Window GameView::createWindow() {
+
+
+Window GameView::createWindow(SDL_Point window_pos) {
 	return Window("Counter Strike 2D",
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			window_pos.x, window_pos.y,
 			640, 480,
 			SDL_WINDOW_RESIZABLE);
 }

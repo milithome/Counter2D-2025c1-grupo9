@@ -62,3 +62,8 @@ void QtWindow::clearWindow() {
 void QtWindow::quit() {
     app.quit();
 }
+
+
+QPoint QtWindow::getPosition() {
+    return window.pos();
+}

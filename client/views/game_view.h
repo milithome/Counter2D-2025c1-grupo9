@@ -15,8 +15,8 @@ using namespace SDL2pp;
 
 class GameView {
 public:
-    GameView(Game& game, const std::string& playerName);
-    Window createWindow();
+    GameView(Game& game, const std::string& playerName, SDL_Point window_pos);
+    Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
     void bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback);
