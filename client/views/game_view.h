@@ -13,6 +13,20 @@
 
 using namespace SDL2pp;
 
+#define SHOT_SPEED 160
+#define SHOT_DURATION 1
+#define SHOT_THICKNESS 4
+#define SHOT_LENGTH 128
+struct ShotEffect {
+
+
+    float origin_x;
+    float origin_y;
+    float angle;
+    float time_left;
+};
+
+
 class GameView {
 public:
     GameView(Game& game, const std::string& playerName, SDL_Point window_pos);
@@ -33,8 +47,10 @@ private:
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp");
     std::vector<std::function<void(float)>> gameLoopListeners;
 
-    void show();
+    void show(float deltaTime);
     std::vector<std::vector<uint32_t>> getPlaceholderMap();
+
+    std::vector<ShotEffect> shot_effects;
 };
 
 #endif

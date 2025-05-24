@@ -5,6 +5,15 @@
 #ifndef GAME_H
 #define GAME_H
 
+struct ShotEvent {
+  float origin_x;
+  float origin_y;
+  float target_x;
+  float target_y;
+};
+
+
+
 class Game {
 private:
   std::vector<Player> players;
@@ -15,6 +24,8 @@ private:
   Player &findPlayerByName(const std::string &name);
   bool running = true;
   float time;
+
+  std::queue<ShotEvent> shot_event_queue;
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
@@ -30,6 +41,11 @@ public:
   void updateTime(float currentTime);
   void updateRotation(const std::string &name, float currentRotation);
   float getRotation(const std::string &name);
+
+
+
+  ShotEvent shotEventQueuePop();
+  bool shotEventQueueIsEmpty();
 };
 
 #endif

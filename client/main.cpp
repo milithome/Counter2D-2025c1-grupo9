@@ -134,14 +134,12 @@ int main(int argc, char **argv) try {
 		}
 		Response msg;
         while (recv_queue.try_pop(msg)) {
-			std::cout << "mensaje recibido" << std::endl;
 			switch (msg.type) {
 				case STATE: {
 					gameController.updateGameState(msg.entities);
 					break;
 				}
 				case FINISH: {
-					std::cout << "cerrando" << std::endl;
 					game.stop();
 					break;
 				}

@@ -68,6 +68,8 @@ void Game::shoot(const std::string &shooterName) {
   float target_x = origin_x + cos(angle_rad) * max_distance;
   float target_y = origin_y + sin(angle_rad) * max_distance;
 
+  shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y});
+
   for (auto &player : players) {
     if (player.getName() == shooterName)
       continue;
@@ -122,4 +124,17 @@ void Game::execute(const std::string &name, Action action) {
   }
     
   }
+}
+
+
+
+
+ShotEvent Game::shotEventQueuePop() {
+  ShotEvent top = shot_event_queue.front();
+  shot_event_queue.pop();
+  return top;
+}
+
+bool Game::shotEventQueueIsEmpty() {
+  return shot_event_queue.empty();
 }

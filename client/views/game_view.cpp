@@ -68,13 +68,13 @@ void GameView::update(float deltaTime) {
     }
 
     // graficar
-    show();
+    show(deltaTime);
 
     renderer.Present();
 
 }
 
-void GameView::show() {
+void GameView::show(float deltaTime) {
     auto map = getPlaceholderMap(); // temporal, hasta que definamos bien el mapa
     auto gameState = game.getState();
     float clientPlayerX;
@@ -108,6 +108,56 @@ void GameView::show() {
         renderer.Copy(playerTiles, src, dst, gameState[i].rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
     }
 
+    while (!game.shotEventQueueIsEmpty()) {
+
+        ShotEvent shot = game.shotEventQueuePop();
+        float angle = atan2(shot.target_y - shot.origin_y, shot.target_x - shot.origin_x) * 180.0 / M_PI - 90.0f;
+        shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, angle, SHOT_DURATION});
+    }
+
+    for (auto it = shot_effects.begin(); it != shot_effects.end();) {
+        ShotEffect& shot = *it;
+
+        if (shot.time_left <= 0) {
+            it = shot_effects.erase(it);
+            continue;
+        } else {
+            ++it;
+        }
+        float radians = shot.angle * M_PI / 180.0 ;
+        float dx = std::cos(radians);
+        float dy = std::sin(radians);
+
+        shot.origin_x += dy * SHOT_SPEED * deltaTime;
+        shot.origin_y -= dx * SHOT_SPEED * deltaTime;
+        shot.time_left -= deltaTime;
+        Surface surface(
+            0, SHOT_LENGTH, SHOT_THICKNESS, 32,
+            0x00FF0000, // Rmask
+            0x0000FF00, // Gmask
+            0x000000FF, // Bmask
+            0xFF000000  // Amask
+        );
+        surface.FillRect(SDL2pp::NullOpt,
+                        SDL_MapRGBA(surface.Get()->format, 255, 240, 0, 255));
+        
+        
+        Texture texture(renderer, surface);
+        
+        Rect dst(
+            cameraX - shot.origin_x * BLOCK_SIZE + CLIP_SIZE / 2, 
+            cameraY - shot.origin_y * BLOCK_SIZE - SHOT_THICKNESS / 2 + CLIP_SIZE / 2, 
+            SHOT_THICKNESS, 
+            SHOT_LENGTH);
+        
+        renderer.Copy(
+            texture, 
+            NullOpt, 
+            dst, 
+            shot.angle, 
+            Point(0, SHOT_THICKNESS / 2), 
+            SDL_FLIP_NONE);    
+    }
 }
 
 void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback) {

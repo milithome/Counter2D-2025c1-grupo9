@@ -36,7 +36,7 @@ void GameController::update(float deltaTime) {
         action_queue.push(action);
         actions.push_back(action);
     }
-    //game.updateTime(deltaTime);
+    game.updateTime(deltaTime);
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
@@ -113,11 +113,11 @@ void GameController::onMouseMovement() {
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
-        SDL_Point center = view.getCenterPoint();
-        float angle = std::atan2(event.button.y - center.y, event.button.x - center.x);
-        float angleDegrees = angle * 180.0f / 3.14159f;
-        (void)angleDegrees; // va a ser usado en otro momento para disparar
-        // game.shoot();
+        // SDL_Point center = view.getCenterPoint();
+        // float angle = std::atan2(event.button.y - center.y, event.button.x - center.x);
+        // float angleDegrees = angle * 180.0f / 3.14159f;
+        // (void)angleDegrees; // va a ser usado en otro momento para disparar
+        game.shoot(player_name);
     }
 }
 
@@ -141,7 +141,6 @@ void GameController::updateGameState(std::vector<Entity> entities) {
     for (size_t i = 0; i < entities.size(); i++) {
         Entity entity = entities[i];
         if (entity.type == PLAYER) {
-            std::cout << "PLAYER " << i << " rot:" << entity.rotation + 90.0f << std::endl;
             if (entity.name == player_name) {
                 // Proceso de sincronizacion en caso de desincronizacion
                 continue;
