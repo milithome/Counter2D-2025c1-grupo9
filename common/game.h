@@ -10,6 +10,7 @@ struct ShotEvent {
   float origin_y;
   float target_x;
   float target_y;
+  float angle; //grados
 };
 
 class Game {

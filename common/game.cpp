@@ -68,8 +68,8 @@ void Game::shoot(const std::string &shooterName) {
   */
   float origin_x = hb.x + hb.width / 2.0f;
   float origin_y = hb.y + hb.height / 2.0f;
-
-  float angle_rad = shooter.getRotation() * M_PI / 180.0f;
+  float angle = shooter.getRotation();
+  float angle_rad = angle * M_PI / 180.0f;
 
   float max_distance = 30.0f;
 
@@ -92,10 +92,9 @@ void Game::shoot(const std::string &shooterName) {
       player.updateHealth(-200.0f);
       std::cout << shooterName << " le disparó a " << player.getName() 
                 << " en (" << final->first << ", " << final->second << ")\n";
-      shot_event_queue.push(ShotEvent{origin_x, origin_y, final->first, final->second});
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, final->first, final->second, angle});
     }else{
-      
-      shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y});
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
     }
   }
 }
