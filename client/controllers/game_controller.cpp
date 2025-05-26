@@ -45,19 +45,19 @@ void GameController::onKeyPressed(const SDL_Event& event) {
     }
     switch (event.key.keysym.sym) {
         case SDLK_UP: {
-            movement_keys_vector[1] += 1;
-            break;
-        }
-        case SDLK_DOWN: {
             movement_keys_vector[1] -= 1;
             break;
         }
+        case SDLK_DOWN: {
+            movement_keys_vector[1] += 1;
+            break;
+        }
         case SDLK_LEFT: {
-            movement_keys_vector[0] += 1;
+            movement_keys_vector[0] -= 1;
             break;
         }
         case SDLK_RIGHT: {
-            movement_keys_vector[0] -= 1;
+            movement_keys_vector[0] += 1;
             break;
         }
         case SDLK_e: {
@@ -71,19 +71,19 @@ void GameController::onKeyPressed(const SDL_Event& event) {
 void GameController::onKeyReleased(const SDL_Event& event) {
     switch (event.key.keysym.sym) {
         case SDLK_UP: {
-            movement_keys_vector[1] -= 1;
-            break;
-        }
-        case SDLK_DOWN: {
             movement_keys_vector[1] += 1;
             break;
         }
+        case SDLK_DOWN: {
+            movement_keys_vector[1] -= 1;
+            break;
+        }
         case SDLK_LEFT: {
-            movement_keys_vector[0] -= 1;
+            movement_keys_vector[0] += 1;
             break;
         }
         case SDLK_RIGHT: {
-            movement_keys_vector[0] += 1;
+            movement_keys_vector[0] -= 1;
             break;
         }
         case SDLK_e: {

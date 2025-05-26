@@ -14,14 +14,16 @@
 using namespace SDL2pp;
 
 #define SHOT_SPEED 160
-#define SHOT_DURATION 1
+#define SHOT_DURATION 10
 #define SHOT_THICKNESS 4
-#define SHOT_LENGTH 128
+#define SHOT_LENGTH 128.0f
 struct ShotEffect {
 
 
-    float origin_x;
-    float origin_y;
+    float x;
+    float y;
+    float target_x;
+    float target_y;
     float angle;
     float time_left;
 };
