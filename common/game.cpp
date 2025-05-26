@@ -57,18 +57,29 @@ bool Game::isRunning() { return running; }
 void Game::stop() { running = false; }
 
 void Game::shoot(const std::string &shooterName) {
+  
   Player &shooter = findPlayerByName(shooterName);
-  float origin_x = shooter.getX();
-  float origin_y = shooter.getY();
+  Hitbox hb = shooter.getHitbox();
+  /*
+  std::cout << "Hitbox de " << shooterName << ": "
+          << "desde (" << hb.x << ", " << hb.y << ") "
+          << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
+  
+  */
+  float origin_x = hb.x + hb.width / 2.0f;
+  float origin_y = hb.y + hb.height / 2.0f;
 
   float angle_rad = shooter.getRotation() * M_PI / 180.0f;
 
-  float max_distance = 100.0f;
+  float max_distance = 30.0f;
 
   float target_x = origin_x + cos(angle_rad) * max_distance;
   float target_y = origin_y + sin(angle_rad) * max_distance;
+  /*
+  std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
+          << target_x << ", " << target_y << ")\n";
+  */
 
-  shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y});
 
   for (auto &player : players) {
     if (player.getName() == shooterName)
@@ -76,10 +87,15 @@ void Game::shoot(const std::string &shooterName) {
 
     Hitbox hb = player.getHitbox();
 
-    std::cout << "\n";
-
-    if (hb.intersectsRay(origin_x, origin_y, target_x, target_y)) {
-      player.updateHealth(-200.0f); // ejemplo
+    auto final = hb.intersectsRay(origin_x, origin_y, target_x, target_y);
+    if (final) {
+      player.updateHealth(-200.0f);
+      std::cout << shooterName << " le disparó a " << player.getName() 
+                << " en (" << final->first << ", " << final->second << ")\n";
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, final->first, final->second});
+    }else{
+      
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y});
     }
   }
 }
@@ -125,8 +141,6 @@ void Game::execute(const std::string &name, Action action) {
     
   }
 }
-
-
 
 
 ShotEvent Game::shotEventQueuePop() {

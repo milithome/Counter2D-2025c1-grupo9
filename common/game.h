@@ -12,8 +12,6 @@ struct ShotEvent {
   float target_y;
 };
 
-
-
 class Game {
 private:
   std::vector<Player> players;
@@ -41,7 +39,6 @@ public:
   void updateTime(float currentTime);
   void updateRotation(const std::string &name, float currentRotation);
   float getRotation(const std::string &name);
-
 
 
   ShotEvent shotEventQueuePop();
