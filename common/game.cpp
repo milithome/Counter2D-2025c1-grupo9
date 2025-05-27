@@ -98,6 +98,7 @@ void Game::shoot(const std::string &shooterName) {
                 closest_distance = dist;
                 closest_player = &player;
                 closest_hit_point = *hit_point;
+      }
     }
   }
   if (closest_player) {
@@ -109,7 +110,7 @@ void Game::shoot(const std::string &shooterName) {
       
       } else {
       shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
-  }
+    }
 }
 
 void Game::updateTime(float currentTime) { time = currentTime; }
