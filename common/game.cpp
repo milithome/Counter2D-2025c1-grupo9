@@ -79,7 +79,9 @@ void Game::shoot(const std::string &shooterName) {
   std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
           << target_x << ", " << target_y << ")\n";
   */
-
+  Player* closest_player = nullptr;
+  float closest_distance = max_distance + 1.0f;
+  std::pair<float, float> closest_hit_point;
 
   for (auto &player : players) {
     if (player.getName() == shooterName)
@@ -87,15 +89,31 @@ void Game::shoot(const std::string &shooterName) {
 
     Hitbox hb = player.getHitbox();
 
-    auto final = hb.intersectsRay(origin_x, origin_y, target_x, target_y);
-    if (final) {
-      player.updateHealth(-200.0f);
-      std::cout << shooterName << " le disparó a " << player.getName() 
-                << " en (" << final->first << ", " << final->second << ")\n";
-      shot_event_queue.push(ShotEvent{origin_x, origin_y, final->first, final->second, angle});
+    auto hit_point = hb.intersectsRay(origin_x, origin_y, target_x, target_y);
+    if (hit_point) {
+      float dx = hit_point->first - origin_x;
+      float dy = hit_point->second - origin_y;
+      float dist = sqrt(dx*dx + dy*dy);
+      if (dist < closest_distance) {
+                closest_distance = dist;
+                closest_player = &player;
+                closest_hit_point = *hit_point;
+      }
+
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, hit_point->first, hit_point->second, angle});
     }else{
       shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
     }
+  }
+  if (closest_player) {
+        closest_player->updateHealth(-200.0f);
+        /*std::cout << shooterName << " le disparó a " << closest_player->getName()
+                  << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
+        */
+        shot_event_queue.push(ShotEvent{origin_x, origin_y, closest_hit_point.first, closest_hit_point.second, angle});
+      
+      } else {
+      shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
   }
 }
 
