@@ -9,6 +9,9 @@
 #include <QScrollBar>
 #include <QList>
 #include <QFrame>
+#include "components/menu_button.h"
+#include "components/menu_label.h"
+#include "components/translucent_container.h"
 
 
 
@@ -29,19 +32,40 @@ void PartyView::addPlayer(const std::string& player) {
 
 
 void PartyView::buildLayout() {
-    layout = new QVBoxLayout();
-
     buildPartyNameLabel();
     buildPlayerList();
     buildStartButton();
     buildLeaveButton();
 
-    layout->addWidget(partyNameLabel);
-    layout->addWidget(playerList);
+    auto createSeparator = []() {
+        QFrame *separator = new QFrame();
+        separator->setFrameShape(QFrame::HLine);
+        separator->setFrameShadow(QFrame::Plain);
+        separator->setStyleSheet("color: rgba(255, 255, 255, 30);");
+        separator->setFixedHeight(1);
+        return separator;
+    };
+
+
+    layout = new QVBoxLayout();
+
+    layout->setContentsMargins(50, 50, 50, 50);
+
+    
+    QVBoxLayout *subLayout = new QVBoxLayout();
+    
+    subLayout->addWidget(partyNameLabel);
+    subLayout->addWidget(createSeparator());
+    subLayout->addWidget(playerList);
+    subLayout->addWidget(createSeparator());
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->addWidget(leaveButton);
     buttonsLayout->addWidget(startButton);
-    layout->addLayout(buttonsLayout);
+    subLayout->addLayout(buttonsLayout);
+
+    TranslucentContainer* container = new TranslucentContainer;
+    container->addLayout(subLayout);
+    layout->addWidget(container);
 }
 
 QVBoxLayout* PartyView::getLayout() {
@@ -65,20 +89,26 @@ QListWidget* PartyView::getPlayerList() {
 }
 
 void PartyView::buildPartyNameLabel() {
-    partyNameLabel = new QLabel(QString::fromStdString(partyName));
+    partyNameLabel = new MenuLabel(QString::fromStdString(partyName));
 }
 
 void PartyView::buildStartButton() {
-    startButton = new QPushButton("Start");
+    startButton = new MenuButton("Iniciar partida");
 }
 
 void PartyView::buildLeaveButton() {
-    leaveButton = new QPushButton("Back");
+    leaveButton = new MenuButton("Atrás");
 }
 
 void PartyView::buildPlayerList() {
     playerList = new QListWidget();
-
+    playerList->setStyleSheet(
+        "QListWidget {"
+        "   background-color: rgba(0, 0, 0, 0);"
+        "   border-radius: 10px;"
+        "}"
+    );
+    playerList->setSelectionMode(QAbstractItemView::NoSelection);
     
     for (const std::string& playerName : players) {
         addPlayerToList(playerName);
@@ -86,15 +116,30 @@ void PartyView::buildPlayerList() {
 }
 
 void PartyView::addPlayerToList(const std::string& playerName) {
+
     QWidget *itemWidget = new QWidget();
-    QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
-    itemLayout->setContentsMargins(5, 2, 5, 2);
+    QVBoxLayout *wrapperLayout = new QVBoxLayout(itemWidget);
+    wrapperLayout->setContentsMargins(0, 0, 0, 0);
+    wrapperLayout->setSpacing(0);
 
-    QLabel *label = new QLabel(QString::fromStdString(playerName), itemWidget);
+    QFrame *separator = new QFrame();
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Plain);
+    separator->setStyleSheet("color: rgba(255, 255, 255, 30); margin-left: 5px; margin-right: 5px;");
+    separator->setFixedHeight(1);
 
+    QWidget *contentWidget = new QWidget();
+    QHBoxLayout *itemLayout = new QHBoxLayout(contentWidget);
+    itemLayout->setContentsMargins(5, 5, 5, 5);
+
+    QLabel *label = new MenuLabel(QString::fromStdString(playerName), contentWidget);
     itemLayout->addWidget(label);
 
+    wrapperLayout->addWidget(contentWidget);
+    wrapperLayout->addWidget(separator);
+
     QListWidgetItem *listItem = new QListWidgetItem(playerList);
+    listItem->setFlags(Qt::NoItemFlags);
     listItem->setSizeHint(itemWidget->sizeHint());
 
     playerList->addItem(listItem);
