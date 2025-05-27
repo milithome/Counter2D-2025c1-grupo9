@@ -11,7 +11,7 @@ void GameLoop::run() {
         const std::chrono::milliseconds TICK_DURATION(16);
         const uint MAX_EVENTS_PER_CLICK = 32;
 
-        while(players.size() < 2){
+        while(players.size() < 1){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 

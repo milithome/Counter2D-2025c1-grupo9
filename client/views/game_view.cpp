@@ -129,7 +129,7 @@ void GameView::show(float deltaTime) {
         float dx = std::cos(radians);
         float dy = std::sin(radians);
 
-        float previous_distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
+        int32_t previous_distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
 
         shot.x += dx * SHOT_SPEED * deltaTime;
         shot.y += dy * SHOT_SPEED * deltaTime;
@@ -137,13 +137,13 @@ void GameView::show(float deltaTime) {
         shot.time_left -= deltaTime; 
 
 
-        float distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
+        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
 
         if (distance_to_target > previous_distance_to_target) {
             shot.time_left = 0;
             continue;
         }
-        int length = static_cast<int>(std::min(distance_to_target, SHOT_LENGTH)) + 1;
+        int32_t length = std::min(distance_to_target, SHOT_LENGTH) + 1;
         Surface surface(
             0, length, SHOT_THICKNESS, 32,
             0x00FF0000, // Rmask
