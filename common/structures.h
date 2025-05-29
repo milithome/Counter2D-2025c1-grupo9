@@ -12,16 +12,17 @@
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
+    NAME,
+    LIST,
     CREATE,
     JOIN,
-    LIST,
-    ACTION,
     LEAVE,
-    INITIAL_DATA,
-    STATE,
     STATE_LOBBY,
-    NAME,
+    LOBBY_READY,
     START,
+    INITIAL_DATA,
+    ACTION,
+    STATE,
     FINISH,
     DISCONNECT 
 };
@@ -32,30 +33,87 @@ enum Phase {
     BOMB_DEFUSING
 };
 
+// Tipos de armas disponibles en el juego
+enum class WeaponType {
+    PRIMARY,
+    SECONDARY,
+    KNIFE,
+};
+
+enum WeaponPrimaryType {
+    AK47,
+    M3,
+    AWP,
+};
+
+enum WeaponSecondaryType {
+    GLOCK
+};
+
 // Tipos de entidades del juego
-enum EntityType { PLAYER };
+enum EntityType { 
+    PLAYER,
+    BOMB,
+    WEAPON,
+};
+
+struct Inventory {
+    WeaponPrimaryType primary;
+    WeaponSecondaryType secondary;
+    uint32_t bulletsPrimary;
+    uint32_t bulletsSecondary;
+};
+
+struct PlayerData {
+    std::string name;
+    float rotation;
+    uint32_t lastMoveId;
+    Inventory inventory;
+};
+
+struct BombData {
+    bool planted;
+};
+
+struct WeaponData {
+    WeaponType type;
+    union {
+        WeaponPrimaryType primary;
+        WeaponSecondaryType secondary;
+    } weapon;
+};
+
+using EntityData = std::variant<std::monostate, PlayerData, BombData, WeaponData>;
 
 // Representación de una entidad en el mundo del juego
 struct Entity {
     EntityType type;
-    std::string name;
     float x;
     float y;
-    float rotation;
+    EntityData data;
 };
 
 // Acciones posibles del jugador
 enum class ActionType {
     MOVE,
     POINT_TO,
-    FINISH,
-    SHOOT
+    SHOOT,
+    STOP_SHOOTING,
+    PLANT,
+    STOP_PLANTING,
+    DEFUSE,
+    STOP_DEFUSING,
+    BUY_BULLET,
+    BUY_WEAPON,
+    GRAB,
+    CHANGE_WEAPON,
+    FINISH
 };
 
 struct MoveAction {
+    uint32_t id;
     int x;
     int y;
-    float deltaTime;
 };
 
 struct PointToAction {
@@ -64,21 +122,49 @@ struct PointToAction {
 
 struct ShootAction {};
 
-using ActionData = std::variant<std::monostate,MoveAction, PointToAction,ShootAction>;
+struct StopShootingAction {};
+
+struct BuyBulletAction {
+    WeaponType type;
+};
+
+struct BuyWeaponAction {
+    WeaponType type;
+    union {
+        WeaponPrimaryType primary;
+        WeaponSecondaryType secondary;
+    } weapon;
+};
+
+struct GrabAction {};
+
+struct ChangeWeaponAction {
+    WeaponType type;
+};
+
+using ActionData = std::variant<std::monostate, MoveAction, PointToAction, ShootAction, StopShootingAction, BuyBulletAction, BuyWeaponAction, GrabAction, ChangeWeaponAction>;
 
 struct Action {
     ActionType type;
     ActionData data;
 };
 
+struct Bullet {
+    float origin_x;
+    float origin_y;
+    float target_x;
+    float target_y;
+    float angle;
+};
+
 struct StateGame {
     Phase phase;
     std::vector<Entity> entities;
+    std::queue<Bullet> bullets;
 };
 
 struct InitialData {
     MapData data;
-    std::vector<std::string> players;
 };
 
 struct LobbyList{
@@ -91,10 +177,10 @@ struct StateLobby{
 
 // Mensaje enviado por el cliente al servidor
 struct Message {
-  Type type;
-  uint16_t size;
-  std::string name;
-  Action action;
+    Type type;
+    uint16_t size;
+    std::string name;
+    Action action;
 };
 
 // Respuesta enviada por el servidor al cliente
@@ -125,8 +211,8 @@ struct ActionRequest {
 };
 
 struct LobbyChannels {
-    std::shared_ptr<Queue<LobbyEvent>> toLobby;
-    std::shared_ptr<Queue<LobbyEvent>> fromLobby;
+    std::shared_ptr<Queue<LobbyRequest>> toLobby;
+    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
 };
 
 struct GameChannels {
