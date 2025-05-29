@@ -101,7 +101,9 @@ void Game::shoot(const std::string &shooterName) {
         }
 
         if (closestPlayer) {
-              closestPlayer->updateHealth(-200.0f);
+              //closestDistance es la distancia que determina el daño
+              //ademas es random en random max y min de cada arma
+              closestPlayer->updateHealth(-200.0f); //TODO
               /*std::cout << shooterName << " le disparó a " << closestPlayer->getName()
                         << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
               */
