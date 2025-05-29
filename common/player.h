@@ -12,7 +12,9 @@ private:
   Role role;
   float rotation;
   float health;
-
+  float vx = 0, vy = 0;
+  bool shooting = false;
+  float shootCooldown = 0.0f;
 public:
   Player(const std::string &name)
       : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
@@ -30,6 +32,13 @@ public:
   void setHealth(float value);
   float getHealth() const;
   bool isAlive() const;
+  void updateMovement(float deltaTime);
+  void updateVelocity(float vx, float vy);
+  void stopShooting();
+  void startShooting();
+  void updateCooldown(float deltaTime);
+  float getShootCooldown();
+  bool isShooting();
 };
 
 #endif

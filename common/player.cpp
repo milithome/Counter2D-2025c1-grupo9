@@ -46,6 +46,37 @@ void Player::setHealth(float value) {
     health = 0.0f;
 }
 
+void Player::updateMovement(float deltaTime) {
+  move(vx, vy, deltaTime);
+}
+
 float Player::getHealth() const { return health; }
 
 bool Player::isAlive() const { return health > 0.0f; }
+
+void Player::updateVelocity(float vx, float vy){
+  this->vx=vx;
+  this->vy=vy;
+}
+
+void Player::stopShooting(){
+  shooting=false;
+}
+
+void Player::startShooting(){
+  shooting=true;
+}
+
+void Player::updateCooldown(float deltaTime) {
+  if (shootCooldown > 0.0f){
+    shootCooldown -= deltaTime;
+  }
+}
+
+float Player::getShootCooldown(){
+  return shootCooldown;
+}
+
+bool Player::isShooting() {
+  return shooting;
+}

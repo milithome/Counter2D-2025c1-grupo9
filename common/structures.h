@@ -42,13 +42,13 @@ enum class ActionType {
     MOVE,
     POINT_TO,
     FINISH,
-    SHOOT
+    SHOOT,
+    STOP_SHOOTING
 };
 
 struct MoveAction {
-    int x;
-    int y;
-    float deltaTime;
+    int vx;
+    int vy;
 };
 
 struct PointToAction {
@@ -58,8 +58,10 @@ struct PointToAction {
 
 struct ShootAction {};
 
+struct StopShootingAction {};
 
-using ActionData = std::variant<std::monostate,MoveAction, PointToAction,ShootAction>;
+
+using ActionData = std::variant<std::monostate, MoveAction, PointToAction,ShootAction, StopShootingAction>;
 
 struct Action {
     ActionType type;

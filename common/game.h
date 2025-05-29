@@ -23,13 +23,13 @@ private:
   Player &findPlayerByName(const std::string &name);
   bool running = true;
   float time;
-
+  void movePlayer(const std::string &name, float vx, float vy);
+  void stopShooting(const std::string &name);
   std::queue<ShotEvent> shot_event_queue;
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
   bool addPlayer(const std::string &name);
-  void movePlayer(const std::string &name, int x, int y, float deltaTime);
   void updatePlayerPosition(const std::string &name, float x, float y);
   std::vector<Entity> getState();
   bool isRunning();
