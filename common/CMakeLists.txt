@@ -4,12 +4,11 @@ target_sources(taller_common
     game.cpp
     player.cpp
     team.cpp
-    weapon.cpp
     PUBLIC
     # .h files
     structures.h
     game.h
     player.h
     team.h
-    weapon.h
+    weaponTypes.h
     )

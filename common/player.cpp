@@ -86,15 +86,15 @@ bool Player::isShooting() {
 }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
-  /*
-      std::cout << "Hitbox de " << shooterName << ": "
+  
+      Hitbox hb= getHitbox();
+      
+      std::cout << "Hitbox de " << name << ": "
               << "desde (" << hb.x << ", " << hb.y << ") "
               << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
-      */
-      Hitbox hb= getHitbox();
+      
       float origin_x = hb.x + hb.width / 2.0f;
       float origin_y = hb.y + hb.height / 2.0f;
-
 
       std::random_device rd;
       std::mt19937 gen(rd());
