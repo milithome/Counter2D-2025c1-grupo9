@@ -63,9 +63,9 @@ const Weapon Glock = {
     10, 50,
     false,
     0.0f,
-    10.0f,
+    4.0f,
     5,                 
-    15.0f,
+    40.0f,
     50,
     2.0f
   };

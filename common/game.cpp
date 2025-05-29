@@ -69,10 +69,11 @@ void Game::shoot(const std::string &shooterName) {
   if(shooter.isShooting()){
     if (shooter.getShootCooldown()<=0){
       shooter.resetCooldown();
+      Hitbox hb = shooter.getHitbox();
 
       int bullets = shooter.getBulletsPerShoot();
 
-      for (int i = 0; i < bullets; i++){ 
+      for (size_t i = 0; i < bullets; i++){ 
         //por cada bala del disparo, para todas menos la m3 es 1
         auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
         Player* closestPlayer = nullptr;
@@ -159,6 +160,7 @@ void Game::execute(const std::string &name, Action action) {
   }
     
   case ActionType::SHOOT:{
+    findPlayerByName(name).startShooting();
     shoot(name);
     break;
   }
