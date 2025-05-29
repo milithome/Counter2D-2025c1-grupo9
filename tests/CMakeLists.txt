@@ -1,5 +1,6 @@
 target_sources(taller_tests
     PRIVATE
+    mapTest.cpp
     protocolIntegrationTest.cpp
     ../server/server.cpp
     ../server/admin.cpp
@@ -7,4 +8,5 @@ target_sources(taller_tests
     ../server/clientHandler.cpp
     ../server/gameLoop.cpp
     ../server/lobby.cpp
+    ../common/utilities/map.cpp
 )
