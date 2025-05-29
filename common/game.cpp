@@ -69,11 +69,10 @@ void Game::shoot(const std::string &shooterName) {
   if(shooter.isShooting()){
     if (shooter.getShootCooldown()<=0){
       shooter.resetCooldown();
-      Hitbox hb = shooter.getHitbox();
 
       int bullets = shooter.getBulletsPerShoot();
 
-      for (size_t i = 0; i < bullets; i++){ 
+      for (int i = 0; i < bullets; i++){ 
         //por cada bala del disparo, para todas menos la m3 es 1
         auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
         Player* closestPlayer = nullptr;
@@ -111,9 +110,9 @@ void Game::shoot(const std::string &shooterName) {
               float randomDamage = dis(gen);
               float finalDamage = std::min(clampedDamage, randomDamage);
               closestPlayer->updateHealth(-finalDamage);
-              /*std::cout << shooterName << " le disparó a " << closestPlayer->getName()
-                        << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
-              */
+              std::cout << shooterName << " le disparó a " << closestPlayer->getName()
+                        << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
+              
               shot_event_queue.push(ShotEvent{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
             
         } else {
