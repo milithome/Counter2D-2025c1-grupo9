@@ -149,6 +149,7 @@ struct Action {
     ActionData data;
 };
 
+// Estado del juego
 struct Bullet {
     float origin_x;
     float origin_y;
@@ -163,14 +164,17 @@ struct StateGame {
     std::queue<Bullet> bullets;
 };
 
+// Datos iniciales del juego, como el mapa
 struct InitialData {
     MapData data;
 };
 
+// Lista de lobbies disponibles
 struct LobbyList{
     std::vector<std::string> lobbies;
 };
 
+// Estado del lobby, como los jugadores en el lobby
 struct StateLobby{
     std::vector<std::string> players;
 };
@@ -194,6 +198,9 @@ struct Response {
   std::string message;
 };
 
+
+
+// Estructuras que usa el servidor internamente - ignorar
 enum class LobbyRequestType {
     LEAVE,
     JOIN,
