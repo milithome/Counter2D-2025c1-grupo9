@@ -1,4 +1,5 @@
 #include "protocol.h"
+#include <variant>
 
 Protocol::Protocol(Socket skt) : skt(std::move(skt)), mtx() {}
 
@@ -70,6 +71,58 @@ void Protocol::send_list() {
     }
 }
 
+void Protocol::serialize_action_move(const Action& action, std::vector<uint8_t>& buffer) {
+    const MoveAction& move = std::get<MoveAction>(action.data);
+
+    uint32_t id = htonl(move.id);
+    int32_t x = htonl(move.x);
+    int32_t y = htonl(move.y);
+
+    buffer.insert(buffer.end(),
+                  reinterpret_cast<uint8_t*>(&id),
+                  reinterpret_cast<uint8_t*>(&id) + sizeof(id));
+
+    buffer.insert(buffer.end(),
+                  reinterpret_cast<uint8_t*>(&x),
+                  reinterpret_cast<uint8_t*>(&x) + sizeof(x));
+
+    buffer.insert(buffer.end(),
+                  reinterpret_cast<uint8_t*>(&y),
+                  reinterpret_cast<uint8_t*>(&y) + sizeof(y));
+}
+
+void Protocol::serialize_action_point_to(const Action& action, std::vector<uint8_t>& buffer) {
+    const PointToAction& point = std::get<PointToAction>(action.data);
+    uint32_t fbits;
+    std::memcpy(&fbits, &point.value, sizeof(float));
+    fbits = htonl(fbits);
+
+    buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&fbits), reinterpret_cast<uint8_t*>(&fbits) + sizeof(fbits));
+}
+
+void Protocol::serialize_action_buy_bullet(const Action& action, std::vector<uint8_t>& buffer) {
+    const BuyBulletAction& buy = std::get<BuyBulletAction>(action.data);
+    buffer.push_back(static_cast<uint8_t>(buy.type));
+}
+
+void Protocol::serialize_action_buy_weapon(const Action& action, std::vector<uint8_t>& buffer) {
+    const BuyWeaponAction& buy = std::get<BuyWeaponAction>(action.data);
+    buffer.push_back(static_cast<uint8_t>(buy.type));
+
+    if (buy.type == WeaponType::PRIMARY) {
+        buffer.push_back(static_cast<uint8_t>(buy.weapon.primary));
+    } else if (buy.type == WeaponType::SECONDARY) {
+        buffer.push_back(static_cast<uint8_t>(buy.weapon.secondary));
+    } else {
+        throw std::runtime_error("Unsupported WeaponType in serialize_action_buy_weapon");
+    }
+}
+
+void Protocol::serialize_action_change_weapon(const Action& action, std::vector<uint8_t>& buffer) {
+    const ChangeWeaponAction& change = std::get<ChangeWeaponAction>(action.data);
+    buffer.push_back(static_cast<uint8_t>(change.type));
+}
+
 void Protocol::send_action(const Action& action) {
     std::vector<uint8_t> buffer;
 
@@ -77,43 +130,41 @@ void Protocol::send_action(const Action& action) {
     buffer.push_back(static_cast<uint8_t>(action.type));
 
     switch (action.type) {
-        case ActionType::MOVE: {
-            const MoveAction& move = std::get<MoveAction>(action.data);
-            int32_t x = htonl(move.x);
-            int32_t y = htonl(move.y);
-            uint32_t delta_bits;
-            std::memcpy(&delta_bits, &move.deltaTime, sizeof(float));
-            delta_bits = htonl(delta_bits);
-            buffer.insert(buffer.end(),
-                        reinterpret_cast<uint8_t*>(&x),
-                        reinterpret_cast<uint8_t*>(&x) + sizeof(x));
-            buffer.insert(buffer.end(),
-                        reinterpret_cast<uint8_t*>(&y),
-                        reinterpret_cast<uint8_t*>(&y) + sizeof(y));
-            buffer.insert(buffer.end(),
-                        reinterpret_cast<uint8_t*>(&delta_bits),
-                        reinterpret_cast<uint8_t*>(&delta_bits) + sizeof(delta_bits));
+        case ActionType::MOVE:
+            serialize_action_move(action, buffer);
             break;
-        } case ActionType::POINT_TO: {
-            const PointToAction& point = std::get<PointToAction>(action.data);
-           
-            uint32_t fbits;
-            std::memcpy(&fbits, &point.value, sizeof(float));
-            fbits = htonl(fbits);
-            buffer.insert(buffer.end(),
-                          reinterpret_cast<uint8_t*>(&fbits),
-                          reinterpret_cast<uint8_t*>(&fbits) + sizeof(fbits));
+
+        case ActionType::POINT_TO:
+            serialize_action_point_to(action, buffer);
             break;
-        } case ActionType::SHOOT: {
-            // Sin parametros de momento
+
+        case ActionType::BUY_BULLET:
+            serialize_action_buy_bullet(action, buffer);
             break;
-        }
+
+        case ActionType::BUY_WEAPON:
+            serialize_action_buy_weapon(action, buffer);
+            break;
+
+        case ActionType::CHANGE_WEAPON:
+            serialize_action_change_weapon(action, buffer);
+            break;
+
+        case ActionType::SHOOT:
+        case ActionType::STOP_SHOOTING:
+        case ActionType::PLANT:
+        case ActionType::STOP_PLANTING:
+        case ActionType::DEFUSE:
+        case ActionType::STOP_DEFUSING:
+        case ActionType::GRAB:
+            break;
+
         default:
-            throw std::runtime_error("Unsupported ActionType in send_accion");
+            throw std::runtime_error("Unsupported ActionType in send_action");
     }
 
     if (skt.sendall(buffer.data(), buffer.size()) <= 0) {
-        throw std::runtime_error("Error sending ACCION message");
+        throw std::runtime_error("Error sending ACTION message");
     }
 }
 
@@ -122,6 +173,14 @@ void Protocol::send_leave_lobby() {
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
         throw std::runtime_error("Error sending LEAVE message");
+    }
+}
+
+void Protocol::send_start() {
+    uint8_t type = Type::START;
+
+    if (skt.sendall(&type, sizeof(type)) <= 0) {
+        throw std::runtime_error("Error sending START message");
     }
 }
 
@@ -140,11 +199,11 @@ std::vector<uint8_t> Protocol::serialize_simple(const Response& r) {
 std::vector<uint8_t> Protocol::serialize_list(const Response& r) {
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
 
-    uint16_t size = htons(r.partidas.size());
+    uint16_t size = htons(r.lobbyList.lobbies.size());
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
 
-    for (const auto& partida : r.partidas) {
+    for (const auto& partida : r.lobbyList.lobbies) {
         uint16_t len = htons(partida.size());
         buf.push_back(reinterpret_cast<uint8_t*>(&len)[0]);
         buf.push_back(reinterpret_cast<uint8_t*>(&len)[1]);
@@ -154,36 +213,103 @@ std::vector<uint8_t> Protocol::serialize_list(const Response& r) {
     return buf;
 }
 
+void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData& pdata) {
+    uint16_t len = htons(pdata.name.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&len)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&len)[1]);
+    buf.insert(buf.end(), pdata.name.begin(), pdata.name.end());
+
+    uint32_t rot_net;
+    std::memcpy(&rot_net, &pdata.rotation, sizeof(float));
+    rot_net = htonl(rot_net);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&rot_net), reinterpret_cast<uint8_t*>(&rot_net) + sizeof(rot_net));
+
+    uint32_t move_net = htonl(pdata.lastMoveId);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&move_net), reinterpret_cast<uint8_t*>(&move_net) + sizeof(move_net));
+
+    buf.push_back(static_cast<uint8_t>(pdata.inventory.primary));
+    buf.push_back(static_cast<uint8_t>(pdata.inventory.secondary));
+
+    uint32_t bp_net = htonl(pdata.inventory.bulletsPrimary);
+    uint32_t bs_net = htonl(pdata.inventory.bulletsSecondary);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&bp_net), reinterpret_cast<uint8_t*>(&bp_net) + sizeof(bp_net));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&bs_net), reinterpret_cast<uint8_t*>(&bs_net) + sizeof(bs_net));
+}
+
+void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bdata) {
+    buf.push_back(static_cast<uint8_t>(bdata.planted));
+}
+
+void Protocol::serialize_weapon_data(std::vector<uint8_t>& buf, const WeaponData& wdata) {
+    buf.push_back(static_cast<uint8_t>(wdata.type));
+    if (wdata.type == WeaponType::PRIMARY) {
+        buf.push_back(static_cast<uint8_t>(wdata.weapon.primary));
+    } else {
+        buf.push_back(static_cast<uint8_t>(wdata.weapon.secondary));
+    }
+}
+
+void Protocol::serialize_entity(std::vector<uint8_t>& buf, const Entity& entity) {
+    buf.push_back(static_cast<uint8_t>(entity.type));
+
+    // Serializar posición (x, y)
+    uint32_t x_net, y_net;
+    std::memcpy(&x_net, &entity.x, sizeof(float));
+    std::memcpy(&y_net, &entity.y, sizeof(float));
+    x_net = htonl(x_net);
+    y_net = htonl(y_net);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&x_net), reinterpret_cast<uint8_t*>(&x_net) + sizeof(x_net));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&y_net), reinterpret_cast<uint8_t*>(&y_net) + sizeof(y_net));
+
+    switch (entity.type) {
+        case PLAYER:
+            serialize_player_data(buf, std::get<PlayerData>(entity.data));
+            break;
+
+        case BOMB:
+            serialize_bomb_data(buf, std::get<BombData>(entity.data));
+            break;
+
+        case WEAPON:
+            serialize_weapon_data(buf, std::get<WeaponData>(entity.data));
+            break;
+
+        default:
+            throw std::runtime_error("Unknown EntityType in serialization");
+    }
+}
+
+void Protocol::serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b) {
+    float values[5] = {b.origin_x, b.origin_y, b.target_x, b.target_y, b.angle};
+    for (int i = 0; i < 5; ++i) {
+        uint32_t net;
+        std::memcpy(&net, &values[i], sizeof(float));
+        net = htonl(net);
+        buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&net), reinterpret_cast<uint8_t*>(&net) + sizeof(net));
+    }
+}
+
 std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
 
-    uint16_t size = htons(r.entities.size());
+    buf.push_back(static_cast<uint8_t>(r.stateGame.phase));
+
+    uint16_t size = htons(r.stateGame.entities.size());
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
 
-    for (const auto& entity : r.entities) {
-        buf.push_back(static_cast<uint8_t>(entity.type));
+    for (const Entity& entity : r.stateGame.entities) {
+        serialize_entity(buf, entity);
+    }
 
-        uint16_t name_len = htons(entity.name.size());
-        buf.push_back(reinterpret_cast<uint8_t*>(&name_len)[0]);
-        buf.push_back(reinterpret_cast<uint8_t*>(&name_len)[1]);
-        buf.insert(buf.end(), entity.name.begin(), entity.name.end());
+    uint16_t bullet_count = htons(r.stateGame.bullets.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[1]);
 
-        uint32_t x_net, y_net, rotation_net;
-        std::memcpy(&x_net, &entity.x, sizeof(float));
-        std::memcpy(&y_net, &entity.y, sizeof(float));
-        std::memcpy(&rotation_net, &entity.rotation, sizeof(float));
-        x_net = htonl(x_net);
-        y_net = htonl(y_net);
-        rotation_net = htonl(rotation_net);
-
-        uint8_t* x_ptr = reinterpret_cast<uint8_t*>(&x_net);
-        uint8_t* y_ptr = reinterpret_cast<uint8_t*>(&y_net);
-        uint8_t* rot_ptr = reinterpret_cast<uint8_t*>(&rotation_net);
-        
-        buf.insert(buf.end(), x_ptr, x_ptr + sizeof(float));
-        buf.insert(buf.end(), y_ptr, y_ptr + sizeof(float));
-        buf.insert(buf.end(), rot_ptr, rot_ptr + sizeof(float));
+    std::queue<Bullet> copy = r.stateGame.bullets;
+    while (!copy.empty()) {
+        serialize_bullet(buf, copy.front());
+        copy.pop();
     }
 
     return buf;
@@ -192,11 +318,11 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
 std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
 
-    uint16_t size = htons(r.players.size());
+    uint16_t size = htons(r.stateLobby.players.size());
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[1]);
 
-    for (const auto& player : r.players) {
+    for (const auto& player : r.stateLobby.players) {
         uint16_t name_size = htons(player.size());
         buf.push_back(reinterpret_cast<uint8_t*>(&name_size)[0]);
         buf.push_back(reinterpret_cast<uint8_t*>(&name_size)[1]);
@@ -206,9 +332,72 @@ std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
     return buf;
 }
 
+void Protocol::serialize_string(const std::string& str, std::vector<uint8_t>& buf) {
+    uint16_t len = htons(static_cast<uint16_t>(str.size()));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&len), reinterpret_cast<uint8_t*>(&len) + sizeof(len));
+    buf.insert(buf.end(), str.begin(), str.end());
+}
+
+void Protocol::serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf) {
+    uint16_t count = htons(static_cast<uint16_t>(vec.size()));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&count), reinterpret_cast<uint8_t*>(&count) + sizeof(count));
+    for (const auto& str : vec) {
+        serialize_string(str, buf);
+    }
+}
+
+void Protocol::serialize_2d_vector(const std::vector<std::vector<uint16_t>>& matrix, std::vector<uint8_t>& buf) {
+    uint16_t rows = htons(static_cast<uint16_t>(matrix.size()));
+    uint16_t cols = htons(matrix.empty() ? 0 : static_cast<uint16_t>(matrix[0].size()));
+
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&rows), reinterpret_cast<uint8_t*>(&rows) + sizeof(rows));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&cols), reinterpret_cast<uint8_t*>(&cols) + sizeof(cols));
+
+    for (const auto& row : matrix) {
+        for (uint16_t val : row) {
+            uint16_t val_net = htons(val);
+            buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&val_net), reinterpret_cast<uint8_t*>(&val_net) + sizeof(val_net));
+        }
+    }
+}
+
+void Protocol::serialize_legend_entry(const MapLegendEntry& entry, std::vector<uint8_t>& buf) {
+    int32_t x_net = htonl(entry.x);
+    int32_t y_net = htonl(entry.y);
+
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&x_net), reinterpret_cast<uint8_t*>(&x_net) + sizeof(x_net));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&y_net), reinterpret_cast<uint8_t*>(&y_net) + sizeof(y_net));
+}
+
+void Protocol::serialize_legend(const std::unordered_map<uint16_t, MapLegendEntry>& legend, std::vector<uint8_t>& buf) {
+    uint16_t count = htons(static_cast<uint16_t>(legend.size()));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&count), reinterpret_cast<uint8_t*>(&count) + sizeof(count));
+
+    for (const auto& [key, entry] : legend) {
+        uint16_t key_net = htons(key);
+        buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&key_net), reinterpret_cast<uint8_t*>(&key_net) + sizeof(key_net));
+        serialize_legend_entry(entry, buf);
+    }
+}
+
+void Protocol::serialize_map_data(const MapData& map, std::vector<uint8_t>& buf) {
+    serialize_string(map.background_path, buf);
+    serialize_string(map.sprite_path, buf);
+
+    serialize_2d_vector(map.game_map, buf);
+    serialize_legend(map.legend_game, buf);
+
+    serialize_2d_vector(map.tiles_map, buf);
+    serialize_legend(map.legend_tiles, buf);
+}
+
 std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
-    // TODO: Agregar más datos cuando se definan
+    const InitialData& init = r.initialData;
+
+    serialize_map_data(init.data, buf);
+    serialize_string_vector(init.players, buf);
+
     return buf;
 }
 
@@ -220,6 +409,7 @@ void Protocol::send_response(const Response& r) {
         case Type::JOIN:
         case Type::LEAVE:
         case Type::START:
+        case Type::LOBBY_READY:
         case Type::FINISH:
             buffer = serialize_simple(r);
             break;
@@ -303,61 +493,275 @@ Response Protocol::deserialize_list() {
         if (skt.recvall(name_buf.data(), name_size) == 0) {
             throw std::runtime_error("Error receiving name");
         }
-        r.partidas.emplace_back(name_buf.begin(), name_buf.end());
+        r.lobbyList.lobbies.emplace_back(name_buf.begin(), name_buf.end());
     }
 
     return r;
 }
 
+std::string Protocol::deserialize_string() {
+    uint16_t len_net;
+    if (skt.recvall(&len_net, sizeof(len_net)) == 0)
+        throw std::runtime_error("Error receiving string length");
+
+    uint16_t len = ntohs(len_net);
+    std::vector<char> buffer(len);
+    if (skt.recvall(buffer.data(), len) == 0)
+        throw std::runtime_error("Error receiving string data");
+
+    return std::string(buffer.begin(), buffer.end());
+}
+
+std::vector<std::string> Protocol::deserialize_string_vector() {
+    uint16_t count_net;
+    if (skt.recvall(&count_net, sizeof(count_net)) == 0)
+        throw std::runtime_error("Error receiving string vector count");
+
+    uint16_t count = ntohs(count_net);
+    std::vector<std::string> result;
+
+    for (uint16_t i = 0; i < count; ++i) {
+        result.push_back(deserialize_string());
+    }
+
+    return result;
+}
+
+std::vector<std::vector<uint16_t>> Protocol::deserialize_2d_vector() {
+    uint16_t rows_net, cols_net;
+    if (skt.recvall(&rows_net, sizeof(rows_net)) == 0 || skt.recvall(&cols_net, sizeof(cols_net)) == 0)
+        throw std::runtime_error("Error receiving 2D vector dimensions");
+
+    uint16_t rows = ntohs(rows_net);
+    uint16_t cols = ntohs(cols_net);
+
+    std::vector<std::vector<uint16_t>> matrix(rows, std::vector<uint16_t>(cols));
+    for (uint16_t i = 0; i < rows; ++i) {
+        for (uint16_t j = 0; j < cols; ++j) {
+            uint16_t val_net;
+            if (skt.recvall(&val_net, sizeof(val_net)) == 0)
+                throw std::runtime_error("Error receiving matrix value");
+            matrix[i][j] = ntohs(val_net);
+        }
+    }
+    return matrix;
+}
+
+std::unordered_map<uint16_t, MapLegendEntry> Protocol::deserialize_legend() {
+    uint16_t count_net;
+    if (skt.recvall(&count_net, sizeof(count_net)) == 0)
+        throw std::runtime_error("Error receiving legend count");
+
+    uint16_t count = ntohs(count_net);
+    std::unordered_map<uint16_t, MapLegendEntry> legend;
+
+    for (uint16_t i = 0; i < count; ++i) {
+        uint16_t key_net;
+        if (skt.recvall(&key_net, sizeof(key_net)) == 0)
+            throw std::runtime_error("Error receiving legend key");
+        uint16_t key = ntohs(key_net);
+
+        legend[key] = deserialize_legend_entry();
+    }
+
+    return legend;
+}
+
+MapLegendEntry Protocol::deserialize_legend_entry() {
+    int32_t x_net, y_net;
+    if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0)
+        throw std::runtime_error("Error receiving legend entry");
+
+    MapLegendEntry entry;
+    entry.x = ntohl(x_net);
+    entry.y = ntohl(y_net);
+    return entry;
+}
+
+MapData Protocol::deserialize_map_data() {
+    MapData map;
+
+    map.background_path = deserialize_string();
+    map.sprite_path = deserialize_string();
+
+    map.game_map = deserialize_2d_vector();
+    map.legend_game = deserialize_legend();
+
+    map.tiles_map = deserialize_2d_vector();
+    map.legend_tiles = deserialize_legend();
+
+    return map;
+}
+
 Response Protocol::deserialize_initial_data() {
     Response r;
     r.type = Type::INITIAL_DATA;
-    // TODO
+    InitialData& init = r.initialData;
+
+    init.data = deserialize_map_data();
+    init.players = deserialize_string_vector();
+
     return r;
+}
+
+PlayerData Protocol::recv_player_data() {
+    PlayerData p;
+
+    uint16_t name_len_net;
+    if (skt.recvall(&name_len_net, sizeof(name_len_net)) == 0)
+        throw std::runtime_error("Error receiving player name length");
+    uint16_t name_len = ntohs(name_len_net);
+
+    std::vector<uint8_t> name_buf(name_len);
+    if (skt.recvall(name_buf.data(), name_len) == 0)
+        throw std::runtime_error("Error receiving player name");
+    p.name.assign(name_buf.begin(), name_buf.end());
+
+    uint32_t rot_net;
+    if (skt.recvall(&rot_net, sizeof(rot_net)) == 0)
+        throw std::runtime_error("Error receiving player rotation");
+    rot_net = ntohl(rot_net);
+    std::memcpy(&p.rotation, &rot_net, sizeof(float));
+
+    uint32_t id_net;
+    if (skt.recvall(&id_net, sizeof(id_net)) == 0)
+        throw std::runtime_error("Error receiving lastMoveId");
+    p.lastMoveId = ntohl(id_net);
+
+    uint8_t prim, sec;
+    uint32_t bprim_net, bsec_net;
+    if (skt.recvall(&prim, sizeof(prim)) == 0 ||
+        skt.recvall(&sec, sizeof(sec)) == 0 ||
+        skt.recvall(&bprim_net, sizeof(bprim_net)) == 0 ||
+        skt.recvall(&bsec_net, sizeof(bsec_net)) == 0)
+        throw std::runtime_error("Error receiving inventory");
+    p.inventory.primary = static_cast<WeaponPrimaryType>(prim);
+    p.inventory.secondary = static_cast<WeaponSecondaryType>(sec);
+    p.inventory.bulletsPrimary = ntohl(bprim_net);
+    p.inventory.bulletsSecondary = ntohl(bsec_net);
+
+    return p;
+}
+
+BombData Protocol::recv_bomb_data() {
+    uint8_t planted;
+    if (skt.recvall(&planted, sizeof(planted)) == 0)
+        throw std::runtime_error("Error receiving bomb planted");
+    return BombData{static_cast<bool>(planted)};
+}
+
+WeaponData Protocol::recv_weapon_data() {
+    WeaponData w;
+    uint8_t type, variant;
+    if (skt.recvall(&type, sizeof(type)) == 0 ||
+        skt.recvall(&variant, sizeof(variant)) == 0)
+        throw std::runtime_error("Error receiving weapon data");
+    w.type = static_cast<WeaponType>(type);
+    if (w.type == WeaponType::PRIMARY)
+        w.weapon.primary = static_cast<WeaponPrimaryType>(variant);
+    else
+        w.weapon.secondary = static_cast<WeaponSecondaryType>(variant);
+    return w;
+}
+
+Bullet Protocol::recv_bullet() {
+    Bullet b;
+    float* fields[5] = {&b.origin_x, &b.origin_y, &b.target_x, &b.target_y, &b.angle};
+    for (int i = 0; i < 5; ++i) {
+        uint32_t net;
+        if (skt.recvall(&net, sizeof(net)) == 0)
+            throw std::runtime_error("Error receiving bullet field");
+        net = ntohl(net);
+        std::memcpy(fields[i], &net, sizeof(float));
+    }
+    return b;
+}
+
+Entity Protocol::deserialize_entity_player(float x, float y) {
+    Entity entity;
+    entity.type = EntityType::PLAYER;
+    entity.x = x;
+    entity.y = y;
+    entity.data = recv_player_data();
+    return entity;
+}
+
+Entity Protocol::deserialize_entity_bomb(float x, float y) {
+    Entity entity;
+    entity.type = EntityType::BOMB;
+    entity.x = x;
+    entity.y = y;
+    entity.data = recv_bomb_data();
+    return entity;
+}
+
+Entity Protocol::deserialize_entity_weapon(float x, float y) {
+    Entity entity;
+    entity.type = EntityType::WEAPON;
+    entity.x = x;
+    entity.y = y;
+    entity.data = recv_weapon_data();
+    return entity;
+}
+
+Entity Protocol::deserialize_entity() {
+    uint8_t type_raw;
+    if (skt.recvall(&type_raw, sizeof(type_raw)) == 0)
+        throw std::runtime_error("Error receiving entity type");
+    EntityType type = static_cast<EntityType>(type_raw);
+
+    uint32_t x_net, y_net;
+    if (skt.recvall(&x_net, sizeof(x_net)) == 0 || skt.recvall(&y_net, sizeof(y_net)) == 0)
+        throw std::runtime_error("Error receiving entity coordinates");
+    x_net = ntohl(x_net);
+    y_net = ntohl(y_net);
+    float x, y;
+    std::memcpy(&x, &x_net, sizeof(float));
+    std::memcpy(&y, &y_net, sizeof(float));
+
+    switch (type) {
+        case EntityType::PLAYER:
+            return deserialize_entity_player(x, y);
+        case EntityType::BOMB:
+            return deserialize_entity_bomb(x, y);
+        case EntityType::WEAPON:
+            return deserialize_entity_weapon(x, y);
+        default: {
+            Entity unknown;
+            unknown.type = type;
+            unknown.x = x;
+            unknown.y = y;
+            unknown.data = std::monostate{};
+            return unknown;
+        }
+    }
 }
 
 Response Protocol::deserialize_state() {
     Response r;
     r.type = Type::STATE;
 
-    uint16_t size_net;
-    if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
-        throw std::runtime_error("Error receiving state size");
+    uint8_t phase_val;
+    if (skt.recvall(&phase_val, sizeof(phase_val)) == 0)
+        throw std::runtime_error("Error receiving phase");
+    r.stateGame.phase = static_cast<Phase>(phase_val);
+
+    uint16_t entity_count_net;
+    if (skt.recvall(&entity_count_net, sizeof(entity_count_net)) == 0)
+        throw std::runtime_error("Error receiving entity count");
+    uint16_t entity_count = ntohs(entity_count_net);
+
+    for (uint16_t i = 0; i < entity_count; ++i) {
+        r.stateGame.entities.push_back(deserialize_entity());
     }
-    uint16_t size = ntohs(size_net);
-    r.entities.resize(size);
 
-    for (uint16_t i = 0; i < size; ++i) {
-        uint8_t entity_type;
-        if (skt.recvall(&entity_type, sizeof(entity_type)) == 0) {
-            throw std::runtime_error("Error receiving entity type");
-        }
-        r.entities[i].type = static_cast<EntityType>(entity_type);
+    uint16_t bullet_count_net;
+    if (skt.recvall(&bullet_count_net, sizeof(bullet_count_net)) == 0)
+        throw std::runtime_error("Error receiving bullet count");
+    uint16_t bullet_count = ntohs(bullet_count_net);
 
-        uint16_t name_len;
-        if (skt.recvall(&name_len, sizeof(name_len)) == 0) {
-            throw std::runtime_error("Error receiving name length");
-        }
-        name_len = ntohs(name_len);
-
-        std::vector<uint8_t> name_buf(name_len);
-        if (skt.recvall(name_buf.data(), name_len) == 0) {
-            throw std::runtime_error("Error receiving name");
-        }
-        r.entities[i].name.assign(name_buf.begin(), name_buf.end());
-
-        uint32_t x_net, y_net, rotation_net;
-        if (skt.recvall(&x_net, sizeof(x_net)) == 0 || 
-            skt.recvall(&y_net, sizeof(y_net)) == 0 ||
-            skt.recvall(&rotation_net, sizeof(rotation_net)) == 0) {
-            throw std::runtime_error("Error receiving coordinates");
-        }
-        x_net = ntohl(x_net);
-        y_net = ntohl(y_net);
-        rotation_net = ntohl(rotation_net);
-        std::memcpy(&r.entities[i].x, &x_net, sizeof(float));
-        std::memcpy(&r.entities[i].y, &y_net, sizeof(float));
-        std::memcpy(&r.entities[i].rotation, &rotation_net, sizeof(float));
+    for (uint16_t i = 0; i < bullet_count; ++i) {
+        r.stateGame.bullets.push(recv_bullet());
     }
 
     return r;
@@ -372,7 +776,7 @@ Response Protocol::deserialize_state_lobby() {
         throw std::runtime_error("Error receiving state_lobby size");
     }
     uint16_t size = ntohs(size_net);
-    r.players.resize(size);
+    r.stateLobby.players.resize(size);
 
     for (uint16_t i = 0; i < size; ++i) {
         uint16_t name_size_net;
@@ -385,7 +789,7 @@ Response Protocol::deserialize_state_lobby() {
         if (skt.recvall(name_buf.data(), name_size) == 0) {
             throw std::runtime_error("Error receiving player name");
         }
-        r.players[i].assign(name_buf.begin(), name_buf.end());
+        r.stateLobby.players[i].assign(name_buf.begin(), name_buf.end());
     }
 
     return r;
@@ -405,6 +809,7 @@ Response Protocol::recv_response() {
         case Type::LEAVE:
         case Type::START:
         case Type::FINISH:
+        case Type::LOBBY_READY:
             return deserialize_simple(type);
         case Type::LIST:
             return deserialize_list();
@@ -440,21 +845,19 @@ Message Protocol::deserialize_message_with_name(Type type) {
 }
 
 MoveAction Protocol::recv_move_action() {
+    uint32_t id_net;
     int32_t x_net, y_net;
-    uint32_t delta_bits;
 
-    if (skt.recvall(&x_net, sizeof(x_net)) == 0 ||
-        skt.recvall(&y_net, sizeof(y_net)) == 0 ||
-        skt.recvall(&delta_bits, sizeof(delta_bits)) == 0) {
+    if (skt.recvall(&id_net, sizeof(id_net)) == 0 ||
+        skt.recvall(&x_net, sizeof(x_net)) == 0 ||
+        skt.recvall(&y_net, sizeof(y_net)) == 0) {
         throw std::runtime_error("Error receiving MOVE parameters");
     }
 
     MoveAction move;
+    move.id = ntohl(id_net);
     move.x = ntohl(x_net);
     move.y = ntohl(y_net);
-    delta_bits = ntohl(delta_bits);
-    std::memcpy(&move.deltaTime, &delta_bits, sizeof(float));
-
     return move;
 }
 
@@ -470,9 +873,42 @@ PointToAction Protocol::recv_point_to_action() {
     return PointToAction{value};
 }
 
-ShootAction Protocol::recv_shoot_action() {
-    // Si el SHOOT no lleva parámetros:
-    return ShootAction{};
+BuyBulletAction Protocol::recv_buy_bullet_action() {
+    uint8_t type;
+    if (skt.recvall(&type, sizeof(type)) == 0) {
+        throw std::runtime_error("Error receiving BUY_BULLET parameter");
+    }
+    return BuyBulletAction{static_cast<WeaponType>(type)};
+}
+
+BuyWeaponAction Protocol::recv_buy_weapon_action() {
+    uint8_t type;
+    uint8_t subtype;
+    if (skt.recvall(&type, sizeof(type)) == 0 ||
+        skt.recvall(&subtype, sizeof(subtype)) == 0) {
+        throw std::runtime_error("Error receiving BUY_WEAPON parameters");
+    }
+
+    BuyWeaponAction action;
+    action.type = static_cast<WeaponType>(type);
+    if (action.type == WeaponType::PRIMARY) {
+        action.weapon.primary = static_cast<WeaponPrimaryType>(subtype);
+    } else {
+        action.weapon.secondary = static_cast<WeaponSecondaryType>(subtype);
+    }
+    return action;
+}
+
+ChangeWeaponAction Protocol::recv_change_weapon_action() {
+    uint8_t type;
+    if (skt.recvall(&type, sizeof(type)) == 0) {
+        throw std::runtime_error("Error receiving CHANGE_WEAPON parameter");
+    }
+    return ChangeWeaponAction{static_cast<WeaponType>(type)};
+}
+
+std::monostate Protocol::recv_action_without_parameters() {
+    return {};
 }
 
 Message Protocol::deserialize_message_action() {
@@ -491,13 +927,28 @@ Message Protocol::deserialize_message_action() {
         case ActionType::MOVE:
             action.data = recv_move_action();
             break;
-
         case ActionType::POINT_TO:
             action.data = recv_point_to_action();
             break;
+        case ActionType::BUY_BULLET:
+            action.data = recv_buy_bullet_action();
+            break;
+        case ActionType::BUY_WEAPON:
+            action.data = recv_buy_weapon_action();
+            break;
+        case ActionType::CHANGE_WEAPON:
+            action.data = recv_change_weapon_action();
+            break;
 
+        // Acciones sin parámetros
         case ActionType::SHOOT:
-            action.data = recv_shoot_action();
+        case ActionType::STOP_SHOOTING:
+        case ActionType::PLANT:
+        case ActionType::STOP_PLANTING:
+        case ActionType::DEFUSE:
+        case ActionType::STOP_DEFUSING:
+        case ActionType::GRAB:
+            action.data = recv_action_without_parameters();
             break;
 
         default:
@@ -527,6 +978,7 @@ Message Protocol::recv_message() {
             return deserialize_message_action();
         case Type::LIST:
         case Type::LEAVE:
+        case Type::START:
             msg.type = type;
             return msg;
         default:

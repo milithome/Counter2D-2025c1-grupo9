@@ -12,25 +12,19 @@
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
-    NAME,
-    LIST,
-    CREATE,
-    JOIN,
-    LEAVE,
-    STATE_LOBBY,
-    LOBBY_READY,
-    START,
-    INITIAL_DATA,
-    ACTION,
-    STATE,
-    FINISH,
-    DISCONNECT 
-};
-
-enum Phase {
-    PURCHASE,
-    BOMB_PLANTING,
-    BOMB_DEFUSING
+    NAME, // mandar name
+    LIST, // mandar/recibir lista de lobbies
+    CREATE, // crear un lobby y recibir confirmacion
+    JOIN, //unirse a un lobby y recibir confirmacion
+    LEAVE, // salir de un lobby y recibir confirmacion
+    STATE_LOBBY, // recibir estado del lobby
+    LOBBY_READY, // recibir que el lobby se lleno
+    START, // mandar iniciar partida
+    INITIAL_DATA, // recibir datos inicales
+    ACTION, // mandar accion
+    STATE, // recibir estado
+    FINISH, // recibir fin de la partida
+    DISCONNECT // mandar desconeccion
 };
 
 // Tipos de armas disponibles en el juego
@@ -120,10 +114,6 @@ struct PointToAction {
     float value;
 };
 
-struct ShootAction {};
-
-struct StopShootingAction {};
-
 struct BuyBulletAction {
     WeaponType type;
 };
@@ -136,13 +126,28 @@ struct BuyWeaponAction {
     } weapon;
 };
 
-struct GrabAction {};
-
 struct ChangeWeaponAction {
     WeaponType type;
 };
 
-using ActionData = std::variant<std::monostate, MoveAction, PointToAction, ShootAction, StopShootingAction, BuyBulletAction, BuyWeaponAction, GrabAction, ChangeWeaponAction>;
+/*
+Accion sin parametros de momento:
+struct ShootAction {};
+
+struct StopShootingAction {};
+
+struct PlantAction {};
+
+struct StopPlantingAction {};
+
+struct DefuseAction {};
+
+struct StopDefusingAction {};
+
+struct GrabAction {};
+*/
+
+using ActionData = std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction, BuyWeaponAction, ChangeWeaponAction>;
 
 struct Action {
     ActionType type;
@@ -150,6 +155,12 @@ struct Action {
 };
 
 // Estado del juego
+enum Phase {
+    PURCHASE,
+    BOMB_PLANTING,
+    BOMB_DEFUSING
+};
+
 struct Bullet {
     float origin_x;
     float origin_y;
@@ -167,6 +178,7 @@ struct StateGame {
 // Datos iniciales del juego, como el mapa
 struct InitialData {
     MapData data;
+    std::vector<std::string> players;
 };
 
 // Lista de lobbies disponibles
@@ -197,8 +209,6 @@ struct Response {
   StateLobby stateLobby;
   std::string message;
 };
-
-
 
 // Estructuras que usa el servidor internamente - ignorar
 enum class LobbyRequestType {
