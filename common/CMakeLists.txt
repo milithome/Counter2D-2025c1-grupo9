@@ -11,5 +11,5 @@ target_sources(taller_common
     game.h
     player.h
     team.h
-    weapon.h
+    weapons.h
     )

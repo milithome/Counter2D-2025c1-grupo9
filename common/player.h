@@ -2,7 +2,7 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
-#include "weaponTypes.h"
+#include "weapons.h"
 #include <cmath>
 #include <string>
 #include <random>
@@ -12,11 +12,11 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  WeaponType equipped = WeaponTypes::Glock;
+  Weapon equipped = Weapons::Glock;
   EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
-  WeaponType knife= WeaponTypes::Knife;
-  WeaponType primaryWeapon;
-  WeaponType secondaryWeapon = WeaponTypes::Glock;
+  Weapon knife= Weapons::Knife;
+  Weapon primaryWeapon;
+  Weapon secondaryWeapon = Weapons::Glock;
   float rotation;
   float health;
   float vx = 0, vy = 0;

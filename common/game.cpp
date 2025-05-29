@@ -48,10 +48,10 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
   for (const auto &player : players) {
     Entity entity;
     entity.type = PLAYER;
-    entity.name = player.getName();
+    //entity.name = player.getName();
     entity.x = player.getX();
     entity.y = player.getY();
-    entity.rotation = player.getRotation();
+    //entity.rotation = player.getRotation();
     state.push_back(entity);
   }
 
@@ -164,7 +164,6 @@ void Game::execute(const std::string &name, Action action) {
     break;
   }
   case ActionType::STOP_SHOOTING:{
-    const StopShootingAction *pointToData = std::get_if<StopShootingAction>(&action.data);
     stopShooting(name);
     break;
   }

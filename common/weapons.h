@@ -9,7 +9,7 @@ enum class EquippedWeapon {
   SECONDARY
 };
 
-struct WeaponType {
+struct Weapon {
   const char* name;
   int minDamage;
   int maxDamage;
@@ -22,8 +22,8 @@ struct WeaponType {
   float cooldown;
 };
 
-namespace WeaponTypes {
-  const WeaponType Knife = {
+namespace Weapons {
+  const Weapon Knife = {
     "knife",
     20, 40,  
     false,
@@ -34,7 +34,7 @@ namespace WeaponTypes {
     0,
     1.0f
   };
-const WeaponType Glock = {
+const Weapon Glock = {
     "Glock",
     25, 35,
     false,
@@ -46,7 +46,7 @@ const WeaponType Glock = {
     1.0f
   };
 
-  const WeaponType AK47 = {
+  const Weapon AK47 = {
     "AK-47",
     15, 25,
     true,
@@ -58,7 +58,7 @@ const WeaponType Glock = {
     2.0f
   };
 
-  const WeaponType M3 = {
+  const Weapon M3 = {
     "M3",
     10, 50,
     false,
@@ -70,7 +70,7 @@ const WeaponType Glock = {
     2.0f
   };
 
-  const WeaponType AWP = {
+  const Weapon AWP = {
     "AWP",
     80, 100,
     false,
