@@ -2,14 +2,20 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
+#include "weaponTypes.h"
 #include <cmath>
 #include <string>
+#include <random>
 class Player {
 private:
   std::string name;
   float x, y;
   Hitbox hitbox;
   Role role;
+  EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
+  WeaponType knife= WeaponTypes::Knife;
+  WeaponType primaryWeapon;
+  WeaponType secondaryWeapon = WeaponTypes::Glock;
   float rotation;
   float health;
   float vx = 0, vy = 0;
@@ -38,7 +44,11 @@ public:
   void startShooting();
   void updateCooldown(float deltaTime);
   float getShootCooldown();
+  void resetCooldown();
   bool isShooting();
+  std::tuple<float, float, float, float, float, float> Player::shoot();
+  int getBulletsPerShoot();
+  float getSpreadAngle();
 };
 
 #endif

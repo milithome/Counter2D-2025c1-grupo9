@@ -68,58 +68,46 @@ void Game::shoot(const std::string &shooterName) {
   
   if(shooter.isShooting()){
     if (shooter.getShootCooldown()<=0){
-      //shootCooldown= //depende del arma
+      shooter.resetCooldown();
       Hitbox hb = shooter.getHitbox();
-      /*
-      std::cout << "Hitbox de " << shooterName << ": "
-              << "desde (" << hb.x << ", " << hb.y << ") "
-              << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
-      */
-      float origin_x = hb.x + hb.width / 2.0f;
-      float origin_y = hb.y + hb.height / 2.0f;
-      float angle = shooter.getRotation();
-      float angle_rad = angle * M_PI / 180.0f;
+      
+      int bullets = shooter.getBulletsPerShoot();
 
-      float max_distance = 30.0f;
+      for (size_t i = 0; i < bullets; i++){
+        auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
+        Player* closestPlayer = nullptr;
+        float closestDistance = maxDistance + 1.0f;
+        std::pair<float, float> closestHitPoint;
 
-      float target_x = origin_x + cos(angle_rad) * max_distance;
-      float target_y = origin_y + sin(angle_rad) * max_distance;
-      /*
-      std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
-              << target_x << ", " << target_y << ")\n";
-      */
-      Player* closest_player = nullptr;
-      float closest_distance = max_distance + 1.0f;
-      std::pair<float, float> closest_hit_point;
+        for (auto &player : players) {
+          if (player.getName() == shooterName)
+            continue;
 
-      for (auto &player : players) {
-        if (player.getName() == shooterName)
-          continue;
+          Hitbox hb = player.getHitbox();
 
-        Hitbox hb = player.getHitbox();
-
-        auto hit_point = hb.intersectsRay(origin_x, origin_y, target_x, target_y);
-        if (hit_point) {
-          float dx = hit_point->first - origin_x;
-          float dy = hit_point->second - origin_y;
-          float dist = sqrt(dx*dx + dy*dy);
-          if (dist < closest_distance) {
-                    closest_distance = dist;
-                    closest_player = &player;
-                    closest_hit_point = *hit_point;
+          auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
+          if (hit_point) {
+            float dx = hit_point->first - originX;
+            float dy = hit_point->second - originY;
+            float dist = sqrt(dx*dx + dy*dy);
+            if (dist < closestDistance) {
+                      closestDistance = dist;
+                      closestPlayer = &player;
+                      closestHitPoint = *hit_point;
+            }
           }
         }
-      }
 
-      if (closest_player) {
-            closest_player->updateHealth(-200.0f);
-            /*std::cout << shooterName << " le disparó a " << closest_player->getName()
-                      << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
-            */
-            shot_event_queue.push(ShotEvent{origin_x, origin_y, closest_hit_point.first, closest_hit_point.second, angle});
-          
-      } else {
-        shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
+        if (closestPlayer) {
+              closestPlayer->updateHealth(-200.0f);
+              /*std::cout << shooterName << " le disparó a " << closestPlayer->getName()
+                        << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
+              */
+              shot_event_queue.push(ShotEvent{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
+            
+        } else {
+          shot_event_queue.push(ShotEvent{originX, originY, targetX, targetY, angle});
+        }
       }
     }
   }else{

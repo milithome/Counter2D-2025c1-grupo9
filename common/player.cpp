@@ -77,6 +77,75 @@ float Player::getShootCooldown(){
   return shootCooldown;
 }
 
+void Player::resetCooldown(){ //cuando acaba de salir una bala
+  if (weaponEquipped==EquippedWeapon::SECONDARY){
+    shootCooldown=secondaryWeapon.cooldown;
+    return;
+  }
+  if(weaponEquipped==EquippedWeapon::PRIMARY){
+    shootCooldown=primaryWeapon.cooldown;
+    return;
+  }
+  shootCooldown=knife.cooldown;
+}
+
 bool Player::isShooting() {
   return shooting;
+}
+
+std::tuple<float, float, float, float, float, float> Player::shoot() {
+  /*
+      std::cout << "Hitbox de " << shooterName << ": "
+              << "desde (" << hb.x << ", " << hb.y << ") "
+              << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
+      */
+      Hitbox hb= getHitbox();
+      float origin_x = hb.x + hb.width / 2.0f;
+      float origin_y = hb.y + hb.height / 2.0f;
+
+
+      std::random_device rd;
+      std::mt19937 gen(rd());
+      std::uniform_real_distribution<float> dist(getRotation() - getSpreadAngle(), getRotation() + getSpreadAngle());
+      float angle = dist(gen); 
+      float angle_rad = angle * M_PI / 180.0f;
+      float max_distance;
+
+
+      if (weaponEquipped==EquippedWeapon::SECONDARY){
+        max_distance=secondaryWeapon.maxRange;
+      }else if(weaponEquipped==EquippedWeapon::PRIMARY){
+        max_distance=primaryWeapon.maxRange; 
+      }else{
+        max_distance=knife.maxRange;
+      }
+      shootCooldown=knife.cooldown;
+      float target_x = origin_x + cos(angle_rad) * max_distance;
+      float target_y = origin_y + sin(angle_rad) * max_distance;
+      
+      /*
+      std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
+              << target_x << ", " << target_y << ")\n";
+      */
+      return std::make_tuple(max_distance, origin_x, origin_y, target_x, target_y, angle);
+}
+
+int Player::getBulletsPerShoot(){
+  if (weaponEquipped==EquippedWeapon::SECONDARY){
+    return secondaryWeapon.bulletsPerShoot;
+  }
+  if(weaponEquipped==EquippedWeapon::PRIMARY){
+    return primaryWeapon.bulletsPerShoot;
+  }
+  return knife.bulletsPerShoot;
+}
+
+float Player::getSpreadAngle(){
+  if (weaponEquipped==EquippedWeapon::SECONDARY){
+    return secondaryWeapon.spreadAngle;
+  }
+  if(weaponEquipped==EquippedWeapon::PRIMARY){
+    return primaryWeapon.spreadAngle;
+  }
+  return knife.spreadAngle;
 }
