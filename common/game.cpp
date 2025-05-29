@@ -70,18 +70,20 @@ void Game::shoot(const std::string &shooterName) {
     if (shooter.getShootCooldown()<=0){
       shooter.resetCooldown();
       Hitbox hb = shooter.getHitbox();
-      
+
       int bullets = shooter.getBulletsPerShoot();
 
-      for (size_t i = 0; i < bullets; i++){
+      for (size_t i = 0; i < bullets; i++){ 
+        //por cada bala del disparo, para todas menos la m3 es 1
         auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
         Player* closestPlayer = nullptr;
         float closestDistance = maxDistance + 1.0f;
         std::pair<float, float> closestHitPoint;
 
         for (auto &player : players) {
-          if (player.getName() == shooterName)
+          if (player.getName() == shooterName){
             continue;
+          }
 
           Hitbox hb = player.getHitbox();
 

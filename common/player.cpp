@@ -111,7 +111,6 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       float angle_rad = angle * M_PI / 180.0f;
       float max_distance;
 
-
       if (weaponEquipped==EquippedWeapon::SECONDARY){
         max_distance=secondaryWeapon.maxRange;
       }else if(weaponEquipped==EquippedWeapon::PRIMARY){
@@ -119,7 +118,6 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       }else{
         max_distance=knife.maxRange;
       }
-      shootCooldown=knife.cooldown;
       float target_x = origin_x + cos(angle_rad) * max_distance;
       float target_y = origin_y + sin(angle_rad) * max_distance;
       
