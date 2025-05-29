@@ -12,6 +12,7 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
+  WeaponType equipped = WeaponTypes::Glock;
   EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
   WeaponType knife= WeaponTypes::Knife;
   WeaponType primaryWeapon;
@@ -46,9 +47,11 @@ public:
   float getShootCooldown();
   void resetCooldown();
   bool isShooting();
-  std::tuple<float, float, float, float, float, float> Player::shoot();
+  std::tuple<float, float, float, float, float, float> shoot();
   int getBulletsPerShoot();
   float getSpreadAngle();
+  std::pair<float, float> getDamageRange();
+  void changeWeapon(EquippedWeapon newEquippedWeapon);
 };
 
 #endif

@@ -101,9 +101,16 @@ void Game::shoot(const std::string &shooterName) {
         }
 
         if (closestPlayer) {
-              //closestDistance es la distancia que determina el daño
+              std::pair<float, float> damageRange = shooter.getDamageRange();
               //ademas es random en random max y min de cada arma
-              closestPlayer->updateHealth(-200.0f); //TODO
+              float baseDamage = 1000.0f / closestDistance+1.0f;
+              float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
+              std::random_device rd;
+              std::mt19937 gen(rd());
+              std::uniform_real_distribution<> dis(damageRange.first, damageRange.second);
+              float randomDamage = dis(gen);
+              float finalDamage = std::min(clampedDamage, randomDamage);
+              closestPlayer->updateHealth(-finalDamage);
               /*std::cout << shooterName << " le disparó a " << closestPlayer->getName()
                         << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
               */

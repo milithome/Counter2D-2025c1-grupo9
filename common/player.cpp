@@ -78,15 +78,7 @@ float Player::getShootCooldown(){
 }
 
 void Player::resetCooldown(){ //cuando acaba de salir una bala
-  if (weaponEquipped==EquippedWeapon::SECONDARY){
-    shootCooldown=secondaryWeapon.cooldown;
-    return;
-  }
-  if(weaponEquipped==EquippedWeapon::PRIMARY){
-    shootCooldown=primaryWeapon.cooldown;
-    return;
-  }
-  shootCooldown=knife.cooldown;
+  shootCooldown=equipped.cooldown;
 }
 
 bool Player::isShooting() {
@@ -129,21 +121,23 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
 }
 
 int Player::getBulletsPerShoot(){
-  if (weaponEquipped==EquippedWeapon::SECONDARY){
-    return secondaryWeapon.bulletsPerShoot;
-  }
-  if(weaponEquipped==EquippedWeapon::PRIMARY){
-    return primaryWeapon.bulletsPerShoot;
-  }
-  return knife.bulletsPerShoot;
+  return equipped.bulletsPerShoot;
 }
 
 float Player::getSpreadAngle(){
-  if (weaponEquipped==EquippedWeapon::SECONDARY){
-    return secondaryWeapon.spreadAngle;
+  return equipped.spreadAngle;
+}
+
+std::pair<float, float> Player::getDamageRange(){
+  return std::make_pair(equipped.minDamage, equipped.maxDamage);
+}
+
+void Player::changeWeapon(EquippedWeapon newEquippedWeapon){
+  if (newEquippedWeapon== EquippedWeapon::PRIMARY){
+    equipped=primaryWeapon;
+  }else if(newEquippedWeapon== EquippedWeapon::SECONDARY){
+    equipped=secondaryWeapon;
+  }else{
+    equipped=knife;
   }
-  if(weaponEquipped==EquippedWeapon::PRIMARY){
-    return primaryWeapon.spreadAngle;
-  }
-  return knife.spreadAngle;
 }
