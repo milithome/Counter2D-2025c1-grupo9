@@ -46,7 +46,9 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
     entity.x = player.getX();
     entity.y = player.getY();
     entity.rotation = player.getRotation();
+    entity.lastMoveId = player.getLastMoveId();
     state.push_back(entity);
+
   }
 
   return state;
@@ -106,10 +108,10 @@ void Game::shoot(const std::string &shooterName) {
         /*std::cout << shooterName << " le disparó a " << closest_player->getName()
                   << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
         */
-        shot_event_queue.push(ShotEvent{origin_x, origin_y, closest_hit_point.first, closest_hit_point.second, angle});
+        bullet_queue.push(Bullet{origin_x, origin_y, closest_hit_point.first, closest_hit_point.second, angle});
       
       } else {
-      shot_event_queue.push(ShotEvent{origin_x, origin_y, target_x, target_y, angle});
+      bullet_queue.push(Bullet{origin_x, origin_y, target_x, target_y, angle});
     }
 }
 
@@ -156,12 +158,12 @@ void Game::execute(const std::string &name, Action action) {
 }
 
 
-ShotEvent Game::shotEventQueuePop() {
-  ShotEvent top = shot_event_queue.front();
-  shot_event_queue.pop();
+Bullet Game::bulletQueuePop() {
+  Bullet top = bullet_queue.front();
+  bullet_queue.pop();
   return top;
 }
 
-bool Game::shotEventQueueIsEmpty() {
-  return shot_event_queue.empty();
+bool Game::bulletQueueIsEmpty() {
+  return bullet_queue.empty();
 }

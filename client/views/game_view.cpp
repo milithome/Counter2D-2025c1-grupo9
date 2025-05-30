@@ -107,8 +107,8 @@ void GameView::show(float deltaTime) {
         renderer.Copy(playerTiles, src, dst, gameState[i].rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
     }
 
-    while (!game.shotEventQueueIsEmpty()) {
-        ShotEvent shot = game.shotEventQueuePop();
+    while (!game.bulletQueueIsEmpty()) {
+        Bullet shot = game.bulletQueuePop();
 
         shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, shot.target_x, shot.target_y, shot.angle, SHOT_DURATION});
 

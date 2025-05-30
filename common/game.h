@@ -5,7 +5,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-struct ShotEvent {
+struct Bullet {
   float origin_x;
   float origin_y;
   float target_x;
@@ -24,7 +24,7 @@ private:
   bool running = true;
   float time;
 
-  std::queue<ShotEvent> shot_event_queue;
+  std::queue<Bullet> bullet_queue;
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
@@ -42,8 +42,8 @@ public:
   float getRotation(const std::string &name);
 
 
-  ShotEvent shotEventQueuePop();
-  bool shotEventQueueIsEmpty();
+  Bullet bulletQueuePop();
+  bool bulletQueueIsEmpty();
 };
 
 #endif
