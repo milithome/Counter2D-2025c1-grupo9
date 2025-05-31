@@ -97,7 +97,6 @@ TEST(ProtocolServerSender, SendAndReceiveInitialDataResponse) {
             {4, {1, 1}},
         };
 
-
         Response r;
         r.type = Type::INITIAL_DATA;
         r.result = 0;
@@ -112,6 +111,7 @@ TEST(ProtocolServerSender, SendAndReceiveInitialDataResponse) {
     Protocol client_protocol(std::move(client_socket));
 
     Response response = client_protocol.recv_response();
+
     ASSERT_EQ(response.type, Type::INITIAL_DATA);
     ASSERT_EQ(response.result, 0);
     ASSERT_EQ(response.message, "Initial Game Data");
@@ -138,11 +138,25 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         Socket server_socket = listening_socket.accept();
         Protocol server_protocol(std::move(server_socket));
 
-        Entity e;
-        e.type = PLAYER;
-        e.x = 10.0f;
-        e.y = 20.0f;
-        e.data = PlayerData{"Carlos", 45.0f, 3, 1500, 100.0f, {M3, GLOCK, 10, 20}};
+        Entity player;
+        player.type = PLAYER;
+        player.x = 10.0f;
+        player.y = 20.0f;
+        player.data = PlayerData{"Carlos", 45.0f, 3, 1500, 100.0f, {M3, GLOCK, 10, 20}};
+
+        Entity bomb;
+        bomb.type = BOMB;
+        bomb.x = 12.0f;
+        bomb.y = 22.0f;
+        bomb.data = BombData{true};
+        
+        Entity weapon;
+        weapon.type = WEAPON;
+        weapon.x = 14.0f;
+        weapon.y = 24.0f;
+        weapon.data = WeaponData{WeaponType::PRIMARY, AK47};
+
+        std::vector<Entity> entities = {player, bomb, weapon};
 
         Bullet b;
         b.origin_x = 5.0f;
@@ -157,7 +171,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         Response r;
         r.type = Type::STATE;
         r.result = 0;
-        r.data = StateGame{PURCHASE, {e}, bullets};
+        r.data = StateGame{PURCHASE, entities, bullets};
         r.message = "Game State";
 
         server_protocol.send_response(r);
@@ -174,7 +188,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
 
     auto state = std::get<StateGame>(response.data);
     ASSERT_EQ(state.phase, PURCHASE);
-    ASSERT_EQ(state.entities.size(), 1);
+    ASSERT_EQ(state.entities.size(), 3);
 
     auto entity = state.entities[0];
     ASSERT_EQ(entity.type, PLAYER);
@@ -191,6 +205,21 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     EXPECT_EQ(player.inventory.secondary, GLOCK);
     EXPECT_EQ(player.inventory.bulletsPrimary, 10);
     EXPECT_EQ(player.inventory.bulletsSecondary, 20);
+
+    entity = state.entities[1];
+    ASSERT_EQ(entity.type, BOMB);
+    ASSERT_FLOAT_EQ(entity.x, 12.0f);
+    ASSERT_FLOAT_EQ(entity.y, 22.0f);
+    auto bomb = std::get<BombData>(state.entities[1].data);
+    EXPECT_TRUE(bomb.planted);
+
+    entity = state.entities[2]; 
+    ASSERT_EQ(entity.type, WEAPON);
+    ASSERT_FLOAT_EQ(entity.x, 14.0f);
+    ASSERT_FLOAT_EQ(entity.y, 24.0f);
+    auto weapon = std::get<WeaponData>(state.entities[2].data);
+    EXPECT_EQ(weapon.type, WeaponType::PRIMARY);
+    EXPECT_EQ(weapon.weapon, AK47);
 
     ASSERT_EQ(state.bullets.size(), 1);
 

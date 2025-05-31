@@ -230,6 +230,14 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
     uint32_t move_net = htonl(pdata.lastMoveId);
     buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&move_net), reinterpret_cast<uint8_t*>(&move_net) + sizeof(move_net));
 
+    int32_t money_net = htonl(pdata.money);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&money_net), reinterpret_cast<uint8_t*>(&money_net) + sizeof(money_net));
+
+    uint32_t health_net;
+    std::memcpy(&health_net, &pdata.health, sizeof(float));
+    health_net = htonl(health_net);
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&health_net), reinterpret_cast<uint8_t*>(&health_net) + sizeof(health_net));
+
     buf.push_back(static_cast<uint8_t>(pdata.inventory.primary));
     buf.push_back(static_cast<uint8_t>(pdata.inventory.secondary));
 
@@ -251,7 +259,6 @@ void Protocol::serialize_weapon_data(std::vector<uint8_t>& buf, const WeaponData
 void Protocol::serialize_entity(std::vector<uint8_t>& buf, const Entity& entity) {
     buf.push_back(static_cast<uint8_t>(entity.type));
 
-    // Serializar posición (x, y)
     uint32_t x_net, y_net;
     std::memcpy(&x_net, &entity.x, sizeof(float));
     std::memcpy(&y_net, &entity.y, sizeof(float));
@@ -399,10 +406,14 @@ void Protocol::serialize_map_data(const MapData& map, std::vector<uint8_t>& buf)
 
 std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     const InitialData& init = std::get<InitialData>(r.data);
+
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+    buf.push_back(static_cast<uint8_t>(r.result));
 
     serialize_map_data(init.data, buf);
     serialize_string_vector(init.players, buf);
+
+    serialize_string(r.message, buf);
 
     return buf;
 }
@@ -648,6 +659,18 @@ PlayerData Protocol::recv_player_data() {
     if (skt.recvall(&id_net, sizeof(id_net)) == 0)
         throw std::runtime_error("Error receiving lastMoveId");
     p.lastMoveId = ntohl(id_net);
+
+    int32_t money_net;
+    if (skt.recvall(&money_net, sizeof(money_net)) == 0)
+        throw std::runtime_error("Error receiving player money");
+    p.money = ntohl(money_net);
+
+    uint32_t health_net;
+    if (skt.recvall(&health_net, sizeof(health_net)) == 0)
+        throw std::runtime_error("Error receiving player health");
+    health_net = ntohl(health_net);
+    std::memcpy(&p.health, &health_net, sizeof(float));
+
 
     uint8_t prim, sec;
     uint32_t bprim_net, bsec_net;
@@ -919,10 +942,8 @@ BuyBulletAction Protocol::recv_buy_bullet_action() {
 }
 
 BuyWeaponAction Protocol::recv_buy_weapon_action() {
-    uint8_t type;
     uint8_t weaponName;
-    if (skt.recvall(&type, sizeof(type)) == 0 ||
-        skt.recvall(&weaponName, sizeof(weaponName)) == 0) {
+    if (skt.recvall(&weaponName, sizeof(weaponName)) == 0) {
         throw std::runtime_error("Error receiving BUY_WEAPON parameters");
     }
 
@@ -1007,6 +1028,7 @@ Message Protocol::recv_message() {
         case Type::LIST:
         case Type::LEAVE:
         case Type::START:
+        case Type::DISCONNECT:
             msg.type = type;
             return msg;
         default:

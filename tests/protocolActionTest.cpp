@@ -150,7 +150,6 @@ TEST(ProtocolClientSender, SendAndReceiveSimpleActionsWithoutData) {
         {ActionType::DEFUSE, 12362},
         {ActionType::STOP_DEFUSING, 12363},
         {ActionType::GRAB, 12364},
-        {ActionType::FINISH, 12365},
     };
 
     for (const auto& [type, port] : actions) {

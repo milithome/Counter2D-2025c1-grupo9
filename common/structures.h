@@ -116,7 +116,6 @@ struct BuyBulletAction {
 };
 
 struct BuyWeaponAction {
-
     WeaponName weapon;
 };
 
