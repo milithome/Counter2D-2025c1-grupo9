@@ -101,7 +101,6 @@ private:
     BuyBulletAction recv_buy_bullet_action();
     BuyWeaponAction recv_buy_weapon_action();
     ChangeWeaponAction recv_change_weapon_action();
-    std::monostate recv_action_without_parameters();
     Message deserialize_message_action();
 };
 
