@@ -124,6 +124,17 @@ struct ChangeWeaponAction {
     WeaponType type;
 };
 
+enum class LobbyEventType {
+    LEAVE,
+    JOIN,
+    START
+};
+
+struct LobbyEvent {
+  LobbyEventType type;
+  std::string playerName;
+};
+
 /*
 Accion sin parametros de momento:
 struct ShootAction {};

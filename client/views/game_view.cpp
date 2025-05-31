@@ -6,13 +6,17 @@
 namespace fs = std::filesystem;
 
 
-GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos)
-    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName) {
-        renderer.SetDrawColor(0, 0, 0, 255);
-        // loadMapTiles(game.getMapEnum());
-        // loadPlayerTiles(player.getType());
-}
+// GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles)
+//     : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), mapTiles(Texture(renderer, sprite_path)), backgroundTexture(renderer, background_path) {
+//         renderer.SetDrawColor(0, 0, 0, 255);
+//         // loadMapTiles(game.getMapEnum());
+//         // loadPlayerTiles(player.getType());
+// }
 
+GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
+    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()) {
+        renderer.SetDrawColor(0, 0, 0, 255);
+}
 
 
 Window GameView::createWindow(SDL_Point window_pos) {
@@ -25,106 +29,47 @@ Window GameView::createWindow(SDL_Point window_pos) {
 Renderer GameView::createRenderer(Window& window) {
     return Renderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
-// void GameView::loadMapTiles(Map map) {
-
-//     std::string path = mapToTilesFilename(map);
-//     mapTiles = Texture(renderer, path);
-//     createTileClipMap(mapTiles, map);
-// }
-
-
-// std::string GameView::mapToTilesFilename(Map map) {
-//     return std::string(MAP_TILES_PATH) + "de_aztec.bpm";
-// }
-
-// void createTileClipMap(Texture mapTiles, Map map) {
-
-// }
-
-// BlockType GameView::filenameToBlockType(std::string path) {
-
-// };
-
-// void GameView::loadPlayerTiles(PlayerType playerType) {
-//     std::string path = PlayerTypeToTilesFilename(playerType);
-//     playerTiles = Texture(renderer, path);
-// }
 
 
 void GameView::update(float deltaTime) {
     renderer.Clear();
 
 
-    SDL_Event e;
-    while (SDL_PollEvent(&e)) {
-        SDL_EventType etype = static_cast<SDL_EventType>(e.type);
-        if (eventHandlers.contains(etype)) {
-            std::function<void(const SDL_Event&)> handler = eventHandlers[etype];
-            handler(e);
-        }
-    }
-    for (size_t i = 0; i < gameLoopListeners.size(); i++) {
-        gameLoopListeners[i](deltaTime);
+    // graficar
+    SDL_Point center = getCenterPoint();
+    float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
+    float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
+
+    showMap(cameraX, cameraY);
+    showBullets(cameraX, cameraY, deltaTime);
+    showEntities(cameraX, cameraY);
+    showInterface();
+    if (shopIsVisible) {
+        showShop();
     }
 
-    // graficar
-    show(deltaTime);
+    // TODO: sonido
+    // Chunk sound("../assets/sfx/weapons/usp_silenced.wav");
+    // mixer.PlayChannel(-1, sound, 0);
 
     renderer.Present();
 
 }
 
-void GameView::show(float deltaTime) {
-    auto map = getPlaceholderMap(); // temporal, hasta que definamos bien el mapa
-    std::vector<Entity> gameState = game.getState();
-    float clientPlayerX;
-    float clientPlayerY;
-
-    for (size_t i = 0; i < gameState.size(); i++) {
-        if (gameState[i].type == PLAYER && std::get<PlayerData>(gameState[i].data).name == playerName) {
-            clientPlayerX = gameState[i].x;
-            clientPlayerY = gameState[i].y;
-            break;
-        }
-    }
-
-    SDL_Point center = getCenterPoint();
-    float cameraX = center.x - clientPlayerX * BLOCK_SIZE - BLOCK_SIZE/2;
-    float cameraY = center.y - clientPlayerY * BLOCK_SIZE - BLOCK_SIZE/2;
-
-    for (size_t i = 0; i < map.size(); i++) {
-        for (size_t j = 0; j < map[i].size(); j++) {
-            std::pair<uint32_t, uint32_t> clip = map[i][j] == 0 ? std::pair(0, 0) : std::pair(32, 0); // temporal, hasta que definamos bien el mapa
-            Rect src(clip.first, clip.second, CLIP_SIZE, CLIP_SIZE);
+void GameView::showMap(float cameraX, float cameraY) {
+    auto tiles_map = map.get_tiles_map();
+    for (size_t i = 0; i < tiles_map.size(); i++) {
+        for (size_t j = 0; j < tiles_map[i].size(); j++) {
+            uint16_t tile = tiles_map[i][j];
+            MapLegendEntry clip = map.get_tiles_legend(tile);
+            Rect src(clip.x, clip.y, CLIP_SIZE, CLIP_SIZE);
             Rect dst(cameraX + j * BLOCK_SIZE, cameraY + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
             renderer.Copy(mapTiles, src, dst);
         }
     }
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
-    for (size_t i = 0; i < gameState.size(); i++) {
-        switch (gameState[i].type) {
-            case PLAYER: {
-                PlayerData data = std::get<PlayerData>(gameState[i].data);
-                float playerX = gameState[i].x;
-                float playerY = gameState[i].y;
-                Rect dst(cameraX + playerX * BLOCK_SIZE, cameraY + playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-    }
+}
 
-    while (!game.bulletQueueIsEmpty()) {
-        Bullet shot = game.bulletQueuePop();
-
-        shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, shot.target_x, shot.target_y, shot.angle, SHOT_DURATION});
-
-        Chunk sound("../assets/sfx/weapons/usp_silenced.wav");
-        mixer.PlayChannel(-1, sound, 0);
-    }
+void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
 
     for (auto it = shot_effects.begin(); it != shot_effects.end();) {
         ShotEffect& shot = *it;
@@ -183,14 +128,31 @@ void GameView::show(float deltaTime) {
     }
 }
 
-void GameView::bind(SDL_EventType eventType, const std::function<void(const SDL_Event&)> callback) {
-    eventHandlers[eventType] = callback;
+void GameView::showEntities(float cameraX, float cameraY) {
+    std::vector<Entity> gameState = game.getState().entities;
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    for (size_t i = 0; i < gameState.size(); i++) {
+        switch (gameState[i].type) {
+            case PLAYER: {
+                PlayerData data = std::get<PlayerData>(gameState[i].data);
+                float playerX = gameState[i].x;
+                float playerY = gameState[i].y;
+                Rect dst(cameraX + playerX * BLOCK_SIZE, cameraY + playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
 }
 
-void GameView::bindLoop(const std::function<void(float)> callback) {
-    gameLoopListeners.push_back(callback);
+void GameView::showInterface() {
 }
 
+void GameView::showShop() {
+}
 
 
 SDL_Point GameView::getCenterPoint() {
@@ -202,19 +164,12 @@ SDL_Point GameView::getCenterPoint() {
 }
 
 
-std::vector<std::vector<uint32_t>> GameView::getPlaceholderMap() {
-    const int width = 10;
-    const int height = 10;
 
-    std::vector<std::vector<uint32_t>> map(height, std::vector<uint32_t>(width, 0));
+void GameView::addShotEffect(Bullet bullet) {
+    shot_effects.push_back(ShotEffect{bullet.origin_x, bullet.origin_y, bullet.target_x, bullet.target_y, bullet.angle, SHOT_DURATION});
+}
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            if (y == 0 || y == height - 1 || x == 0 || x == width - 1) {
-                map[y][x] = 1;
-            }
-        }
-    }
 
-    return map;
+void GameView::switchShopVisibility() {
+    shopIsVisible = !shopIsVisible;
 }

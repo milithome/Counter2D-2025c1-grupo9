@@ -268,10 +268,6 @@ void Game::execute(const std::string &name, Action action) {
 }
 
 
-void Game::bulletQueuePush(Bullet bullet) {
-  bullet_queue.push(bullet);
-}
-
 Bullet Game::bulletQueuePop() {
   Bullet top = bullet_queue.front();
   bullet_queue.pop();
