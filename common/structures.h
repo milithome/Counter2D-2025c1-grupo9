@@ -116,12 +116,22 @@ struct BuyBulletAction {
 };
 
 struct BuyWeaponAction {
-
     WeaponName weapon;
 };
 
 struct ChangeWeaponAction {
     WeaponType type;
+};
+
+enum class LobbyEventType {
+    LEAVE,
+    JOIN,
+    START
+};
+
+struct LobbyEvent {
+  LobbyEventType type;
+  std::string playerName;
 };
 
 /*
@@ -204,11 +214,13 @@ struct Message {
     Action action;
 };
 
-// Estructuras que usa el servidor internamente - ignorar
-enum class LobbyRequestType {
-    LEAVE,
-    JOIN,
-    START
+
+// Estructuras del servidor
+enum LobbyRequestType {
+    LEAVE_LOBBY,
+    JOIN_LOBBY,
+    START_LOBBY,
+    READY_LOBBY
 };
 
 struct LobbyRequest {
@@ -230,5 +242,4 @@ struct GameChannels {
     std::shared_ptr<Queue<ActionRequest>> toGame;
     std::shared_ptr<Queue<ActionRequest>> fromGame;
 };
-
 #endif

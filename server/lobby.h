@@ -22,8 +22,8 @@ private:
     std::map<std::string, Protocol&> players;
     Admin& admin;
     size_t maxPlayers;
-    std::shared_ptr<Queue<LobbyEvent>> toLobby;
-    std::map<std::string, std::shared_ptr<Queue<LobbyEvent>>> fromPlayers;
+    std::shared_ptr<Queue<LobbyRequest>> toLobby;
+    std::map<std::string, std::shared_ptr<Queue<LobbyRequest>>> fromPlayers;
 
 
     bool active;
@@ -31,5 +31,6 @@ private:
     void handle_join_event(const std::string& playerName);
     void handle_leave_event(const std::string& playerName);
     void broadcast_lobby_state();
+    bool start_game();
 };
 #endif

@@ -41,7 +41,6 @@ public:
   void stopShooting(const std::string &name);
   void changeWeapon(const std::string &name, WeaponType type);
   Bullet bulletQueuePop();
-  void bulletQueuePush(Bullet bullet);
   bool bulletQueueIsEmpty();
   void buyWeapon(const std::string &name,WeaponName weaponName);
   void buyBullet(const std::string &name,WeaponType weaponName);

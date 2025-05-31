@@ -32,11 +32,19 @@ using namespace SDL2pp;
 #include <variant>
 
 
+void game_run(std::string clientName);
+
 int main(int argc, char **argv) try {
 	if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
+	std::string clientName = argv[1];
+	game_run(clientName);
+	return 0;
+
+
+/*
 	bool partida_iniciada = false;
 	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
@@ -69,7 +77,8 @@ int main(int argc, char **argv) try {
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case LIST: {
-					menuController.onPartyListReceived(msg.lobbyList.lobbies, msg.message, msg.result);
+					LobbyList data = std::get<LobbyList>(msg.data);
+					menuController.onPartyListReceived(data.lobbies, msg.message, msg.result);
 					break;
 				}
 				case JOIN: {
@@ -81,8 +90,9 @@ int main(int argc, char **argv) try {
 					break;
 				}
 				case STATE_LOBBY: {
-					players = msg.stateLobby.players;
-					menuController.onLobbyPlayersReceived(msg.stateLobby.players, msg.message, msg.result);
+					StateLobby data = std::get<StateLobby>(msg.data);
+					players = data.players;
+					menuController.onLobbyPlayersReceived(players, msg.message, msg.result);
 					break;
 				}
 				case START: {
@@ -126,6 +136,8 @@ int main(int argc, char **argv) try {
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);
+		gameController.processEvents();
+		gameController.update(deltaTime);
 
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
@@ -136,8 +148,8 @@ int main(int argc, char **argv) try {
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case STATE: {
-					//StateGame data = std::get<StateGame>(msg.data);
-					gameController.updateGameState(msg.stateGame);
+					StateGame data = std::get<StateGame>(msg.data);
+					gameController.updateGameState(data);
 					break;
 				}
 				case FINISH: {
@@ -158,7 +170,30 @@ int main(int argc, char **argv) try {
 	send_queue.close();
 
 	return 0;
+*/
 } catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;
 	return 1;
+}
+
+// main reducido para testear
+void game_run(std::string clientName) {
+	SDL sdl(SDL_INIT_VIDEO);
+
+	Map map = Map("../assets/maps/default.yaml");
+	Game game(10, 10);
+	game.addPlayer(clientName);
+	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
+	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
+	GameController gameController = GameController(gameView, game, clientName);
+
+	uint32_t lastTime = 0;
+	while (game.isRunning()) {
+		uint32_t currentTime = SDL_GetTicks();
+		float deltaTime = (currentTime - lastTime) / 1000.0f;
+		lastTime = currentTime;
+		gameView.update(deltaTime);
+		gameController.processEvents(deltaTime);
+		gameController.update(deltaTime);
+	}
 }

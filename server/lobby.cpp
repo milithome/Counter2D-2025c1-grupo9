@@ -1,40 +1,29 @@
 #include "lobby.h"
 
 Lobby::Lobby(const std::string& name, Admin& admin) 
-    : name(name), players(), admin(admin), maxPlayers(2), toLobby(std::make_shared<Queue<LobbyEvent>>(100)), fromPlayers(), active(true) {}
+    : name(name), players(), admin(admin), maxPlayers(2), toLobby(std::make_shared<Queue<LobbyRequest>>(100)), fromPlayers(), active(true) {}
 
 void Lobby::run() {
         try {
             while (active) {
-                LobbyEvent event;
+                LobbyRequest event;
                 if (toLobby->try_pop(event)) {
                     switch (event.type) {
-                        case LobbyEventType::JOIN:
+                        case LobbyRequestType::JOIN_LOBBY:
                             handle_join_event(event.playerName);
                             break;
-                        case LobbyEventType::LEAVE:
+                        case LobbyRequestType::LEAVE_LOBBY:
                             handle_leave_event(event.playerName);
+                            break;
+                        case LobbyRequestType::START_LOBBY:
+                            if (start_game()) {
+                                continue;
+                            }
                             break;
                         default:
                             break;
                     }
-    
                     broadcast_lobby_state();
-    
-                    if (players.size() == maxPlayers) {
-                        active = false;
-
-                        admin.startGame(name);
-
-                        for (auto& [name, queue] : fromPlayers) {
-                            LobbyEvent event = {
-                                LobbyEventType::START,
-                                name
-                            };
-                            queue->push(event);
-                        }
-                    }
-                
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
@@ -48,11 +37,18 @@ void Lobby::run() {
     }
     
 void Lobby::handle_join_event(const std::string& playerName) {
-    /*
-    auto it = players.find(playerName);
-    if (it != players.end()) {}
-    */
     std::cout << "Player " << playerName << " joined the lobby." << std::endl;
+
+    if (players.size() == maxPlayers) {
+        for (auto& [name, queue] : fromPlayers) {
+            LobbyRequest event = {
+                LobbyRequestType::READY_LOBBY,
+                name
+            };
+            queue->push(event);
+        }
+        return;
+    }
 }
 
 void Lobby::handle_leave_event(const std::string& playerName) {
@@ -72,15 +68,14 @@ void Lobby::broadcast_lobby_state() {
     }
 
     for (auto& pair : players) {
+
         Response response = {
             Type::STATE_LOBBY,
             0,
-            static_cast<uint16_t>(playerNames.size()),
-            {},
-            {},
-            playerNames,
-            ""
+            StateLobby{playerNames},
+            "Lobby state updated for player " + pair.first + ". Current players: " + std::to_string(playerNames.size())
         };
+
         pair.second.send_response(response);
     }
 }
@@ -92,15 +87,36 @@ LobbyChannels Lobby::add_player(Protocol& player, const std::string& playerName)
     
     players.emplace(playerName, player);
 
-    auto fromPlayerQueue = std::make_shared<Queue<LobbyEvent>>(100);
+    auto fromPlayerQueue = std::make_shared<Queue<LobbyRequest>>(100);
     fromPlayers.emplace(playerName,fromPlayerQueue);
 
-    toLobby->push({LobbyEventType::JOIN, playerName});
+    toLobby->push({LobbyRequestType::JOIN_LOBBY, playerName});
 
     return LobbyChannels{
         toLobby,
         fromPlayerQueue
     };
+}
+
+bool Lobby::start_game() {
+    std::cout << "Starting game in lobby: " << name << std::endl;
+    if (players.size() == maxPlayers) {
+        active = false;
+
+        admin.startGame(name);
+
+        for (auto& [name, queue] : fromPlayers) {
+            LobbyRequest event = {
+                LobbyRequestType::START_LOBBY,
+                name
+            };
+            queue->push(event);
+        }
+        return true;
+    } else {
+        std::cerr << "Cannot start game, not enough players in lobby: " << name << std::endl;
+        return false;
+    }
 }
 
 void Lobby::stop() {

@@ -33,8 +33,8 @@ void GameLoop::run() {
                 processedCounter++;
             }
 
-            std::vector<Entity> entities = game.getState();
-            broadcast_game_state(entities);
+            StateGame state = game.getState();
+            broadcast_game_state(state);
 
             auto end_time = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -52,7 +52,7 @@ void GameLoop::run() {
 
         for (auto& [name, queue] : fromPlayers) {
             ActionRequest event = {
-                { ActionType::FINISH, std::monostate{} },
+                { ActionType::FINISH, {} },
                 name
             };
             queue->push(event);
@@ -82,21 +82,25 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
     };
 }
 
-void GameLoop::broadcast_game_state(std::vector<Entity>& entities) {
+void GameLoop::broadcast_game_state(StateGame& state) {
     for (auto& pair : players) {
         try {
             Response response = {
                 Type::STATE,
                 0,
-                static_cast<uint16_t>(entities.size()),
-                entities,
-                {},
-                {},
+                state,
                 ""
             };
             pair.second.send_response(response);
         } catch (const std::exception& e) {
             std::cerr << "Failed to send to player " << pair.first << ": " << e.what() << std::endl;
+            Response response = {
+                Type::STATE,
+                1,
+                StateGame{},
+                "Error sending game state to player " + pair.first
+            };
+            pair.second.send_response(response);
         }
     }
 }

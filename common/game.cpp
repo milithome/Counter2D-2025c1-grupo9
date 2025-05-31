@@ -62,7 +62,7 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName){
 
 std::vector<std::pair<WeaponName, int>> Game::getStore(){
   return Store::getStore();
-};
+}
 
 void Game::buyBullet(const std::string &name,WeaponType type){
   Player player = findPlayerByName(name);
@@ -265,10 +265,6 @@ void Game::execute(const std::string &name, Action action) {
   }
     
   }
-}
-
-void Game::bulletQueuePush(Bullet bullet) {
-  bullet_queue.push(bullet);
 }
 
 Bullet Game::bulletQueuePop() {
