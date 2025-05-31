@@ -18,8 +18,6 @@ private:
   std::vector<Player> players;
   Team team1;
   Team team2;
-  int map_width;
-  int map_height;
   Player &findPlayerByName(const std::string &name);
   bool running = true;
   float time;

@@ -52,7 +52,7 @@ bool Game::isColliding(float x, float y, float width, float height) const {
 
     for (int row = topCell; row <= bottomCell; ++row) {
       for (int col = leftCell; col <= rightCell; ++col) {
-          if (row < 0 || col < 0 || row >= map.size() || col >= map[row].size())
+          if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size()))
             continue;
           if (map[row][col] == CellType::Blocked) {
             return true;
@@ -138,6 +138,8 @@ StateGame Game::getState() {
     data.name= player.getName();
     data.rotation = player.getRotation();
     data.lastMoveId = player.getLastMoveId();
+    data.health = player.getHealth();
+    data.money = player.getMoney();
     entity.data = data;
     entities.push_back(entity);
   }
