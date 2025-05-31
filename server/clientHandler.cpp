@@ -57,12 +57,9 @@ void ClientHandler::handle_message(const Message& message) {
 void ClientHandler::handle_create(const std::string& name) {
     try {
         admin.createLobby(name);
-        send_simple_response(Type::CREATE, "Lobby created successfully", 0);
-
         LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
-        send_simple_response(Type::JOIN, "Joined lobby", 0);
+        send_simple_response(Type::CREATE, "Lobby created successfully", 0);
         enter_lobby(name, *queues.toLobby, *queues.fromLobby);
-
     } catch (const std::exception& e) {
         send_simple_response(Type::CREATE, "Error creating lobby: " + std::string(e.what()), 1);
     }
@@ -73,7 +70,6 @@ void ClientHandler::handle_join(const std::string& name) {
         LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
         send_simple_response(Type::JOIN, "Joined lobby", 0);
         enter_lobby(name, *queues.toLobby, *queues.fromLobby);
-
     } catch (const std::exception& e) {
         std::cerr << "Error in lobby: " << e.what() << std::endl;
         send_simple_response(Type::JOIN, "Error joining lobby: " + std::string(e.what()), 1);
