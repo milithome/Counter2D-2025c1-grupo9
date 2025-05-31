@@ -107,7 +107,6 @@ void Protocol::serialize_action_buy_bullet(const Action& action, std::vector<uin
 
 void Protocol::serialize_action_buy_weapon(const Action& action, std::vector<uint8_t>& buffer) {
     const BuyWeaponAction& buy = std::get<BuyWeaponAction>(action.data);
-    buffer.push_back(static_cast<uint8_t>(buy.type));
     buffer.push_back(static_cast<uint8_t>(buy.weapon));
 }
 
@@ -186,13 +185,20 @@ void Protocol::send_disconnect() {
 }
 
 std::vector<uint8_t> Protocol::serialize_simple(const Response& r) {
-    return {static_cast<uint8_t>(r.type), r.result};
+    std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+    
+    buf.push_back(static_cast<uint8_t>(r.result));
+
+    serialize_string(r.message, buf);
+    return buf;
 }
 
 std::vector<uint8_t> Protocol::serialize_list(const Response& r) {
     const LobbyList& list = std::get<LobbyList>(r.data);
     
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+
+    buf.push_back(static_cast<uint8_t>(r.result));
 
     uint16_t size = htons(list.lobbies.size());
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
@@ -204,6 +210,8 @@ std::vector<uint8_t> Protocol::serialize_list(const Response& r) {
         buf.push_back(reinterpret_cast<uint8_t*>(&len)[1]);
         buf.insert(buf.end(), partida.begin(), partida.end());
     }
+
+    serialize_string(r.message, buf);
 
     return buf;
 }
@@ -283,6 +291,7 @@ void Protocol::serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b) {
 std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     const StateGame& game = std::get<StateGame>(r.data);
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+    buf.push_back(static_cast<uint8_t>(r.result));
 
     buf.push_back(static_cast<uint8_t>(game.phase));
 
@@ -304,6 +313,7 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
         copy.pop();
     }
 
+    serialize_string(r.message, buf);
     return buf;
 }
 
@@ -311,6 +321,7 @@ std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
     const StateLobby& stateLobby = std::get<StateLobby>(r.data);
 
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
+    buf.push_back(static_cast<uint8_t>(r.result));
 
     uint16_t size = htons(stateLobby.players.size());
     buf.push_back(reinterpret_cast<uint8_t*>(&size)[0]);
@@ -323,6 +334,7 @@ std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
         buf.insert(buf.end(), player.begin(), player.end());
     }
 
+    serialize_string(r.message, buf);
     return buf;
 }
 
@@ -464,14 +476,20 @@ Response Protocol::deserialize_simple(Type type) {
         throw std::runtime_error("Error receiving result");
     }
     r.data = {};
+    r.message = deserialize_string();
     return r;
 }
 
 Response Protocol::deserialize_list() {
     Response r;
     r.type = Type::LIST;
-    LobbyList list;
+    uint8_t result;
+    if (skt.recvall(&result, sizeof(result)) == 0) {
+        throw std::runtime_error("Error receiving list result");
+    }
+    r.result = result;
 
+    LobbyList list;
     uint16_t size_net;
     if (skt.recvall(&size_net, sizeof(size_net)) == 0) {
         throw std::runtime_error("Error receiving list size");
@@ -492,6 +510,7 @@ Response Protocol::deserialize_list() {
         list.lobbies.emplace_back(name_buf.begin(), name_buf.end());
     }
     r.data = std::move(list);
+    r.message = deserialize_string();
     return r;
 }
 
@@ -592,12 +611,17 @@ MapData Protocol::deserialize_map_data() {
 Response Protocol::deserialize_initial_data() {
     Response r;
     r.type = Type::INITIAL_DATA;
-    InitialData init;
+    uint8_t result;
+    if (skt.recvall(&result, sizeof(result)) == 0)
+        throw std::runtime_error("Error receiving initial data result");
+    r.result = result;
 
+    InitialData init;
     init.data = deserialize_map_data();
     init.players = deserialize_string_vector();
-
     r.data = std::move(init);
+
+    r.message = deserialize_string();
     return r;
 }
 
@@ -734,6 +758,11 @@ Entity Protocol::deserialize_entity() {
 Response Protocol::deserialize_state() {
     Response r;
     r.type = Type::STATE;
+    uint8_t result;
+    if (skt.recvall(&result, sizeof(result)) == 0)
+        throw std::runtime_error("Error receiving state result");
+    r.result = result;
+
     StateGame state;
 
     uint8_t phase_val;
@@ -760,12 +789,20 @@ Response Protocol::deserialize_state() {
     }
 
     r.data = std::move(state);
+
+    r.message = deserialize_string();
     return r;
 }
 
 Response Protocol::deserialize_state_lobby() {
     Response r;
     r.type = Type::STATE_LOBBY;
+    uint8_t result;
+    if (skt.recvall(&result, sizeof(result)) == 0) {
+        throw std::runtime_error("Error receiving state_lobby result");
+    }
+    r.result = result;
+
     StateLobby state;
 
     uint16_t size_net;
@@ -790,6 +827,8 @@ Response Protocol::deserialize_state_lobby() {
     }
 
     r.data = std::move(state);
+    
+    r.message = deserialize_string();
     return r;
 }
 
@@ -888,7 +927,6 @@ BuyWeaponAction Protocol::recv_buy_weapon_action() {
     }
 
     BuyWeaponAction action;
-    action.type = static_cast<WeaponType>(type);
     action.weapon = static_cast<WeaponName>(weaponName);
     return action;
 }
