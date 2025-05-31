@@ -8,12 +8,14 @@ bool Game::addPlayer(const std::string &name) {
   if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team1.addPlayer(newPlayer);
     players.push_back(newPlayer);
+    //newPlayer.setTeam();
     return true;
   }
 
   if (team2.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team2.addPlayer(newPlayer);
     players.push_back(newPlayer);
+    //newPlayer.setTeam();
     return true;
   }
 

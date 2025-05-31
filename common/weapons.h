@@ -1,6 +1,6 @@
 #ifndef WEAPON_TYPES_H
 #define WEAPON_TYPES_H
-
+#include "structures.h"
 #include <string>
 
 enum class EquippedWeapon {
