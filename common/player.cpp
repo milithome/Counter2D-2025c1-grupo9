@@ -86,7 +86,12 @@ bool Player::isShooting() {
 }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
-  
+      timeLastBullet=0.0f;
+      if(weaponEquipped==WeaponType::PRIMARY){
+        bulletsPrimary=bulletsPrimary-1;
+      }else if(weaponEquipped==WeaponType::SECONDARY){
+        bulletsSecondary=bulletsSecondary-1;
+      }
       Hitbox hb= getHitbox();
       
       std::cout << "Hitbox de " << name << ": "
@@ -103,9 +108,9 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       float angle_rad = angle * M_PI / 180.0f;
       float max_distance;
 
-      if (weaponEquipped==EquippedWeapon::SECONDARY){
+      if (weaponEquipped==WeaponType::SECONDARY){
         max_distance=secondaryWeapon.maxRange;
-      }else if(weaponEquipped==EquippedWeapon::PRIMARY){
+      }else if(weaponEquipped==WeaponType::PRIMARY){
         max_distance=primaryWeapon.maxRange; 
       }else{
         max_distance=knife.maxRange;
@@ -132,17 +137,80 @@ std::pair<float, float> Player::getDamageRange(){
   return std::make_pair(equipped.minDamage, equipped.maxDamage);
 }
 
-void Player::changeWeapon(EquippedWeapon newEquippedWeapon){
-  if (newEquippedWeapon== EquippedWeapon::PRIMARY){
+void Player::changeWeapon(WeaponType newEquippedWeapon){
+  if (newEquippedWeapon== WeaponType::PRIMARY){
     equipped=primaryWeapon;
-  }else if(newEquippedWeapon== EquippedWeapon::SECONDARY){
+  }else if(newEquippedWeapon== WeaponType::SECONDARY){
     equipped=secondaryWeapon;
   }else{
     equipped=knife;
   }
 }
 
+void Player::replaceWeapon(WeaponName weapon){
+  primaryWeapon = Weapons::getWeapon(weapon);
+}
 
 uint32_t Player::getLastMoveId() const {
-  return 1;
+  return lastMoveId;
+}
+void Player::setLastMoveId(uint32_t id){
+  lastMoveId= id;
+}
+
+WeaponName Player::getPrimaryWeaponName() const{
+  return primaryWeapon.name;
+}
+WeaponName Player::getSecondaryWeaponName() const{
+  return secondaryWeapon.name;
+}
+
+int Player::getBulletsPrimary() const{
+  return bulletsPrimary;
+}
+
+int Player::getBulletsSecondary() const{
+  return bulletsSecondary;
+}
+
+int Player::getMoney(){
+  return money;
+}
+
+void Player::updateMoney(int value){
+  money += value;
+}
+
+void Player::updatePrimaryBullets(){ //llenar cargador
+  bulletsPrimary= primaryWeapon.maxAmmo;
+}
+void Player::updateSecondaryBullets(){ //llenar cargador
+  bulletsSecondary= secondaryWeapon.maxAmmo;
+}
+
+WeaponType Player::getWeaponEquipped(){
+  return weaponEquipped;
+}
+
+float Player::getTimeLastBullet(){
+  return timeLastBullet;
+}
+
+void Player::updateTimeLastBullet(float deltaTime){
+  timeLastBullet+=deltaTime;
+}
+
+void Player::resetTimeLastBullet(){
+  timeLastBullet=0;
+}
+
+Weapon Player::getEquipped(){
+  return equipped;
+}
+
+int Player::getBurstFireBullets(){
+  return burstFireBullets;
+}
+void Player::updateBurstFireBullets(int value){
+  burstFireBullets+=value;
 }

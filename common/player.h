@@ -3,6 +3,7 @@
 #include "gameConstants.h"
 #include "hitbox.h"
 #include "weapons.h"
+#include "structures.h"
 #include <cmath>
 #include <string>
 #include <random>
@@ -12,16 +13,23 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  Weapon equipped = Weapons::Glock;
-  EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
+  int money = 200;
+  Weapon equipped = Weapons::M3;
+  WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon;
+  Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
+  int bulletsPrimary;
+  int bulletsSecondary;
   float rotation;
   float health;
   float vx = 0, vy = 0;
   bool shooting = false;
   float shootCooldown = 0.0f;
+  uint32_t lastMoveId = 0;
+  float timeLastBullet = 0.0f;
+  int burstFireBullets=1;
+
 public:
   Player(const std::string &name)
       : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
@@ -51,10 +59,25 @@ public:
   int getBulletsPerShoot();
   float getSpreadAngle();
   std::pair<float, float> getDamageRange();
-  void changeWeapon(EquippedWeapon newEquippedWeapon);
-
-
+  void changeWeapon(WeaponType newEquippedWeapon);
+  void replaceWeapon(WeaponName weapon);
+  WeaponName getPrimaryWeaponName() const;
+  WeaponName getSecondaryWeaponName() const;
   uint32_t getLastMoveId() const;
+  void setLastMoveId(uint32_t id);
+  int getBulletsPrimary() const;
+  int getBulletsSecondary() const;
+  int getMoney();
+  void updateMoney(int value);
+  void updatePrimaryBullets();
+  void updateSecondaryBullets();
+  WeaponType getWeaponEquipped();
+  float getTimeLastBullet();
+  void updateTimeLastBullet(float deltaTime);
+  Weapon getEquipped();
+  int getBurstFireBullets();
+  void updateBurstFireBullets(int value);
+  void resetTimeLastBullet();
 };
 
 #endif

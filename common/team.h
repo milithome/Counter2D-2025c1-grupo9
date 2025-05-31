@@ -11,11 +11,14 @@ private:
   std::vector<Player> players;
   int roundsWon = 0;
   int size = 0;
+  int playersAlive;
 
 public:
   void addPlayer(const Player &player);
 
   int getRoundsWon() const;
+
+  void updatePlayersAlive();
 
   void incrementRoundsWon();
 
@@ -24,6 +27,8 @@ public:
   void invertRole();
 
   int getTeamSize();
+  
+  void restartPlayersAlive();
 };
 
 #endif
