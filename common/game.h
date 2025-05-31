@@ -41,7 +41,6 @@ public:
 
 
   Bullet bulletQueuePop();
-  void bulletQueuePush(Bullet bullet);
   bool bulletQueueIsEmpty();
 };
 

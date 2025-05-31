@@ -32,11 +32,11 @@ map:
 legend_tiles:
   1:
     # wall
-    x: 2
-    y: 4
+    x: 64
+    y: 128
   2:
     # floor_sand
-    x: 1
+    x: 32
     y: 0
 
 legend_game:

@@ -6,42 +6,20 @@
 
 GameController::GameController(GameView& view, Game& game, const std::string& player_name)
     : view(view), game(game), player_name(player_name) {
-        listen();
 }
 
-void GameController::listen() {
-    view.bind(SDL_KEYDOWN, [this](const SDL_Event& e) {
-        this->onKeyPressed(e);
-    });
-    view.bind(SDL_KEYUP, [this](const SDL_Event& e) {
-        this->onKeyReleased(e);
-    });
-    view.bind(SDL_QUIT, [this](const SDL_Event&) {
-        this->onQuitPressed();
-    });
-    view.bind(SDL_MOUSEMOTION, [this](const SDL_Event&) {
-        this->onMouseMovement();
-    });
-    view.bind(SDL_MOUSEBUTTONDOWN, [this](const SDL_Event& e) {
-        this->onMouseLeftClick(e);
-    });
-    view.bind(SDL_MOUSEBUTTONUP, [this](const SDL_Event& e) {
-        this->onMouseLeftClickReleased(e);
-    });
-    view.bindLoop([this](float deltaTime) {
-        this->update(deltaTime);
-    });
-}
 
 void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
         game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1]);
-
-        // Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
-        // action_queue.push(action);
-        // actions.push_back(action);
     }
     game.updateTime(deltaTime);
+
+
+    while (!game.bulletQueueIsEmpty()) {
+        Bullet shot = game.bulletQueuePop();
+        view.addShotEffect(shot);
+    }
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
@@ -68,6 +46,10 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         case SDLK_e: {
             //game.plantBegin(player_id);
             break;
+        }
+        case SDLK_b: {
+            view.switchShopVisibility();
+
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
@@ -133,10 +115,6 @@ void GameController::onMouseMovement() {
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
-        // SDL_Point center = view.getCenterPoint();
-        // float angle = std::atan2(event.button.y - center.y, event.button.x - center.x);
-        // float angleDegrees = angle * 180.0f / 3.14159f;
-        // (void)angleDegrees; // va a ser usado en otro momento para disparar
         game.shoot(player_name);
     }
 }
@@ -193,9 +171,42 @@ void GameController::updateGameState(StateGame state) {
     while (!bullets.empty()) {
         Bullet bullet = bullets.front();
         bullets.pop();
-        game.bulletQueuePush(bullet);
+        view.addShotEffect(bullet);
     }
     Phase phase = state.phase;
     (void)phase;
 }
 
+
+void GameController::processEvents() {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
+        switch (eventType) {
+            case SDL_KEYDOWN: {
+                onKeyPressed(e);
+                break;
+            }
+            case SDL_KEYUP: {
+                onKeyReleased(e);
+                break;
+            }
+            case SDL_QUIT: {
+                onQuitPressed();
+                break;
+            }
+            case SDL_MOUSEMOTION: {
+                onMouseMovement();
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                onMouseLeftClick(e);
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                onMouseLeftClickReleased(e);
+                break;
+            }
+        }
+    }
+}

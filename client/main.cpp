@@ -126,6 +126,8 @@ int main(int argc, char **argv) try {
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);
+		gameController.processEvents();
+		gameController.update(deltaTime);
 
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();

@@ -48,10 +48,10 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
   for (const auto &player : players) {
     Entity entity;
     entity.type = PLAYER;
-    //entity.name = player.getName();
     entity.x = player.getX();
     entity.y = player.getY();
     PlayerData data;
+    data.name = player.getName();
     data.rotation = player.getRotation();
     data.lastMoveId = player.getLastMoveId();
     entity.data = data;
@@ -179,9 +179,6 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
-void Game::bulletQueuePush(Bullet bullet) {
-  bullet_queue.push(bullet);
-}
 
 Bullet Game::bulletQueuePop() {
   Bullet top = bullet_queue.front();
