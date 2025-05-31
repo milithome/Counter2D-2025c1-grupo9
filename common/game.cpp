@@ -2,7 +2,7 @@
 
 bool Game::addPlayer(const std::string &name) {
   Player newPlayer(name);
-  newPlayer.setPosition(10, 10); // ahora mismo hardcodeo una cualquiera
+  newPlayer.setPosition(2, 2); // ahora mismo hardcodeo una cualquiera
   if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team1.addPlayer(newPlayer);
     players.push_back(newPlayer);
@@ -207,7 +207,6 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
-  std::cout << "shoot" << std::endl;
   if (!shooter.isShooting()) {
       return;
   }
