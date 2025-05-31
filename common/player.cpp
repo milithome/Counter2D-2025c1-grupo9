@@ -141,3 +141,8 @@ void Player::changeWeapon(EquippedWeapon newEquippedWeapon){
     equipped=knife;
   }
 }
+
+
+uint32_t Player::getLastMoveId() const {
+  return 1;
+}

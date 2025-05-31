@@ -75,8 +75,8 @@ void Protocol::serialize_action_move(const Action& action, std::vector<uint8_t>&
     const MoveAction& move = std::get<MoveAction>(action.data);
 
     uint32_t id = htonl(move.id);
-    int32_t x = htonl(move.x);
-    int32_t y = htonl(move.y);
+    int32_t x = htonl(move.vx);
+    int32_t y = htonl(move.vy);
 
     buffer.insert(buffer.end(),
                   reinterpret_cast<uint8_t*>(&id),
@@ -856,8 +856,8 @@ MoveAction Protocol::recv_move_action() {
 
     MoveAction move;
     move.id = ntohl(id_net);
-    move.x = ntohl(x_net);
-    move.y = ntohl(y_net);
+    move.vx = ntohl(x_net);
+    move.vy = ntohl(y_net);
     return move;
 }
 

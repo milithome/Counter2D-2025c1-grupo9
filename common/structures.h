@@ -105,6 +105,7 @@ enum class ActionType {
 };
 
 struct MoveAction {
+    uint32_t id;
     int vx;
     int vy;
 };

@@ -69,7 +69,7 @@ int main(int argc, char **argv) try {
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case LIST: {
-					menuController.onPartyListReceived(msg.partidas, msg.message, msg.result);
+					menuController.onPartyListReceived(msg.lobbyList.lobbies, msg.message, msg.result);
 					break;
 				}
 				case JOIN: {
@@ -81,8 +81,8 @@ int main(int argc, char **argv) try {
 					break;
 				}
 				case STATE_LOBBY: {
-					players = msg.players;
-					menuController.onLobbyPlayersReceived(msg.players, msg.message, msg.result);
+					players = msg.stateLobby.players;
+					menuController.onLobbyPlayersReceived(msg.stateLobby.players, msg.message, msg.result);
 					break;
 				}
 				case START: {
@@ -136,7 +136,8 @@ int main(int argc, char **argv) try {
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case STATE: {
-					gameController.updateGameState(msg.entities);
+					//StateGame data = std::get<StateGame>(msg.data);
+					gameController.updateGameState(msg.stateGame);
 					break;
 				}
 				case FINISH: {

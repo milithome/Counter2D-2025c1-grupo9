@@ -52,6 +52,9 @@ public:
   float getSpreadAngle();
   std::pair<float, float> getDamageRange();
   void changeWeapon(EquippedWeapon newEquippedWeapon);
+
+
+  uint32_t getLastMoveId() const;
 };
 
 #endif

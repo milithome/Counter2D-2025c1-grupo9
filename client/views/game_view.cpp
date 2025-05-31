@@ -76,11 +76,12 @@ void GameView::update(float deltaTime) {
 
 void GameView::show(float deltaTime) {
     auto map = getPlaceholderMap(); // temporal, hasta que definamos bien el mapa
-    auto gameState = game.getState();
+    std::vector<Entity> gameState = game.getState();
     float clientPlayerX;
     float clientPlayerY;
+
     for (size_t i = 0; i < gameState.size(); i++) {
-        if (gameState[i].name == playerName) {
+        if (gameState[i].type == PLAYER && std::get<PlayerData>(gameState[i].data).name == playerName) {
             clientPlayerX = gameState[i].x;
             clientPlayerY = gameState[i].y;
             break;
@@ -101,14 +102,23 @@ void GameView::show(float deltaTime) {
     }
     Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
-        float playerX = gameState[i].x;
-        float playerY = gameState[i].y;
-        Rect dst(cameraX + playerX * BLOCK_SIZE, cameraY + playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        renderer.Copy(playerTiles, src, dst, gameState[i].rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
+        switch (gameState[i].type) {
+            case PLAYER: {
+                PlayerData data = std::get<PlayerData>(gameState[i].data);
+                float playerX = gameState[i].x;
+                float playerY = gameState[i].y;
+                Rect dst(cameraX + playerX * BLOCK_SIZE, cameraY + playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
 
-    while (!game.shotEventQueueIsEmpty()) {
-        ShotEvent shot = game.shotEventQueuePop();
+    while (!game.bulletQueueIsEmpty()) {
+        Bullet shot = game.bulletQueuePop();
 
         shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, shot.target_x, shot.target_y, shot.angle, SHOT_DURATION});
 

@@ -1,6 +1,10 @@
 #include "main_view.h"
 #include <QTimer>
 #include <QDir>
+#include <QGraphicsDropShadowEffect>
+#include <QFontDatabase>
+#include "components/menu_button.h"
+#include "components/translucent_container.h"
 
 MainView::MainView() {
     buildLayout();
@@ -12,11 +16,22 @@ void MainView::buildLayout() {
     buildSearchButton();
 
     layout = new QVBoxLayout();
+    layout->setContentsMargins(100, 0, 100, 0);
+
+
     layout->addStretch();
     layout->addWidget(titleLabel);
-    layout->addSpacing(20);
-    layout->addWidget(createButton);
-    layout->addWidget(searchButton);
+
+    QVBoxLayout *subLayout = new QVBoxLayout();
+    subLayout->addWidget(createButton, 0, Qt::AlignHCenter);
+    subLayout->addSpacing(20);
+    subLayout->addWidget(searchButton, 0, Qt::AlignHCenter);
+
+    TranslucentContainer* container = new TranslucentContainer;
+    container->addLayout(subLayout);
+
+    layout->addSpacing(50);
+    layout->addWidget(container, 0, Qt::AlignHCenter);
     layout->addStretch();
 }
 
@@ -39,34 +54,29 @@ QPushButton *MainView::getSearchButton() {
 void MainView::buildTitleLabel() {
     titleLabel = new QLabel("Counter Strike 2D");
     titleLabel->setAlignment(Qt::AlignCenter);
-    QFont titleFont;
 
     titleLabel->setStyleSheet(
-        "color: white;"
-        "background-color: rgba(0, 0, 0, 128);" 
-        "font-weight: bold;"
-        "font-size: 24px;"
+        "color: yellow;"
+        "background-color: rgba(0, 0, 0, 0);" 
     );
+    auto *shadow = new QGraphicsDropShadowEffect;
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0, 0);
+    shadow->setColor(Qt::yellow);
+    titleLabel->setGraphicsEffect(shadow);
+
+    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont sourceFont(fontFamily);
+    sourceFont.setPointSize(32);
+    sourceFont.setBold(true);
+    titleLabel->setFont(sourceFont);
 }
 
 void MainView::buildCreateButton() {
-    createButton = new QPushButton("Crear partida");
-    createButton->setStyleSheet(
-        "background-color: rgba(0, 0, 0, 128);"
-        "color: white;"
-        "border-radius: 10px;"
-        "padding: 10px;"
-    );
-    createButton->setAutoFillBackground(true);
+    createButton = new MenuButton("Crear partida");
 }
 
 void MainView::buildSearchButton() {
-    searchButton = new QPushButton("Buscar partida");
-    searchButton->setStyleSheet(
-        "background-color: rgba(0, 0, 0, 128);"
-        "color: white;"
-        "border-radius: 10px;"
-        "padding: 10px;"
-    );
-    searchButton->setAutoFillBackground(true);
+    searchButton = new MenuButton("Buscar partida");
 }

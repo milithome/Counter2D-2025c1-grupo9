@@ -51,8 +51,12 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
     //entity.name = player.getName();
     entity.x = player.getX();
     entity.y = player.getY();
-    //entity.rotation = player.getRotation();
+    PlayerData data;
+    data.rotation = player.getRotation();
+    data.lastMoveId = player.getLastMoveId();
+    entity.data = data;
     state.push_back(entity);
+
   }
 
   return state;
@@ -69,11 +73,11 @@ void Game::shoot(const std::string &shooterName) {
   if(shooter.isShooting()){
     if (shooter.getShootCooldown()<=0){
       shooter.resetCooldown();
-      Hitbox hb = shooter.getHitbox();
+      // Hitbox hb = shooter.getHitbox();
 
       int bullets = shooter.getBulletsPerShoot();
 
-      for (size_t i = 0; i < bullets; i++){ 
+      for (int i = 0; i < bullets; i++){ 
         //por cada bala del disparo, para todas menos la m3 es 1
         auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
         Player* closestPlayer = nullptr;
@@ -114,17 +118,16 @@ void Game::shoot(const std::string &shooterName) {
               std::cout << shooterName << " le disparó a " << closestPlayer->getName()
                         << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
               
-              shot_event_queue.push(ShotEvent{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
+              bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
             
         } else {
-          shot_event_queue.push(ShotEvent{originX, originY, targetX, targetY, angle});
+          bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
         }
       }
     }
   }else{
     shooter.startShooting();
   }
-
 }
 
 void Game::updateTime(float currentTime) { time = currentTime; }
@@ -176,12 +179,24 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
-ShotEvent Game::shotEventQueuePop() {
-  ShotEvent top = shot_event_queue.front();
-  shot_event_queue.pop();
+void Game::bulletQueuePush(Bullet bullet) {
+  bullet_queue.push(bullet);
+}
+
+Bullet Game::bulletQueuePop() {
+  Bullet top = bullet_queue.front();
+  bullet_queue.pop();
   return top;
 }
 
-bool Game::shotEventQueueIsEmpty() {
-  return shot_event_queue.empty();
+bool Game::bulletQueueIsEmpty() {
+  return bullet_queue.empty();
+}
+
+float Game::getX(const std::string& name) {
+  return findPlayerByName(name).getX();
+}
+
+float Game::getY(const std::string& name) {
+  return findPlayerByName(name).getX();
 }

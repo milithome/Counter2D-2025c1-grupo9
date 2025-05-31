@@ -115,11 +115,16 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
 
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
+
 endif()
 
 # Program section
 # ---------------
 if(TALLER_CLIENT)
+
+
+
+
     file(GLOB_RECURSE SOURCES
         client/*.cpp
         client/views/*.cpp
@@ -136,6 +141,7 @@ if(TALLER_CLIENT)
     # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(client)
     add_subdirectory(client/views)
+    add_subdirectory(client/views/components)
     add_subdirectory(client/controllers)
 
     set_project_warnings(taller_client ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
@@ -153,6 +159,10 @@ if(TALLER_CLIENT)
             Qt6::Widgets
             yaml-cpp
     )
+
+    qt_add_resources(RESOURCES resources.qrc)
+    target_sources(taller_client PRIVATE ${RESOURCES})
+
 endif()
 
 if(TALLER_SERVER)
