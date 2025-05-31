@@ -10,12 +10,19 @@ struct MapLegendEntry {
     int y = 0;
 };
 
+enum class CellType {
+    Walkable,
+    Blocked,
+    SpikeSite,
+    SpawnTeamA,
+    SpawnTeamB
+};
+
 struct MapData {
     std::string background_path;
     std::string sprite_path;
 
-    std::vector<std::vector<uint16_t>> game_map;
-    std::unordered_map<uint16_t, MapLegendEntry> legend_game;
+    std::vector<std::vector<CellType>> game_map;
 
     std::vector<std::vector<uint16_t>> tiles_map;
     std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
@@ -36,14 +43,15 @@ public:
     const std::string& get_background_path() const;
     const std::string& get_sprite_path() const;
 
-    const std::vector<std::vector<uint16_t>>& get_game_map() const;
+    const std::vector<std::vector<CellType>>& get_game_map() const;
     const std::vector<std::vector<uint16_t>>& get_tiles_map() const;
 
     size_t get_rows() const;
     size_t get_cols() const;
 
-    const MapLegendEntry& get_game_legend(uint16_t number) const;
     const MapLegendEntry& get_tiles_legend(uint16_t number) const;
+
+    const MapData& getMapData() const;
 
 private:
     MapData data_;
