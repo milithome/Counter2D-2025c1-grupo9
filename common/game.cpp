@@ -28,8 +28,14 @@ Player &Game::findPlayerByName(const std::string &name) {
   throw std::runtime_error("Player not found");
 }
 
-void Game::movePlayer(const std::string &name, int x, int y, float deltaTime) {
-  findPlayerByName(name).move(x, y, deltaTime);
+void Game::stopShooting(const std::string &name){
+  Player player= findPlayerByName(name);
+  player.stopShooting();
+}
+
+void Game::movePlayer(const std::string &name, float vx, float vy){
+  Player player= findPlayerByName(name);
+  player.updateVelocity(vx, vy);
 }
 
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
@@ -42,11 +48,13 @@ std::vector<Entity> Game::getState() { // falta inventario, salud
   for (const auto &player : players) {
     Entity entity;
     entity.type = PLAYER;
-    entity.name = player.getName();
+    //entity.name = player.getName();
     entity.x = player.getX();
     entity.y = player.getY();
-    entity.rotation = player.getRotation();
-    entity.lastMoveId = player.getLastMoveId();
+    PlayerData data;
+    data.rotation = player.getRotation();
+    data.lastMoveId = player.getLastMoveId();
+    entity.data = data;
     state.push_back(entity);
 
   }
@@ -61,58 +69,65 @@ void Game::stop() { running = false; }
 void Game::shoot(const std::string &shooterName) {
   
   Player &shooter = findPlayerByName(shooterName);
-  Hitbox hb = shooter.getHitbox();
-  /*
-  std::cout << "Hitbox de " << shooterName << ": "
-          << "desde (" << hb.x << ", " << hb.y << ") "
-          << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
   
-  */
-  float origin_x = hb.x + hb.width / 2.0f;
-  float origin_y = hb.y + hb.height / 2.0f;
-  float angle = shooter.getRotation();
-  float angle_rad = angle * M_PI / 180.0f;
+  if(shooter.isShooting()){
+    if (shooter.getShootCooldown()<=0){
+      shooter.resetCooldown();
+      // Hitbox hb = shooter.getHitbox();
 
-  float max_distance = 30.0f;
+      int bullets = shooter.getBulletsPerShoot();
 
-  float target_x = origin_x + cos(angle_rad) * max_distance;
-  float target_y = origin_y + sin(angle_rad) * max_distance;
-  /*
-  std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
-          << target_x << ", " << target_y << ")\n";
-  */
-  Player* closest_player = nullptr;
-  float closest_distance = max_distance + 1.0f;
-  std::pair<float, float> closest_hit_point;
+      for (int i = 0; i < bullets; i++){ 
+        //por cada bala del disparo, para todas menos la m3 es 1
+        auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
+        Player* closestPlayer = nullptr;
+        float closestDistance = maxDistance + 1.0f;
+        std::pair<float, float> closestHitPoint;
 
-  for (auto &player : players) {
-    if (player.getName() == shooterName)
-      continue;
+        for (auto &player : players) {
+          if (player.getName() == shooterName){
+            continue;
+          }
 
-    Hitbox hb = player.getHitbox();
+          Hitbox hb = player.getHitbox();
 
-    auto hit_point = hb.intersectsRay(origin_x, origin_y, target_x, target_y);
-    if (hit_point) {
-      float dx = hit_point->first - origin_x;
-      float dy = hit_point->second - origin_y;
-      float dist = sqrt(dx*dx + dy*dy);
-      if (dist < closest_distance) {
-                closest_distance = dist;
-                closest_player = &player;
-                closest_hit_point = *hit_point;
+          auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
+          if (hit_point) {
+            float dx = hit_point->first - originX;
+            float dy = hit_point->second - originY;
+            float dist = sqrt(dx*dx + dy*dy);
+            if (dist < closestDistance) {
+                      closestDistance = dist;
+                      closestPlayer = &player;
+                      closestHitPoint = *hit_point;
+            }
+          }
+        }
+
+        if (closestPlayer) {
+              std::pair<float, float> damageRange = shooter.getDamageRange();
+              //ademas es random en random max y min de cada arma
+              float baseDamage = 1000.0f / closestDistance+1.0f;
+              float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
+              std::random_device rd;
+              std::mt19937 gen(rd());
+              std::uniform_real_distribution<> dis(damageRange.first, damageRange.second);
+              float randomDamage = dis(gen);
+              float finalDamage = std::min(clampedDamage, randomDamage);
+              closestPlayer->updateHealth(-finalDamage);
+              std::cout << shooterName << " le disparó a " << closestPlayer->getName()
+                        << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
+              
+              bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
+            
+        } else {
+          bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
+        }
       }
     }
+  }else{
+    shooter.startShooting();
   }
-  if (closest_player) {
-        closest_player->updateHealth(-200.0f);
-        /*std::cout << shooterName << " le disparó a " << closest_player->getName()
-                  << " en (" << closest_hit_point.first << ", " << closest_hit_point.second << ")\n";
-        */
-        bullet_queue.push(Bullet{origin_x, origin_y, closest_hit_point.first, closest_hit_point.second, angle});
-      
-      } else {
-      bullet_queue.push(Bullet{origin_x, origin_y, target_x, target_y, angle});
-    }
 }
 
 void Game::updateTime(float currentTime) { time = currentTime; }
@@ -126,19 +141,21 @@ float Game::getRotation(const std::string &name) {
 }
 
 void Game::update(float deltaTime) {
-  (void)deltaTime;
-  // al no estar lo de las balas ya, seria supongo la bomba unicamente
+  for (auto player : players){
+    player.updateMovement(deltaTime);
+    player.updateCooldown(deltaTime);
+    shoot(player.getName());
+  }
 }
 
 void Game::execute(const std::string &name, Action action) {
 
   switch (action.type) {
-  case ActionType::MOVE:{
+  case ActionType::MOVE:{ //cambio a uno solo
     const MoveAction *data = std::get_if<MoveAction>(&action.data);
-    movePlayer(name, data->x, data->y, data->deltaTime);
+    movePlayer(name, data->vx, data->vy);
     break;
   }
-    
   case ActionType::POINT_TO:{
     const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
     updateRotation(name, pointToData->value);
@@ -146,7 +163,12 @@ void Game::execute(const std::string &name, Action action) {
   }
     
   case ActionType::SHOOT:{
+    findPlayerByName(name).startShooting();
     shoot(name);
+    break;
+  }
+  case ActionType::STOP_SHOOTING:{
+    stopShooting(name);
     break;
   }
 
@@ -157,6 +179,9 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
+void Game::bulletQueuePush(Bullet bullet) {
+  bullet_queue.push(bullet);
+}
 
 Bullet Game::bulletQueuePop() {
   Bullet top = bullet_queue.front();
@@ -166,4 +191,12 @@ Bullet Game::bulletQueuePop() {
 
 bool Game::bulletQueueIsEmpty() {
   return bullet_queue.empty();
+}
+
+float Game::getX(const std::string& name) {
+  return findPlayerByName(name).getX();
+}
+
+float Game::getY(const std::string& name) {
+  return findPlayerByName(name).getX();
 }

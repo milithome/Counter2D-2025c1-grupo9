@@ -2,17 +2,26 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
+#include "weapons.h"
 #include <cmath>
 #include <string>
+#include <random>
 class Player {
 private:
   std::string name;
   float x, y;
   Hitbox hitbox;
   Role role;
+  Weapon equipped = Weapons::Glock;
+  EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
+  Weapon knife= Weapons::Knife;
+  Weapon primaryWeapon;
+  Weapon secondaryWeapon = Weapons::Glock;
   float rotation;
   float health;
-
+  float vx = 0, vy = 0;
+  bool shooting = false;
+  float shootCooldown = 0.0f;
 public:
   Player(const std::string &name)
       : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
@@ -30,6 +39,22 @@ public:
   void setHealth(float value);
   float getHealth() const;
   bool isAlive() const;
+  void updateMovement(float deltaTime);
+  void updateVelocity(float vx, float vy);
+  void stopShooting();
+  void startShooting();
+  void updateCooldown(float deltaTime);
+  float getShootCooldown();
+  void resetCooldown();
+  bool isShooting();
+  std::tuple<float, float, float, float, float, float> shoot();
+  int getBulletsPerShoot();
+  float getSpreadAngle();
+  std::pair<float, float> getDamageRange();
+  void changeWeapon(EquippedWeapon newEquippedWeapon);
+
+
+  uint32_t getLastMoveId() const;
 };
 
 #endif

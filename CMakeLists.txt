@@ -17,9 +17,9 @@ project(taller_tp
     )
 
 option(TALLER_TESTS "Enable / disable tests." ON)
-option(TALLER_CLIENT "Enable / disable client program." ON)
-option(TALLER_SERVER "Enable / disable server program." ON)
-option(TALLER_EDITOR "Enable / disable editor program." ON)
+option(TALLER_CLIENT "Enable / disable client program." OFF)
+option(TALLER_SERVER "Enable / disable server program." OFF)
+option(TALLER_EDITOR "Enable / disable editor program." OFF)
 option(TALLER_MAKE_WARNINGS_AS_ERRORS "Enable / disable warnings as errors." ON)
 
 message(CMAKE_CXX_COMPILER_ID="${CMAKE_CXX_COMPILER_ID}")
@@ -32,7 +32,7 @@ add_library(taller_common STATIC)
 # HEY!! TODO XXX: add more subfolders here
 add_subdirectory(common/)
 add_subdirectory(common/communication)
-
+add_subdirectory(common/utilities)
 
 # set compiler warnings to the targets
 include(cmake/CompilerWarnings.cmake)
@@ -52,12 +52,6 @@ target_include_directories(taller_common PUBLIC .)
 #
 # Tambien:
 # sudo apt install -y libfontconfig1-dev libfreetype6-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxkbcommon-dev libxkbcommon-x11-dev
-
-
-
-
-
-
 
 # Para generar compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -117,6 +111,7 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
+    find_package(yaml-cpp REQUIRED)
 
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
@@ -154,12 +149,15 @@ if(TALLER_CLIENT)
     # add libSDL2pp's headers
     target_include_directories(taller_client PRIVATE ${libSDL2pp_SOURCE_DIR})
 
+    find_package(yaml-cpp REQUIRED)
+
     # Link the taller_common lib target
     target_link_libraries(taller_client
         PRIVATE
             taller_common
             SDL2pp::SDL2pp
             Qt6::Widgets
+            yaml-cpp
     )
 
     qt_add_resources(RESOURCES resources.qrc)
@@ -180,8 +178,10 @@ if(TALLER_SERVER)
 
     set_project_warnings(taller_server ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
+    find_package(yaml-cpp REQUIRED)
+
     # Link the taller_common lib target
-    target_link_libraries(taller_server taller_common pthread)
+    target_link_libraries(taller_server taller_common pthread yaml-cpp)
 endif()
 
 if(TALLER_EDITOR)
@@ -200,8 +200,10 @@ if(TALLER_EDITOR)
     # add libSDL2pp's headers
     target_include_directories(taller_editor PRIVATE ${libSDL2pp_SOURCE_DIR})
 
+    find_package(yaml-cpp REQUIRED)
+
     # Link the taller_common lib target
-    target_link_libraries(taller_editor taller_common SDL2pp::SDL2pp)
+    target_link_libraries(taller_editor taller_common SDL2pp::SDL2pp yaml-cpp)
 endif()
 
 
@@ -248,10 +250,14 @@ if(TALLER_TESTS)
         ${gmock_SOURCE_DIR}/include
         )
 
+
+    find_package(yaml-cpp REQUIRED)
+
     # HEY!! TODO XXX: I'm assuming that the code under testing is in taller_common
     # Change this if you have to.
     target_link_libraries(taller_tests
         taller_common
         GTest::gtest_main
+        yaml-cpp
     )
 endif()

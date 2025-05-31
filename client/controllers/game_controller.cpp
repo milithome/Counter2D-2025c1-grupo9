@@ -35,7 +35,7 @@ void GameController::listen() {
 
 void GameController::update(float deltaTime) {
     if (movement_keys_vector[0] || movement_keys_vector[1]) {
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], deltaTime);
+        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1]);
 
         // Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
         // action_queue.push(action);
@@ -71,11 +71,11 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
-        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1], ++lastMoveId}};
+        Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
         action_queue.push(action);
         actions.push_back(action);
 
-        move_actions[lastMoveId] = {game.getPlayerPositionX(player_name), game.getPlayerPositionY(player_name)};
+        move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
     }
 }
 
@@ -104,12 +104,12 @@ void GameController::onKeyReleased(const SDL_Event& event) {
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
-        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1], ++lastMoveId}};
+        Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
         action_queue.push(action);
         actions.push_back(action);
 
         
-        move_actions[lastMoveId] = {game.getPlayerPositionX(player_name), game.getPlayerPositionY(player_name)};
+        move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
     }
 
 }
@@ -157,28 +157,45 @@ bool GameController::actionQueueIsEmpty() {
     return action_queue.empty();
 }
 
-void GameController::updateGameState(std::vector<Entity> entities) {
+void GameController::updateGameState(StateGame state) {
+    std::vector<Entity> entities = state.entities;
     for (size_t i = 0; i < entities.size(); i++) {
         Entity entity = entities[i];
-        if (entity.type == PLAYER) {
-            if (entity.name == player_name) {
-                if (entity.data.lastMoveId == lastMoveIdFromServer) {
+        switch (entity.type) {
+            case PLAYER: {
+                PlayerData data = std::get<PlayerData>(entity.data);
+                if (data.name == player_name) {
+                    if (data.lastMoveId == lastMoveIdFromServer) {
+                        continue;
+                    } else {
+                        lastMoveIdFromServer = data.lastMoveId;
+                    }
+                    std::pair<float, float> position = move_actions[data.lastMoveId];
+                    float position_x = position.first;
+                    float position_y = position.second;
+                    
+                    if (std::sqrt((entity.x - position_x) * (entity.x - position_x) + (entity.y - position_y) * (entity.y - position_y)) >= DESYNC_TOLERANCE) {
+                        game.updatePlayerPosition(player_name, entity.x, entity.y);
+                    }
                     continue;
-                } else {
-                    lastMoveIdFromServer = entity.data.lastMoveId;
                 }
-                std::pair<float, float> position = move_actions[entity.data.lastMoveId];
-                float position_x = position.first;
-                float position_y = position.second;
-                
-                if (std::sqrt((entity.x - position_x) * (entity.x - position_x) + (entity.y - position_y) * (entity.y - position_y)) >= DESYNC_TOLERANCE) {
-                    game.updatePlayerPosition(player_name, entity.x, entity.y);
-                }
-                continue;
+                game.updatePlayerPosition(data.name, entity.x, entity.y);
+                game.updateRotation(data.name, data.rotation);
+                break;
             }
-            game.updatePlayerPosition(entity.name, entity.x, entity.y);
-            game.updateRotation(entity.name, entity.rotation);
+            default: {
+                break;
+            }
         }
     }
+
+    std::queue<Bullet> bullets = state.bullets;
+    while (!bullets.empty()) {
+        Bullet bullet = bullets.front();
+        bullets.pop();
+        game.bulletQueuePush(bullet);
+    }
+    Phase phase = state.phase;
+    (void)phase;
 }
 
