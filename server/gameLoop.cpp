@@ -31,15 +31,21 @@ void GameLoop::run() {
         });
         timeoutThread.detach();
 
+        auto lastTime = std::chrono::steady_clock::now();
         while (active) {
             auto start_time = std::chrono::steady_clock::now();
-            
+
             uint processedCounter = 0;
             ActionRequest event;
             while(processedCounter < MAX_EVENTS_PER_CLICK && toGame->try_pop(event)) {
                 game.execute(event.playerName, event.action);
                 processedCounter++;
             }
+
+            auto currentTime = std::chrono::steady_clock::now();
+            float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+            lastTime = currentTime;
+            game.update(deltaTime);
 
             StateGame state = game.getState();
             broadcast_game_state(state);
