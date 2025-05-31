@@ -68,7 +68,7 @@ public:
   void setLastMoveId(uint32_t id);
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
-  int getMoney();
+  int getMoney() const;
   void updateMoney(int value);
   void updatePrimaryBullets();
   void updateSecondaryBullets();

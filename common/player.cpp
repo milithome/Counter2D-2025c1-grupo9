@@ -184,8 +184,8 @@ int Player::getBulletsSecondary() const{
   return bulletsSecondary;
 }
 
-int Player::getMoney(){
-  return money;
+int Player::getMoney() const {
+    return this->money;
 }
 
 void Player::updateMoney(int value){

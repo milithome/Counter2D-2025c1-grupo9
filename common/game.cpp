@@ -2,7 +2,7 @@
 
 bool Game::addPlayer(const std::string &name) {
   Player newPlayer(name);
-  newPlayer.setPosition(10, 10); // ahora mismo hardcodeo una cualquiera
+  newPlayer.setPosition(2, 2); // ahora mismo hardcodeo una cualquiera
   if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team1.addPlayer(newPlayer);
     players.push_back(newPlayer);
@@ -52,7 +52,7 @@ bool Game::isColliding(float x, float y, float width, float height) const {
 
     for (int row = topCell; row <= bottomCell; ++row) {
       for (int col = leftCell; col <= rightCell; ++col) {
-          if (row < 0 || col < 0 || row >= map.size() || col >= map[row].size())
+          if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size()))
             continue;
           if (map[row][col] == CellType::Blocked) {
             return true;
@@ -138,6 +138,8 @@ StateGame Game::getState() {
     data.name= player.getName();
     data.rotation = player.getRotation();
     data.lastMoveId = player.getLastMoveId();
+    data.health = player.getHealth();
+    data.money = player.getMoney();
     entity.data = data;
     entities.push_back(entity);
   }
@@ -205,7 +207,6 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
-  std::cout << "shoot" << std::endl;
   if (!shooter.isShooting()) {
       return;
   }
