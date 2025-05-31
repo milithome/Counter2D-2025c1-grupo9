@@ -85,10 +85,9 @@ TEST(ProtocolServerSender, SendAndReceiveInitialDataResponse) {
         MapData map;
         map.background_path = "background.png";
         map.sprite_path = "sprite.png";
-        map.game_map = {{1, 1}, {2, 2}};
-        map.legend_game = {
-            {1, {0, 0}},
-            {2, {1, 0}},
+        map.game_map = {
+            {CellType::Walkable, CellType::Blocked},
+            {CellType::SpawnTeamA, CellType::SpawnTeamB}
         };
 
         map.tiles_map = {{3, 3}, {4, 4}};
@@ -124,7 +123,6 @@ TEST(ProtocolServerSender, SendAndReceiveInitialDataResponse) {
     ASSERT_EQ(init.data.background_path, "background.png");
     ASSERT_EQ(init.data.sprite_path, "sprite.png");
     ASSERT_EQ(init.data.game_map.size(), 2);
-    ASSERT_EQ(init.data.legend_game.size(), 2);
     ASSERT_EQ(init.data.tiles_map.size(), 2);
     ASSERT_EQ(init.data.legend_tiles.size(), 2);
 

@@ -359,6 +359,21 @@ void Protocol::serialize_string_vector(const std::vector<std::string>& vec, std:
     }
 }
 
+void Protocol::serialize_2d_vector(const std::vector<std::vector<CellType>>& matrix, std::vector<uint8_t>& buf) {
+    uint16_t rows = htons(static_cast<uint16_t>(matrix.size()));
+    uint16_t cols = htons(matrix.empty() ? 0 : static_cast<uint16_t>(matrix[0].size()));
+
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&rows), reinterpret_cast<uint8_t*>(&rows) + sizeof(rows));
+    buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&cols), reinterpret_cast<uint8_t*>(&cols) + sizeof(cols));
+
+    for (const auto& row : matrix) {
+        for (CellType val : row) {
+            uint16_t val_net = htons(static_cast<uint16_t>(val));
+            buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&val_net), reinterpret_cast<uint8_t*>(&val_net) + sizeof(val_net));
+        }
+    }
+}
+
 void Protocol::serialize_2d_vector(const std::vector<std::vector<uint16_t>>& matrix, std::vector<uint8_t>& buf) {
     uint16_t rows = htons(static_cast<uint16_t>(matrix.size()));
     uint16_t cols = htons(matrix.empty() ? 0 : static_cast<uint16_t>(matrix[0].size()));
@@ -398,7 +413,6 @@ void Protocol::serialize_map_data(const MapData& map, std::vector<uint8_t>& buf)
     serialize_string(map.sprite_path, buf);
 
     serialize_2d_vector(map.game_map, buf);
-    serialize_legend(map.legend_game, buf);
 
     serialize_2d_vector(map.tiles_map, buf);
     serialize_legend(map.legend_tiles, buf);
@@ -554,6 +568,26 @@ std::vector<std::string> Protocol::deserialize_string_vector() {
     return result;
 }
 
+std::vector<std::vector<CellType>> Protocol::deserialize_celltype_2d_vector() {
+    uint16_t rows_net, cols_net;
+    if (skt.recvall(&rows_net, sizeof(rows_net)) == 0 || skt.recvall(&cols_net, sizeof(cols_net)) == 0)
+        throw std::runtime_error("Error receiving 2D vector dimensions");
+
+    uint16_t rows = ntohs(rows_net);
+    uint16_t cols = ntohs(cols_net);
+
+    std::vector<std::vector<CellType>> matrix(rows, std::vector<CellType>(cols));
+    for (uint16_t i = 0; i < rows; ++i) {
+        for (uint16_t j = 0; j < cols; ++j) {
+            uint16_t val_net;
+            if (skt.recvall(&val_net, sizeof(val_net)) == 0)
+                throw std::runtime_error("Error receiving matrix value");
+            matrix[i][j] = static_cast<CellType>(ntohs(val_net));
+        }
+    }
+    return matrix;
+}
+
 std::vector<std::vector<uint16_t>> Protocol::deserialize_2d_vector() {
     uint16_t rows_net, cols_net;
     if (skt.recvall(&rows_net, sizeof(rows_net)) == 0 || skt.recvall(&cols_net, sizeof(cols_net)) == 0)
@@ -611,8 +645,7 @@ MapData Protocol::deserialize_map_data() {
     map.background_path = deserialize_string();
     map.sprite_path = deserialize_string();
 
-    map.game_map = deserialize_2d_vector();
-    map.legend_game = deserialize_legend();
+    map.game_map = deserialize_celltype_2d_vector();
 
     map.tiles_map = deserialize_2d_vector();
     map.legend_tiles = deserialize_legend();
