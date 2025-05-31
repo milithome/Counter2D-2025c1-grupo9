@@ -108,6 +108,15 @@ void Game::updatePlanting(const std::string &name){
   findPlayerByName(name).updateIsPlanting(false);
 }
 
+void Game::defuseBomb(const std::string& playerName) {
+    (void)playerName;
+}
+
+void Game::stopDefuse(const std::string& playerName) {
+    (void)playerName;
+}
+
+
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
@@ -201,53 +210,67 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
     int bullets = shooter.getBulletsPerShoot();
     
     for (int i = 0; i < bullets; i++) {
-        auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
+    auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
 
-        Player* closestPlayer = nullptr;
-        float closestDistance = maxDistance + 1.0f;
-        std::pair<float, float> closestHitPoint;
+    Player* closestPlayer = nullptr;
+    float closestPlayerDist = maxDistance + 1.0f;
+    std::pair<float, float> closestHitPoint;
 
-        for (auto& player : players) {
-            if (&player == &shooter) {
-                continue;
+    for (auto& player : players) {
+        if (&player == &shooter) continue;
+
+        Hitbox hb = player.getHitbox();
+        auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
+        if (hit_point) {
+            float dx = hit_point->first - originX;
+            float dy = hit_point->second - originY;
+            float dist = std::sqrt(dx * dx + dy * dy);
+            if (dist < closestPlayerDist) {
+                closestPlayerDist = dist;
+                closestPlayer = &player;
+                closestHitPoint = *hit_point;
             }
-
-            Hitbox hb = player.getHitbox();
-            auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
-            if (hit_point) {
-                float dx = hit_point->first - originX;
-                float dy = hit_point->second - originY;
-                float dist = std::sqrt(dx * dx + dy * dy);
-                if (dist < closestDistance) {
-                    closestDistance = dist;
-                    closestPlayer = &player;
-                    closestHitPoint = *hit_point;
-                }
-            }
-        }
-
-        if (closestPlayer) {
-            std::pair<float, float> damageRange = shooter.getDamageRange();
-
-            float baseDamage = 1000.0f / (closestDistance + 1.0f);
-            float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
-
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_real_distribution<> dis(damageRange.first, damageRange.second);
-            float randomDamage = dis(gen);
-
-            float finalDamage = std::min(clampedDamage, randomDamage);
-
-            closestPlayer->updateHealth(-finalDamage);
-            std::cout << shooterName << " le disparó a " << closestPlayer->getName()
-                      << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
-
-            bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
-        } else {
-            bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
         }
     }
+
+    auto wallHit = rayHitsWall(originX, originY, targetX, targetY, maxDistance);
+
+    float wallDist = maxDistance + 1.0f;
+    std::pair<float, float> wallPoint;
+
+    if (wallHit) {
+        wallPoint = *wallHit;
+        float dx = wallPoint.first - originX;
+        float dy = wallPoint.second - originY;
+        wallDist = std::sqrt(dx * dx + dy * dy);
+    }
+
+    if (closestPlayer && closestPlayerDist < wallDist) {
+        std::pair<float, float> damageRange = shooter.getDamageRange();
+
+        float baseDamage = 1000.0f / (closestPlayerDist + 1.0f);
+        float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(damageRange.first, damageRange.second);
+        float randomDamage = dis(gen);
+
+        float finalDamage = std::min(clampedDamage, randomDamage);
+
+        closestPlayer->updateHealth(-finalDamage);
+        std::cout << shooterName << " le disparó a " << closestPlayer->getName()
+                  << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
+
+        bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
+    } else if (wallHit) {
+        std::cout << shooterName << " disparó y la bala impactó una pared en ("
+                  << wallPoint.first << ", " << wallPoint.second << ")\n";
+        bullet_queue.push(Bullet{originX, originY, wallPoint.first, wallPoint.second, angle});
+    } else {
+        bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
+    }
+  }
 }
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
@@ -280,6 +303,37 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
     std::cout << "llega a makeShot" << std::endl;
     makeShot(shooter, shooterName);
   }
+}
+
+std::optional<std::pair<float, float>> Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const {
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float length = std::sqrt(dx * dx + dy * dy);
+
+    int steps = static_cast<int>(length * 50);
+    float stepX = dx / steps;
+    float stepY = dy / steps;
+
+    float x = x0;
+    float y = y0;
+
+    for (int i = 0; i <= steps && i * std::hypot(stepX, stepY) <= maxDist; ++i) {
+        int row = static_cast<int>(std::floor(y));
+        int col = static_cast<int>(std::floor(x));
+
+        if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size())) {
+            break;
+        }
+
+        if (map[row][col] == CellType::Blocked) { // colisión con la pared
+          return std::make_pair(x, y);  
+        }
+
+        x += stepX;
+        y += stepY;
+    }
+
+    return std::nullopt;
 }
 
 

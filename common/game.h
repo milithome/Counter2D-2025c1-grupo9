@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <optional>
 #include <queue>
 #ifndef GAME_H
 #define GAME_H
@@ -31,6 +32,7 @@ private:
   void defuseBomb(const std::string &name);
   void updateDefusing(const std::string &name);
   void stopDefuse(const std::string &name);
+  std::optional<std::pair<float, float>> rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const;
   Spike spike;
 
 public:
