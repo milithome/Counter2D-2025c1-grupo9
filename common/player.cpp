@@ -103,9 +103,9 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       float angle_rad = angle * M_PI / 180.0f;
       float max_distance;
 
-      if (weaponEquipped==EquippedWeapon::SECONDARY){
+      if (weaponEquipped==WeaponType::SECONDARY){
         max_distance=secondaryWeapon.maxRange;
-      }else if(weaponEquipped==EquippedWeapon::PRIMARY){
+      }else if(weaponEquipped==WeaponType::PRIMARY){
         max_distance=primaryWeapon.maxRange; 
       }else{
         max_distance=knife.maxRange;
@@ -132,10 +132,10 @@ std::pair<float, float> Player::getDamageRange(){
   return std::make_pair(equipped.minDamage, equipped.maxDamage);
 }
 
-void Player::changeWeapon(EquippedWeapon newEquippedWeapon){
-  if (newEquippedWeapon== EquippedWeapon::PRIMARY){
+void Player::changeWeapon(WeaponType newEquippedWeapon){
+  if (newEquippedWeapon== WeaponType::PRIMARY){
     equipped=primaryWeapon;
-  }else if(newEquippedWeapon== EquippedWeapon::SECONDARY){
+  }else if(newEquippedWeapon== WeaponType::SECONDARY){
     equipped=secondaryWeapon;
   }else{
     equipped=knife;

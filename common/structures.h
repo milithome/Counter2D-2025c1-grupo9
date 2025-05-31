@@ -71,14 +71,7 @@ struct BombData {
 
 struct WeaponData {
     WeaponType type;
-<<<<<<< HEAD
-    union {
-        WeaponName primary;
-        WeaponName secondary;
-    } weapon;
-=======
     WeaponName weapon;
->>>>>>> protocol
 };
 
 using EntityData = std::variant<std::monostate, PlayerData, BombData, WeaponData>;
@@ -124,14 +117,7 @@ struct BuyBulletAction {
 
 struct BuyWeaponAction {
     WeaponType type;
-<<<<<<< HEAD
-    union {
-        WeaponName primary;
-        WeaponName secondary;
-    } weapon;
-=======
     WeaponName weapon;
->>>>>>> protocol
 };
 
 struct ChangeWeaponAction {

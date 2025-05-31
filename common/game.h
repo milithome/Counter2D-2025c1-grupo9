@@ -15,6 +15,7 @@ private:
   Player &findPlayerByName(const std::string &name);
   bool running = true;
   float time;
+  Phase phase;
   std::queue<Bullet> bullet_queue;
 
 public:
@@ -36,7 +37,7 @@ public:
 
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
   void stopShooting(const std::string &name);
-
+  void changeWeapon(const std::string &name, WeaponType type);
   Bullet bulletQueuePop();
   void bulletQueuePush(Bullet bullet);
   bool bulletQueueIsEmpty();

@@ -44,6 +44,9 @@ void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
+void Game::changeWeapon(const std::string &name, WeaponType type){
+  findPlayerByName(name).changeWeapon(type);
+}
 
 std::vector<Entity> Game::getState() {
   std::vector<Entity> state;
@@ -180,13 +183,26 @@ void Game::execute(const std::string &name, Action action) {
     stopShooting(name);
     break;
   }
-
+  case ActionType::BUY_BULLET:{
+    
+    break;
+  }
+  case ActionType::BUY_WEAPON:{
+    
+    break;
+  }
+  case ActionType::CHANGE_WEAPON:{
+    const ChangeWeaponAction*data = std::get_if<ChangeWeaponAction>(&action.data);
+    changeWeapon(name, data->type);
+    break;
+  }
   default:{
     break;
   }
     
   }
 }
+
 
 void Game::bulletQueuePush(Bullet bullet) {
   bullet_queue.push(bullet);

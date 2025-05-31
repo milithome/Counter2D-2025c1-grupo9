@@ -29,4 +29,12 @@ void Team::setRole(Role rol) {
   currentRole = rol;
 }
 
+void Team::updatePlayersAlive(){
+  playersAlive=playersAlive-1;
+}
+
+void Team::restartPlayersAlive(){
+  playersAlive= players.size();
+}
+
 int Team::getTeamSize() { return size; }

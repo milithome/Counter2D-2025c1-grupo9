@@ -15,7 +15,7 @@ private:
   Role role;
   int money;
   Weapon equipped = Weapons::M3;
-  EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
+  WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
   Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
@@ -55,7 +55,7 @@ public:
   int getBulletsPerShoot();
   float getSpreadAngle();
   std::pair<float, float> getDamageRange();
-  void changeWeapon(EquippedWeapon newEquippedWeapon);
+  void changeWeapon(WeaponType newEquippedWeapon);
   WeaponName getPrimaryWeaponName() const;
   WeaponName getSecondaryWeaponName() const;
   uint32_t getLastMoveId() const;
