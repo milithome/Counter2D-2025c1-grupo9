@@ -3,9 +3,21 @@
 
 enum class Role { TERRORIST, COUNTER_TERRORIST };
 
+struct Position {
+    float x;
+    float y;
+};
+struct Spike {
+    Position position;
+    bool isPlanted;
+};
+
+
+
+
 #define SPEED 5.0f
 #define MAX_PLAYERS_PER_TEAM 5
-#define PLAYER_WIDTH 1.7f
-#define PLAYER_HEIGHT 1.7f
+#define PLAYER_WIDTH 0.7f
+#define PLAYER_HEIGHT 0.7f
 
 #endif

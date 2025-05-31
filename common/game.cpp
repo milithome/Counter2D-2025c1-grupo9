@@ -56,13 +56,56 @@ bool Game::isColliding(float x, float y, float width, float height) const {
           continue;
         } 
         if (map[row][col] == CellType::Blocked) {
-          std::cout << "Collision detected with blocked cell (" << row << ", " << col << ")\n";
           return true;
         }
       }
     }
-
     return false;
+}
+//plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o defiende
+void Game::plantBomb(const std::string &name) { //ahora se planta automaticamente, falta un update y que despues de x tiempo se cambie a true
+    Player player = findPlayerByName(name);
+    if(!player.getHasTheSpike()){ //falta agregar si puede defusear o sea si esta defendiendo
+      return;
+    }
+    Hitbox hb = player.getHitbox();
+    float x = player.getX();
+    float y = player.getY();
+    float width = hb.getWidth();
+    float height = hb.getHeight();
+
+    float left = x;
+    float right = x + width;
+    float top = y;
+    float bottom = y + height;
+
+    int leftCell = static_cast<int>(std::floor(left));
+    int rightCell = static_cast<int>(std::floor(right));
+    int topCell = static_cast<int>(std::floor(top));
+    int bottomCell = static_cast<int>(std::floor(bottom));
+
+    for (int row = topCell; row <= bottomCell; ++row) {
+      for (int col = leftCell; col <= rightCell; ++col) {
+        if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size())){
+          continue;
+        } 
+        if (map[row][col] == CellType::SpikeSite) {
+            spike.position.x=row;
+            spike.position.y=col;
+            spike.isPlanted=true;
+          return;
+        }
+      }
+    }
+    return;
+}
+
+void Game::stopPlantBomb(const std::string &name){
+  findPlayerByName(name).updateIsPlanting(false);
+}
+
+void Game::updatePlanting(const std::string &name){
+  findPlayerByName(name).updateIsPlanting(false);
 }
 
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
@@ -261,43 +304,61 @@ void Game::update(float deltaTime) {
 void Game::execute(const std::string &name, Action action) {
 
   switch (action.type) {
-  case ActionType::MOVE:{ 
-    const MoveAction *data = std::get_if<MoveAction>(&action.data);
-    movePlayer(name, data->vx, data->vy, data->id);
-    break;
-  }
-  case ActionType::POINT_TO:{
-    const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
-    updateRotation(name, pointToData->value);
-    break;
-  }
-   
-  case ActionType::SHOOT:{
-    findPlayerByName(name).startShooting();
-    break;
-  }
-  case ActionType::STOP_SHOOTING:{
-    stopShooting(name);
-    break;
-  }
-  case ActionType::BUY_BULLET:{
-    const BuyBulletAction*data = std::get_if<BuyBulletAction>(&action.data);
-    buyBullet(name, data->type);
-    break;
-  }
-  case ActionType::BUY_WEAPON:{
-    const BuyWeaponAction*data = std::get_if<BuyWeaponAction>(&action.data);
-    buyWeapon(name, data->weapon);
-    break;
-  }
-  case ActionType::CHANGE_WEAPON:{
-    const ChangeWeaponAction*data = std::get_if<ChangeWeaponAction>(&action.data);
-    changeWeapon(name, data->type);
-    break;
-  }
-  default:{
-    break;
-  }
+    case ActionType::MOVE:{ 
+      const MoveAction *data = std::get_if<MoveAction>(&action.data);
+      movePlayer(name, data->vx, data->vy, data->id);
+      break;
+    }
+    case ActionType::POINT_TO:{
+      const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
+      updateRotation(name, pointToData->value);
+      break;
+    }
+    
+    case ActionType::SHOOT:{
+      findPlayerByName(name).startShooting();
+      break;
+    }
+    case ActionType::STOP_SHOOTING:{
+      stopShooting(name);
+      break;
+    }
+    case ActionType::BUY_BULLET:{
+      const BuyBulletAction*data = std::get_if<BuyBulletAction>(&action.data);
+      buyBullet(name, data->type);
+      break;
+    }
+    case ActionType::BUY_WEAPON:{
+      const BuyWeaponAction*data = std::get_if<BuyWeaponAction>(&action.data);
+      buyWeapon(name, data->weapon);
+      break;
+    }
+    case ActionType::CHANGE_WEAPON:{
+      const ChangeWeaponAction*data = std::get_if<ChangeWeaponAction>(&action.data);
+      changeWeapon(name, data->type);
+      break;
+    }
+    case ActionType::PLANT:{
+      plantBomb(name);
+      break;
+    }
+    case ActionType::STOP_PLANTING:{
+      stopPlantBomb(name);
+      break;
+    }
+
+    case ActionType::DEFUSE:{
+      defuseBomb(name);
+      break;
+    }
+    case ActionType::STOP_DEFUSING:{
+      stopDefuse(name);
+      break;
+    }
+    default:{
+
+      break;
+    }
     
   }
 }

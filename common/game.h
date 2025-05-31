@@ -25,6 +25,13 @@ private:
   std::queue<Bullet> bullet_queue;
   std::vector<std::vector<CellType>> map;
   void makeShot(Player& shooter, const std::string& shooterName);
+  void plantBomb(const std::string &name);
+  void stopPlantBomb(const std::string &name);
+  void updatePlanting(const std::string &name);
+  void defuseBomb(const std::string &name);
+  void updateDefusing(const std::string &name);
+  void stopDefuse(const std::string &name);
+  Spike spike;
 
 public:
   Game(std::vector<std::vector<CellType>> game_map) : map(std::move(game_map)){}

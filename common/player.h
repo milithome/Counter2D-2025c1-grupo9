@@ -23,8 +23,10 @@ private:
   int bulletsSecondary;
   float rotation;
   float health;
+  bool hasTheSpike=false;
   float vx = 0, vy = 0;
   bool shooting = false;
+  bool planting = false;
   float shootCooldown = 0.0f;
   uint32_t lastMoveId = 0;
   float timeLastBullet = 0.0f;
@@ -56,6 +58,8 @@ public:
   float getShootCooldown();
   void resetCooldown();
   bool isShooting();
+  bool isPlanting();
+  void updateIsPlanting(bool isPlanting);
   std::tuple<float, float, float, float, float, float> shoot();
   int getBulletsPerShoot();
   float getSpreadAngle();
@@ -79,6 +83,7 @@ public:
   int getBurstFireBullets();
   void updateBurstFireBullets(int value);
   void resetTimeLastBullet();
+  bool getHasTheSpike();
 };
 
 #endif

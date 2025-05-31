@@ -225,3 +225,14 @@ int Player::getBurstFireBullets(){
 void Player::updateBurstFireBullets(int value){
   burstFireBullets+=value;
 }
+bool Player::getHasTheSpike(){
+  return hasTheSpike;
+}
+
+bool Player::isPlanting(){
+  return planting;
+}
+
+void Player::updateIsPlanting(bool isPlanting){
+  planting=isPlanting;
+}
