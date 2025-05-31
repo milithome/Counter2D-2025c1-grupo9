@@ -17,20 +17,22 @@ private:
   float time;
   Phase phase;
   std::queue<Bullet> bullet_queue;
+  void makeShot(Player& shooter, const std::string& shooterName);
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
   bool addPlayer(const std::string &name);
   void updatePlayerPosition(const std::string &name, float x, float y);
-  std::vector<Entity> getState();
+  StateGame getState();
   bool isRunning();
   void stop();
-  void shoot(const std::string &shooterName);
+  void shoot(const std::string &shooterName, float deltaTime);
   void update(float deltaTime);
   void execute(const std::string &name, Action action);
   void updateTime(float currentTime);
   void updateRotation(const std::string &name, float currentRotation);
   float getRotation(const std::string &name);
+  std::vector<std::pair<WeaponName, int>> getStore();
 
   float getX(const std::string &name);
   float getY(const std::string &name);
@@ -41,6 +43,8 @@ public:
   Bullet bulletQueuePop();
   void bulletQueuePush(Bullet bullet);
   bool bulletQueueIsEmpty();
+  void buyWeapon(const std::string &name,WeaponName weaponName);
+  void buyBullet(const std::string &name,WeaponType weaponName);
 };
 
 #endif

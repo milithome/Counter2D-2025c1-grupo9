@@ -4,6 +4,7 @@ target_sources(taller_common
     game.cpp
     player.cpp
     team.cpp
+    weapons.cpp
     PUBLIC
     # .h files
     structures.h
@@ -11,4 +12,5 @@ target_sources(taller_common
     player.h
     team.h
     weapons.h
+    store.h
     )
