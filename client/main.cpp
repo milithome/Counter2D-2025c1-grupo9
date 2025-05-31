@@ -178,9 +178,9 @@ int main(int argc, char **argv) try {
 
 // main reducido para testear
 void game_run(std::string clientName) {
-	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	SDL sdl(SDL_INIT_VIDEO);
 
-	Map map = Map("../assets/gfx/tiles/default_dust.png");
+	Map map = Map("../assets/maps/default.yaml");
 	Game game(10, 10);
 	game.addPlayer(clientName);
 	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);

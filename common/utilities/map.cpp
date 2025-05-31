@@ -1,6 +1,7 @@
 #include "map.h"
 #include <yaml-cpp/yaml.h>
 #include <stdexcept>
+#include <iostream>
 
 Map::Map(const std::string& filename) {
     load_map(filename);

@@ -2,7 +2,7 @@ map:
   name: default
   width: 15
   height: 10
-  background_path: ../assets/gfx/backgrounds/sand1.png
+  background_path: ../assets/gfx/backgrounds/sand1.jpg
   sprite_path: ../assets/gfx/tiles/default_dust.png
 
   tiles:
