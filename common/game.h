@@ -22,7 +22,7 @@ public:
   Game(int width, int height) : map_width(width), map_height(height) {}
   bool addPlayer(const std::string &name);
   void updatePlayerPosition(const std::string &name, float x, float y);
-  std::vector<Entity> getState();
+  StateGame getState();
   bool isRunning();
   void stop();
   void shoot(const std::string &shooterName);
