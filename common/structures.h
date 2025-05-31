@@ -60,6 +60,8 @@ struct PlayerData {
     std::string name;
     float rotation;
     uint32_t lastMoveId;
+    int money;
+    float health;
     Inventory inventory;
 };
 
@@ -69,10 +71,14 @@ struct BombData {
 
 struct WeaponData {
     WeaponType type;
+<<<<<<< HEAD
     union {
         WeaponName primary;
         WeaponName secondary;
     } weapon;
+=======
+    WeaponName weapon;
+>>>>>>> protocol
 };
 
 using EntityData = std::variant<std::monostate, PlayerData, BombData, WeaponData>;
@@ -118,10 +124,14 @@ struct BuyBulletAction {
 
 struct BuyWeaponAction {
     WeaponType type;
+<<<<<<< HEAD
     union {
         WeaponName primary;
         WeaponName secondary;
     } weapon;
+=======
+    WeaponName weapon;
+>>>>>>> protocol
 };
 
 struct ChangeWeaponAction {
@@ -189,23 +199,23 @@ struct StateLobby{
     std::vector<std::string> players;
 };
 
+using ResponseData = std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
+
+// Respuesta enviada por el servidor al cliente
+struct Response {
+  Type type;
+  uint8_t result;
+  ResponseData data;
+  std::string message;
+};
+
+
 // Mensaje enviado por el cliente al servidor
 struct Message {
     Type type;
     uint16_t size;
     std::string name;
     Action action;
-};
-
-// Respuesta enviada por el servidor al cliente
-struct Response {
-  Type type;
-  uint8_t result;
-  StateGame stateGame;
-  InitialData initialData;
-  LobbyList lobbyList;
-  StateLobby stateLobby;
-  std::string message;
 };
 
 // Estructuras que usa el servidor internamente - ignorar
