@@ -215,4 +215,32 @@ struct Message {
     Action action;
 };
 
+
+// Estructuras del servidor
+enum LobbyRequestType {
+    LEAVE_LOBBY,
+    JOIN_LOBBY,
+    START_LOBBY,
+    READY_LOBBY
+};
+
+struct LobbyRequest {
+  LobbyRequestType type;
+  std::string playerName;
+};
+
+struct ActionRequest {
+    Action action;
+    std::string playerName;
+};
+
+struct LobbyChannels {
+    std::shared_ptr<Queue<LobbyRequest>> toLobby;
+    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
+};
+
+struct GameChannels {
+    std::shared_ptr<Queue<ActionRequest>> toGame;
+    std::shared_ptr<Queue<ActionRequest>> fromGame;
+};
 #endif

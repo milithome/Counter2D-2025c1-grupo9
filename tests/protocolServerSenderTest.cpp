@@ -5,7 +5,7 @@
 #include <thread>
 #include <chrono>
 
-void wait_short_time() {
+void wait_short_time_server_sender() {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
@@ -25,7 +25,7 @@ TEST(ProtocolServerSender, SendAndReceiveLobbyListResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12370");
     Protocol client_protocol(std::move(client_socket));
 
@@ -58,7 +58,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateLobbyResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12371");
     Protocol client_protocol(std::move(client_socket));
 
@@ -107,7 +107,7 @@ TEST(ProtocolServerSender, SendAndReceiveInitialDataResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12372");
     Protocol client_protocol(std::move(client_socket));
 
@@ -163,7 +163,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12373");
     Protocol client_protocol(std::move(client_socket));
 
@@ -194,7 +194,12 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
 
     ASSERT_EQ(state.bullets.size(), 1);
 
-    auto bullet = state.bullets.pop();
+    // obtengo la cola de balas y verifico la primera
+    std::queue<Bullet>& bullets = state.bullets;
+    ASSERT_FALSE(bullets.empty());
+    ASSERT_EQ(bullets.size(), 1);
+
+    Bullet bullet = bullets.front();
     EXPECT_FLOAT_EQ(bullet.origin_x, 5.0f);
     EXPECT_FLOAT_EQ(bullet.origin_y, 5.0f);
     EXPECT_FLOAT_EQ(bullet.target_x, 15.0f);
@@ -219,7 +224,7 @@ TEST(ProtocolServerSender, SendAndReceiveFinishResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12374");
     Protocol client_protocol(std::move(client_socket));
 
@@ -246,7 +251,7 @@ TEST(ProtocolServerSender, SendAndReceiveCreateResponse) {
         server_protocol.send_response(r);
     });
 
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12374");
     Protocol client_protocol(std::move(client_socket));
 
@@ -271,7 +276,7 @@ TEST(ProtocolServerSender, SendAndReceiveJoinResponse) {
 
         server_protocol.send_response(r);
     });
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12375");
     Protocol client_protocol(std::move(client_socket));
     Response response = client_protocol.recv_response();
@@ -294,7 +299,7 @@ TEST(ProtocolServerSender, SendAndReceiveLeaveResponse) {
 
         server_protocol.send_response(r);
     });
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12376");
     Protocol client_protocol(std::move(client_socket));
     Response response = client_protocol.recv_response();
@@ -317,7 +322,7 @@ TEST(ProtocolServerSender, SendAndReceiveLobbyReadyResponse) {
 
         server_protocol.send_response(r);
     });
-    wait_short_time();
+    wait_short_time_server_sender();
     Socket client_socket("localhost", "12377");
     Protocol client_protocol(std::move(client_socket));
     Response response = client_protocol.recv_response();

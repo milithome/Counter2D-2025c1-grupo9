@@ -9,13 +9,13 @@ void Lobby::run() {
                 LobbyRequest event;
                 if (toLobby->try_pop(event)) {
                     switch (event.type) {
-                        case LobbyRequestType::JOIN:
+                        case LobbyRequestType::JOIN_LOBBY:
                             handle_join_event(event.playerName);
                             break;
-                        case LobbyRequestType::LEAVE:
+                        case LobbyRequestType::LEAVE_LOBBY:
                             handle_leave_event(event.playerName);
                             break;
-                        case LobbyRequestType::START:
+                        case LobbyRequestType::START_LOBBY:
                             if (start_game()) {
                                 continue;
                             }
@@ -42,7 +42,7 @@ void Lobby::handle_join_event(const std::string& playerName) {
     if (players.size() == maxPlayers) {
         for (auto& [name, queue] : fromPlayers) {
             LobbyRequest event = {
-                LobbyRequestType::LOBBY_READY,
+                LobbyRequestType::READY_LOBBY,
                 name
             };
             queue->push(event);
@@ -90,7 +90,7 @@ LobbyChannels Lobby::add_player(Protocol& player, const std::string& playerName)
     auto fromPlayerQueue = std::make_shared<Queue<LobbyRequest>>(100);
     fromPlayers.emplace(playerName,fromPlayerQueue);
 
-    toLobby->push({LobbyRequestType::JOIN, playerName});
+    toLobby->push({LobbyRequestType::JOIN_LOBBY, playerName});
 
     return LobbyChannels{
         toLobby,
@@ -107,7 +107,7 @@ bool Lobby::start_game() {
 
         for (auto& [name, queue] : fromPlayers) {
             LobbyRequest event = {
-                LobbyRequestType::START,
+                LobbyRequestType::START_LOBBY,
                 name
             };
             queue->push(event);

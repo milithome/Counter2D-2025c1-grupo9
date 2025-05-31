@@ -5,7 +5,7 @@
 #include <thread>
 #include <chrono>
 
-void wait_short_time() {
+void wait_short_time_actions() {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
@@ -26,7 +26,7 @@ TEST(ProtocolClientSender, SendAndReceiveMoveAction) {
         EXPECT_EQ(move.vy, -1);
     });
 
-    wait_short_time();
+    wait_short_time_actions();
     Socket client_socket("localhost", "12353");
     Protocol client_protocol(std::move(client_socket));
 
@@ -52,7 +52,7 @@ TEST(ProtocolClientSender, SendAndReceivePointToAction) {
         EXPECT_FLOAT_EQ(pt.value, 3.14f);
     });
 
-    wait_short_time();
+    wait_short_time_actions();
     Socket client_socket("localhost", "12354");
     Protocol client_protocol(std::move(client_socket));
 
@@ -78,7 +78,7 @@ TEST(ProtocolClientSender, SendAndReceiveBuyBulletAction) {
         EXPECT_EQ(action.type, WeaponType::PRIMARY);
     });
 
-    wait_short_time();
+    wait_short_time_actions();
     Socket client_socket("localhost", "12355");
     Protocol client_protocol(std::move(client_socket));
 
@@ -104,7 +104,7 @@ TEST(ProtocolClientSender, SendAndReceiveBuyWeaponAction) {
         EXPECT_EQ(action.weapon, WeaponName::AK47);
     });
 
-    wait_short_time();
+    wait_short_time_actions();
     Socket client_socket("localhost", "12356");
     Protocol client_protocol(std::move(client_socket));
 
@@ -130,7 +130,7 @@ TEST(ProtocolClientSender, SendAndReceiveChangeWeaponAction) {
         EXPECT_EQ(action.type, WeaponType::SECONDARY);
     });
 
-    wait_short_time();
+    wait_short_time_actions();
     Socket client_socket("localhost", "12357");
     Protocol client_protocol(std::move(client_socket));
 
@@ -165,7 +165,7 @@ TEST(ProtocolClientSender, SendAndReceiveSimpleActionsWithoutData) {
             ASSERT_EQ(msg.action.type, type);
         });
 
-        wait_short_time();
+        wait_short_time_actions();
         Socket client_socket("localhost", std::to_string(port).c_str());
         Protocol client_protocol(std::move(client_socket));
 

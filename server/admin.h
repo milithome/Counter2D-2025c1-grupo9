@@ -9,33 +9,6 @@
 #include "gameLoop.h"
 #include "../common/communication/protocol.h"
 
-enum LobbyRequestType {
-    LEAVE,
-    JOIN,
-    START,
-    LOBBY_READY
-};
-
-struct LobbyRequest {
-  LobbyRequestType type;
-  std::string playerName;
-};
-
-struct ActionRequest {
-    Action action;
-    std::string playerName;
-};
-
-struct LobbyChannels {
-    std::shared_ptr<Queue<LobbyRequest>> toLobby;
-    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
-};
-
-struct GameChannels {
-    std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::shared_ptr<Queue<ActionRequest>> fromGame;
-};
-
 class ClientHandler;
 class Lobby;
 class GameLoop;

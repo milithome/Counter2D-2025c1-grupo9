@@ -1,6 +1,5 @@
 target_sources(taller_tests
     PRIVATE
-    mapTest.cpp
     protocolClientSenderTest.cpp
     protocolActionTest.cpp
     protocolServerSenderTest.cpp

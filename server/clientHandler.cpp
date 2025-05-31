@@ -94,12 +94,12 @@ void ClientHandler::enter_lobby(const std::string& lobbyName, Queue<LobbyRequest
         if (fromLobby.try_pop(event)) {
             switch (event.type)
             {
-            case LobbyRequestType::START:
+            case LobbyRequestType::START_LOBBY:
                 inLobby = false;
                 send_simple_response(Type::START, "Game started",0);
                 handle_game(lobbyName);
                 break;
-            case LobbyRequestType::LOBBY_READY:
+            case LobbyRequestType::READY_LOBBY:
                 send_simple_response(Type::LOBBY_READY, "Lobby is ready", 0);
                 break;
             default:
@@ -113,12 +113,12 @@ bool ClientHandler::handle_lobby_client_message(const Message& msg, Queue<LobbyR
     Response response;
     switch (msg.type) {
         case Type::LEAVE:
-            toLobby.push({LobbyRequestType::LEAVE, clientName});
+            toLobby.push({LobbyRequestType::LEAVE_LOBBY, clientName});
             inLobby = false;
             send_simple_response(Type::LEAVE, "Leave successful",0);
             return true;
         case Type::START:
-            toLobby.push({LobbyRequestType::START, clientName});
+            toLobby.push({LobbyRequestType::START_LOBBY, clientName});
             return false;
         case Type::DISCONNECT:
             active = false;
