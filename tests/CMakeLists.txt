@@ -3,6 +3,7 @@ target_sources(taller_tests
     mapTest.cpp
     protocolClientSenderTest.cpp
     protocolActionTest.cpp
+    protocolServerSenderTest.cpp
     ../server/server.cpp
     ../server/admin.cpp
     ../server/acceptor.cpp

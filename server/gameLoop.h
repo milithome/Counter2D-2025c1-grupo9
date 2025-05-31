@@ -27,6 +27,6 @@ private:
     bool active;
     Game game;
 
-    void broadcast_game_state(std::vector<Entity>& entities);
+    void broadcast_game_state(StateGame& state);
 };
 #endif
