@@ -49,6 +49,7 @@ void Game::changeWeapon(const std::string &name, WeaponType type){
   findPlayerByName(name).changeWeapon(type);
 }
 
+
 void Game::buyWeapon(const std::string &name, WeaponName weaponName){
   Player player = findPlayerByName(name);
   int price= Store::getWeaponPrice(weaponName);
@@ -76,8 +77,11 @@ void Game::buyBullet(const std::string &name,WeaponType type){
   }
 }
 
-std::vector<Entity> Game::getState() {
-  std::vector<Entity> state;
+StateGame Game::getState() {
+  StateGame state;
+  state.phase = phase;
+  
+  std::vector<Entity> entities;
 
   for (const auto &player : players) {
     Entity entity;
@@ -95,8 +99,10 @@ std::vector<Entity> Game::getState() {
     data.rotation = player.getRotation();
     data.lastMoveId = player.getLastMoveId();
     entity.data = data;
-    state.push_back(entity);
+    entities.push_back(entity);
   }
+  state.entities = entities;
+  state.bullets = bullet_queue;
   return state;
 }
 

@@ -28,20 +28,16 @@ private:
     Admin& admin;
     std::function<void(std::string, std::shared_ptr<ClientHandler>)> onRegister;
 
-    // Main message handler
     void handle_message(const Message& message);
 
-    // Handlers for message types
     void handle_create(const std::string& name);
     void handle_join(const std::string& name);
     void handle_list();
     void handle_game(const std::string& name);
 
-    // Lobby and game loops
-    bool handle_lobby_client_message(const Message& msg, Queue<LobbyEvent>& toLobby, bool& inLobby);
+    bool handle_lobby_client_message(const Message& msg, Queue<LobbyRequest>& toLobby, bool& inLobby);
     bool handle_game_client_message(const Message& msg, Queue<ActionRequest>& toGame, bool& inGame);
 
-    // Utility
     void send_simple_response(Type type, const std::string& msg, uint8_t result);
 };
 

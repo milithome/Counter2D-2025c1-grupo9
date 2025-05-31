@@ -215,31 +215,4 @@ struct Message {
     Action action;
 };
 
-// Estructuras que usa el servidor internamente - ignorar
-enum class LobbyRequestType {
-    LEAVE,
-    JOIN,
-    START
-};
-
-struct LobbyRequest {
-  LobbyRequestType type;
-  std::string playerName;
-};
-
-struct ActionRequest {
-    Action action;
-    std::string playerName;
-};
-
-struct LobbyChannels {
-    std::shared_ptr<Queue<LobbyRequest>> toLobby;
-    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
-};
-
-struct GameChannels {
-    std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::shared_ptr<Queue<ActionRequest>> fromGame;
-};
-
 #endif
