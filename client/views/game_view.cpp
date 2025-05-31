@@ -129,7 +129,7 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
 }
 
 void GameView::showEntities(float cameraX, float cameraY) {
-    std::vector<Entity> gameState = game.getState();
+    std::vector<Entity> gameState = game.getState().entities;
     Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (size_t i = 0; i < gameState.size(); i++) {
         switch (gameState[i].type) {
