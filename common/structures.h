@@ -34,14 +34,12 @@ enum class WeaponType {
     KNIFE,
 };
 
-enum WeaponPrimaryType {
+enum WeaponName {
     AK47,
     M3,
     AWP,
-};
-
-enum WeaponSecondaryType {
-    GLOCK
+    GLOCK,
+    KNIFE
 };
 
 // Tipos de entidades del juego
@@ -52,8 +50,8 @@ enum EntityType {
 };
 
 struct Inventory {
-    WeaponPrimaryType primary;
-    WeaponSecondaryType secondary;
+    WeaponName primary;
+    WeaponName secondary;
     uint32_t bulletsPrimary;
     uint32_t bulletsSecondary;
 };
@@ -62,6 +60,8 @@ struct PlayerData {
     std::string name;
     float rotation;
     uint32_t lastMoveId;
+    int money;
+    float health;
     Inventory inventory;
 };
 
@@ -71,10 +71,7 @@ struct BombData {
 
 struct WeaponData {
     WeaponType type;
-    union {
-        WeaponPrimaryType primary;
-        WeaponSecondaryType secondary;
-    } weapon;
+    WeaponName weapon;
 };
 
 using EntityData = std::variant<std::monostate, PlayerData, BombData, WeaponData>;
@@ -120,10 +117,7 @@ struct BuyBulletAction {
 
 struct BuyWeaponAction {
     WeaponType type;
-    union {
-        WeaponPrimaryType primary;
-        WeaponSecondaryType secondary;
-    } weapon;
+    WeaponName weapon;
 };
 
 struct ChangeWeaponAction {
@@ -191,23 +185,23 @@ struct StateLobby{
     std::vector<std::string> players;
 };
 
+using ResponseData = std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
+
+// Respuesta enviada por el servidor al cliente
+struct Response {
+  Type type;
+  uint8_t result;
+  ResponseData data;
+  std::string message;
+};
+
+
 // Mensaje enviado por el cliente al servidor
 struct Message {
     Type type;
     uint16_t size;
     std::string name;
     Action action;
-};
-
-// Respuesta enviada por el servidor al cliente
-struct Response {
-  Type type;
-  uint8_t result;
-  StateGame stateGame;
-  InitialData initialData;
-  LobbyList lobbyList;
-  StateLobby stateLobby;
-  std::string message;
 };
 
 // Estructuras que usa el servidor internamente - ignorar
