@@ -40,10 +40,10 @@ void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
 }
 
 bool Game::isColliding(float x, float y, float width, float height) const {
-    float left = x - width / 2.0f;
-    float right = x + width / 2.0f;
-    float top = y - height / 2.0f;
-    float bottom = y + height / 2.0f;
+    float left = x;
+    float right = x + width;
+    float top = y;
+    float bottom = y + height;
 
     int leftCell = static_cast<int>(std::floor(left));
     int rightCell = static_cast<int>(std::floor(right));
@@ -52,11 +52,13 @@ bool Game::isColliding(float x, float y, float width, float height) const {
 
     for (int row = topCell; row <= bottomCell; ++row) {
       for (int col = leftCell; col <= rightCell; ++col) {
-          if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size()))
-            continue;
-          if (map[row][col] == CellType::Blocked) {
-            return true;
-          }
+        if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) || col >= static_cast<int>(map[row].size())){
+          continue;
+        } 
+        if (map[row][col] == CellType::Blocked) {
+          std::cout << "Collision detected with blocked cell (" << row << ", " << col << ")\n";
+          return true;
+        }
       }
     }
 
