@@ -267,7 +267,6 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
-
 void Game::bulletQueuePush(Bullet bullet) {
   bullet_queue.push(bullet);
 }
