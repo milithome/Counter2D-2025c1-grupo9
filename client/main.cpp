@@ -181,7 +181,7 @@ void game_run(std::string clientName) {
 	SDL sdl(SDL_INIT_VIDEO);
 
 	Map map = Map("../assets/maps/default.yaml");
-	Game game(10, 10, map.getMapData().game_map);
+	Game game(map.getMapData().game_map);
 	game.addPlayer(clientName);
 	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
 	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);

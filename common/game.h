@@ -10,8 +10,6 @@ private:
   std::vector<Player> players;
   Team team1;
   Team team2;
-  int map_width;
-  int map_height;
   Player &findPlayerByName(const std::string &name);
   bool running = true;
   float time;
@@ -21,8 +19,7 @@ private:
   void makeShot(Player& shooter, const std::string& shooterName);
 
 public:
-  Game() = default;
-  Game(int width, int height, std::vector<std::vector<CellType>> game_map) : map_width(width), map_height(height), game_map(game_map) {}
+  Game(std::vector<std::vector<CellType>> game_map) : game_map(game_map) {}
   bool addPlayer(const std::string &name);
   void updatePlayerPosition(const std::string &name, float x, float y);
   StateGame getState();
