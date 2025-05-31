@@ -14,10 +14,10 @@ private:
   Hitbox hitbox;
   Role role;
   int money = 200;
-  Weapon equipped = Weapons::M3;
+  Weapon equipped = Weapons::Glock;
   WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon= Weapons::M3;
+  Weapon primaryWeapon= Weapons::AK47;
   Weapon secondaryWeapon = Weapons::Glock;
   int bulletsPrimary;
   int bulletsSecondary;
@@ -38,7 +38,8 @@ public:
   void setRole(Role new_role);
   float getX() const;
   float getY() const;
-  void move(float deltaX, float deltaY, float deltaTime);
+  void move(float deltaTime);
+  std::pair<float, float> tryMove(float deltaTime);
   void setPosition(float x, float y);
   float getRotation() const;
   void setRotation(float currentRotation);

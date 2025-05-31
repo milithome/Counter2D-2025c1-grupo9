@@ -8,16 +8,23 @@ float Player::getX() const { return x; }
 
 float Player::getY() const { return y; }
 
-void Player::move(float x, float y, float deltaTime) {
-  // x,y pueden valer 0, 1 o -1 y representan hacia donde moverse
-  if (x != 0 && y != 0) { // si va en diagonal, normalizo
-    x /= std::sqrt(2);
-    y /= std::sqrt(2);
-  }
-  this->x += x * deltaTime * SPEED;
-  this->y += y * deltaTime * SPEED;
+void Player::move(float deltaTime) {
+  this->x += vx * deltaTime * SPEED;
+  this->y += vy * deltaTime * SPEED;
   hitbox.x = this->x;
   hitbox.y = this->y;
+}
+
+std::pair<float, float> Player::tryMove(float deltaTime) { //por tema colisiones
+  float newVx = vx;
+  float newVy = vy;
+  if (newVx != 0 && newVy != 0) {
+    newVx /= std::sqrt(2);
+    newVy /= std::sqrt(2);
+  }
+  float newX = x + newVx * deltaTime * SPEED;
+  float newY = y + newVy * deltaTime * SPEED;
+  return {newX, newY};
 }
 
 void Player::setPosition(float x, float y) {
@@ -47,7 +54,7 @@ void Player::setHealth(float value) {
 }
 
 void Player::updateMovement(float deltaTime) {
-  move(vx, vy, deltaTime);
+  move(deltaTime);
 }
 
 float Player::getHealth() const { return health; }
@@ -55,6 +62,10 @@ float Player::getHealth() const { return health; }
 bool Player::isAlive() const { return health > 0.0f; }
 
 void Player::updateVelocity(float vx, float vy){
+  if (vx != 0 && vy != 0) { // si va en diagonal, normalizo
+    vx /= std::sqrt(2);
+    vy /= std::sqrt(2);
+  }
   this->vx=vx;
   this->vy=vy;
 }
