@@ -25,8 +25,10 @@ private:
     std::shared_ptr<Queue<ActionRequest>> toGame;
     std::map<std::string, std::shared_ptr<Queue<ActionRequest>>> fromPlayers;
     bool active;
+    Map map;
     Game game;
 
+    void broadcast_initial_data(const MapData& mapData);
     void broadcast_game_state(StateGame& state);
 };
 #endif

@@ -5,9 +5,7 @@
 
 Admin::Admin(){}
 
-Admin::~Admin(){
-    std::cout << "Admin destructor called" << std::endl;
-}
+Admin::~Admin(){}
 
 void Admin::stop() {
     //std::lock_guard<std::mutex> lock(mtx);
@@ -41,13 +39,17 @@ void Admin::stop() {
     lobbies.clear();
     handlers.clear();
     games.clear();
-    completedGames.clear();
+    removeFinishedGames();
+    removeFinishedHandlers();
+    removeFinishedLobbies();
 }
 
 void Admin::createLobby(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
 
     removeFinishedGames();
+    removeFinishedLobbies();
+    removeFinishedHandlers();
     
     if (lobbies.find(name) != lobbies.end()) {
         throw std::runtime_error("Lobby already exists");
@@ -60,6 +62,7 @@ void Admin::createLobby(const std::string& name) {
 
 LobbyChannels Admin::joinLobby(const std::string& name, const std::string& clientName, Protocol& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
+
     auto it = lobbies.find(name);
     if (it == lobbies.end()) {
         throw std::runtime_error("Lobby not found");
@@ -79,29 +82,30 @@ std::vector<std::string> Admin::listLobbies() {
 
 void Admin::removeLobby(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
-    auto it = lobbies.find(name);
-    if (it != lobbies.end()) {
-        lobbies.erase(it);
-    }
+    completeLobbies.push_back(name);
 }
 
 void Admin::registerHandler(const std::string& clientName, std::shared_ptr<ClientHandler> handler) {
     std::lock_guard<std::mutex> lock(mtx);
+    
+    removeFinishedGames();
+    removeFinishedLobbies();
+    removeFinishedHandlers();
+
     handlers[clientName] = std::move(handler);
 }
 
 void Admin::removeHandler(const std::string& clientName) {
     std::lock_guard<std::mutex> lock(mtx);
-    auto it = handlers.find(clientName);
-    if (it != handlers.end()) {
-        handlers.erase(it);
-    }
+    completeHandlers.push_back(clientName);
 }
 
 void Admin::startGame(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
 
     removeFinishedGames();
+    removeFinishedLobbies();
+    removeFinishedHandlers();
 
     auto it = lobbies.find(name);
     if (it != lobbies.end()) {
@@ -138,3 +142,28 @@ void Admin::removeFinishedGames() {
     completedGames.clear();
 }
 
+void Admin::removeFinishedHandlers() {
+    for (const auto& name : completeHandlers) {
+        auto it = handlers.find(name);
+        if (it != handlers.end()) {
+            it->second->stop();
+            it->second->join();
+            handlers.erase(it);
+        }
+    }
+
+    completeHandlers.clear();
+}
+
+void Admin::removeFinishedLobbies() {
+    for (const auto& name : completeLobbies) {
+        auto it = lobbies.find(name);
+        if (it != lobbies.end()) {
+            it->second->stop();
+            it->second->join();
+            lobbies.erase(it);
+        }
+    }
+
+    completeLobbies.clear();
+}

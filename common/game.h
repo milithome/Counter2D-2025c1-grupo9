@@ -17,10 +17,12 @@ private:
   float time;
   Phase phase;
   std::queue<Bullet> bullet_queue;
+  std::vector<std::vector<CellType>> game_map;
   void makeShot(Player& shooter, const std::string& shooterName);
 
 public:
-  Game(int width, int height) : map_width(width), map_height(height) {}
+  Game() = default;
+  Game(int width, int height, std::vector<std::vector<CellType>> game_map) : map_width(width), map_height(height), game_map(game_map) {}
   bool addPlayer(const std::string &name);
   void updatePlayerPosition(const std::string &name, float x, float y);
   StateGame getState();

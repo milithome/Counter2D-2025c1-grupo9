@@ -28,7 +28,7 @@ private:
 
     bool active;
 
-    void handle_join_event(const std::string& playerName);
+    void handle_join_event();
     void handle_leave_event(const std::string& playerName);
     void broadcast_lobby_state();
     bool start_game();
