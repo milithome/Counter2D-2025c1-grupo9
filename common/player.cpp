@@ -86,7 +86,11 @@ bool Player::isShooting() {
 }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
-  
+      if(weaponEquipped==WeaponType::PRIMARY){
+        bulletsPrimary=bulletsPrimary-1;
+      }else if(weaponEquipped==WeaponType::SECONDARY){
+        bulletsSecondary=bulletsSecondary-1;
+      }
       Hitbox hb= getHitbox();
       
       std::cout << "Hitbox de " << name << ": "
@@ -142,6 +146,9 @@ void Player::changeWeapon(WeaponType newEquippedWeapon){
   }
 }
 
+void Player::replaceWeapon(WeaponName weapon){
+  primaryWeapon = Weapons::getWeapon(weapon);
+}
 
 uint32_t Player::getLastMoveId() const {
   return lastMoveId;
@@ -155,4 +162,31 @@ WeaponName Player::getPrimaryWeaponName() const{
 }
 WeaponName Player::getSecondaryWeaponName() const{
   return secondaryWeapon.name;
+}
+
+int Player::getBulletsPrimary() const{
+  return bulletsPrimary;
+}
+
+int Player::getBulletsSecondary() const{
+  return bulletsSecondary;
+}
+
+int Player::getMoney(){
+  return money;
+}
+
+void Player::updateMoney(int value){
+  money = money + value;
+}
+
+void Player::updatePrimaryBullets(){ //llenar cargador
+  bulletsPrimary= primaryWeapon.maxAmmo;
+}
+void Player::updateSecondaryBullets(){ //llenar cargador
+  bulletsSecondary= secondaryWeapon.maxAmmo;
+}
+
+WeaponType Player::getWeaponEquipped(){
+  return weaponEquipped;
 }

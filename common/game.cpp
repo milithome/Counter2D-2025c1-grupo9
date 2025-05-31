@@ -1,4 +1,5 @@
 #include "game.h"
+#include "store.h"
 #include <cmath>
 #include <iostream>
 
@@ -48,6 +49,33 @@ void Game::changeWeapon(const std::string &name, WeaponType type){
   findPlayerByName(name).changeWeapon(type);
 }
 
+void Game::buyWeapon(const std::string &name, WeaponName weaponName){
+  Player player = findPlayerByName(name);
+  int price= Store::getWeaponPrice(weaponName);
+  if (player.getMoney()>=price){
+    player.updateMoney(-price);
+    player.replaceWeapon(weaponName);
+    player.changeWeapon(WeaponType::PRIMARY);
+  }
+}
+
+std::vector<std::pair<WeaponName, int>> Game::getStore(){
+  return Store::getStore();
+};
+
+void Game::buyBullet(const std::string &name,WeaponType type){
+  Player player = findPlayerByName(name);
+  if (player.getMoney()>=40){ //constante, todo el cargador
+    if(type==WeaponType::PRIMARY){
+      player.updatePrimaryBullets();
+    }else{
+      player.updateSecondaryBullets();
+    }
+    player.updateMoney(-40);
+    
+  }
+}
+
 std::vector<Entity> Game::getState() {
   std::vector<Entity> state;
 
@@ -59,8 +87,8 @@ std::vector<Entity> Game::getState() {
     Inventory inv;
     inv.primary = player.getPrimaryWeaponName();
     inv.secondary = player.getSecondaryWeaponName();
-    inv.bulletsPrimary = 90;
-    inv.bulletsSecondary = 30;
+    inv.bulletsPrimary = player.getBulletsPrimary();
+    inv.bulletsSecondary = player.getBulletsSecondary();
     PlayerData data;
     data.inventory = inv;
     data.name= player.getName();
@@ -68,9 +96,7 @@ std::vector<Entity> Game::getState() {
     data.lastMoveId = player.getLastMoveId();
     entity.data = data;
     state.push_back(entity);
-
   }
-
   return state;
 }
 
@@ -184,11 +210,13 @@ void Game::execute(const std::string &name, Action action) {
     break;
   }
   case ActionType::BUY_BULLET:{
-    
+    const BuyBulletAction*data = std::get_if<BuyBulletAction>(&action.data);
+    buyBullet(name, data->type);
     break;
   }
   case ActionType::BUY_WEAPON:{
-    
+    const BuyWeaponAction*data = std::get_if<BuyWeaponAction>(&action.data);
+    buyWeapon(name, data->weapon);
     break;
   }
   case ActionType::CHANGE_WEAPON:{

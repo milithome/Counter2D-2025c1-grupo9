@@ -23,6 +23,7 @@ struct Weapon {
 };
 
 namespace Weapons {
+
   const Weapon Knife = {
     WeaponName::KNIFE,
     20, 40,  
@@ -81,5 +82,16 @@ const Weapon Glock = {
     10,
     4.0f
   };
+  const Weapon getWeapon(WeaponName name) {
+    switch (name) {
+      case WeaponName::KNIFE: return Knife;
+      case WeaponName::GLOCK: return Glock;
+      case WeaponName::AK47:  return AK47;
+      case WeaponName::M3:    return M3;
+      case WeaponName::AWP:   return AWP;
+      default:
+        return Knife;
+    }
+  }
 }
 #endif

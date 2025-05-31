@@ -31,6 +31,7 @@ public:
   void updateTime(float currentTime);
   void updateRotation(const std::string &name, float currentRotation);
   float getRotation(const std::string &name);
+  std::vector<std::pair<WeaponName, int>> getStore();
 
   float getX(const std::string &name);
   float getY(const std::string &name);
@@ -41,6 +42,8 @@ public:
   Bullet bulletQueuePop();
   void bulletQueuePush(Bullet bullet);
   bool bulletQueueIsEmpty();
+  void buyWeapon(const std::string &name,WeaponName weaponName);
+  void buyBullet(const std::string &name,WeaponType weaponName);
 };
 
 #endif

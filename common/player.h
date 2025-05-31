@@ -13,12 +13,14 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  int money;
+  int money = 200;
   Weapon equipped = Weapons::M3;
   WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
   Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
+  int bulletsPrimary;
+  int bulletsSecondary;
   float rotation;
   float health;
   float vx = 0, vy = 0;
@@ -56,10 +58,18 @@ public:
   float getSpreadAngle();
   std::pair<float, float> getDamageRange();
   void changeWeapon(WeaponType newEquippedWeapon);
+  void replaceWeapon(WeaponName weapon);
   WeaponName getPrimaryWeaponName() const;
   WeaponName getSecondaryWeaponName() const;
   uint32_t getLastMoveId() const;
   void setLastMoveId(uint32_t id);
+  int getBulletsPrimary() const;
+  int getBulletsSecondary() const;
+  int getMoney();
+  void updateMoney(int value);
+  void updatePrimaryBullets();
+  void updateSecondaryBullets();
+  WeaponType getWeaponEquipped();
 };
 
 #endif
