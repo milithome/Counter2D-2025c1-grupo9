@@ -37,9 +37,9 @@ void Map::load_map(const std::string& filename) {
             if (row.size() != width) {
                 throw std::runtime_error("Inconsistent game map row width.");
             }
-            std::vector<uint16_t> row_vec;
+            std::vector<CellType> row_vec;
             for (size_t j = 0; j < width; ++j) {
-                row_vec.push_back(row[j].as<uint16_t>());
+                row_vec.push_back(static_cast<CellType>(row[j].as<int>()));
             }
             data_.game_map.push_back(std::move(row_vec));
         }
@@ -60,18 +60,6 @@ void Map::load_map(const std::string& filename) {
                 row_vec.push_back(row[j].as<uint16_t>());
             }
             data_.tiles_map.push_back(std::move(row_vec));
-        }
-
-        // Cargar leyenda game
-        const YAML::Node& legendGame = root["legend_game"];
-        data_.legend_game.clear();
-        for (auto it = legendGame.begin(); it != legendGame.end(); ++it) {
-            uint16_t number = it->first.as<uint16_t>();
-            const YAML::Node& entry = it->second;
-            MapLegendEntry le;
-            le.x = entry["x"] ? entry["x"].as<int>() : 0;
-            le.y = entry["y"] ? entry["y"].as<int>() : 0;
-            data_.legend_game[number] = le;
         }
 
         // Cargar leyenda tiles
@@ -99,7 +87,7 @@ const std::string& Map::get_sprite_path() const {
     return data_.sprite_path;
 }
 
-const std::vector<std::vector<uint16_t>>& Map::get_game_map() const {
+const std::vector<std::vector<CellType>>& Map::get_game_map() const {
     return data_.game_map;
 }
 
@@ -115,14 +103,12 @@ size_t Map::get_cols() const {
     return data_.game_map.empty() ? 0 : data_.game_map[0].size();
 }
 
-const MapLegendEntry& Map::get_game_legend(uint16_t number) const {
-    static MapLegendEntry unknown = {0, 0};
-    auto it = data_.legend_game.find(number);
-    return it != data_.legend_game.end() ? it->second : unknown;
-}
-
 const MapLegendEntry& Map::get_tiles_legend(uint16_t number) const {
     static MapLegendEntry unknown = {0, 0};
     auto it = data_.legend_tiles.find(number);
     return it != data_.legend_tiles.end() ? it->second : unknown;
+}
+
+const MapData& Map::getMapData() const {
+    return data_;
 }

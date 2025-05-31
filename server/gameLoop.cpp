@@ -2,7 +2,13 @@
 #include "admin.h"
 
 GameLoop::GameLoop(std::string name, Admin& admin)
-    : name(name), admin(admin), toGame(std::make_shared<Queue<ActionRequest>>(100)), fromPlayers(), active(true), game(10,10) {}
+    : name(name), 
+    admin(admin), 
+    toGame(std::make_shared<Queue<ActionRequest>>(100)), 
+    fromPlayers(), 
+    active(true), 
+    map("../assets/maps/default.yaml") , 
+    game(10,10,map.getMapData().game_map) {}
 
 void GameLoop::run() {
     try {
@@ -11,9 +17,11 @@ void GameLoop::run() {
         const std::chrono::milliseconds TICK_DURATION(16);
         const uint MAX_EVENTS_PER_CLICK = 32;
 
-        while(players.size() < 2){
+        while(players.size() < 3){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+
+        broadcast_initial_data(map.getMapData());
 
         // SIMULO UN MINUTO DE PARTIDA
         std::thread timeoutThread([this]() {
@@ -42,8 +50,6 @@ void GameLoop::run() {
             if (elapsed < TICK_DURATION) {
                 std::this_thread::sleep_for(TICK_DURATION - elapsed);
             }
-
-            //game.stop();
 
             if (!game.isRunning()) {
                 active = false;
@@ -82,6 +88,36 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
     };
 }
 
+void GameLoop::broadcast_initial_data(const MapData& mapData) {
+    for (auto& pair : players) {
+        try {
+            std::vector<std::string> playerNames;
+            for (const auto& player : players) {
+                playerNames.push_back(player.first);
+            }
+            InitialData initialData = {
+                mapData,
+                playerNames
+            };
+            Response response = {
+                Type::INITIAL_DATA,
+                0,
+                initialData,
+                ""
+            };
+            pair.second.send_response(response);
+        } catch (const std::exception& e) {
+            Response response = {
+                Type::INITIAL_DATA,
+                1,
+                InitialData{},
+                "Error sending initial data to player " + pair.first + ": " + e.what()
+            };
+            pair.second.send_response(response);
+        }
+    }
+}
+
 void GameLoop::broadcast_game_state(StateGame& state) {
     for (auto& pair : players) {
         try {
@@ -105,9 +141,7 @@ void GameLoop::broadcast_game_state(StateGame& state) {
     }
 }
 
-GameLoop::~GameLoop() {
-    std::cout << "GameLoop destructor called." << std::endl;
-}
+GameLoop::~GameLoop() {}
 
 void GameLoop::stop() {
     active = false;

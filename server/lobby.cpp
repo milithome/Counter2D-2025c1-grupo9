@@ -1,7 +1,7 @@
 #include "lobby.h"
 
 Lobby::Lobby(const std::string& name, Admin& admin) 
-    : name(name), players(), admin(admin), maxPlayers(2), toLobby(std::make_shared<Queue<LobbyRequest>>(100)), fromPlayers(), active(true) {}
+    : name(name), players(), admin(admin), maxPlayers(3), toLobby(std::make_shared<Queue<LobbyRequest>>(100)), fromPlayers(), active(true) {}
 
 void Lobby::run() {
         try {
@@ -10,7 +10,7 @@ void Lobby::run() {
                 if (toLobby->try_pop(event)) {
                     switch (event.type) {
                         case LobbyRequestType::JOIN_LOBBY:
-                            handle_join_event(event.playerName);
+                            handle_join_event();
                             break;
                         case LobbyRequestType::LEAVE_LOBBY:
                             handle_leave_event(event.playerName);
@@ -36,9 +36,7 @@ void Lobby::run() {
         }
     }
     
-void Lobby::handle_join_event(const std::string& playerName) {
-    std::cout << "Player " << playerName << " joined the lobby." << std::endl;
-
+void Lobby::handle_join_event() {
     if (players.size() == maxPlayers) {
         for (auto& [name, queue] : fromPlayers) {
             LobbyRequest event = {
@@ -99,7 +97,6 @@ LobbyChannels Lobby::add_player(Protocol& player, const std::string& playerName)
 }
 
 bool Lobby::start_game() {
-    std::cout << "Starting game in lobby: " << name << std::endl;
     if (players.size() == maxPlayers) {
         active = false;
 
@@ -127,6 +124,4 @@ void Lobby::stop() {
     }
 }
 
-Lobby::~Lobby() {
-    std::cout << "Lobby destructor called." << std::endl;
-}
+Lobby::~Lobby() {}

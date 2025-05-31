@@ -15,7 +15,7 @@ public:
     Server(std::string& port);
     ~Server();
 
-    void start();
+    void start(std::istream& input = std::cin);
 
 private:
     Admin admin;

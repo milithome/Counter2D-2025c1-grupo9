@@ -10,9 +10,7 @@ ClientHandler::ClientHandler(
       admin(admin),
       onRegister(std::move(onRegister)) {}
 
-ClientHandler::~ClientHandler() {
-    std::cout << "ClientHandler destructor called." << std::endl;
-}
+ClientHandler::~ClientHandler() {}
 
 void ClientHandler::run() {
     try {
@@ -21,7 +19,6 @@ void ClientHandler::run() {
 
         while (active) {
             Message message = protocol.recv_message();
-            std::cout << "mensaje recibido" << std::endl;
             handle_message(message);
         }
 

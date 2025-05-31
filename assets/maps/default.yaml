@@ -38,15 +38,3 @@ legend_tiles:
     # floor_sand
     x: 32
     y: 0
-
-legend_game:
-  0:
-    type: walkable
-  1:
-    type: blocked
-  2:
-    type: spike_site
-  3:
-    type: spawn_team_a
-  4:
-    type: spawn_team_b

@@ -21,7 +21,6 @@ void Acceptor::run() {
             );
             unnamedHandlers.insert(handler);
             handler->start();
-            std::cout << "Accepted connection from client." << std::endl;
         }
     } catch (const std::exception& e) {
         if (active) {
@@ -43,6 +42,4 @@ void Acceptor::stop() {
     skt.close();  
 }
 
-Acceptor::~Acceptor() {
-    std::cout << "Acceptor destructor called." << std::endl;
-}
+Acceptor::~Acceptor() {}
