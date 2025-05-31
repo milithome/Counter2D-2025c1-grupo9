@@ -1,7 +1,15 @@
 #include "player.h"
 #include "structures.h"
 #include "team.h"
+#include "store.h"
 #include <cstdint>
+#include <cmath>
+#include <iostream>
+#include <random>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <queue>
 #ifndef GAME_H
 #define GAME_H
 
@@ -17,10 +25,11 @@ private:
   float time;
   Phase phase;
   std::queue<Bullet> bullet_queue;
+  std::vector<std::vector<CellType>> map;
   void makeShot(Player& shooter, const std::string& shooterName);
 
 public:
-  Game(int width, int height) : map_width(width), map_height(height) {}
+  Game(std::vector<std::vector<CellType>> game_map) : map(std::move(game_map)){}
   bool addPlayer(const std::string &name);
   void updatePlayerPosition(const std::string &name, float x, float y);
   StateGame getState();
@@ -44,6 +53,8 @@ public:
   bool bulletQueueIsEmpty();
   void buyWeapon(const std::string &name,WeaponName weaponName);
   void buyBullet(const std::string &name,WeaponType weaponName);
+  bool isColliding(float x, float y, float width, float height) const;
+  void updatePlayerMovement(Player& player, float deltaTime);
 };
 
 #endif

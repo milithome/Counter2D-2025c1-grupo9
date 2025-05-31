@@ -1,7 +1,4 @@
 #include "game.h"
-#include "store.h"
-#include <cmath>
-#include <iostream>
 
 bool Game::addPlayer(const std::string &name) {
   Player newPlayer(name);
@@ -32,23 +29,66 @@ Player &Game::findPlayerByName(const std::string &name) {
 }
 
 void Game::stopShooting(const std::string &name){
-  Player player= findPlayerByName(name);
+  Player &player= findPlayerByName(name);
   player.stopShooting();
 }
 
 void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
-  Player player= findPlayerByName(name);
+  Player &player= findPlayerByName(name);
   player.setLastMoveId(id);
   player.updateVelocity(vx, vy);
+}
+
+bool Game::isColliding(float x, float y, float width, float height) const {
+    float left = x - width / 2.0f;
+    float right = x + width / 2.0f;
+    float top = y - height / 2.0f;
+    float bottom = y + height / 2.0f;
+
+    int leftCell = static_cast<int>(std::floor(left));
+    int rightCell = static_cast<int>(std::floor(right));
+    int topCell = static_cast<int>(std::floor(top));
+    int bottomCell = static_cast<int>(std::floor(bottom));
+
+    for (int row = topCell; row <= bottomCell; ++row) {
+      for (int col = leftCell; col <= rightCell; ++col) {
+          if (row < 0 || col < 0 || row >= map.size() || col >= map[row].size())
+            continue;
+          if (map[row][col] == CellType::Blocked) {
+            return true;
+          }
+      }
+    }
+
+    return false;
 }
 
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
+
+void Game::updatePlayerMovement(Player& player, float deltaTime) {
+    //para testear sin mapa, comentar todo y dejar player.updateMovement(deltaTime);
+    Hitbox hb = player.getHitbox();
+
+    std::pair<float, float> newPosition = player.tryMove(deltaTime);
+    float newX = newPosition.first;
+    float newY = newPosition.second;
+
+    float width = hb.getWidth();
+    float height = hb.getHeight();
+
+    bool colliding = isColliding(newX, newY, width, height);
+
+    if (!colliding) {
+        player.updateMovement(deltaTime);
+    }
+}
+
+
 void Game::changeWeapon(const std::string &name, WeaponType type){
   findPlayerByName(name).changeWeapon(type);
 }
-
 
 void Game::buyWeapon(const std::string &name, WeaponName weaponName){
   Player player = findPlayerByName(name);
@@ -65,7 +105,7 @@ std::vector<std::pair<WeaponName, int>> Game::getStore(){
 }
 
 void Game::buyBullet(const std::string &name,WeaponType type){
-  Player player = findPlayerByName(name);
+  Player &player = findPlayerByName(name);
   if (player.getMoney()>=40){ //constante, todo el cargador
     if(type==WeaponType::PRIMARY){
       player.updatePrimaryBullets();
@@ -109,14 +149,6 @@ StateGame Game::getState() {
 bool Game::isRunning() { return running; }
 
 void Game::stop() { running = false; }
-
-#include <iostream>
-#include <cmath>
-#include <random>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <queue>
 
 void Game::makeShot(Player& shooter, const std::string& shooterName) {
     int bullets = shooter.getBulletsPerShoot();
@@ -171,7 +203,6 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
     }
 }
 
-
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
 
@@ -216,8 +247,8 @@ float Game::getRotation(const std::string &name) {
 }
 
 void Game::update(float deltaTime) {
-  for (auto player : players){
-    player.updateMovement(deltaTime);
+  for (auto &player : players){
+    updatePlayerMovement(player, deltaTime); //si no se mueve, ver comentario en la funcion
     player.updateCooldown(deltaTime);
     shoot(player.getName(), deltaTime);
   }
