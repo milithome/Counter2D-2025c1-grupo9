@@ -3,6 +3,7 @@
 #include "gameConstants.h"
 #include "hitbox.h"
 #include "weapons.h"
+#include "structures.h"
 #include <cmath>
 #include <string>
 #include <random>
@@ -12,6 +13,7 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
+  int money;
   Weapon equipped = Weapons::M3;
   EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
   Weapon knife= Weapons::Knife;
@@ -22,6 +24,8 @@ private:
   float vx = 0, vy = 0;
   bool shooting = false;
   float shootCooldown = 0.0f;
+  uint32_t lastMoveId = 0;
+
 public:
   Player(const std::string &name)
       : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
@@ -52,9 +56,10 @@ public:
   float getSpreadAngle();
   std::pair<float, float> getDamageRange();
   void changeWeapon(EquippedWeapon newEquippedWeapon);
-
-
+  WeaponName getPrimaryWeaponName() const;
+  WeaponName getSecondaryWeaponName() const;
   uint32_t getLastMoveId() const;
+  void setLastMoveId(uint32_t id);
 };
 
 #endif

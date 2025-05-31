@@ -34,14 +34,12 @@ enum class WeaponType {
     KNIFE,
 };
 
-enum WeaponPrimaryType {
+enum WeaponName {
     AK47,
     M3,
     AWP,
-};
-
-enum WeaponSecondaryType {
-    GLOCK
+    GLOCK,
+    KNIFE
 };
 
 // Tipos de entidades del juego
@@ -52,8 +50,8 @@ enum EntityType {
 };
 
 struct Inventory {
-    WeaponPrimaryType primary;
-    WeaponSecondaryType secondary;
+    WeaponName primary;
+    WeaponName secondary;
     uint32_t bulletsPrimary;
     uint32_t bulletsSecondary;
 };
@@ -72,8 +70,8 @@ struct BombData {
 struct WeaponData {
     WeaponType type;
     union {
-        WeaponPrimaryType primary;
-        WeaponSecondaryType secondary;
+        WeaponName primary;
+        WeaponName secondary;
     } weapon;
 };
 
@@ -121,8 +119,8 @@ struct BuyBulletAction {
 struct BuyWeaponAction {
     WeaponType type;
     union {
-        WeaponPrimaryType primary;
-        WeaponSecondaryType secondary;
+        WeaponName primary;
+        WeaponName secondary;
     } weapon;
 };
 

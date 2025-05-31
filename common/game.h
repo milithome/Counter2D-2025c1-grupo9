@@ -5,7 +5,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-
 class Game {
 private:
   std::vector<Player> players;
@@ -35,10 +34,8 @@ public:
   float getX(const std::string &name);
   float getY(const std::string &name);
 
-
-  void movePlayer(const std::string &name, float vx, float vy);
+  void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
   void stopShooting(const std::string &name);
-
 
   Bullet bulletQueuePop();
   void bulletQueuePush(Bullet bullet);

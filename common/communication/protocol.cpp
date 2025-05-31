@@ -635,8 +635,8 @@ PlayerData Protocol::recv_player_data() {
         skt.recvall(&bprim_net, sizeof(bprim_net)) == 0 ||
         skt.recvall(&bsec_net, sizeof(bsec_net)) == 0)
         throw std::runtime_error("Error receiving inventory");
-    p.inventory.primary = static_cast<WeaponPrimaryType>(prim);
-    p.inventory.secondary = static_cast<WeaponSecondaryType>(sec);
+    p.inventory.primary = static_cast<WeaponName>(prim);
+    p.inventory.secondary = static_cast<WeaponName>(sec);
     p.inventory.bulletsPrimary = ntohl(bprim_net);
     p.inventory.bulletsSecondary = ntohl(bsec_net);
 
@@ -658,9 +658,9 @@ WeaponData Protocol::recv_weapon_data() {
         throw std::runtime_error("Error receiving weapon data");
     w.type = static_cast<WeaponType>(type);
     if (w.type == WeaponType::PRIMARY)
-        w.weapon.primary = static_cast<WeaponPrimaryType>(variant);
+        w.weapon.primary = static_cast<WeaponName>(variant);
     else
-        w.weapon.secondary = static_cast<WeaponSecondaryType>(variant);
+        w.weapon.secondary = static_cast<WeaponName>(variant);
     return w;
 }
 
@@ -892,9 +892,9 @@ BuyWeaponAction Protocol::recv_buy_weapon_action() {
     BuyWeaponAction action;
     action.type = static_cast<WeaponType>(type);
     if (action.type == WeaponType::PRIMARY) {
-        action.weapon.primary = static_cast<WeaponPrimaryType>(subtype);
+        action.weapon.primary = static_cast<WeaponName>(subtype);
     } else {
-        action.weapon.secondary = static_cast<WeaponSecondaryType>(subtype);
+        action.weapon.secondary = static_cast<WeaponName>(subtype);
     }
     return action;
 }

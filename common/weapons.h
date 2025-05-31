@@ -10,7 +10,7 @@ enum class EquippedWeapon {
 };
 
 struct Weapon {
-  const char* name;
+  WeaponName name;
   int minDamage;
   int maxDamage;
   bool burstFire; //solo ak-47 true
@@ -24,7 +24,7 @@ struct Weapon {
 
 namespace Weapons {
   const Weapon Knife = {
-    "knife",
+    WeaponName::KNIFE,
     20, 40,  
     false,
     0.0f, 
@@ -35,7 +35,7 @@ namespace Weapons {
     1.0f
   };
 const Weapon Glock = {
-    "Glock",
+    WeaponName::GLOCK,
     25, 35,
     false,
     0.0f,
@@ -47,7 +47,7 @@ const Weapon Glock = {
   };
 
   const Weapon AK47 = {
-    "AK-47",
+    WeaponName::AK47,
     15, 25,
     true,
     0.2f,//delay entre balas
@@ -59,7 +59,7 @@ const Weapon Glock = {
   };
 
   const Weapon M3 = {
-    "M3",
+    WeaponName::M3,
     10, 50,
     false,
     0.0f,
@@ -71,7 +71,7 @@ const Weapon Glock = {
   };
 
   const Weapon AWP = {
-    "AWP",
+    WeaponName::AWP,
     80, 100,
     false,
     0.0f,

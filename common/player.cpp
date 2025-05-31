@@ -144,5 +144,15 @@ void Player::changeWeapon(EquippedWeapon newEquippedWeapon){
 
 
 uint32_t Player::getLastMoveId() const {
-  return 1;
+  return lastMoveId;
+}
+void Player::setLastMoveId(uint32_t id){
+  lastMoveId= id;
+}
+
+WeaponName Player::getPrimaryWeaponName() const{
+  return primaryWeapon.name;
+}
+WeaponName Player::getSecondaryWeaponName() const{
+  return secondaryWeapon.name;
 }
