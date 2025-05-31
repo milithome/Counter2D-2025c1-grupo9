@@ -56,6 +56,14 @@ struct Inventory {
     uint32_t bulletsSecondary;
 };
 
+enum class CellType {
+    Walkable,
+    Blocked,
+    SpikeSite,
+    SpawnTeamA,
+    SpawnTeamB
+};
+
 struct PlayerData {
     std::string name;
     float rotation;

@@ -39,6 +39,7 @@ public:
   float getX() const;
   float getY() const;
   void move(float deltaTime);
+  std::pair<float, float> tryMove(float deltaTime);
   void setPosition(float x, float y);
   float getRotation() const;
   void setRotation(float currentRotation);

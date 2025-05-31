@@ -15,6 +15,17 @@ void Player::move(float deltaTime) {
   hitbox.y = this->y;
 }
 
+std::pair<float, float> Player::tryMove(float deltaTime) { //por tema colisiones
+  float newVx = vx;
+  float newVy = vy;
+  if (newVx != 0 && newVy != 0) {
+    newVx /= std::sqrt(2);
+    newVy /= std::sqrt(2);
+  }
+  float newX = x + newVx * deltaTime * SPEED;
+  float newY = y + newVy * deltaTime * SPEED;
+  return {newX, newY};
+}
 
 void Player::setPosition(float x, float y) {
   // coordenadas literales en las que quiero que se encuentre

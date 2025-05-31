@@ -38,8 +38,12 @@ private:
     std::map<std::string, std::shared_ptr<ClientHandler>> handlers;
 
     std::vector<std::string> completedGames;
+    std::vector<std::string> completeHandlers;
+    std::vector<std::string> completeLobbies;
 
     void removeFinishedGames();
+    void removeFinishedHandlers();
+    void removeFinishedLobbies();
 
 };
 

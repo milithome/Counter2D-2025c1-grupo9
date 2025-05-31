@@ -8,13 +8,13 @@ Server::~Server() {
 
 }
 
-void Server::start() {
+void Server::start(std::istream& input) {
     acceptor.start();
 
     bool active = true;
     while (active) {
         std::string command;
-        std::cin >> command;
+        std::getline(input, command);
 
         if (command == "q") {
             active = false;
