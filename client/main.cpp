@@ -54,21 +54,22 @@ int main(int argc, char **argv) try {
 	std::string clientName = argv[1];
 	protocol.send_name(clientName);
 
-	SDL sdl(SDL_INIT_VIDEO);
-
+	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	
     QApplication app(argc, argv);
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	MenuController menuController(menuWindow, protocol);
 	std::vector<std::string> players;
+	QPoint w_pos_when_game_started;
 
 	// Menu loop
     QTimer* timer = new QTimer(&menuController);
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &menuController, &partida_iniciada, &players] {
+    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &w_pos_when_game_started, &menuController, &menuWindow, &partida_iniciada, &players] {
         Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case LIST: {
-					menuController.onPartyListReceived(msg.partidas, msg.message, msg.result);
+					menuController.onPartyListReceived(msg.lobbyList.lobbies, msg.message, msg.result);
 					break;
 				}
 				case JOIN: {
@@ -80,12 +81,13 @@ int main(int argc, char **argv) try {
 					break;
 				}
 				case STATE_LOBBY: {
-					players = msg.players;
-					menuController.onLobbyPlayersReceived(msg.players, msg.message, msg.result);
+					players = msg.stateLobby.players;
+					menuController.onLobbyPlayersReceived(msg.stateLobby.players, msg.message, msg.result);
 					break;
 				}
 				case START: {
 					partida_iniciada = true;
+					w_pos_when_game_started = menuWindow.getPosition();
 					menuController.onGameStarted();
 					break;
 				}
@@ -115,7 +117,7 @@ int main(int argc, char **argv) try {
 	for (size_t i = 0; i < players.size(); i++) {
 		game.addPlayer(players[i]);
 	}
-	GameView gameView = GameView(game, clientName);
+	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()});
 	GameController gameController = GameController(gameView, game, clientName);
 
 	uint32_t lastTime = 0;
@@ -134,7 +136,8 @@ int main(int argc, char **argv) try {
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
 				case STATE: {
-					gameController.updateGameState(msg.entities);
+					//StateGame data = std::get<StateGame>(msg.data);
+					gameController.updateGameState(msg.stateGame);
 					break;
 				}
 				case FINISH: {
@@ -147,11 +150,12 @@ int main(int argc, char **argv) try {
 			}
 		}
 	}
-
 	receiver.stop();
 	sender.stop();
 	receiver.join();
 	sender.join();
+	recv_queue.close();
+	send_queue.close();
 
 	return 0;
 } catch (std::exception& e) {

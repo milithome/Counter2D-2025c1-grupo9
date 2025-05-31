@@ -46,6 +46,113 @@ void Player::setHealth(float value) {
     health = 0.0f;
 }
 
+void Player::updateMovement(float deltaTime) {
+  move(vx, vy, deltaTime);
+}
+
 float Player::getHealth() const { return health; }
 
 bool Player::isAlive() const { return health > 0.0f; }
+
+void Player::updateVelocity(float vx, float vy){
+  this->vx=vx;
+  this->vy=vy;
+}
+
+void Player::stopShooting(){
+  shooting=false;
+}
+
+void Player::startShooting(){
+  shooting=true;
+}
+
+void Player::updateCooldown(float deltaTime) {
+  if (shootCooldown > 0.0f){
+    shootCooldown -= deltaTime;
+  }
+}
+
+float Player::getShootCooldown(){
+  return shootCooldown;
+}
+
+void Player::resetCooldown(){ //cuando acaba de salir una bala
+  shootCooldown=equipped.cooldown;
+}
+
+bool Player::isShooting() {
+  return shooting;
+}
+
+std::tuple<float, float, float, float, float, float> Player::shoot() {
+  
+      Hitbox hb= getHitbox();
+      
+      std::cout << "Hitbox de " << name << ": "
+              << "desde (" << hb.x << ", " << hb.y << ") "
+              << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
+      
+      float origin_x = hb.x + hb.width / 2.0f;
+      float origin_y = hb.y + hb.height / 2.0f;
+
+      std::random_device rd;
+      std::mt19937 gen(rd());
+      std::uniform_real_distribution<float> dist(getRotation() - getSpreadAngle(), getRotation() + getSpreadAngle());
+      float angle = dist(gen); 
+      float angle_rad = angle * M_PI / 180.0f;
+      float max_distance;
+
+      if (weaponEquipped==WeaponType::SECONDARY){
+        max_distance=secondaryWeapon.maxRange;
+      }else if(weaponEquipped==WeaponType::PRIMARY){
+        max_distance=primaryWeapon.maxRange; 
+      }else{
+        max_distance=knife.maxRange;
+      }
+      float target_x = origin_x + cos(angle_rad) * max_distance;
+      float target_y = origin_y + sin(angle_rad) * max_distance;
+      
+      /*
+      std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
+              << target_x << ", " << target_y << ")\n";
+      */
+      return std::make_tuple(max_distance, origin_x, origin_y, target_x, target_y, angle);
+}
+
+int Player::getBulletsPerShoot(){
+  return equipped.bulletsPerShoot;
+}
+
+float Player::getSpreadAngle(){
+  return equipped.spreadAngle;
+}
+
+std::pair<float, float> Player::getDamageRange(){
+  return std::make_pair(equipped.minDamage, equipped.maxDamage);
+}
+
+void Player::changeWeapon(WeaponType newEquippedWeapon){
+  if (newEquippedWeapon== WeaponType::PRIMARY){
+    equipped=primaryWeapon;
+  }else if(newEquippedWeapon== WeaponType::SECONDARY){
+    equipped=secondaryWeapon;
+  }else{
+    equipped=knife;
+  }
+}
+
+
+uint32_t Player::getLastMoveId() const {
+  return lastMoveId;
+}
+void Player::setLastMoveId(uint32_t id){
+  lastMoveId= id;
+}
+
+WeaponName Player::getPrimaryWeaponName() const{
+  return primaryWeapon.name;
+}
+WeaponName Player::getSecondaryWeaponName() const{
+  return secondaryWeapon.name;
+}

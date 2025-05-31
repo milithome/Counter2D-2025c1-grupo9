@@ -6,6 +6,6 @@ enum class Role { TERRORIST, COUNTER_TERRORIST };
 #define SPEED 5.0f
 #define MAX_PLAYERS_PER_TEAM 5
 #define PLAYER_WIDTH 1.0f
-#define PLAYER_HEIGHT 2.0f
+#define PLAYER_HEIGHT 1.0f
 
 #endif

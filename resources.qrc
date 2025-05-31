@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/gfx/cs2d.png</file>
+        <file>assets/gfx/gametitle.png</file>
+        <file>assets/gfx/fonts/sourcesans.ttf</file>
+    </qresource>
+</RCC>

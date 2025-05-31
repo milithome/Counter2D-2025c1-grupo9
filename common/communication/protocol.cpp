@@ -75,8 +75,8 @@ void Protocol::serialize_action_move(const Action& action, std::vector<uint8_t>&
     const MoveAction& move = std::get<MoveAction>(action.data);
 
     uint32_t id = htonl(move.id);
-    int32_t x = htonl(move.x);
-    int32_t y = htonl(move.y);
+    int32_t x = htonl(move.vx);
+    int32_t y = htonl(move.vy);
 
     buffer.insert(buffer.end(),
                   reinterpret_cast<uint8_t*>(&id),
@@ -854,8 +854,8 @@ MoveAction Protocol::recv_move_action() {
 
     MoveAction move;
     move.id = ntohl(id_net);
-    move.x = ntohl(x_net);
-    move.y = ntohl(y_net);
+    move.vx = ntohl(x_net);
+    move.vy = ntohl(y_net);
     return move;
 }
 
@@ -901,10 +901,6 @@ ChangeWeaponAction Protocol::recv_change_weapon_action() {
     return ChangeWeaponAction{static_cast<WeaponType>(type)};
 }
 
-std::monostate Protocol::recv_action_without_parameters() {
-    return {};
-}
-
 Message Protocol::deserialize_message_action() {
     Message msg;
     msg.type = Type::ACTION;
@@ -942,7 +938,7 @@ Message Protocol::deserialize_message_action() {
         case ActionType::DEFUSE:
         case ActionType::STOP_DEFUSING:
         case ActionType::GRAB:
-            action.data = recv_action_without_parameters();
+            action.data = {};
             break;
 
         default:

@@ -103,8 +103,8 @@ enum class ActionType {
 
 struct MoveAction {
     uint32_t id;
-    int x;
-    int y;
+    int vx;
+    int vy;
 };
 
 struct PointToAction {

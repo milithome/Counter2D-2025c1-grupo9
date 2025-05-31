@@ -77,14 +77,14 @@ private:
 
     Response deserialize_simple(Type type);
     Response deserialize_list();
-    MapData Protocol::deserialize_map_data();
+    MapData deserialize_map_data();
     MapLegendEntry deserialize_legend_entry();
     std::unordered_map<uint16_t, MapLegendEntry> deserialize_legend();
     std::vector<std::vector<uint16_t>> deserialize_2d_vector();
     std::string deserialize_string();
     std::vector<std::string> deserialize_string_vector();
     Response deserialize_initial_data();
-    PlayerData Protocol::recv_player_data();
+    PlayerData recv_player_data();
     BombData recv_bomb_data();
     WeaponData recv_weapon_data();
     Bullet recv_bullet();
@@ -98,10 +98,9 @@ private:
     Message deserialize_message_with_name(Type type);
     MoveAction recv_move_action();
     PointToAction recv_point_to_action();
-    BuyBulletAction Protocol::recv_buy_bullet_action();
+    BuyBulletAction recv_buy_bullet_action();
     BuyWeaponAction recv_buy_weapon_action();
     ChangeWeaponAction recv_change_weapon_action();
-    std::monostate recv_action_without_parameters();
     Message deserialize_message_action();
 };
 

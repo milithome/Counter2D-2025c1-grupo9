@@ -22,13 +22,14 @@ QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width,
     window.show();
 
 
-    // TODO: ponerle un fondo
-
-    // QString path = "/home/manuel/taller/Counter2D-2025c1-grupo9/assets/gfx/cs2d.png";
-    // window.setStyleSheet(QString(
-    //     "background-image: url(%1);"
-    //     "background-repeat: no-repeat;"
-    //     "background-position: center;").arg(path));
+    window.setObjectName("MainWindow");
+    window.setStyleSheet(
+        "QWidget#MainWindow {"
+        "  background-image: url(:/assets/gfx/cs2d.png);"
+        "  background-repeat: no-repeat;"
+        "  background-position: center;"
+        "}"
+    );
 
 }
 
@@ -61,4 +62,9 @@ void QtWindow::clearWindow() {
 
 void QtWindow::quit() {
     app.quit();
+}
+
+
+QPoint QtWindow::getPosition() {
+    return window.pos();
 }
