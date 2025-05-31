@@ -67,6 +67,7 @@ private:
     void serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b);
     std::vector<uint8_t> serialize_state(const Response& r);
     std::vector<uint8_t> serialize_state_lobby(const Response& r);
+    void serialize_2d_vector(const std::vector<std::vector<CellType>>& matrix, std::vector<uint8_t>& buf);
     void serialize_2d_vector(const std::vector<std::vector<uint16_t>>& matrix, std::vector<uint8_t>& buf);
     void serialize_legend_entry(const MapLegendEntry& entry, std::vector<uint8_t>& buf);
     void serialize_legend(const std::unordered_map<uint16_t, MapLegendEntry>& legend, std::vector<uint8_t>& buf);
@@ -80,6 +81,7 @@ private:
     MapData deserialize_map_data();
     MapLegendEntry deserialize_legend_entry();
     std::unordered_map<uint16_t, MapLegendEntry> deserialize_legend();
+    std::vector<std::vector<CellType>> deserialize_celltype_2d_vector();
     std::vector<std::vector<uint16_t>> deserialize_2d_vector();
     std::string deserialize_string();
     std::vector<std::string> deserialize_string_vector();
