@@ -193,7 +193,7 @@ void game_run(std::string clientName) {
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
 		gameView.update(deltaTime);
-		gameController.processEvents(deltaTime);
+		gameController.processEvents();
 		gameController.update(deltaTime);
 	}
 }

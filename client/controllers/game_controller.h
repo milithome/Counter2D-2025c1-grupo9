@@ -20,7 +20,7 @@ public:
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);
-    void processEvents(float deltaTime);
+    void processEvents();
     void update(float deltaTime);
     // std::vector<Action> getActions();
 
@@ -33,7 +33,7 @@ private:
     void onKeyReleased(const SDL_Event& event);
     void onQuitPressed();
     void onMouseMovement();
-    void onMouseLeftClick(const SDL_Event& event, float deltaTime);
+    void onMouseLeftClick(const SDL_Event& event);
     void onMouseLeftClickReleased(const SDL_Event& event);
     std::vector<int> movement_keys_vector = std::vector<int>(2, 0);
     std::queue<Action> action_queue;

@@ -40,6 +40,7 @@ void GameView::update(float deltaTime) {
     float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
     float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
 
+
     showMap(cameraX, cameraY);
     showBullets(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);

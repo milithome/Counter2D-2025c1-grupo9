@@ -11,12 +11,12 @@ GameController::GameController(GameView& view, Game& game, const std::string& pl
 
 void GameController::update(float deltaTime) {
 
-    game.updateTime(deltaTime);
+    game.update(deltaTime);
 
-
+    // std::cout << game.bulletQueueIsEmpty() << std::endl;
     while (!game.bulletQueueIsEmpty()) {
-        Bullet shot = game.bulletQueuePop();
-        view.addShotEffect(shot);
+        std::cout << "bala" << std::endl;
+        view.addShotEffect(game.bulletQueuePop());
     }
 }
 
@@ -112,9 +112,12 @@ void GameController::onMouseMovement() {
     actions.push_back(action);
 }
 
-void GameController::onMouseLeftClick(const SDL_Event& event, float deltaTime) {
+void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
-        game.shoot(player_name, deltaTime);
+
+        Action action;
+        action.type = ActionType::SHOOT;
+        game.execute(player_name, action);
     }
 }
 
@@ -177,7 +180,7 @@ void GameController::updateGameState(StateGame state) {
 }
 
 
-void GameController::processEvents(float deltaTime) {
+void GameController::processEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
@@ -199,7 +202,7 @@ void GameController::processEvents(float deltaTime) {
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                onMouseLeftClick(e, deltaTime);
+                onMouseLeftClick(e);
                 break;
             }
             case SDL_MOUSEBUTTONUP: {

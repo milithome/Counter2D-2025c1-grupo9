@@ -32,12 +32,12 @@ Player &Game::findPlayerByName(const std::string &name) {
 }
 
 void Game::stopShooting(const std::string &name){
-  Player player= findPlayerByName(name);
+  Player& player= findPlayerByName(name);
   player.stopShooting();
 }
 
 void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
-  Player player= findPlayerByName(name);
+  Player& player= findPlayerByName(name);
   player.setLastMoveId(id);
   player.updateVelocity(vx, vy);
 }
@@ -45,6 +45,7 @@ void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
+
 void Game::changeWeapon(const std::string &name, WeaponType type){
   findPlayerByName(name).changeWeapon(type);
 }
@@ -174,7 +175,7 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
-
+  std::cout << "shoot" << std::endl;
   if (!shooter.isShooting()) {
       return;
   }
@@ -192,6 +193,8 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
         shooter.updateTimeLastBullet(deltaTime);
       } else { //aun quedan balas rafaga
         shooter.updateBurstFireBullets(-1);
+
+        std::cout << "llega a makeShot" << std::endl;
         makeShot(shooter, shooterName);
         shooter.resetTimeLastBullet();
       }
@@ -200,6 +203,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
     }
   }else{
     shooter.resetCooldown();
+    std::cout << "llega a makeShot" << std::endl;
     makeShot(shooter, shooterName);
   }
 }
@@ -216,7 +220,7 @@ float Game::getRotation(const std::string &name) {
 }
 
 void Game::update(float deltaTime) {
-  for (auto player : players){
+  for (auto& player : players){
     player.updateMovement(deltaTime);
     player.updateCooldown(deltaTime);
     shoot(player.getName(), deltaTime);
@@ -283,5 +287,5 @@ float Game::getX(const std::string& name) {
 }
 
 float Game::getY(const std::string& name) {
-  return findPlayerByName(name).getX();
+  return findPlayerByName(name).getY();
 }
