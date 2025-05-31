@@ -12,10 +12,10 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  Weapon equipped = Weapons::Glock;
+  Weapon equipped = Weapons::M3;
   EquippedWeapon weaponEquipped = EquippedWeapon::SECONDARY;
   Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon;
+  Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
   float rotation;
   float health;
