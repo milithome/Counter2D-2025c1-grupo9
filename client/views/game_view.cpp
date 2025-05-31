@@ -6,13 +6,17 @@
 namespace fs = std::filesystem;
 
 
-GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles)
-    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), mapTiles(Texture(renderer, sprite_path)), backgroundTexture(renderer, background_path) {
-        renderer.SetDrawColor(0, 0, 0, 255);
-        // loadMapTiles(game.getMapEnum());
-        // loadPlayerTiles(player.getType());
-}
+// GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles)
+//     : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), mapTiles(Texture(renderer, sprite_path)), backgroundTexture(renderer, background_path) {
+//         renderer.SetDrawColor(0, 0, 0, 255);
+//         // loadMapTiles(game.getMapEnum());
+//         // loadPlayerTiles(player.getType());
+// }
 
+GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
+    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()) {
+        renderer.SetDrawColor(0, 0, 0, 255);
+}
 
 
 Window GameView::createWindow(SDL_Point window_pos) {
@@ -25,30 +29,6 @@ Window GameView::createWindow(SDL_Point window_pos) {
 Renderer GameView::createRenderer(Window& window) {
     return Renderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
-// void GameView::loadMapTiles(Map map) {
-
-//     std::string path = mapToTilesFilename(map);
-//     mapTiles = Texture(renderer, path);
-//     createTileClipMap(mapTiles, map);
-// }
-
-
-// std::string GameView::mapToTilesFilename(Map map) {
-//     return std::string(MAP_TILES_PATH) + "de_aztec.bpm";
-// }
-
-// void createTileClipMap(Texture mapTiles, Map map) {
-
-// }
-
-// BlockType GameView::filenameToBlockType(std::string path) {
-
-// };
-
-// void GameView::loadPlayerTiles(PlayerType playerType) {
-//     std::string path = PlayerTypeToTilesFilename(playerType);
-//     playerTiles = Texture(renderer, path);
-// }
 
 
 void GameView::update(float deltaTime) {
@@ -77,10 +57,11 @@ void GameView::update(float deltaTime) {
 }
 
 void GameView::showMap(float cameraX, float cameraY) {
+    auto tiles_map = map.get_tiles_map();
     for (size_t i = 0; i < tiles_map.size(); i++) {
         for (size_t j = 0; j < tiles_map[i].size(); j++) {
             uint16_t tile = tiles_map[i][j];
-            MapLegendEntry clip = legend_tiles[tile];
+            MapLegendEntry clip = map.get_tiles_legend(tile);
             Rect src(clip.x, clip.y, CLIP_SIZE, CLIP_SIZE);
             Rect dst(cameraX + j * BLOCK_SIZE, cameraY + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
             renderer.Copy(mapTiles, src, dst);

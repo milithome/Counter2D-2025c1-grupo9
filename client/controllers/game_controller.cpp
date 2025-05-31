@@ -10,9 +10,7 @@ GameController::GameController(GameView& view, Game& game, const std::string& pl
 
 
 void GameController::update(float deltaTime) {
-    if (movement_keys_vector[0] || movement_keys_vector[1]) {
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1]);
-    }
+
     game.updateTime(deltaTime);
 
 
@@ -58,6 +56,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         actions.push_back(action);
 
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
+        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
 }
 
@@ -89,9 +88,9 @@ void GameController::onKeyReleased(const SDL_Event& event) {
         Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
         action_queue.push(action);
         actions.push_back(action);
-
-        
+ 
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
+        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
 
 }
@@ -113,9 +112,9 @@ void GameController::onMouseMovement() {
     actions.push_back(action);
 }
 
-void GameController::onMouseLeftClick(const SDL_Event& event) {
+void GameController::onMouseLeftClick(const SDL_Event& event, float deltaTime) {
     if (event.button.button == SDL_BUTTON_LEFT) {
-        game.shoot(player_name);
+        game.shoot(player_name, deltaTime);
     }
 }
 
@@ -178,7 +177,7 @@ void GameController::updateGameState(StateGame state) {
 }
 
 
-void GameController::processEvents() {
+void GameController::processEvents(float deltaTime) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
@@ -200,11 +199,14 @@ void GameController::processEvents() {
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                onMouseLeftClick(e);
+                onMouseLeftClick(e, deltaTime);
                 break;
             }
             case SDL_MOUSEBUTTONUP: {
                 onMouseLeftClickReleased(e);
+                break;
+            }
+            default: {
                 break;
             }
         }

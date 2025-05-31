@@ -32,7 +32,8 @@ struct ShotEffect {
 
 class GameView {
 public:
-    GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
+    //GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
+    GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
@@ -46,8 +47,9 @@ private:
     Renderer renderer;
     Game& game;
     std::string playerName;
-    std::vector<std::vector<uint16_t>> tiles_map;
-    std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
+    Map& map;
+    //std::vector<std::vector<uint16_t>> tiles_map;
+    //std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
 
 
     Texture mapTiles;
