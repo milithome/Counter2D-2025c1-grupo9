@@ -275,3 +275,93 @@ TEST(FlowControlTest, TestLobby3ClientList) {
 
     serverThread.join();
 }
+
+TEST(FlowControlTest, TestLobbytReadyAndStartGame) {
+    int fds[2];
+    pipe(fds);
+
+    std::unique_ptr<std::istream> input = make_pipe_istream(fds[0]);
+
+    std::thread serverThread([&]() {
+        Server server;
+        server.start(*input);
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    Socket clientSocket1("localhost", DEFAULT_PORT);
+    Protocol protocol1(std::move(clientSocket1));
+    protocol1.send_name("Client1");
+    
+    Socket clientSocket2("localhost", DEFAULT_PORT);
+    Protocol protocol2(std::move(clientSocket2));
+    protocol2.send_name("Client2");
+    
+    Socket clientSocket3("localhost", DEFAULT_PORT);
+    Protocol protocol3(std::move(clientSocket3));
+    protocol3.send_name("Client3");
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // CREO EL LOBBY
+    protocol1.send_create("GameLobby");
+    Response response = protocol1.recv_response();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // VERIFICO EL ESTADO DEL LOBBY
+    response = protocol1.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client1. Current players: 1");
+
+    // CLIENTE 2 SE UNE AL LOBBY
+    protocol2.send_join("GameLobby");
+    response = protocol2.recv_response();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // VERIFICO EL ESTADO DEL LOBBY
+    response = protocol2.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client2. Current players: 2");
+
+    response = protocol1.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client1. Current players: 2");
+
+    // CLIENTE 3 SE UNE AL LOBBY
+    protocol3.send_join("GameLobby");
+    response = protocol3.recv_response();
+    
+    // VERIFICO EL ESTADO DEL LOBBY
+    response = protocol3.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client3. Current players: 3");
+    response = protocol1.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client1. Current players: 3");
+    response = protocol2.recv_response();
+    EXPECT_EQ(response.type, Type::STATE_LOBBY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby state updated for player Client2. Current players: 3");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    
+    // RECIBO QUE EL LOBBY ESTA LISTO
+    response = protocol1.recv_response();
+    EXPECT_EQ(response.type, Type::LOBBY_READY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby is ready");
+    response = protocol2.recv_response();
+    EXPECT_EQ(response.type, Type::LOBBY_READY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby is ready");
+    response = protocol3.recv_response();
+    EXPECT_EQ(response.type, Type::LOBBY_READY);
+    EXPECT_EQ(response.result, 0);
+    EXPECT_EQ(response.message, "Lobby is ready");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    
+}

@@ -8,7 +8,7 @@ GameLoop::GameLoop(std::string name, Admin& admin)
     fromPlayers(), 
     active(true), 
     map("../assets/maps/default.yaml") , 
-    game(10,10,map.getMapData().game_map) {}
+    game(map.getMapData().game_map) {}
 
 void GameLoop::run() {
     try {
