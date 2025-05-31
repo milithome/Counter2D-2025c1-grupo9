@@ -37,10 +37,12 @@ void GameView::update(float deltaTime) {
 
     // graficar
     SDL_Point center = getCenterPoint();
-    float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
-    float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2;
+    //float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2; + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2
+    float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
+    float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
 
 
+    showBackground();
     showMap(cameraX, cameraY);
     showBullets(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
@@ -56,7 +58,20 @@ void GameView::update(float deltaTime) {
     renderer.Present();
 
 }
+void GameView::showBackground() {
 
+    Rect src(0, 0, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+
+    int screenWidth = window.GetWidth();
+    int screenHeight = window.GetHeight();
+
+    for (int y = 0; y < screenHeight; y +=  BACKGROUND_TEXTURE_SIZE) {
+        for (int x = 0; x < screenWidth; x +=  BACKGROUND_TEXTURE_SIZE) {
+            Rect dst(x, y, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
+            renderer.Copy(backgroundTexture, src, dst);
+        }
+    }
+}
 void GameView::showMap(float cameraX, float cameraY) {
     auto tiles_map = map.get_tiles_map();
     for (size_t i = 0; i < tiles_map.size(); i++) {
@@ -138,8 +153,9 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 PlayerData data = std::get<PlayerData>(gameState[i].data);
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
-                Rect dst(cameraX + playerX * BLOCK_SIZE, cameraY + playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(CLIP_SIZE / 2, CLIP_SIZE / 2), SDL_FLIP_NONE);
+
+                Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 break;
             }
             default: {
