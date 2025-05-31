@@ -12,7 +12,8 @@
 enum LobbyRequestType {
     LEAVE,
     JOIN,
-    START
+    START,
+    LOBBY_READY
 };
 
 struct LobbyRequest {

@@ -14,8 +14,6 @@ public:
     ClientHandler(Protocol protocol, Admin& admin,
                   std::function<void(std::string, std::shared_ptr<ClientHandler>)> onRegister);
 
-    ClientHandler(Protocol protocol, const std::string& clientName, Admin& admin);
-
     ~ClientHandler() override;
 
     void run() override;
@@ -32,6 +30,7 @@ private:
 
     void handle_create(const std::string& name);
     void handle_join(const std::string& name);
+    void enter_lobby(const std::string& lobbyName, Queue<LobbyRequest>& toLobby, Queue<LobbyRequest>& fromLobby);
     void handle_list();
     void handle_game(const std::string& name);
 

@@ -37,11 +37,18 @@ void Lobby::run() {
     }
     
 void Lobby::handle_join_event(const std::string& playerName) {
-    /*
-    auto it = players.find(playerName);
-    if (it != players.end()) {}
-    */
     std::cout << "Player " << playerName << " joined the lobby." << std::endl;
+
+    if (players.size() == maxPlayers) {
+        for (auto& [name, queue] : fromPlayers) {
+            LobbyRequest event = {
+                LobbyRequestType::LOBBY_READY,
+                name
+            };
+            queue->push(event);
+        }
+        return;
+    }
 }
 
 void Lobby::handle_leave_event(const std::string& playerName) {

@@ -10,26 +10,14 @@ ClientHandler::ClientHandler(
       admin(admin),
       onRegister(std::move(onRegister)) {}
 
-ClientHandler::ClientHandler(
-    Protocol protocol,
-    const std::string& clientName,
-    Admin& admin)
-    : protocol(std::move(protocol)),
-      clientName(clientName),
-      active(true),
-      admin(admin),
-      onRegister(nullptr) {}
-
 ClientHandler::~ClientHandler() {
     std::cout << "ClientHandler destructor called." << std::endl;
 }
 
 void ClientHandler::run() {
     try {
-        if (onRegister) {
-            clientName = protocol.recv_name();
-            onRegister(clientName, shared_from_this());
-        }
+        clientName = protocol.recv_name();
+        onRegister(clientName, shared_from_this());
 
         while (active) {
             Message message = protocol.recv_message();
@@ -49,7 +37,6 @@ void ClientHandler::handle_message(const Message& message) {
     switch (message.type) {
         case Type::CREATE:
             handle_create(message.name);
-            handle_join(message.name);
             break;
         case Type::JOIN:
             handle_join(message.name);
@@ -71,6 +58,11 @@ void ClientHandler::handle_create(const std::string& name) {
     try {
         admin.createLobby(name);
         send_simple_response(Type::CREATE, "Lobby created successfully", 0);
+
+        LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
+        send_simple_response(Type::JOIN, "Joined lobby", 0);
+        enter_lobby(name, *queues.toLobby, *queues.fromLobby);
+
     } catch (const std::exception& e) {
         send_simple_response(Type::CREATE, "Error creating lobby: " + std::string(e.what()), 1);
     }
@@ -80,28 +72,40 @@ void ClientHandler::handle_join(const std::string& name) {
     try {
         LobbyChannels queues = admin.joinLobby(name, clientName, protocol);
         send_simple_response(Type::JOIN, "Joined lobby", 0);
+        enter_lobby(name, *queues.toLobby, *queues.fromLobby);
 
-        Queue<LobbyRequest>& toLobby = *queues.toLobby;
-        Queue<LobbyRequest>& fromLobby = *queues.fromLobby;
-
-        bool inLobby = true;
-        while (inLobby) {
-            if (protocol.has_data()) {
-                Message msg = protocol.recv_message();
-                if (handle_lobby_client_message(msg, toLobby, inLobby)) {
-                    continue;
-                }
-            }
-
-            LobbyRequest event;
-            if (fromLobby.try_pop(event) && event.type == LobbyRequestType::START) {
-                inLobby = false;
-                handle_game(name);
-            }
-        }
     } catch (const std::exception& e) {
         std::cerr << "Error in lobby: " << e.what() << std::endl;
         send_simple_response(Type::JOIN, "Error joining lobby: " + std::string(e.what()), 1);
+    }
+}
+
+void ClientHandler::enter_lobby(const std::string& lobbyName, Queue<LobbyRequest>& toLobby, Queue<LobbyRequest>& fromLobby) {
+    bool inLobby = true;
+    while (inLobby) {
+        if (protocol.has_data()) {
+            Message msg = protocol.recv_message();
+            if (handle_lobby_client_message(msg, toLobby, inLobby)) {
+                continue;
+            }
+        }
+
+        LobbyRequest event;
+        if (fromLobby.try_pop(event)) {
+            switch (event.type)
+            {
+            case LobbyRequestType::START:
+                inLobby = false;
+                send_simple_response(Type::START, "Game started",0);
+                handle_game(lobbyName);
+                break;
+            case LobbyRequestType::LOBBY_READY:
+                send_simple_response(Type::LOBBY_READY, "Lobby is ready", 0);
+                break;
+            default:
+                break;
+            }
+        }
     }
 }
 
@@ -115,7 +119,6 @@ bool ClientHandler::handle_lobby_client_message(const Message& msg, Queue<LobbyR
             return true;
         case Type::START:
             toLobby.push({LobbyRequestType::START, clientName});
-            send_simple_response(Type::START, "Game starting",0);
             return false;
         case Type::DISCONNECT:
             active = false;
@@ -130,12 +133,10 @@ bool ClientHandler::handle_lobby_client_message(const Message& msg, Queue<LobbyR
 
 void ClientHandler::handle_game(const std::string& name) {
     try {
-        // send_simple_response(Type::START, "Game started",0); // quizas no es necesario, ya que el cliente ya sabe que se unio a un juego
-
         GameChannels queues = admin.joinGame(name, clientName, protocol);
         Queue<ActionRequest>& toGame = *queues.toGame;
         Queue<ActionRequest>& fromGame = *queues.fromGame;
-
+        
         bool inGame = true;
         while (inGame) {
             if (protocol.has_data()) {
