@@ -27,6 +27,8 @@ private:
   bool shooting = false;
   float shootCooldown = 0.0f;
   uint32_t lastMoveId = 0;
+  float timeLastBullet = 0.0f;
+  int burstFireBullets=1;
 
 public:
   Player(const std::string &name)
@@ -70,6 +72,12 @@ public:
   void updatePrimaryBullets();
   void updateSecondaryBullets();
   WeaponType getWeaponEquipped();
+  float getTimeLastBullet();
+  void updateTimeLastBullet(float deltaTime);
+  Weapon getEquipped();
+  int getBurstFireBullets();
+  void updateBurstFireBullets(int value);
+  void resetTimeLastBullet();
 };
 
 #endif

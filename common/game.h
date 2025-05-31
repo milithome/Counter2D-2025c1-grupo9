@@ -17,6 +17,7 @@ private:
   float time;
   Phase phase;
   std::queue<Bullet> bullet_queue;
+  void makeShot(Player& shooter, const std::string& shooterName);
 
 public:
   Game(int width, int height) : map_width(width), map_height(height) {}
@@ -25,7 +26,7 @@ public:
   std::vector<Entity> getState();
   bool isRunning();
   void stop();
-  void shoot(const std::string &shooterName);
+  void shoot(const std::string &shooterName, float deltaTime);
   void update(float deltaTime);
   void execute(const std::string &name, Action action);
   void updateTime(float currentTime);

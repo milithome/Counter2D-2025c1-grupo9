@@ -86,6 +86,7 @@ bool Player::isShooting() {
 }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
+      timeLastBullet=0.0f;
       if(weaponEquipped==WeaponType::PRIMARY){
         bulletsPrimary=bulletsPrimary-1;
       }else if(weaponEquipped==WeaponType::SECONDARY){
@@ -177,7 +178,7 @@ int Player::getMoney(){
 }
 
 void Player::updateMoney(int value){
-  money = money + value;
+  money += value;
 }
 
 void Player::updatePrimaryBullets(){ //llenar cargador
@@ -189,4 +190,27 @@ void Player::updateSecondaryBullets(){ //llenar cargador
 
 WeaponType Player::getWeaponEquipped(){
   return weaponEquipped;
+}
+
+float Player::getTimeLastBullet(){
+  return timeLastBullet;
+}
+
+void Player::updateTimeLastBullet(float deltaTime){
+  timeLastBullet+=deltaTime;
+}
+
+void Player::resetTimeLastBullet(){
+  timeLastBullet=0;
+}
+
+Weapon Player::getEquipped(){
+  return equipped;
+}
+
+int Player::getBurstFireBullets(){
+  return burstFireBullets;
+}
+void Player::updateBurstFireBullets(int value){
+  burstFireBullets+=value;
 }
