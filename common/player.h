@@ -14,10 +14,10 @@ private:
   Hitbox hitbox;
   Role role;
   int money = 200;
-  Weapon equipped = Weapons::AK47;
+  Weapon equipped = Weapons::Glock;
   WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon= Weapons::AK47;
+  Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
   int bulletsPrimary;
   int bulletsSecondary;
