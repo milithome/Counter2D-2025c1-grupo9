@@ -30,7 +30,11 @@ Player &Game::findPlayerByName(const std::string &name) {
 
 void Game::stopShooting(const std::string &name){
   Player &player= findPlayerByName(name);
-  player.setAlreadyShot(false);
+  if(player.getEquipped().burstFire){
+    player.setAlreadyShot(true);
+  }else{
+    player.setAlreadyShot(false);
+  }
   player.stopShooting();
 }
 
@@ -279,6 +283,7 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
         bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
     }
   }
+  shooter.setAlreadyShot(true);
 }
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
@@ -293,7 +298,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   const Weapon& equipped = shooter.getEquipped();
     
   if (equipped.burstFire) { //es arma con rafaga
-    if (equipped.burstDelay <= shooter.getTimeLastBullet()) { //puede disparar otra bala
+    if (!shooter.getAlreadyShot() || equipped.burstDelay <= shooter.getTimeLastBullet()) { //puede disparar otra bala
       //aun quedan balas rafaga
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter, shooterName);
