@@ -54,7 +54,7 @@ public:
   // fin privados
   void
   updatePlayerPosition(const std::string &name, float x,
-                       float y); // publico por tema de sincronizacion cliente
+                       float y); // público por tema de sincronizacion cliente
   bool addPlayer(const std::string &name);
   StateGame getState();
   std::vector<std::pair<WeaponName, int>> getStore();
