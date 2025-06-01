@@ -14,8 +14,8 @@ struct Spike {
 
 #define SPEED 5.0f
 #define MAX_PLAYERS_PER_TEAM 5
-#define PLAYER_WIDTH 0.5f
-#define PLAYER_HEIGHT 0.5f
+#define PLAYER_WIDTH 0.7f
+#define PLAYER_HEIGHT 0.7f
 
 
 #endif
