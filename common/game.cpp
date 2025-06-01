@@ -6,14 +6,14 @@ bool Game::addPlayer(const std::string &name) {
   if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team1.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    // newPlayer.setTeam();
+    // newPlayer.setTeam(1);
     return true;
   }
 
   if (team2.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team2.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    // newPlayer.setTeam();
+    // newPlayer.setTeam(2);
     return true;
   }
 
@@ -29,14 +29,14 @@ Player &Game::findPlayerByName(const std::string &name) {
 }
 
 void Game::stopShooting(const std::string &name) {
-  Player &player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   player.setAlreadyShot(false);
   player.stopShooting();
 }
 
 void Game::movePlayer(const std::string &name, float vx, float vy,
                       uint32_t id) {
-  Player &player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   player.setLastMoveId(id);
   player.updateVelocity(vx, vy);
 }
@@ -72,7 +72,7 @@ void Game::plantBomb(
     const std::string
         &name) { // ahora se planta automaticamente, falta un update y que
                  // despues de x tiempo se cambie a true
-  Player player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   if (!player.getHasTheSpike()) { // falta agregar si puede defusear o sea si
                                   // esta defendiendo
     return;
@@ -155,12 +155,13 @@ void Game::changeWeapon(const std::string &name, WeaponType type) {
 }
 
 void Game::buyWeapon(const std::string &name, WeaponName weaponName) {
-  Player player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   int price = Store::getWeaponPrice(weaponName);
   if (player.getMoney() >= price) {
     player.updateMoney(-price);
     player.replaceWeapon(weaponName);
     player.changeWeapon(WeaponType::PRIMARY);
+    player.resetPrimaryBullets();
   }
 }
 
@@ -169,7 +170,7 @@ std::vector<std::pair<WeaponName, int>> Game::getStore() {
 }
 
 void Game::buyBullet(const std::string &name, WeaponType type) {
-  Player &player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   if (player.getMoney() >= 40) { // constante, todo el cargador
     if (type == WeaponType::PRIMARY) {
       player.restorePrimaryBullets();
@@ -264,24 +265,7 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
     }
 
     if (closestPlayer && closestPlayerDist < wallDist) {
-      std::pair<float, float> damageRange = shooter.getDamageRange();
-
-      float baseDamage = 1000.0f / (closestPlayerDist + 1.0f);
-      float clampedDamage =
-          std::clamp(baseDamage, damageRange.first, damageRange.second);
-
-      std::random_device rd;
-      std::mt19937 gen(rd());
-      std::uniform_real_distribution<> dis(damageRange.first,
-                                           damageRange.second);
-      float randomDamage = dis(gen);
-
-      float finalDamage = std::min(clampedDamage, randomDamage);
-
-      closestPlayer->updateHealth(-finalDamage);
-      std::cout << shooterName << " le disparó a " << closestPlayer->getName()
-                << " en (" << closestHitPoint.first << ", "
-                << closestHitPoint.second << ")\n";
+      applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
 
       bullet_queue.push(Bullet{originX, originY, closestHitPoint.first,
                                closestHitPoint.second, angle, IMPACT::HUMAN});
@@ -298,8 +282,25 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
   shooter.setAlreadyShot(true);
 }
 
+void Game::applyDamageToPlayer(const Player& shooter, Player& target, float distance) {
+    std::pair<float, float> damageRange = shooter.getDamageRange();
+
+    float baseDamage = 1000.0f / (distance + 1.0f);
+    float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(damageRange.first, damageRange.second);
+    float randomDamage = dis(gen);
+
+    float finalDamage = std::min(clampedDamage, randomDamage);
+
+    target.updateHealth(-finalDamage);
+}
+
+
 void Game::shoot(const std::string &shooterName, float deltaTime) {
-  Player &shooter = findPlayerByName(shooterName);
+  Player& shooter = findPlayerByName(shooterName);
   
   if (!shooter.isShooting()) {
     return;

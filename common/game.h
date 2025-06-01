@@ -41,7 +41,8 @@ private:
   void updateDefusing(const std::string &name);
   void updatePlanting(const std::string &name);
   void shoot(const std::string &shooterName, float deltaTime);
-
+  void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
+  
 public:
   Game(std::vector<std::vector<CellType>> game_map)
       : map(std::move(game_map)) {}

@@ -172,7 +172,7 @@ int Player::getBulletsPerShoot() { return equipped.bulletsPerShoot; }
 
 float Player::getSpreadAngle() { return equipped.spreadAngle; }
 
-std::pair<float, float> Player::getDamageRange() {
+std::pair<float, float> Player::getDamageRange() const{
   return std::make_pair(equipped.minDamage, equipped.maxDamage);
 }
 
@@ -206,10 +206,17 @@ int Player::getMoney() const { return this->money; }
 
 void Player::updateMoney(int value) { money += value; }
 
-void Player::updatePrimaryBullets() { // llenar cargador
+void Player::updatePrimaryBullets(int value) {
+  bulletsPrimary += value;
+}
+void Player::updateSecondaryBullets(int value) {
+  bulletsSecondary += value;
+}
+
+void Player::resetPrimaryBullets() { // llenar cargador
   bulletsPrimary = primaryWeapon.maxAmmo;
 }
-void Player::updateSecondaryBullets() { // llenar cargador
+void Player::resetSecondaryBullets() { // llenar cargador
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
 

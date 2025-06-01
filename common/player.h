@@ -50,7 +50,7 @@ public:
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
   int getBurstFireBullets();
-  std::pair<float, float> getDamageRange();
+  std::pair<float, float> getDamageRange() const;
   bool getHasTheSpike();
   float getHealth() const;
   const Hitbox &getHitbox() const;
@@ -71,6 +71,8 @@ public:
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);
   void resetCooldown();
+  void resetPrimaryBullets();
+  void resetSecondaryBullets();
   void resetTimeLastBullet();
   void setAlreadyShot(bool value);
   void setHealth(float value);
