@@ -1,4 +1,6 @@
 target_sources(taller_tests
+    PUBLIC
+    helper_test.h
     PRIVATE
     protocolClientSenderTest.cpp
     protocolActionTest.cpp

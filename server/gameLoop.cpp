@@ -12,8 +12,6 @@ GameLoop::GameLoop(std::string name, Admin& admin)
 
 void GameLoop::run() {
     try {
-        std::cout << "GameLoop started" << std::endl;
-
         const std::chrono::milliseconds TICK_DURATION(16);
         const uint MAX_EVENTS_PER_CLICK = 32;
 
@@ -63,16 +61,17 @@ void GameLoop::run() {
         }
 
         for (auto& [name, queue] : fromPlayers) {
-            ActionRequest event = {
-                { ActionType::FINISH, {} },
-                name
+            Response response = {
+                Type::FINISH,
+                0,
+                StateGame{},
+                "Game finished"
             };
-            queue->push(event);
+            queue->push(response); 
         }
 
         admin.endGame(name);
         players.clear();
-        std::cout << "Game finish" << std::endl; 
 
     } catch (const std::exception& e) {
         std::cerr << "Exception in GameLoop::run: " << e.what() << std::endl;
@@ -85,7 +84,7 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
     players.emplace(playerName, player);
     game.addPlayer(playerName);
 
-    auto fromPlayerQueue = std::make_shared<Queue<ActionRequest>>(100);
+    auto fromPlayerQueue = std::make_shared<Queue<Response>>(100);
     fromPlayers.emplace(playerName,fromPlayerQueue);
 
     return GameChannels{
@@ -95,7 +94,7 @@ GameChannels GameLoop::add_player(Protocol& player, const std::string& playerNam
 }
 
 void GameLoop::broadcast_initial_data(const MapData& mapData) {
-    for (auto& pair : players) {
+    for (auto& pair : fromPlayers) {
         try {
             std::vector<std::string> playerNames;
             for (const auto& player : players) {
@@ -109,9 +108,10 @@ void GameLoop::broadcast_initial_data(const MapData& mapData) {
                 Type::INITIAL_DATA,
                 0,
                 initialData,
-                ""
+                "Initial data received successfully"
             };
-            pair.second.send_response(response);
+
+            pair.second->push(response);
         } catch (const std::exception& e) {
             Response response = {
                 Type::INITIAL_DATA,
@@ -119,30 +119,29 @@ void GameLoop::broadcast_initial_data(const MapData& mapData) {
                 InitialData{},
                 "Error sending initial data to player " + pair.first + ": " + e.what()
             };
-            pair.second.send_response(response);
+            pair.second->push(response);
         }
     }
 }
 
 void GameLoop::broadcast_game_state(StateGame& state) {
-    for (auto& pair : players) {
+    for (auto& pair : fromPlayers) {
         try {
             Response response = {
                 Type::STATE,
                 0,
                 state,
-                ""
+                "Game state received successfully"
             };
-            pair.second.send_response(response);
+            pair.second->push(response);
         } catch (const std::exception& e) {
-            std::cerr << "Failed to send to player " << pair.first << ": " << e.what() << std::endl;
             Response response = {
                 Type::STATE,
                 1,
                 StateGame{},
                 "Error sending game state to player " + pair.first
             };
-            pair.second.send_response(response);
+            pair.second->push(response);
         }
     }
 }

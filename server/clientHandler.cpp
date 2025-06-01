@@ -24,7 +24,7 @@ void ClientHandler::run() {
 
         admin.removeHandler(clientName);
     } catch (const std::exception& e) {
-        std::cerr << "Exception in ClientHandler: " << e.what() << std::endl;
+        std::cerr << "Exception in " << clientName << " ClientHandler: " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in ClientHandler." << std::endl;
     }
@@ -128,7 +128,7 @@ void ClientHandler::handle_game(const std::string& name) {
     try {
         GameChannels queues = admin.joinGame(name, clientName, protocol);
         Queue<ActionRequest>& toGame = *queues.toGame;
-        Queue<ActionRequest>& fromGame = *queues.fromGame;
+        Queue<Response>& fromGame = *queues.fromGame;
         
         bool inGame = true;
         while (inGame) {
@@ -139,14 +139,28 @@ void ClientHandler::handle_game(const std::string& name) {
                 }
             }
 
-            ActionRequest event;
-            if (fromGame.try_pop(event) && event.action.type == ActionType::FINISH) {
-                send_simple_response(Type::FINISH, "Game finished",0);
-                inGame = false;
+            Response response;
+            if (fromGame.try_pop(response)) {
+                switch (response.type) {
+                    case Type::INITIAL_DATA:
+                        protocol.send_response(response);
+                        break;
+                    case Type::STATE:
+                        protocol.send_response(response);
+                        break;
+                    case Type::FINISH:
+                        send_simple_response(Type::FINISH, "Game finished",0);
+                        inGame = false;
+                        break;
+                    default:
+                        std::cerr << "Unknown response type in game: " << response.type << std::endl;
+                        break;
+                }
             }
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } catch (const std::exception& e) {
-        std::cerr << "Exception in Game: " << e.what() << std::endl;
+        std::cerr << "Exception in " << clientName << " Game: " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in Game." << std::endl;
     }

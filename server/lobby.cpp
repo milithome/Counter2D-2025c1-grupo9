@@ -24,11 +24,21 @@ void Lobby::run() {
                             break;
                     }
                     broadcast_lobby_state();
+
+                    if (players.size() == maxPlayers) {
+                        for (auto& [name, queue] : fromPlayers) {
+                            LobbyRequest event = {
+                                LobbyRequestType::READY_LOBBY,
+                                name
+                            };
+                            queue->push(event);
+                        }
+                    }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
             }
-
+            admin.removeLobby(name);
         } catch (const std::exception& e) {
             std::cerr << "Exception in Lobby::run: " << e.what() << std::endl;
         } catch (...) {
@@ -36,18 +46,7 @@ void Lobby::run() {
         }
     }
     
-void Lobby::handle_join_event() {
-    if (players.size() == maxPlayers) {
-        for (auto& [name, queue] : fromPlayers) {
-            LobbyRequest event = {
-                LobbyRequestType::READY_LOBBY,
-                name
-            };
-            queue->push(event);
-        }
-        return;
-    }
-}
+void Lobby::handle_join_event() {}
 
 void Lobby::handle_leave_event(const std::string& playerName) {
     auto it = players.find(playerName);

@@ -240,6 +240,6 @@ struct LobbyChannels {
 
 struct GameChannels {
     std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::shared_ptr<Queue<ActionRequest>> fromGame;
+    std::shared_ptr<Queue<Response>> fromGame;
 };
 #endif

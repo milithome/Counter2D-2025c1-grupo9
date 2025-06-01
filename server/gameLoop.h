@@ -23,7 +23,7 @@ private:
     Admin& admin;
     std::map<std::string, Protocol&> players;
     std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::map<std::string, std::shared_ptr<Queue<ActionRequest>>> fromPlayers;
+    std::map<std::string, std::shared_ptr<Queue<Response>>> fromPlayers;
     bool active;
     Map map;
     Game game;
