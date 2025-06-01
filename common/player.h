@@ -25,12 +25,14 @@ private:
   float health;
   bool hasTheSpike=false;
   float vx = 0, vy = 0;
+  float aceleration = 0;
   bool shooting = false;
   bool planting = false;
   float shootCooldown = 0.0f;
   uint32_t lastMoveId = 0;
   float timeLastBullet = 0.0f;
   int burstFireBullets=1;
+  bool alreadyShot= false;
 
 public:
   Player(const std::string &name)
@@ -84,6 +86,9 @@ public:
   void updateBurstFireBullets(int value);
   void resetTimeLastBullet();
   bool getHasTheSpike();
+  void updateAceleration(float deltaTime);
+  bool getAlreadyShot();
+  void setAlreadyShot(bool value);
 };
 
 #endif

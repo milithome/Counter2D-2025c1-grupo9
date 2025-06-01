@@ -10,12 +10,12 @@ float Player::getY() const { return y; }
 
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
   if (onlyX) {
-    this->x += vx * deltaTime * SPEED;
+    this->x += vx * deltaTime * SPEED * aceleration;
   } else if (onlyY) {
-    this->y += vy * deltaTime * SPEED;
+    this->y += vy * deltaTime * SPEED * aceleration;
   } else {
-    this->x += vx * deltaTime * SPEED;
-    this->y += vy * deltaTime * SPEED;
+    this->x += vx * deltaTime * SPEED * aceleration;
+    this->y += vy * deltaTime * SPEED * aceleration;
   }
 
   hitbox.x = this->x;
@@ -37,8 +37,8 @@ std::pair<float, float> Player::tryMove(float deltaTime) {
   float boost = 0.1f;
   float boostedSpeed = SPEED + boost;
 
-  float newX = x + dirX * deltaTime * boostedSpeed;
-  float newY = y + dirY * deltaTime * boostedSpeed;
+  float newX = x + dirX * deltaTime * boostedSpeed * aceleration;
+  float newY = y + dirY * deltaTime * boostedSpeed * aceleration;
 
   return {newX, newY};
 }
@@ -78,13 +78,24 @@ float Player::getHealth() const { return health; }
 
 bool Player::isAlive() const { return health > 0.0f; }
 
-void Player::updateVelocity(float vx, float vy){
-  if (vx != 0 && vy != 0) { // si va en diagonal, normalizo
-    vx /= std::sqrt(2);
-    vy /= std::sqrt(2);
+void Player::updateVelocity(float newVx , float newVy){
+  if (newVx != 0 && newVy != 0) { // si va en diagonal, normalizo
+    newVx /= std::sqrt(2);
+    newVy /= std::sqrt(2);
   }
-  this->vx=vx;
-  this->vy=vy;
+  vx = newVx;
+  vy = newVy;
+}
+
+void Player::updateAceleration(float deltaTime) {
+  if (vx != 0.0f || vy != 0.0f) {
+    aceleration += ACELERATION_RATE * deltaTime;
+  } else {
+    aceleration -= ACELERATION_RATE * deltaTime;
+  }
+
+  if (aceleration < MIN_ACELERATION) aceleration = MIN_ACELERATION;
+  if (aceleration > MAX_ACELERATION) aceleration = MAX_ACELERATION;
 }
 
 void Player::stopShooting(){
@@ -121,10 +132,6 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
         bulletsSecondary=bulletsSecondary-1;
       }
       Hitbox hb= getHitbox();
-      
-      std::cout << "Hitbox de " << name << ": "
-              << "desde (" << hb.x << ", " << hb.y << ") "
-              << "hasta (" << (hb.x + hb.width) << ", " << (hb.y + hb.height) << ")\n";
       
       float origin_x = hb.x + hb.width / 2.0f;
       float origin_y = hb.y + hb.height / 2.0f;
@@ -252,4 +259,12 @@ bool Player::isPlanting(){
 
 void Player::updateIsPlanting(bool isPlanting){
   planting=isPlanting;
+}
+
+bool Player::getAlreadyShot(){
+  return alreadyShot;
+}
+
+void Player::setAlreadyShot(bool value){
+  alreadyShot=value;
 }

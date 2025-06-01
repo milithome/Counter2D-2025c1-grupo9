@@ -30,6 +30,7 @@ Player &Game::findPlayerByName(const std::string &name) {
 
 void Game::stopShooting(const std::string &name){
   Player &player= findPlayerByName(name);
+  player.setAlreadyShot(false);
   player.stopShooting();
 }
 
@@ -292,23 +293,24 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   const Weapon& equipped = shooter.getEquipped();
     
   if (equipped.burstFire) { //es arma con rafaga
-    if (equipped.burstDelay >= shooter.getTimeLastBullet()) { //puede disparar otra bala
+    if (equipped.burstDelay <= shooter.getTimeLastBullet()) { //puede disparar otra bala
       //aun quedan balas rafaga
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter, shooterName);
       shooter.resetTimeLastBullet();
       if (shooter.getBurstFireBullets() == 0) { //fin rafaga
         shooter.resetCooldown();
-        shooter.updateBurstFireBullets(equipped.bulletsPerShoot);
+        shooter.updateBurstFireBullets(equipped.bulletsPerBurst);
         shooter.updateTimeLastBullet(deltaTime);
       }
     }else {
       shooter.updateTimeLastBullet(deltaTime);
     }
   }else{
-    shooter.resetCooldown();
-    std::cout << "llega a makeShot" << std::endl;
-    makeShot(shooter, shooterName);
+    if (!shooter.getAlreadyShot()){
+      shooter.resetCooldown();
+      makeShot(shooter, shooterName);
+    } 
   }
 }
 
@@ -356,9 +358,10 @@ float Game::getRotation(const std::string &name) {
 
 void Game::update(float deltaTime) {
   for (auto &player : players){
-    updatePlayerMovement(player, deltaTime); //si no se mueve, ver comentario en la funcion
+    updatePlayerMovement(player, deltaTime);
     player.updateCooldown(deltaTime);
     shoot(player.getName(), deltaTime);
+    player.updateAceleration(deltaTime);
   }
 }
 
