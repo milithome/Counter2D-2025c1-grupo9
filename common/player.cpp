@@ -23,28 +23,23 @@ void Player::move(float deltaTime, bool onlyX, bool onlyY) {
 }
 
 
-std::pair<float, float> Player::tryMove(float deltaTime) { //por tema colisiones
-  float newVx = vx;
-  float newVy = vy;
-  if(newVx<0){
-    newVx -= 0.2f;
+std::pair<float, float> Player::tryMove(float deltaTime) {
+  float dirX = vx;
+  float dirY = vy;
+
+  if (dirX == 0.0f && dirY == 0.0f) {
+    return {x, y};
   }
-  if(newVx>0){
-    newVx += 0.2f;
-  }
-  if(newVy<0){
-    newVy -= 0.2f;
-  }
-  if(newVy>0){
-    newVy += 0.2f;
-  }
-  
-  if (newVx != 0 && newVy != 0) {
-    newVx /= std::sqrt(2);
-    newVy /= std::sqrt(2);
-  }
-  float newX = x + newVx * deltaTime * SPEED;
-  float newY = y + newVy * deltaTime * SPEED;
+  float magnitude = std::sqrt(dirX * dirX + dirY * dirY);
+  dirX /= magnitude;
+  dirY /= magnitude;
+
+  float boost = 0.1f;
+  float boostedSpeed = SPEED + boost;
+
+  float newX = x + dirX * deltaTime * boostedSpeed;
+  float newY = y + dirY * deltaTime * boostedSpeed;
+
   return {newX, newY};
 }
 
