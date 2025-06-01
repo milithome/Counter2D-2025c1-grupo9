@@ -2,11 +2,11 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
-#include "weapons.h"
 #include "structures.h"
+#include "weapons.h"
 #include <cmath>
-#include <string>
 #include <random>
+#include <string>
 class Player {
 private:
   std::string name;
@@ -16,8 +16,8 @@ private:
   int money = 200;
   Weapon equipped = Weapons::Glock;
   WeaponType typeEquipped = WeaponType::SECONDARY;
-  Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon= Weapons::AK47;
+  Weapon knife = Weapons::Knife;
+  Weapon primaryWeapon = Weapons::AK47;
   Weapon secondaryWeapon = Weapons::Glock;
   int bulletsPrimary;
   int bulletsSecondary;
@@ -25,13 +25,13 @@ private:
   float health;
   float vx = 0, vy = 0;
   float aceleration = 0;
-  bool hasTheSpike=false;
+  bool hasTheSpike = false;
   bool shooting = false;
   bool planting = false;
-  bool alreadyShot= false;
+  bool alreadyShot = false;
   float shootCooldown = 0.0f;
   float timeLastBullet = 0.0f;
-  int burstFireBullets=1;
+  int burstFireBullets = 1;
   float lastVx = 0.0f;
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
@@ -39,7 +39,8 @@ private:
 
 public:
   Player(const std::string &name)
-      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
+      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
+        role(Role::COUNTER_TERRORIST), rotation(0) {}
 
   void changeWeapon(WeaponType newEquippedWeapon);
   bool getAlreadyShot();
@@ -92,7 +93,6 @@ public:
   void updateSecondaryBullets();
   void updateTimeLastBullet(float deltaTime);
   void updateVelocity(float vx, float vy);
-
 };
 
 #endif
