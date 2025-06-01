@@ -9,7 +9,8 @@
 #define MAP_TILES_PATH 'assets/gfx/tiles/'
 #define PLAYER_TILES_PATH 'assets/gfx/player/'
 #define CLIP_SIZE 32
-#define BLOCK_SIZE 32
+#define BLOCK_SIZE 48
+#define BACKGROUND_TEXTURE_SIZE 64
 
 using namespace SDL2pp;
 
@@ -72,6 +73,7 @@ private:
     bool shopIsVisible = false;
     std::vector<ShotEffect> shot_effects;
 
+    void showBackground();
     void showMap(float cameraX, float cameraY);
     void showBullets(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);

@@ -17,4 +17,5 @@ struct Spike {
 #define PLAYER_WIDTH 0.5f
 #define PLAYER_HEIGHT 0.5f
 
+
 #endif
