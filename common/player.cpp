@@ -8,16 +8,37 @@ float Player::getX() const { return x; }
 
 float Player::getY() const { return y; }
 
-void Player::move(float deltaTime) {
-  this->x += vx * deltaTime * SPEED;
-  this->y += vy * deltaTime * SPEED;
+void Player::move(float deltaTime, bool onlyX, bool onlyY) {
+  if (onlyX) {
+    this->x += vx * deltaTime * SPEED;
+  } else if (onlyY) {
+    this->y += vy * deltaTime * SPEED;
+  } else {
+    this->x += vx * deltaTime * SPEED;
+    this->y += vy * deltaTime * SPEED;
+  }
+
   hitbox.x = this->x;
   hitbox.y = this->y;
 }
 
+
 std::pair<float, float> Player::tryMove(float deltaTime) { //por tema colisiones
   float newVx = vx;
   float newVy = vy;
+  if(newVx<0){
+    newVx -= 0.2f;
+  }
+  if(newVx>0){
+    newVx += 0.2f;
+  }
+  if(newVy<0){
+    newVy -= 0.2f;
+  }
+  if(newVy>0){
+    newVy += 0.2f;
+  }
+  
   if (newVx != 0 && newVy != 0) {
     newVx /= std::sqrt(2);
     newVy /= std::sqrt(2);
@@ -53,9 +74,10 @@ void Player::setHealth(float value) {
     health = 0.0f;
 }
 
-void Player::updateMovement(float deltaTime) {
-  move(deltaTime);
+void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
+  move(deltaTime, onlyX, onlyY);
 }
+
 
 float Player::getHealth() const { return health; }
 

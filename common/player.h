@@ -40,7 +40,7 @@ public:
   void setRole(Role new_role);
   float getX() const;
   float getY() const;
-  void move(float deltaTime);
+  void move(float deltaTime, bool onlyX, bool onlyY);
   std::pair<float, float> tryMove(float deltaTime);
   void setPosition(float x, float y);
   float getRotation() const;
@@ -50,7 +50,7 @@ public:
   void setHealth(float value);
   float getHealth() const;
   bool isAlive() const;
-  void updateMovement(float deltaTime);
+  void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateVelocity(float vx, float vy);
   void stopShooting();
   void startShooting();

@@ -40,10 +40,11 @@ void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id){
 }
 
 bool Game::isColliding(float x, float y, float width, float height) const {
-    float left = x;
-    float right = x + width;
-    float top = y;
-    float bottom = y + height;
+    const float epsilon = 0.1f;
+    float left = x + epsilon;
+    float right = x + width - epsilon;
+    float top = y + epsilon;
+    float bottom = y + height - epsilon;
 
     int leftCell = static_cast<int>(std::floor(left));
     int rightCell = static_cast<int>(std::floor(right));
@@ -122,23 +123,29 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
 }
 
 void Game::updatePlayerMovement(Player& player, float deltaTime) {
-    //para testear sin mapa, comentar todo y dejar player.updateMovement(deltaTime);
     Hitbox hb = player.getHitbox();
 
-    std::pair<float, float> newPosition = player.tryMove(deltaTime);
-    float newX = newPosition.first;
-    float newY = newPosition.second;
-
+    std::pair<float, float> newPos = player.tryMove(deltaTime);
+    float newX = newPos.first;
+    float newY = newPos.second;
     float width = hb.getWidth();
     float height = hb.getHeight();
 
-    bool colliding = isColliding(newX, newY, width, height);
+    float originalX = player.getX();
+    float originalY = player.getY();
 
-    if (!colliding) {
-        player.updateMovement(deltaTime);
+    if (!isColliding(newX, newY, width, height)) {
+        player.updateMovement(deltaTime, false, false);
+        return;
+    }
+
+    if (!isColliding(newX, originalY, width, height)) {
+        player.updateMovement(deltaTime, true, false);
+    }
+    else if (!isColliding(originalX, newY, width, height)) {
+        player.updateMovement(deltaTime, false, true);
     }
 }
-
 
 void Game::changeWeapon(const std::string &name, WeaponType type){
   findPlayerByName(name).changeWeapon(type);
