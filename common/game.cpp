@@ -294,7 +294,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   const Weapon& equipped = shooter.getEquipped();
     
   if (equipped.burstFire) { //es arma con rafaga
-    if (equipped.burstDelay <= shooter.getTimeLastBullet()) { //puede disparar otra bala
+    if (!shooter.getAlreadyShot() || equipped.burstDelay <= shooter.getTimeLastBullet()) { //puede disparar otra bala
       //aun quedan balas rafaga
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter, shooterName);
