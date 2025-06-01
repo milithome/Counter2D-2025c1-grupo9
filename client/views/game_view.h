@@ -9,15 +9,15 @@
 #define MAP_TILES_PATH 'assets/gfx/tiles/'
 #define PLAYER_TILES_PATH 'assets/gfx/player/'
 #define CLIP_SIZE 32
-#define BLOCK_SIZE 48
+#define BLOCK_SIZE 32
 #define BACKGROUND_TEXTURE_SIZE 64
 
 using namespace SDL2pp;
 
 #define SHOT_SPEED 120
 #define SHOT_DURATION 10
-#define SHOT_THICKNESS 4
-#define SHOT_LENGTH 32
+#define SHOT_THICKNESS 2
+#define SHOT_LENGTH 8
 
 
 
