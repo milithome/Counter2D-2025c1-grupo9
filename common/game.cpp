@@ -30,11 +30,7 @@ Player &Game::findPlayerByName(const std::string &name) {
 
 void Game::stopShooting(const std::string &name){
   Player &player= findPlayerByName(name);
-  if(player.getEquipped().burstFire){
-    player.setAlreadyShot(true);
-  }else{
-    player.setAlreadyShot(false);
-  }
+  player.setAlreadyShot(false);
   player.stopShooting();
 }
 
@@ -219,11 +215,12 @@ bool Game::isRunning() { return running; }
 void Game::stop() { running = false; }
 
 void Game::makeShot(Player& shooter, const std::string& shooterName) {
+    //devolver a que le pegó, si a una pared o a un personaje
     int bullets = shooter.getBulletsPerShoot();
     
     for (int i = 0; i < bullets; i++) {
     auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
-
+    
     Player* closestPlayer = nullptr;
     float closestPlayerDist = maxDistance + 1.0f;
     std::pair<float, float> closestHitPoint;
@@ -388,7 +385,7 @@ void Game::execute(const std::string &name, Action action) {
       findPlayerByName(name).startShooting();
       break;
     }
-    case ActionType::STOP_SHOOTING:{
+    case ActionType::STOP_SHOOTING:{ //en la de rafaga reiniciar rafaga
       stopShooting(name);
       break;
     }

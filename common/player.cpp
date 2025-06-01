@@ -2,6 +2,7 @@
 #include <iostream>
 
 std::string Player::getName() const { return name; }
+
 void Player::setRole(Role new_role) { role = new_role; }
 
 float Player::getX() const { return x; }
@@ -9,13 +10,26 @@ float Player::getX() const { return x; }
 float Player::getY() const { return y; }
 
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
+  float totalSpeed = SPEED + aceleration;
+  float dx = 0.0f;
+  float dy = 0.0f;
+
+  if (vx != 0.0f || vy != 0.0f) {
+    dx = vx;
+    dy = vy;
+  } else if (slideTimer > 0.0f) {
+    dx = lastVx;
+    dy = lastVy;
+    slideTimer -= deltaTime;
+  }
+
   if (onlyX) {
-    this->x += vx * deltaTime * SPEED * aceleration;
+    this->x += dx * deltaTime * totalSpeed;
   } else if (onlyY) {
-    this->y += vy * deltaTime * SPEED * aceleration;
+    this->y += dy * deltaTime * totalSpeed;
   } else {
-    this->x += vx * deltaTime * SPEED * aceleration;
-    this->y += vy * deltaTime * SPEED * aceleration;
+    this->x += dx * deltaTime * totalSpeed;
+    this->y += dy * deltaTime * totalSpeed;
   }
 
   hitbox.x = this->x;
@@ -24,24 +38,27 @@ void Player::move(float deltaTime, bool onlyX, bool onlyY) {
 
 
 std::pair<float, float> Player::tryMove(float deltaTime) {
-  float dirX = vx;
-  float dirY = vy;
+  float dirX = (vx != 0.0f || vy != 0.0f) ? vx : ((slideTimer > 0.0f) ? lastVx : 0.0f);
+  float dirY = (vx != 0.0f || vy != 0.0f) ? vy : ((slideTimer > 0.0f) ? lastVy : 0.0f);
 
   if (dirX == 0.0f && dirY == 0.0f) {
     return {x, y};
   }
+
   float magnitude = std::sqrt(dirX * dirX + dirY * dirY);
   dirX /= magnitude;
   dirY /= magnitude;
 
   float boost = 0.1f;
-  float boostedSpeed = SPEED + boost;
+  float baseSpeed = SPEED + boost;
+  float totalSpeed = baseSpeed + aceleration;
 
-  float newX = x + dirX * deltaTime * boostedSpeed * aceleration;
-  float newY = y + dirY * deltaTime * boostedSpeed * aceleration;
+  float newX = x + dirX * deltaTime * totalSpeed;
+  float newY = y + dirY * deltaTime * totalSpeed;
 
   return {newX, newY};
 }
+
 
 void Player::setPosition(float x, float y) {
   // coordenadas literales en las que quiero que se encuentre
@@ -78,11 +95,17 @@ float Player::getHealth() const { return health; }
 
 bool Player::isAlive() const { return health > 0.0f; }
 
-void Player::updateVelocity(float newVx , float newVy){
-  if (newVx != 0 && newVy != 0) { // si va en diagonal, normalizo
-    newVx /= std::sqrt(2);
-    newVy /= std::sqrt(2);
+void Player::updateVelocity(float newVx, float newVy) {
+  if (newVx != 0.0f || newVy != 0.0f) {
+    if (newVx != 0 && newVy != 0) {
+      newVx /= std::sqrt(2);
+      newVy /= std::sqrt(2);
+    }
+    lastVx = newVx;
+    lastVy = newVy;
+    slideTimer = SLIDE_DURATION;
   }
+
   vx = newVx;
   vy = newVy;
 }
@@ -91,7 +114,7 @@ void Player::updateAceleration(float deltaTime) {
   if (vx != 0.0f || vy != 0.0f) {
     aceleration += ACELERATION_RATE * deltaTime;
   } else {
-    aceleration -= ACELERATION_RATE * deltaTime;
+    aceleration = MIN_ACELERATION;
   }
 
   if (aceleration < MIN_ACELERATION) aceleration = MIN_ACELERATION;
@@ -153,10 +176,6 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       float target_x = origin_x + cos(angle_rad) * max_distance;
       float target_y = origin_y + sin(angle_rad) * max_distance;
       
-      /*
-      std::cout << "Disparo desde (" << origin_x << ", " << origin_y << ") hasta ("
-              << target_x << ", " << target_y << ")\n";
-      */
       return std::make_tuple(max_distance, origin_x, origin_y, target_x, target_y, angle);
 }
 

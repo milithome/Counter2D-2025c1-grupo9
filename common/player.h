@@ -33,6 +33,10 @@ private:
   float timeLastBullet = 0.0f;
   int burstFireBullets=1;
   bool alreadyShot= false;
+  float lastVx = 0.0f;
+  float lastVy = 0.0f;
+  float slideTimer = 0.0f;
+
 
 public:
   Player(const std::string &name)
