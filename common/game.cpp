@@ -172,9 +172,9 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   Player &player = findPlayerByName(name);
   if (player.getMoney() >= 40) { // constante, todo el cargador
     if (type == WeaponType::PRIMARY) {
-      player.updatePrimaryBullets();
+      player.restorePrimaryBullets();
     } else {
-      player.updateSecondaryBullets();
+      player.restoreSecondaryBullets();
     }
     player.updateMoney(-40);
   }
@@ -218,7 +218,13 @@ void Game::stop() { running = false; }
 void Game::makeShot(Player &shooter, const std::string &shooterName) {
   // devolver a que le pegó, si a una pared o a un personaje
   int bullets = shooter.getBulletsPerShoot();
-
+  if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
+    shooter.updatePrimaryBullets(-bullets);
+  }
+  if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
+    shooter.updatePrimaryBullets(-bullets);
+  }
+  
   for (int i = 0; i < bullets; i++) {
     auto [maxDistance, originX, originY, targetX, targetY, angle] =
         shooter.shoot();
@@ -294,10 +300,14 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
 
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
+  
   if (!shooter.isShooting()) {
     return;
   }
   if (shooter.getShootCooldown() > 0) {
+    return;
+  }
+  if (shooter.getBullets()<shooter.getBulletsPerShoot()){
     return;
   }
 

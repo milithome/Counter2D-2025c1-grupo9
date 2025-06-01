@@ -14,8 +14,8 @@ private:
   Hitbox hitbox;
   Role role;
   int money = 200;
-  Weapon equipped = Weapons::Glock;
-  WeaponType typeEquipped = WeaponType::SECONDARY;
+  Weapon equipped = Weapons::AK47;
+  WeaponType typeEquipped = WeaponType::PRIMARY;
   Weapon knife = Weapons::Knife;
   Weapon primaryWeapon = Weapons::AK47;
   Weapon secondaryWeapon = Weapons::Glock;
@@ -89,10 +89,12 @@ public:
   void updateIsPlanting(bool isPlanting);
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
-  void updatePrimaryBullets();
-  void updateSecondaryBullets();
   void updateTimeLastBullet(float deltaTime);
   void updateVelocity(float vx, float vy);
+  void restorePrimaryBullets();
+  void restoreSecondaryBullets();
+  void updatePrimaryBullets(int value);
+  void updateSecondaryBullets(int value);
+  int getBullets();
 };
-
 #endif
