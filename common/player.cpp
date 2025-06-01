@@ -149,9 +149,9 @@ bool Player::isShooting() {
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
       timeLastBullet=0.0f;
-      if(weaponEquipped==WeaponType::PRIMARY){
+      if(typeEquipped==WeaponType::PRIMARY){
         bulletsPrimary=bulletsPrimary-1;
-      }else if(weaponEquipped==WeaponType::SECONDARY){
+      }else if(typeEquipped==WeaponType::SECONDARY){
         bulletsSecondary=bulletsSecondary-1;
       }
       Hitbox hb= getHitbox();
@@ -166,13 +166,7 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
       float angle_rad = angle * M_PI / 180.0f;
       float max_distance;
 
-      if (weaponEquipped==WeaponType::SECONDARY){
-        max_distance=secondaryWeapon.maxRange;
-      }else if(weaponEquipped==WeaponType::PRIMARY){
-        max_distance=primaryWeapon.maxRange; 
-      }else{
-        max_distance=knife.maxRange;
-      }
+      max_distance=equipped.maxRange;
       float target_x = origin_x + cos(angle_rad) * max_distance;
       float target_y = origin_y + sin(angle_rad) * max_distance;
       
@@ -242,8 +236,8 @@ void Player::updateSecondaryBullets(){ //llenar cargador
   bulletsSecondary= secondaryWeapon.maxAmmo;
 }
 
-WeaponType Player::getWeaponEquipped(){
-  return weaponEquipped;
+WeaponType Player::getTypeEquipped(){
+  return typeEquipped;
 }
 
 float Player::getTimeLastBullet(){

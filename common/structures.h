@@ -165,13 +165,21 @@ enum Phase {
     BOMB_DEFUSING
 };
 
+enum IMPACT {
+    HUMAN,
+    BLOCK,
+    NOTHING
+};
+
 struct Bullet {
     float origin_x;
     float origin_y;
     float target_x;
     float target_y;
     float angle;
+    IMPACT impact;
 };
+
 
 struct StateGame {
     Phase phase;

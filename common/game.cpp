@@ -271,13 +271,13 @@ void Game::makeShot(Player& shooter, const std::string& shooterName) {
         std::cout << shooterName << " le disparó a " << closestPlayer->getName()
                   << " en (" << closestHitPoint.first << ", " << closestHitPoint.second << ")\n";
 
-        bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle});
+        bullet_queue.push(Bullet{originX, originY, closestHitPoint.first, closestHitPoint.second, angle, IMPACT::HUMAN});
     } else if (wallHit) {
         std::cout << shooterName << " disparó y la bala impactó una pared en ("
                   << wallPoint.first << ", " << wallPoint.second << ")\n";
-        bullet_queue.push(Bullet{originX, originY, wallPoint.first, wallPoint.second, angle});
+        bullet_queue.push(Bullet{originX, originY, wallPoint.first, wallPoint.second, angle, IMPACT::BLOCK});
     } else {
-        bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle});
+        bullet_queue.push(Bullet{originX, originY, targetX, targetY, angle, IMPACT::NOTHING});
     }
   }
   shooter.setAlreadyShot(true);
