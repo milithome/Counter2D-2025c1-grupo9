@@ -18,14 +18,7 @@ void Match::run() {
         if (inGame) {
             gameLoop();
         }
-
         admin.removeMatch(name);
-
-        std::cout << clients.size() << std::endl;
-
-        for (const auto& client : clients) {
-            admin.createMenu(client);
-        }
     } catch (const std::exception& e) {
         std::cerr << "Exception in Match: " << e.what() << std::endl;
     } catch (...) {
@@ -99,7 +92,11 @@ void Match::handleLeave(const std::string& clientName) {
         admin.createMenu(client, true);
     } else {
         std::cerr << "Client " << clientName << " not found in the lobby." << std::endl;
-    }    
+    }
+
+    if (clients.size() == 0) {
+        inLobby = false;
+    }
 }
 
 void Match::handleStart() {
@@ -235,6 +232,7 @@ void Match::endGame() {
             "Game finished"
         };
         client->channels.responses->push(response);
+        admin.createMenu(client);
     }
 }
 
