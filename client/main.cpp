@@ -179,7 +179,8 @@ int main(int argc, char **argv) try {
 // main reducido para testear
 void game_run(std::string clientName) {
 	SDL sdl(SDL_INIT_VIDEO);
-
+	TTF_Init();
+	
 	Map map = Map("../assets/maps/default.yaml");
 	Game game(map.getMapData().game_map);
 	game.addPlayer(clientName);
@@ -196,4 +197,6 @@ void game_run(std::string clientName) {
 		gameController.processEvents();
 		gameController.update(deltaTime);
 	}
+
+	TTF_Quit();
 }

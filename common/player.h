@@ -17,10 +17,10 @@ private:
   Weapon equipped = Weapons::Glock;
   WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon= Weapons::AK47;
+  Weapon primaryWeapon= Weapons::M3;
   Weapon secondaryWeapon = Weapons::Glock;
-  int bulletsPrimary;
-  int bulletsSecondary;
+  uint32_t bulletsPrimary = 10;
+  uint32_t bulletsSecondary = 10;
   float rotation;
   float health;
   bool hasTheSpike=false;

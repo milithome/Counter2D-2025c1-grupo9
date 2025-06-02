@@ -47,7 +47,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         case SDLK_b: {
             view.switchShopVisibility();
-
+            shop_open = !shop_open;
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
@@ -114,6 +114,54 @@ void GameController::onMouseMovement() {
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
+        if (shop_open) {
+            auto buyPrimaryAmmoButton = view.getBuyPrimaryAmmoButton();
+            uint32_t x_range_begining = buyPrimaryAmmoButton.first.first;
+            uint32_t x_range_end = x_range_begining + buyPrimaryAmmoButton.second.first;
+
+            uint32_t y_range_begining = buyPrimaryAmmoButton.first.second;
+            uint32_t y_range_end = y_range_begining + buyPrimaryAmmoButton.second.second;
+            uint32_t x = event.button.x;
+            uint32_t y = event.button.y;
+            if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                Action action;
+                action.type = ActionType::BUY_BULLET;
+                action.data = BuyBulletAction{WeaponType::PRIMARY};
+                game.execute(player_name, action);
+                std::cout << "se compro balas primaria" << std::endl;
+            }
+            auto buySecondaryAmmoButton = view.getBuySecondaryAmmoButton();
+            x_range_begining = buySecondaryAmmoButton.first.first;
+            x_range_end = x_range_begining + buySecondaryAmmoButton.second.first;
+
+            y_range_begining = buySecondaryAmmoButton.first.second;
+            y_range_end = y_range_begining + buySecondaryAmmoButton.second.second;
+            if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                Action action;
+                action.type = ActionType::BUY_BULLET;
+                action.data = BuyBulletAction{WeaponType::SECONDARY};
+                game.execute(player_name, action);
+                std::cout << "se compro balas secundaria" << std::endl;
+            }
+            auto buyWeaponButtons = view.getWeaponShopButtons();
+            
+            for (const auto& [weapon, buyWeaponButton] : buyWeaponButtons) {
+                x_range_begining = buyWeaponButton.first.first;
+                x_range_end = x_range_begining + buyWeaponButton.second.first;
+
+                y_range_begining = buyWeaponButton.first.second;
+                y_range_end = y_range_begining + buyWeaponButton.second.second;
+                if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                    Action action;
+                    action.type = ActionType::BUY_WEAPON;
+                    action.data = BuyWeaponAction{weapon};
+                    game.execute(player_name, action);
+                    std::cout << "se compro un arma" << std::endl;
+                }
+            }
+            return;
+        }
+
 
         Action action;
         action.type = ActionType::SHOOT;

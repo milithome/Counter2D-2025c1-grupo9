@@ -43,6 +43,8 @@ private:
     std::set<SDL_Keycode> movement_keys = {SDLK_UP, SDLK_DOWN, SDLK_RIGHT, SDLK_LEFT};
     uint32_t lastMoveIdFromServer = 0;
     uint32_t lastMoveId = 0;
+
+    bool shop_open = false;
 };
 
 #endif

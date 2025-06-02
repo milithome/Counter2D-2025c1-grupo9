@@ -30,6 +30,23 @@ struct ShotEffect {
     float time_left;
 };
 
+struct ShopLayout {
+    Rect container;
+    Rect primaryWeaponLabel;
+    std::vector<Rect> weaponItemContainers;
+    std::vector<Rect> weaponLabels;
+    std::vector<Rect> weaponPriceLabels;
+    std::vector<Rect> boughtLabels;
+    std::vector<Rect> weaponSprites;
+
+    Rect ammoLabel;
+    Rect primaryAmmoContainer;
+    Rect secondaryAmmoContainer;
+    Rect primaryAmmoLabel;
+    Rect secondaryAmmoLabel;
+    Rect primaryAmmoPriceLabel;
+    Rect secondaryAmmoPriceLabel;
+};
 
 class GameView {
 public:
@@ -41,6 +58,10 @@ public:
     SDL_Point getCenterPoint();
     void addShotEffect(Bullet bullet);
     void switchShopVisibility();
+
+    std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
     // Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
@@ -56,6 +77,7 @@ private:
     Texture mapTiles;
     Texture backgroundTexture;
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
+    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", 20);
 
     // T skins
     Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
@@ -70,8 +92,20 @@ private:
     Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
 
 
+    Surface AK47ShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
+    Surface M3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
+    Surface AWPShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+
+
+    Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
+    Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
+    Texture AWPInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+
     bool shopIsVisible = false;
     std::vector<ShotEffect> shot_effects;
+    std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
 
     void showBackground();
     void showMap(float cameraX, float cameraY);
@@ -79,6 +113,9 @@ private:
     void showEntities(float cameraX, float cameraY);
     void showInterface();
     void showShop();
+    ShopLayout createShopLayout();
+
+    ShopLayout shopLayout = createShopLayout();
 };
 
 #endif

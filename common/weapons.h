@@ -19,7 +19,7 @@ struct Weapon {
   float spreadAngle;
   int bulletsPerShoot;
   float maxRange;
-  int maxAmmo;
+  uint32_t maxAmmo;
   float cooldown;
 };
 
