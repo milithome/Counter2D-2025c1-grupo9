@@ -1,7 +1,11 @@
 target_sources(taller_tests
-    PUBLIC
+PUBLIC
+    ../server/server.h
+    ../server/admin.h
+    ../server/acceptor.h
+    ../common/utilities/map.h
     helper_test.h
-    PRIVATE
+PRIVATE
     protocolClientSenderTest.cpp
     protocolActionTest.cpp
     protocolServerSenderTest.cpp
@@ -9,8 +13,9 @@ target_sources(taller_tests
     ../server/server.cpp
     ../server/admin.cpp
     ../server/acceptor.cpp
-    ../server/clientHandler.cpp
-    ../server/gameLoop.cpp
-    ../server/lobby.cpp
     ../common/utilities/map.cpp
+    ../server/match.cpp
+    ../server/clientReceiver.cpp
+    ../server/clientSender.cpp
+    ../server/menu.cpp
 )

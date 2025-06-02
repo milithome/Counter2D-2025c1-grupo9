@@ -113,9 +113,12 @@ TEST(FlowControlTest, TestLobby1ClientResponse) {
     EXPECT_EQ(response.type, Type::LEAVE);
     EXPECT_EQ(response.result, 0);
     EXPECT_EQ(response.message, "Leave successful");
+
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+
     protocol.send_disconnect();
+    response = protocol.recv_response();
 
     // Ahora apagamos el server
     write(fds[1], "q\n", 2);
@@ -337,7 +340,6 @@ TEST(FlowControlTest, TestLobbyReadyAndStartGame) {
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     for (auto& client : clients) {
         expect_initial_data(*client);
     }
@@ -349,5 +351,6 @@ TEST(FlowControlTest, TestLobbyReadyAndStartGame) {
     }
 
     disconnect_all(clients);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     shutdown_server(fds[1], serverThread);
 }

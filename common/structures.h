@@ -212,6 +212,7 @@ struct Message {
     uint16_t size;
     std::string name;
     Action action;
+    std::string clientName;
 };
 
 
@@ -235,11 +236,13 @@ struct ActionRequest {
 
 struct LobbyChannels {
     std::shared_ptr<Queue<LobbyRequest>> toLobby;
-    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
+    std::shared_ptr<Queue<Response>> fromLobby;
 };
 
 struct GameChannels {
     std::shared_ptr<Queue<ActionRequest>> toGame;
     std::shared_ptr<Queue<Response>> fromGame;
 };
+
+
 #endif
