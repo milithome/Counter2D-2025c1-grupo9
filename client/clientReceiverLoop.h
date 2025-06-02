@@ -17,6 +17,7 @@ private:
     Queue<Response>& queue;
 
 public:
+    
     RecvLoop(Protocol& proto, Queue<Response>& q);
 
     void run() override;
