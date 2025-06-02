@@ -22,7 +22,6 @@ public:
     void updateGameState(StateGame entities);
     void processEvents();
     void update(float deltaTime);
-    // std::vector<Action> getActions();
 
 
 private:

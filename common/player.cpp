@@ -180,6 +180,7 @@ void Player::changeWeapon(WeaponType newEquippedWeapon){
   }else{
     equipped=knife;
   }
+  weaponEquipped=newEquippedWeapon; 
 }
 
 void Player::replaceWeapon(WeaponName weapon){

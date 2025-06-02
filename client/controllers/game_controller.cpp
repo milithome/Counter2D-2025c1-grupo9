@@ -45,8 +45,8 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_1: {
-            PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
-            if (playerData.inventory.primary) {
+            // PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (true) { // el jugador tiene arma primaria
                 Action action;
                 action.type = ActionType::CHANGE_WEAPON;
                 action.data = ChangeWeaponAction{WeaponType::PRIMARY};
@@ -69,11 +69,18 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
-            //PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
-            if (false) { // tiene bomba
-                // plantar
+            PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (playerData.inventory.has_the_bomb) {
+                // Action action{ActionType::PLANT};
+                // game.execute(player_name, action);
+                return;
             }
             break;  
+        }
+        case SDLK_e: {
+            // Action action{ActionType::DEFUSE};
+            // game.execute(player_name, action);
+            break;
         }
         default: {
             break;
@@ -87,7 +94,6 @@ void GameController::onKeyPressed(const SDL_Event& event) {
 
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
         game.execute(player_name, action);
-        //game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
 }
 
@@ -110,8 +116,14 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             movement_keys_vector[0] -= 1;
             break;
         }
+        case SDLK_4: {
+            // Action action{ActionType::STOP_PLANTING};
+            // game.execute(player_name, action);
+            break;
+        }
         case SDLK_e: {
-            //game.plantStop();
+            // Action action{ActionType::STOP_DEFUSING};
+            // game.execute(player_name, action);
             break;
         }
     }
@@ -122,9 +134,7 @@ void GameController::onKeyReleased(const SDL_Event& event) {
  
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
         game.execute(player_name, action);
-        //game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
-
 }
 
 void GameController::onQuitPressed() {
@@ -137,7 +147,6 @@ void GameController::onMouseMovement() {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    // game.updateRotation(player_name, angleDegrees);
 
     Action action{ActionType::POINT_TO, PointToAction{angleDegrees}};
     action_queue.push(action);
@@ -156,7 +165,9 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
             uint32_t y_range_end = y_range_begining + buyPrimaryAmmoButton.second.second;
             uint32_t x = event.button.x;
             uint32_t y = event.button.y;
-            if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+
+            Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
+            if (inv.primary && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
                 Action action;
                 action.type = ActionType::BUY_BULLET;
                 action.data = BuyBulletAction{WeaponType::PRIMARY};

@@ -221,7 +221,9 @@ Entity Game::getPlayerState(const std::string& name) {
   inv.secondary = player.getSecondaryWeaponName();
   inv.bulletsPrimary = player.getBulletsPrimary();
   inv.bulletsSecondary = player.getBulletsSecondary();
+  inv.has_the_bomb = player.getHasTheSpike();
   PlayerData data;
+  data.equippedWeapon = player.getWeaponEquipped();
   data.inventory = inv;
   data.name= player.getName();
   data.rotation = player.getRotation();

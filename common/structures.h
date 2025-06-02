@@ -54,6 +54,7 @@ struct Inventory {
     WeaponName secondary;
     uint32_t bulletsPrimary;
     uint32_t bulletsSecondary;
+    bool has_the_bomb;
 };
 
 struct PlayerData {
@@ -63,6 +64,7 @@ struct PlayerData {
     int money;
     float health;
     Inventory inventory;
+    WeaponType equippedWeapon;
 };
 
 struct BombData {

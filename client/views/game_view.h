@@ -87,8 +87,7 @@ struct InterfaceLayout {
 //     std::function<Rect()> secondaryAmmoBoughtLabel;
 // };
 
-// k inventory
-// d dropped // excepto bomba, esa tambien es k
+// d inventory, dropped
 // m shop
 // _ ingame
 
@@ -114,8 +113,6 @@ private:
     Game& game;
     std::string playerName;
     Map& map;
-    //std::vector<std::vector<uint16_t>> tiles_map;
-    //std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
 
 
     Texture mapTiles;
@@ -147,7 +144,6 @@ private:
     Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
     Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
     Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
-
 
     Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
     Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");

@@ -13,7 +13,7 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  int money = 200;
+  int money = 1000;
   Weapon equipped = Weapons::Glock;
   WeaponType weaponEquipped = WeaponType::SECONDARY;
   Weapon knife= Weapons::Knife;
@@ -22,7 +22,7 @@ private:
   uint32_t bulletsPrimary = 10;
   uint32_t bulletsSecondary = 10;
   float rotation;
-  float health;
+  float health = 100;
   bool hasTheSpike=false;
   float vx = 0, vy = 0;
   float aceleration = 0;
