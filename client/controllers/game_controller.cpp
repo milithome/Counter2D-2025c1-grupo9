@@ -128,7 +128,6 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
                 action.type = ActionType::BUY_BULLET;
                 action.data = BuyBulletAction{WeaponType::PRIMARY};
                 game.execute(player_name, action);
-                std::cout << "se compro balas primaria" << std::endl;
             }
             auto buySecondaryAmmoButton = view.getBuySecondaryAmmoButton();
             x_range_begining = buySecondaryAmmoButton.first.first;
@@ -141,7 +140,6 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
                 action.type = ActionType::BUY_BULLET;
                 action.data = BuyBulletAction{WeaponType::SECONDARY};
                 game.execute(player_name, action);
-                std::cout << "se compro balas secundaria" << std::endl;
             }
             auto buyWeaponButtons = view.getWeaponShopButtons();
             
@@ -156,7 +154,6 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
                     action.type = ActionType::BUY_WEAPON;
                     action.data = BuyWeaponAction{weapon};
                     game.execute(player_name, action);
-                    std::cout << "se compro un arma" << std::endl;
                 }
             }
             return;

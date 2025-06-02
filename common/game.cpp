@@ -153,7 +153,7 @@ void Game::changeWeapon(const std::string &name, WeaponType type){
 }
 
 void Game::buyWeapon(const std::string &name, WeaponName weaponName){
-  Player player = findPlayerByName(name);
+  Player& player = findPlayerByName(name);
   int price= Store::getWeaponPrice(weaponName);
   if (player.getMoney()>=price){
     player.updateMoney(-price);

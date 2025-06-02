@@ -47,6 +47,27 @@ struct ShopLayout {
     Rect primaryAmmoPriceLabel;
     Rect secondaryAmmoPriceLabel;
 };
+// TODO: cambiar el createShopLayout para que use esto
+// struct ShopLayout {
+//     Rect container;
+
+//     std::function<Rect()> primaryWeaponLabel;
+//     std::vector<std::function<Rect()>> weaponItemContainers;
+//     std::vector<std::function<Rect()>> weaponLabels;
+//     std::vector<std::function<Rect()>> weaponPriceLabels;
+//     std::vector<std::function<Rect()>> boughtLabels;
+//     std::vector<std::function<Rect()>> weaponSprites;
+
+//     std::function<Rect()> ammoLabel;
+//     std::function<Rect()> primaryAmmoContainer;
+//     std::function<Rect()> secondaryAmmoContainer;
+//     std::function<Rect()> primaryAmmoLabel;
+//     std::function<Rect()> secondaryAmmoLabel;
+//     std::function<Rect()> primaryAmmoPriceLabel;
+//     std::function<Rect()> secondaryAmmoPriceLabel;
+//     std::function<Rect()> primaryAmmoBoughtLabel;
+//     std::function<Rect()> secondaryAmmoBoughtLabel;
+// };
 
 class GameView {
 public:

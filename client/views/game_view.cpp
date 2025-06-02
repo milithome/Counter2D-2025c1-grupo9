@@ -198,6 +198,7 @@ void GameView::showShop() {
     Texture BoughtLabelTexture(renderer, BoughtLabel);
 
     Entity player = game.getPlayerState(playerName);
+    uint32_t money = std::get<PlayerData>(player.data).money;
     Inventory inv = std::get<PlayerData>(player.data).inventory;
     
     //int item_container_x = container.GetX() + CONTAINER_MARGIN;
@@ -321,6 +322,20 @@ void GameView::showShop() {
             secondaryAmmoBoughtLabelTexture.GetWidth(), 
             secondaryAmmoBoughtLabelTexture.GetHeight()));
 
+
+    const int CONTAINER_MARGIN = 20;
+    Surface moneyLabel = font.RenderText_Blended("Money: $" + std::to_string(money), Color(255, 255, 255));
+    Texture moneyLabelTexture = Texture(renderer, moneyLabel);
+    Rect moneyLabelRect(
+        shopLayout.container.GetX() + shopLayout.container.GetW() - CONTAINER_MARGIN - moneyLabel.GetWidth(), 
+        shopLayout.container.GetY() + shopLayout.container.GetH() - CONTAINER_MARGIN - moneyLabel.GetHeight(), 
+        moneyLabel.GetWidth(), 
+        moneyLabel.GetHeight());
+
+    renderer.Copy(
+        moneyLabelTexture, 
+        NullOpt, 
+        moneyLabelRect);
 }
 
 ShopLayout GameView::createShopLayout() {
@@ -372,7 +387,7 @@ ShopLayout GameView::createShopLayout() {
         int price = shop[i].second;
         std::string weaponLabelText;
 
-        //Texture weaponTexture(renderer, AK47ShopSprite);
+        Texture weaponTexture(renderer, AK47ShopSprite);
         switch (weapon) {
             case WeaponName::AK47: {
                 weaponLabelText = "AK-47";
@@ -380,12 +395,12 @@ ShopLayout GameView::createShopLayout() {
             }
             case WeaponName::AWP: {
                 weaponLabelText = "AWP";
-                //weaponTexture = Texture(renderer, AWPShopSprite);
+                weaponTexture = Texture(renderer, AWPShopSprite);
                 break;
             }
             case WeaponName::M3: {
                 weaponLabelText = "M3";
-                //weaponTexture = Texture(renderer, M3ShopSprite);
+                weaponTexture = Texture(renderer, M3ShopSprite);
                 break;
             }
             default: {
@@ -425,11 +440,45 @@ ShopLayout GameView::createShopLayout() {
         layout.weaponPriceLabels.push_back(weaponPriceLabelRect);
         // Texture weaponPriceLabelTexture(renderer, weaponPriceLabel);
         
+        uint32_t weapon_image_container_x = item_container.GetX() + ITEM_CONTAINER_MARGIN;
+        uint32_t weapon_image_container_y = item_container.GetY() + ITEM_CONTAINER_MARGIN + weaponLabel.GetHeight() + ITEM_CONTAINER_VERTICAL_SPACING;
+        uint32_t weapon_image_container_w = item_container.GetW() - ITEM_CONTAINER_MARGIN * 2;
+        uint32_t weapon_image_container_h = item_container.GetH() - ITEM_CONTAINER_MARGIN * 2 - ITEM_CONTAINER_VERTICAL_SPACING * 2 - weaponLabel.GetHeight() * 2;
+
+
+        float width_to_height_texture_scalar = static_cast<float>(weaponTexture.GetHeight()) / static_cast<float>(weaponTexture.GetWidth());
+        float height_to_width_texture_scalar = static_cast<float>(weaponTexture.GetWidth()) / static_cast<float>(weaponTexture.GetHeight());
+
+
+        uint32_t weapon_texture_x;
+        uint32_t weapon_texture_y;
+        uint32_t weapon_texture_w;
+        uint32_t weapon_texture_h;
+        if (
+            weapon_image_container_w * width_to_height_texture_scalar 
+            > weapon_image_container_h) {
+                weapon_texture_y = weapon_image_container_y;
+                weapon_texture_h = weapon_image_container_h;
+                weapon_texture_w = weapon_image_container_h * height_to_width_texture_scalar;
+                weapon_texture_x = weapon_image_container_x + ((weapon_image_container_w - weapon_texture_w)/2);
+
+        } else if (
+            weapon_image_container_h * height_to_width_texture_scalar
+            > weapon_image_container_w) {
+                weapon_texture_x = weapon_image_container_x;
+                weapon_texture_w = weapon_image_container_w;
+                weapon_texture_h = weapon_image_container_w * width_to_height_texture_scalar;
+
+                weapon_texture_y = weapon_image_container_y;
+                weapon_texture_y = weapon_image_container_y + ((weapon_image_container_h - weapon_texture_h)/2);
+
+        }
+
         Rect weaponTextureRect(
-            item_container.GetX() + ITEM_CONTAINER_MARGIN, 
-            item_container.GetY() + ITEM_CONTAINER_MARGIN + weaponLabel.GetHeight() + ITEM_CONTAINER_VERTICAL_SPACING, 
-            item_container.GetW() - ITEM_CONTAINER_MARGIN * 2, 
-            item_container.GetH() - ITEM_CONTAINER_MARGIN * 2 - ITEM_CONTAINER_VERTICAL_SPACING * 2 - weaponLabel.GetHeight() * 2);
+            weapon_texture_x, 
+            weapon_texture_y, 
+            weapon_texture_w, 
+            weapon_texture_h);
         layout.weaponSprites.push_back(weaponTextureRect);
 
 
@@ -519,6 +568,8 @@ ShopLayout GameView::createShopLayout() {
         secondaryAmmoPriceLabel.GetWidth(), 
         secondaryAmmoPriceLabel.GetHeight());
     layout.secondaryAmmoPriceLabel = secondaryAmmoPriceLabelRect;
+
+
     return layout;
 }
 
