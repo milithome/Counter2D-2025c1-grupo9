@@ -13,9 +13,7 @@ void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
 
-    // std::cout << game.bulletQueueIsEmpty() << std::endl;
     while (!game.bulletQueueIsEmpty()) {
-        std::cout << "bala" << std::endl;
         view.addShotEffect(game.bulletQueuePop());
     }
 }
@@ -41,13 +39,44 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             movement_keys_vector[0] += 1;
             break;
         }
-        case SDLK_e: {
-            //game.plantBegin(player_id);
-            break;
-        }
         case SDLK_b: {
             view.switchShopVisibility();
             shop_open = !shop_open;
+            break;
+        }
+        case SDLK_1: {
+            PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (playerData.inventory.primary) {
+                Action action;
+                action.type = ActionType::CHANGE_WEAPON;
+                action.data = ChangeWeaponAction{WeaponType::PRIMARY};
+                game.execute(player_name, action);
+            }
+            break;
+        }
+        case SDLK_2: {
+            Action action;
+            action.type = ActionType::CHANGE_WEAPON;
+            action.data = ChangeWeaponAction{WeaponType::SECONDARY};
+            game.execute(player_name, action);
+            break;
+        }
+        case SDLK_3: {
+            Action action;
+            action.type = ActionType::CHANGE_WEAPON;
+            action.data = ChangeWeaponAction{WeaponType::KNIFE};
+            game.execute(player_name, action);
+            break;
+        }
+        case SDLK_4: {
+            //PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (false) { // tiene bomba
+                // plantar
+            }
+            break;  
+        }
+        default: {
+            break;
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
@@ -55,8 +84,10 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         action_queue.push(action);
         actions.push_back(action);
 
+
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
+        game.execute(player_name, action);
+        //game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
 }
 
@@ -90,7 +121,8 @@ void GameController::onKeyReleased(const SDL_Event& event) {
         actions.push_back(action);
  
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
+        game.execute(player_name, action);
+        //game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
     }
 
 }
@@ -105,11 +137,12 @@ void GameController::onMouseMovement() {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    game.updateRotation(player_name, angleDegrees);
+    // game.updateRotation(player_name, angleDegrees);
 
     Action action{ActionType::POINT_TO, PointToAction{angleDegrees}};
     action_queue.push(action);
     actions.push_back(action);
+    game.execute(player_name, action);
 }
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {

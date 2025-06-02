@@ -47,16 +47,34 @@ struct ShopLayout {
     Rect primaryAmmoPriceLabel;
     Rect secondaryAmmoPriceLabel;
 };
+
+
+struct InterfaceLayout {
+    Rect container;
+    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> health;
+    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> ammo;
+    std::function<Rect(Rect parent, Surface& label)> time;
+
+    std::function<Rect(Rect parent, std::vector<Rect> parentsChildren, uint32_t position)> createWeaponContainer;
+    std::function<Rect(Rect parent, Surface& sprite)> createWeaponSprite;
+
+};
+
 // TODO: cambiar el createShopLayout para que use esto
 // struct ShopLayout {
 //     Rect container;
 
-//     std::function<Rect()> primaryWeaponLabel;
-//     std::vector<std::function<Rect()>> weaponItemContainers;
-//     std::vector<std::function<Rect()>> weaponLabels;
-//     std::vector<std::function<Rect()>> weaponPriceLabels;
-//     std::vector<std::function<Rect()>> boughtLabels;
-//     std::vector<std::function<Rect()>> weaponSprites;
+//     std::function<Rect(std::vector<Rect> children)> sectionVBox;
+//     std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)> primaryWeaponLabel;
+//     std::vector<std::function<Rect(std::vector<Rect> parentsChildren, uint32_t position)>> weaponItemContainers; // Es una HBox
+//     ////////////////////////////////////////////////////////
+
+//     // Forman parte de una "VBox" que esta adentro de cada itemContainer
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponLabels;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponPriceLabels;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponSprites;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> boughtLabels;
+//     /////////////////////////////////////////////////////////////////////
 
 //     std::function<Rect()> ammoLabel;
 //     std::function<Rect()> primaryAmmoContainer;
@@ -68,6 +86,11 @@ struct ShopLayout {
 //     std::function<Rect()> primaryAmmoBoughtLabel;
 //     std::function<Rect()> secondaryAmmoBoughtLabel;
 // };
+
+// k inventory
+// d dropped // excepto bomba, esa tambien es k
+// m shop
+// _ ingame
 
 class GameView {
 public:
@@ -117,6 +140,14 @@ private:
     Surface M3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
     Surface AWPShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
 
+    Surface AKInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
+    Surface M3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
+    Surface AWPInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
+
+    Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
+    Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
+    Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
+
 
     Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
     Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
@@ -135,8 +166,10 @@ private:
     void showInterface();
     void showShop();
     ShopLayout createShopLayout();
+    InterfaceLayout createInterfaceLayout();
 
     ShopLayout shopLayout = createShopLayout();
+    InterfaceLayout interfaceLayout = createInterfaceLayout();
 };
 
 #endif
