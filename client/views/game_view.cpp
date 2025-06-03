@@ -49,7 +49,6 @@ Renderer GameView::createRenderer(Window& window) {
 void GameView::update(float deltaTime) {
     renderer.Clear();
 
-
     // graficar
     SDL_Point center = getCenterPoint();
     float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
@@ -68,16 +67,12 @@ void GameView::update(float deltaTime) {
         showShop();
     }
 
-    // TODO: sonido
-    // Chunk sound("../assets/sfx/weapons/usp_silenced.wav");
-    // mixer.PlayChannel(-1, sound, 0);
 
     renderer.Present();
 }
 
 
 void GameView::playShotSound() {
-    std::cout << "sonido" << std::endl;
     mixer.PlayChannel(-1, glockSound, 0);
 }
 

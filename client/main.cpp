@@ -63,6 +63,7 @@ int main(int argc, char **argv) try {
 	protocol.send_name(clientName);
 
 	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	TTF_Init();
 	
     QApplication app(argc, argv);
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -107,7 +108,7 @@ int main(int argc, char **argv) try {
 			}
         }
     });
-    timer->start(0);
+    timer->start(16); // limita el menu a 60fps
 
 
 	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
@@ -130,6 +131,10 @@ int main(int argc, char **argv) try {
 	}
 	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
 	GameController gameController = GameController(gameView, game, clientName);
+
+
+	const int FPS = 60; // limite de fps ingame
+	const int frameDelay = 1000 / FPS;
 
 	uint32_t lastTime = 0;
 	while (game.isRunning()) {
@@ -162,6 +167,13 @@ int main(int argc, char **argv) try {
 				}
 			}
 		}
+
+
+		Uint32 frameTime = SDL_GetTicks() - currentTime;
+
+		if (frameDelay > frameTime) {
+			SDL_Delay(frameDelay - frameTime);
+		}
 	}
 
 	receiver.stop();
@@ -170,6 +182,8 @@ int main(int argc, char **argv) try {
 	sender.join();
 	recv_queue.close();
 	send_queue.close();
+
+	TTF_Quit();
 
 	return 0;
 

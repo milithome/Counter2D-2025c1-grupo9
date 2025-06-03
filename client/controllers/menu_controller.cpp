@@ -6,6 +6,7 @@
 #include "leave_event.h"
 #include "list_event.h"
 #include "create_event.h"
+#include "start_event.h"
 
 MenuController::MenuController(QtWindow& window, Protocol& protocol) : window(window), protocol(protocol) {
     mainView = MainView();
@@ -65,6 +66,7 @@ void MenuController::onPartyViewLeaveButtonClicked() {
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
+    emit nuevoEvento(new StartEvent());
     // window.clearWindow();
     // window.quit();
 }
@@ -119,7 +121,6 @@ void MenuController::onSearchPartyViewBackButtonClicked() {
     listenToMainView(mainView);
     window.showView(mainView);
 }
-
 
 
 
