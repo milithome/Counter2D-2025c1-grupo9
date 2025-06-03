@@ -32,7 +32,7 @@ enum class WeaponType {
   KNIFE,
 };
 
-enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE };
+enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE};
 
 // Tipos de entidades del juego
 enum EntityType {
