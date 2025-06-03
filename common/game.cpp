@@ -246,8 +246,8 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
   if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
     shooter.updatePrimaryBullets(-bullets);
   }
-  if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
-    shooter.updatePrimaryBullets(-bullets);
+  if (shooter.getTypeEquipped()== WeaponType::SECONDARY){
+    shooter.updateSecondaryBullets(-bullets);
   }
   
   for (int i = 0; i < bullets; i++) {
@@ -332,9 +332,15 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   if (shooter.getShootCooldown() > 0) {
     return;
   }
-  if (shooter.getBullets()<shooter.getBulletsPerShoot()){
-    return;
+  std::cout << "Balas actuales: " << shooter.getBullets()
+          << ", Balas necesarias: " << shooter.getBulletsPerShoot()
+          << std::endl;
+
+  if (shooter.getBullets() < shooter.getBulletsPerShoot()) {
+      std::cout << "No se puede disparar: no hay suficientes balas" << std::endl;
+      return;
   }
+
 
   const Weapon &equipped = shooter.getEquipped();
 
