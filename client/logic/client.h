@@ -54,13 +54,13 @@ private:
     std::vector<std::string> players;  // Raro, SDL la usa para inicializar el juego
     // pero me pareceria raro q fuera un atributo de la clase de Qt, se podria ver de q el cliente vaya recibiendo los jugadores de alguna manera, quizas mediante eventos
 
-    // Exclusivo Qt
+    // Exclusivo Qt, se construirian directamente en el constructor de la clase de Qt asi no habria q usar punteros ni nada
     std::unique_ptr<QApplication> app;
     std::unique_ptr<QtWindow> menuWindow;
     std::unique_ptr<QTimer> timer;
     std::unique_ptr<MenuController> menuController;
 
-    // Exclusivo SDL
+    // Exclusivo SDL, se construirian directamente en el constructor de la clase de SDL asi no habria q usar punteros ni nada
     std::unique_ptr<GameView> gameView;
     std::unique_ptr<GameController> gameController;
 
