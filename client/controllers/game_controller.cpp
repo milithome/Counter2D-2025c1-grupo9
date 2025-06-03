@@ -253,6 +253,7 @@ void GameController::updateGameState(StateGame state) {
                 game.updateRotation(data.name, data.rotation);
                 break;
             }
+
             default: {
                 break;
             }
