@@ -3,6 +3,13 @@
 #include <filesystem>
 #include <unordered_map>
 #include <string>
+#include "components/sdl_components/sdl_container.h"
+#include "components/sdl_components/sdl_hboxcontainer.h"
+#include "components/sdl_components/sdl_vboxcontainer.h"
+#include "components/sdl_components/sdl_surfacewidget.h"
+
+
+
 namespace fs = std::filesystem;
 
 
@@ -11,6 +18,8 @@ GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_p
     : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()) {
         renderer.SetDrawColor(0, 0, 0, 255);
         renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+
+        mixer.SetVolume(-1, MIX_MAX_VOLUME); 
 
         AK47ShopSprite.SetColorKey(true, SDL_MapRGB(AK47ShopSprite.Get()->format, 255, 0, 255));
         M3ShopSprite.SetColorKey(true, SDL_MapRGB(M3ShopSprite.Get()->format, 255, 0, 255));
@@ -64,8 +73,14 @@ void GameView::update(float deltaTime) {
     // mixer.PlayChannel(-1, sound, 0);
 
     renderer.Present();
-
 }
+
+
+void GameView::playShotSound() {
+    std::cout << "sonido" << std::endl;
+    mixer.PlayChannel(-1, glockSound, 0);
+}
+
 void GameView::showBackground() {
     renderer.SetDrawColor(0, 0, 0, 255);
     Rect src(0, 0, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
@@ -616,6 +631,178 @@ ShopLayout GameView::createShopLayout() {
     const int ITEM_CONTAINER_MARGIN = 10;
     const int ITEM_CONTAINER_VERTICAL_SPACING = 5;
 
+
+    // Delirio
+    /////////////////////////////////////////////////////////////////////////
+    /*
+    SdlNullWidget nullWidget;
+    SdlContainer container(
+        Rect(
+            0, 0, width, height
+        ),
+        nullWidget
+    );
+    container.setMargin(CONTAINER_MARGIN);
+    container.setPadding(MARGIN);
+
+    SdlVBoxContainer sectionsContainer;
+    sectionsContainer.setSpacing(CONTAINER_VERTICAL_SPACING);
+
+    SdlHBoxContainer weaponSectionVBox;
+    weaponSectionVBox.setSpacing(SECTION_VERTICAL_SPACING);
+    SdlHBoxContainer ammoSectionVBox;
+    ammoSectionVBox.setSpacing(SECTION_VERTICAL_SPACING);
+
+    SdlHBoxContainer weaponContainersHBox; 
+    weaponContainersHBox.setSpacing(SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING);
+
+
+    Surface primaryWeaponSectionLabel = font.RenderText_Blended("PRIMARY WEAPONS", Color(255, 255, 255));
+    SdlSurfaceWidget primaryWeaponSectionLabelWidget(primaryWeaponSectionLabel);
+    primaryWeaponSectionLabelWidget.setSizePolicy(FIXED);
+
+    SdlHBoxContainer ammoContainersHBox;
+    ammoContainersHBox.setSpacing(SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING);
+
+    Surface ammoSectionLabel = font.RenderText_Blended("AMMO", Color(255, 255, 255));
+    SdlSurfaceWidget ammoSectionLabelWidget(ammoSectionLabel);
+    ammoSectionLabelWidget.setSizePolicy(FIXED);
+
+
+    auto shop = game.getStore();
+
+    for (size_t i = 0; i < shop.size(); i++) {
+        WeaponName weapon = shop[i].first;
+        int price = shop[i].second;
+        std::string weaponLabelText;
+
+        switch (weapon) {
+            case WeaponName::AK47: {
+                weaponLabelText = "AK-47";
+                break;
+            }
+            case WeaponName::AWP: {
+                weaponLabelText = "AWP";
+                break;
+            }
+            case WeaponName::M3: {
+                weaponLabelText = "M3";
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
+        SdlContainer weaponItemContainer(
+            Rect(),
+            nullWidget
+        );
+        weaponItemContainer.setMargin(ITEM_CONTAINER_MARGIN);
+
+        SdlVBoxContainer weaponInfoContainer;
+
+        weaponInfoContainer.setSpacing(ITEM_CONTAINER_VERTICAL_SPACING);
+
+        Surface weaponLabel = font.RenderText_Blended(weaponLabelText, Color(255, 255, 255));
+        Surface priceLabel = font.RenderText_Blended(std::to_string(price), Color(255, 255, 255));
+        SdlHBoxContainer weaponAndPriceVBox;
+        Surface weaponBoughtLabel = font.RenderText_Blended(std::to_string(price), Color(255, 255, 255));
+        SdlSurfaceWidget weaponLabelWidget(weaponLabel);
+        weaponLabelWidget.setSizePolicy(FIXED);
+        SdlSurfaceWidget weaponBoughtLabelWidget(weaponBoughtLabel);
+        weaponBoughtLabelWidget.setSizePolicy(FIXED);
+        SdlSurfaceWidget weaponPriceLabelWidget(priceLabel);
+        weaponPriceLabelWidget.setSizePolicy(FIXED);
+        SdlSurfaceWidget weaponSpriteWidget((weapon == AK47 ? AK47ShopSprite : (weapon == M3 ? M3ShopSprite : AWPShopSprite))); // solucion fea, podria hacer q el widget reciba un path directamente
+        weaponSpriteWidget.setSizePolicy(EXPAND_BUT_MAINTAIN_RATIO);
+
+        weaponAndPriceVBox.addChild(weaponLabelWidget);
+        weaponAndPriceVBox.addChild(weaponPriceLabelWidget);
+        weaponInfoContainer.addChild(weaponAndPriceVBox);
+        weaponInfoContainer.addChild(weaponBoughtLabelWidget);
+
+        weaponItemContainer.setChild(Alignment{MIDDLE, CENTER}, weaponInfoContainer);
+    }
+
+    
+    SdlContainer pAmmoItemContainer(
+        Rect(),
+        nullWidget
+    );
+
+    pAmmoItemContainer.setMargin(ITEM_CONTAINER_MARGIN);
+
+    SdlVBoxContainer pAmmoInfoContainer;
+
+    pAmmoInfoContainer.setSpacing(ITEM_CONTAINER_VERTICAL_SPACING);
+
+    Surface pAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
+    Surface pAmmoPriceLabel = font.RenderText_Blended(std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    SdlHBoxContainer pAmmoAndPriceVBox;
+    Surface pAmmoBoughtLabel = font.RenderText_Blended("amount", Color(255, 255, 255));
+    SdlSurfaceWidget pAmmoLabelWidget(pAmmoLabel);
+    pAmmoLabelWidget.setSizePolicy(FIXED);
+    SdlSurfaceWidget pAmmoBoughtLabelWidget(pAmmoBoughtLabel);
+    pAmmoBoughtLabelWidget.setSizePolicy(FIXED);
+    SdlSurfaceWidget pAmmoPriceLabelWidget(pAmmoPriceLabel);
+    pAmmoPriceLabelWidget.setSizePolicy(FIXED);
+    
+    pAmmoAndPriceVBox.addChild(pAmmoLabelWidget);
+    pAmmoAndPriceVBox.addChild(pAmmoPriceLabelWidget);
+    pAmmoInfoContainer.addChild(pAmmoAndPriceVBox);
+    pAmmoInfoContainer.addChild(pAmmoBoughtLabelWidget);
+
+    pAmmoItemContainer.setChild(Alignment{MIDDLE, CENTER}, pAmmoInfoContainer);
+
+    
+
+
+
+    SdlContainer sAmmoItemContainer(
+        Rect(),
+        nullWidget
+    );
+
+    SdlVBoxContainer sAmmoInfoContainer;
+
+    sAmmoItemContainer.setMargin(ITEM_CONTAINER_MARGIN);
+
+    sAmmoInfoContainer.setSpacing(ITEM_CONTAINER_VERTICAL_SPACING);
+
+    Surface sAmmoLabel = font.RenderText_Blended("Secondary", Color(255, 255, 255));
+    Surface sAmmoPriceLabel = font.RenderText_Blended(std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    SdlHBoxContainer sAmmoAndPriceVBox;
+    Surface sAmmoBoughtLabel = font.RenderText_Blended("amount", Color(255, 255, 255));
+    SdlSurfaceWidget sAmmoLabelWidget(sAmmoLabel);
+    sAmmoLabelWidget.setSizePolicy(FIXED);
+    SdlSurfaceWidget sAmmoBoughtLabelWidget(sAmmoBoughtLabel);
+    sAmmoBoughtLabelWidget.setSizePolicy(FIXED);
+    SdlSurfaceWidget sAmmoPriceLabelWidget(sAmmoPriceLabel);
+    sAmmoPriceLabelWidget.setSizePolicy(FIXED);
+    
+    sAmmoAndPriceVBox.addChild(sAmmoLabelWidget);
+    sAmmoAndPriceVBox.addChild(sAmmoPriceLabelWidget);
+    sAmmoInfoContainer.addChild(sAmmoAndPriceVBox);
+    sAmmoInfoContainer.addChild(sAmmoBoughtLabelWidget);
+
+    sAmmoItemContainer.setChild(Alignment{MIDDLE, CENTER}, sAmmoInfoContainer);
+
+    weaponSectionVBox.addChild(primaryWeaponSectionLabelWidget);
+    weaponSectionVBox.addChild(weaponContainersHBox);
+
+    ammoSectionVBox.addChild(ammoSectionLabelWidget);
+    ammoSectionVBox.addChild(ammoContainersHBox);
+
+    sectionsContainer.addChild(weaponSectionVBox);
+    sectionsContainer.addChild(ammoSectionVBox);
+
+
+    container.setChild(Alignment{MIDDLE, CENTER}, sectionsContainer);
+
+    */
+    /////////////////////////////////////////////////
+
     
     Rect container(MARGIN, MARGIN, width - 2 * MARGIN, height - 2 * MARGIN);
     layout.container = container;
@@ -665,7 +852,6 @@ ShopLayout GameView::createShopLayout() {
             default: {
                 break;
             }
-
         }
 
         Rect item_container(

@@ -8,19 +8,25 @@
 class SdlSurfaceWidget : public SdlWidget {
 
 public:
-    SdlSurfaceWidget(SDL2pp::Rect& rect, SDL2pp::Surface& child) : SdlWidget(rect), rect(rect), child(child) { build(); };
+    SdlSurfaceWidget(SDL2pp::Surface& child) : child(child) { build(); };
 
     void build() {
         rect.SetH(child.GetHeight());
         rect.SetW(child.GetWidth());
-        
     }
-
+     
+    void draw(SDL2pp::Renderer& renderer) override {
+        SDL2pp::Texture texture(renderer, child);
+        renderer.Copy(
+            texture, 
+            SDL2pp::NullOpt, 
+            rect);
+    }
 
 
 private:
     SDL2pp::Surface& child;
-    SDL2pp::Rect& rect;
+    SDL2pp::Rect rect;
 };
 
 

@@ -178,7 +178,7 @@ int main(int argc, char **argv) try {
 
 // main reducido para testear
 void game_run(std::string clientName) {
-	SDL sdl(SDL_INIT_VIDEO);
+	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	TTF_Init();
 	
 	Map map = Map("../assets/maps/default.yaml");
