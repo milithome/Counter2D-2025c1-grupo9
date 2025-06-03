@@ -3,17 +3,20 @@ target_sources(taller_server
     # .cpp files
     acceptor.cpp
     admin.cpp
-    clientHandler.cpp
-    lobby.cpp
-    gameLoop.cpp
+    clientReceiver.cpp
+    clientSender.cpp
+    match.cpp
     server.cpp
+    menu.cpp
     main.cpp
     PUBLIC
     # .h files
     admin.h
     acceptor.h
-    clientHandler.h
-    lobby.h
-    gameLoop.h
+    clientReceiver.h
+    clientSender.h
+    match.h
     server.h
+    menu.h
+    serverStructures.h
     )

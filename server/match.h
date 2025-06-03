@@ -1,0 +1,52 @@
+#ifndef MATCH_H
+#define MATCH_H
+
+#include <string>
+#include <unordered_set>
+#include "../common/utilities/thread.h"
+#include "admin.h"
+#include "common/utilities/queue.h"
+#include "common/structures.h"
+#include "../common/game.h"
+
+class Match : public Thread {
+public:
+    Match(std::string& name, Admin& admin);
+
+    ~Match() override;
+
+    void addClient(std::shared_ptr<Client> client);
+    bool isInLobby() const { return inLobby; }
+    bool isInGame() const { return inGame; }
+
+    void run() override;
+    void stop() override;
+private:
+    std::string name;
+    Admin& admin;
+    bool inLobby;
+    bool inGame;
+    size_t maxPlayers = 3;
+    std::shared_ptr<Queue<Message>> toMatch;
+    std::unordered_set<std::shared_ptr<Client>> clients;
+
+    size_t disconnectedClients;
+    
+    void lobbyLoop();
+    void handleLobbyMessage(const Message& message);
+    void handleLeave(const std::string& clientName);
+    void handleStart();
+    void broadcastLobbyState();
+    void gameLoop();
+    void waitForPlayers();
+    void setupGame(Game& game);
+    void startTimeoutThread(Game& game);
+    void runGameLoop(Game& game);
+    void processMessages(Game& game, uint maxEvents);
+    void endGame();
+    void broadcastInitialData(const MapData& mapData);
+    void broadcastGameState(const StateGame& state);
+    void handleGameMessage(const Message& message);
+};
+
+#endif
