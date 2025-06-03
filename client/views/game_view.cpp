@@ -102,27 +102,28 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         if (shot.time_left <= 0) {
             it = shot_effects.erase(it);
             continue;
-        } else {
-            ++it;
         }
+        shot.time_left -= deltaTime; 
+
         float radians = shot.angle * M_PI / 180.0 ;
         float dx = std::cos(radians);
         float dy = std::sin(radians);
 
-        int32_t previous_distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
+
+        float prev_x = shot.x;
+        float prev_y = shot.y;
 
         shot.x += dx * SHOT_SPEED * deltaTime;
         shot.y += dy * SHOT_SPEED * deltaTime;
 
-        shot.time_left -= deltaTime; 
+        float dot = (shot.target_x - prev_x) * (shot.target_x - shot.x) + (shot.target_y - prev_y) * (shot.target_y - shot.y);
 
-
-        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
-
-        if (distance_to_target > previous_distance_to_target) {
-            shot.time_left = 0;
+        if (dot < 0.0f) {
+            it = shot_effects.erase(it);
             continue;
         }
+
+        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
         int32_t length = std::min(distance_to_target, SHOT_LENGTH) + 1;
         Surface surface(
             0, length, SHOT_THICKNESS, 32,
@@ -149,7 +150,9 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
             dst, 
             shot.angle - 90.0f, 
             Point(0, SHOT_THICKNESS / 2), 
-            SDL_FLIP_NONE);    
+            SDL_FLIP_NONE);
+            
+        ++it;
     }
 }
 

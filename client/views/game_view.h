@@ -166,6 +166,10 @@ private:
 
     ShopLayout shopLayout = createShopLayout();
     InterfaceLayout interfaceLayout = createInterfaceLayout();
+
+
+
+
 };
 
 #endif
