@@ -16,6 +16,8 @@
 #include "common/communication/protocol.h"
 #include "client/clientSenderLoop.h"
 #include "client/clientReceiverLoop.h"
+#include "client/logic/sdlClient.h"
+#include "client/logic/qtClient.h"
 
 #include <QApplication>
 #include <QWidget>
@@ -41,16 +43,20 @@ private:
     // Estos podrian ser construidos en esta clase y pasados por referencia
     // a la clase q se encarga de Qt y la clase q se encarga de SDL
     std::string clientName;
-    std::unique_ptr<Queue<Response>> recv_queue;
-    std::unique_ptr<Queue<std::shared_ptr<MessageEvent>>> send_queue;
-    std::unique_ptr<RecvLoop> receiver;
-    std::unique_ptr<SendLoop> sender;
+    
+    Protocol protocol;
+    Queue<Response> recv_queue;
+    Queue<std::shared_ptr<MessageEvent>> send_queue;
+    RecvLoop receiver;
+    SendLoop sender;
 
+
+    QTClient qtClient;  // Manejo de Qt
 
     // Atributos de transicion de Qt a SDL. Serian atributos de la clase de Qt, o tal vez podrian ser accedidos de alguna forma
     // al finalizar la ejecucion de Qt, asi no son atributos de la clase
-    bool started;
-    QPoint w_pos_when_started;
+    /* bool started;
+    QPoint w_pos_when_started; */
     std::vector<std::string> players;  // Raro, SDL la usa para inicializar el juego
     // pero me pareceria raro q fuera un atributo de la clase de Qt, se podria ver de q el cliente vaya recibiendo los jugadores de alguna manera, quizas mediante eventos
 

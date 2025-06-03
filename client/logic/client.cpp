@@ -1,8 +1,19 @@
 #include "client.h"
 
-Client::Client(std::string clientName, std::string name_server, int port): clientName(clientName), started(false)
+Client::Client(std::string clientName, std::string name_server, int port): clientName(clientName), recv_queue(100), send_queue(100)
 {
-    prepare_Queues_and_QT_start(name_server, port);
+   Socket clientSocket(name_server.c_str(), std::to_string(port).c_str());
+	Protocol protocol(std::move(clientSocket));
+
+    protocol.send_name(clientName);
+    
+    receiver(protocol, recv_queue);
+    sender(protocol, send_queue);
+
+    receiver.start();
+    sender.start();
+
+    QTClient qtClient("Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT, &recv_queue, &send_queue, &protocol);
 
 }
 
@@ -36,21 +47,13 @@ void Client::prepare_Queues_and_QT_start(std::string name_server, int port)
 
     protocol.send_name(clientName);
     
-    recv_queue = std::make_unique<Queue<Response>>(100);
-    send_queue = std::make_unique<Queue<std::shared_ptr<MessageEvent>>>(100);
+    receiver(protocol, recv_queue);
+    sender(protocol, send_queue);
 
-    receiver = std::make_unique<RecvLoop>(protocol, recv_queue);
-    sender = std::make_unique<SendLoop>(protocol, send_queue);
+    receiver.start();
+    sender.start();
 
-    if (receiver) {
-    receiver->start();
-    }
-    if (sender) {
-        sender->start();
-    }
-    app = std::make_unique<QApplication>(0, nullptr);
-	menuWindow = std::make_unique<QtWindow>(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
-	menuController = std::make_unique<MenuController>(menuWindow, protocol);
+    QTClient qtClient("Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT, &recv_queue, &send_queue, &protocol);
 }
 
 /* void Client::QT_start(Protocol protocol)
