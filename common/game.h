@@ -14,6 +14,14 @@
 #ifndef GAME_H
 #define GAME_H
 
+
+// TODO (de manuel):
+// 1. De alguna forma tenes que registrar que el jugador esta en la tienda, asi se evita que pueda disparar
+//    mientras esta en el menu de compra y asi se cuando registrar los eventos de que se clickeo
+//    en algun boton de la tienda (Esto igual podria ir en GameController, se puede debatir donde quedaria mejor)
+// 2. No tiene q ver con el tema grafico pero si algo que note, el jugador parece q puede seguir disparando
+//    incluso si tiene 0 balas (lo q despues causa el overflow y aparece que tiene un numero telefonico de balas)
+// 3. No se si tengo forma de ver que arma tengo equipada?? capaz si esta y no lo revise pero aviso por las dudas
 class Game {
 private:
   std::vector<Player> players;
@@ -46,7 +54,7 @@ private:
 public:
   Game(std::vector<std::vector<CellType>> game_map)
       : map(std::move(game_map)) {}
-
+  
   // son privados
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
   void updateRotation(const std::string &name, float currentRotation);
@@ -58,6 +66,7 @@ public:
                        float y); // público por tema de sincronizacion cliente
   bool addPlayer(const std::string &name);
   StateGame getState();
+  Entity getPlayerState(const std::string& name);
   std::vector<std::pair<WeaponName, int>> getStore();
   void update(float deltaTime);
   void execute(const std::string &name, Action action);

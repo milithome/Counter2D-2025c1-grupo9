@@ -30,6 +30,66 @@ struct ShotEffect {
     float time_left;
 };
 
+struct ShopLayout {
+    Rect container;
+    Rect primaryWeaponLabel;
+    std::vector<Rect> weaponItemContainers;
+    std::vector<Rect> weaponLabels;
+    std::vector<Rect> weaponPriceLabels;
+    std::vector<Rect> boughtLabels;
+    std::vector<Rect> weaponSprites;
+
+    Rect ammoLabel;
+    Rect primaryAmmoContainer;
+    Rect secondaryAmmoContainer;
+    Rect primaryAmmoLabel;
+    Rect secondaryAmmoLabel;
+    Rect primaryAmmoPriceLabel;
+    Rect secondaryAmmoPriceLabel;
+};
+
+
+struct InterfaceLayout {
+    Rect container;
+    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> health;
+    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> ammo;
+    std::function<Rect(Rect parent, Surface& label)> time;
+
+    std::function<Rect(Rect parent, std::vector<Rect> parentsChildren, uint32_t position)> createWeaponContainer;
+    std::function<Rect(Rect parent, Surface& sprite)> createWeaponSprite;
+
+};
+
+// TODO: cambiar el createShopLayout para que use esto
+// struct ShopLayout {
+//     Rect container;
+
+//     std::function<Rect(std::vector<Rect> children)> sectionVBox;
+//     std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)> primaryWeaponLabel;
+//     std::vector<std::function<Rect(std::vector<Rect> parentsChildren, uint32_t position)>> weaponItemContainers; // Es una HBox
+//     ////////////////////////////////////////////////////////
+
+//     // Forman parte de una "VBox" que esta adentro de cada itemContainer
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponLabels;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponPriceLabels;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponSprites;
+//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> boughtLabels;
+//     /////////////////////////////////////////////////////////////////////
+
+//     std::function<Rect()> ammoLabel;
+//     std::function<Rect()> primaryAmmoContainer;
+//     std::function<Rect()> secondaryAmmoContainer;
+//     std::function<Rect()> primaryAmmoLabel;
+//     std::function<Rect()> secondaryAmmoLabel;
+//     std::function<Rect()> primaryAmmoPriceLabel;
+//     std::function<Rect()> secondaryAmmoPriceLabel;
+//     std::function<Rect()> primaryAmmoBoughtLabel;
+//     std::function<Rect()> secondaryAmmoBoughtLabel;
+// };
+
+// d inventory, dropped
+// m shop
+// _ ingame
 
 class GameView {
 public:
@@ -42,6 +102,10 @@ public:
     void addShotEffect(Bullet bullet);
     void switchShopVisibility();
 
+    std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
+
 private:
     // Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
@@ -49,13 +113,12 @@ private:
     Game& game;
     std::string playerName;
     Map& map;
-    //std::vector<std::vector<uint16_t>> tiles_map;
-    //std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
 
 
     Texture mapTiles;
     Texture backgroundTexture;
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
+    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", 20);
 
     // T skins
     Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
@@ -70,8 +133,27 @@ private:
     Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
 
 
+    Surface AK47ShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
+    Surface M3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
+    Surface AWPShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+
+    Surface AKInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
+    Surface M3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
+    Surface AWPInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
+
+    Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
+    Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
+    Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
+
+    Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
+    Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
+    Texture AWPInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+
     bool shopIsVisible = false;
     std::vector<ShotEffect> shot_effects;
+    std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
+    std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
 
     void showBackground();
     void showMap(float cameraX, float cameraY);
@@ -79,6 +161,15 @@ private:
     void showEntities(float cameraX, float cameraY);
     void showInterface();
     void showShop();
+    ShopLayout createShopLayout();
+    InterfaceLayout createInterfaceLayout();
+
+    ShopLayout shopLayout = createShopLayout();
+    InterfaceLayout interfaceLayout = createInterfaceLayout();
+
+
+
+
 };
 
 #endif

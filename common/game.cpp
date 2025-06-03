@@ -212,6 +212,30 @@ StateGame Game::getState() {
   return state;
 }
 
+Entity Game::getPlayerState(const std::string& name) {
+  Player player = findPlayerByName(name);
+  Entity entity;
+  entity.type = PLAYER;
+  entity.x = player.getX();
+  entity.y = player.getY();
+  Inventory inv;
+  inv.primary = player.getPrimaryWeaponName();
+  inv.secondary = player.getSecondaryWeaponName();
+  inv.bulletsPrimary = player.getBulletsPrimary();
+  inv.bulletsSecondary = player.getBulletsSecondary();
+  inv.has_the_bomb = player.getHasTheSpike();
+  PlayerData data;
+  data.equippedWeapon = player.getTypeEquipped();
+  data.inventory = inv;
+  data.name= player.getName();
+  data.rotation = player.getRotation();
+  data.lastMoveId = player.getLastMoveId();
+  data.health = player.getHealth();
+  data.money = player.getMoney();
+  entity.data = data;
+  return entity;
+}
+
 bool Game::isRunning() { return running; }
 
 void Game::stop() { running = false; }

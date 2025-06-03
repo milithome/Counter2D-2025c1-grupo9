@@ -42,19 +42,21 @@ enum EntityType {
 };
 
 struct Inventory {
-  WeaponName primary;
-  WeaponName secondary;
-  uint32_t bulletsPrimary;
-  uint32_t bulletsSecondary;
+    WeaponName primary;
+    WeaponName secondary;
+    uint32_t bulletsPrimary;
+    uint32_t bulletsSecondary;
+    bool has_the_bomb;
 };
 
 struct PlayerData {
-  std::string name;
-  float rotation;
-  uint32_t lastMoveId;
-  int money;
-  float health;
-  Inventory inventory;
+    std::string name;
+    float rotation;
+    uint32_t lastMoveId;
+    int money;
+    float health;
+    Inventory inventory;
+    WeaponType equippedWeapon;
 };
 
 struct BombData {

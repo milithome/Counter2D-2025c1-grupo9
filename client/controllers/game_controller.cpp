@@ -13,9 +13,7 @@ void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
 
-    // std::cout << game.bulletQueueIsEmpty() << std::endl;
     while (!game.bulletQueueIsEmpty()) {
-        std::cout << "bala" << std::endl;
         view.addShotEffect(game.bulletQueuePop());
     }
 }
@@ -41,13 +39,51 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             movement_keys_vector[0] += 1;
             break;
         }
-        case SDLK_e: {
-            //game.plantBegin(player_id);
-            break;
-        }
         case SDLK_b: {
             view.switchShopVisibility();
-
+            shop_open = !shop_open;
+            break;
+        }
+        case SDLK_1: {
+            // PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (true) { // el jugador tiene arma primaria
+                Action action;
+                action.type = ActionType::CHANGE_WEAPON;
+                action.data = ChangeWeaponAction{WeaponType::PRIMARY};
+                game.execute(player_name, action);
+            }
+            break;
+        }
+        case SDLK_2: {
+            Action action;
+            action.type = ActionType::CHANGE_WEAPON;
+            action.data = ChangeWeaponAction{WeaponType::SECONDARY};
+            game.execute(player_name, action);
+            break;
+        }
+        case SDLK_3: {
+            Action action;
+            action.type = ActionType::CHANGE_WEAPON;
+            action.data = ChangeWeaponAction{WeaponType::KNIFE};
+            game.execute(player_name, action);
+            break;
+        }
+        case SDLK_4: {
+            PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
+            if (playerData.inventory.has_the_bomb) {
+                // Action action{ActionType::PLANT};
+                // game.execute(player_name, action);
+                return;
+            }
+            break;  
+        }
+        case SDLK_e: {
+            // Action action{ActionType::DEFUSE};
+            // game.execute(player_name, action);
+            break;
+        }
+        default: {
+            break;
         }
     }
     if (movement_keys.contains(event.key.keysym.sym)) {
@@ -55,8 +91,9 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         action_queue.push(action);
         actions.push_back(action);
 
+
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
+        game.execute(player_name, action);
     }
 }
 
@@ -79,8 +116,14 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             movement_keys_vector[0] -= 1;
             break;
         }
+        case SDLK_4: {
+            // Action action{ActionType::STOP_PLANTING};
+            // game.execute(player_name, action);
+            break;
+        }
         case SDLK_e: {
-            //game.plantStop();
+            // Action action{ActionType::STOP_DEFUSING};
+            // game.execute(player_name, action);
             break;
         }
     }
@@ -90,9 +133,8 @@ void GameController::onKeyReleased(const SDL_Event& event) {
         actions.push_back(action);
  
         move_actions[lastMoveId] = {game.getX(player_name), game.getY(player_name)};
-        game.movePlayer(player_name, movement_keys_vector[0], movement_keys_vector[1], lastMoveId);
+        game.execute(player_name, action);
     }
-
 }
 
 void GameController::onQuitPressed() {
@@ -105,15 +147,62 @@ void GameController::onMouseMovement() {
     SDL_GetMouseState(&mouse_position.x, &mouse_position.y);
     float angle = std::atan2(mouse_position.y - center.y, mouse_position.x - center.x);
     float angleDegrees = angle * 180.0f / 3.14159f;
-    game.updateRotation(player_name, angleDegrees);
 
     Action action{ActionType::POINT_TO, PointToAction{angleDegrees}};
     action_queue.push(action);
     actions.push_back(action);
+    game.execute(player_name, action);
 }
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (event.button.button == SDL_BUTTON_LEFT) {
+        if (shop_open) {
+            auto buyPrimaryAmmoButton = view.getBuyPrimaryAmmoButton();
+            uint32_t x_range_begining = buyPrimaryAmmoButton.first.first;
+            uint32_t x_range_end = x_range_begining + buyPrimaryAmmoButton.second.first;
+
+            uint32_t y_range_begining = buyPrimaryAmmoButton.first.second;
+            uint32_t y_range_end = y_range_begining + buyPrimaryAmmoButton.second.second;
+            uint32_t x = event.button.x;
+            uint32_t y = event.button.y;
+
+            Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
+            if (inv.primary && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                Action action;
+                action.type = ActionType::BUY_BULLET;
+                action.data = BuyBulletAction{WeaponType::PRIMARY};
+                game.execute(player_name, action);
+            }
+            auto buySecondaryAmmoButton = view.getBuySecondaryAmmoButton();
+            x_range_begining = buySecondaryAmmoButton.first.first;
+            x_range_end = x_range_begining + buySecondaryAmmoButton.second.first;
+
+            y_range_begining = buySecondaryAmmoButton.first.second;
+            y_range_end = y_range_begining + buySecondaryAmmoButton.second.second;
+            if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                Action action;
+                action.type = ActionType::BUY_BULLET;
+                action.data = BuyBulletAction{WeaponType::SECONDARY};
+                game.execute(player_name, action);
+            }
+            auto buyWeaponButtons = view.getWeaponShopButtons();
+            
+            for (const auto& [weapon, buyWeaponButton] : buyWeaponButtons) {
+                x_range_begining = buyWeaponButton.first.first;
+                x_range_end = x_range_begining + buyWeaponButton.second.first;
+
+                y_range_begining = buyWeaponButton.first.second;
+                y_range_end = y_range_begining + buyWeaponButton.second.second;
+                if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+                    Action action;
+                    action.type = ActionType::BUY_WEAPON;
+                    action.data = BuyWeaponAction{weapon};
+                    game.execute(player_name, action);
+                }
+            }
+            return;
+        }
+
 
         Action action;
         action.type = ActionType::SHOOT;
