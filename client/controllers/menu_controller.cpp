@@ -163,3 +163,9 @@ void MenuController::onLeavePartyResponseReceived(const std::string& message, co
     (void)message;
     (void)result;
 }
+
+
+void MenuController::onLobbyReady() {
+    QPushButton *startButton = partyView.getStartButton();
+    startButton->setEnabled(true);
+}

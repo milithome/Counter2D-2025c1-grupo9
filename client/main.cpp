@@ -96,6 +96,10 @@ int main(int argc, char **argv) try {
 					menuController.onLobbyPlayersReceived(players, msg.message, msg.result);
 					break;
 				}
+				case LOBBY_READY: {
+					menuController.onLobbyReady();
+					break;
+				}
 				case START: {
 					partida_iniciada = true;
 					w_pos_when_game_started = menuWindow.getPosition();

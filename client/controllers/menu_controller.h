@@ -30,6 +30,7 @@ public:
 
     void onGameStarted();
 
+    void onLobbyReady();
 
 private:
     QtWindow& window;

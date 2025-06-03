@@ -21,10 +21,13 @@ public:
             "   background-color: rgba(0, 0, 0, 0);"
             "   color: white;"
             "   border-radius: 10px;"
-            "   padding: 0px;"
+            // "   padding: 0px;"
             "}"
             "QPushButton:hover {"
             "   color: yellow;"                             
+            "}"
+            "QPushButton:disabled {"
+            "   color: rgba(255, 255, 255, 128);"  // Color cuando está deshabilitado
             "}"
         );
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -45,12 +48,20 @@ public:
 
 protected:
     void enterEvent(QEnterEvent *event) override {
-        effect->setColor(Qt::yellow);
+        if (isEnabled()) {
+            effect->setColor(Qt::yellow);
+        }
+
+
+
         QPushButton::enterEvent(event);
+
     }
 
     void leaveEvent(QEvent *event) override {
         effect->setColor(Qt::white);
+
+
         QPushButton::leaveEvent(event);
     }
 };
