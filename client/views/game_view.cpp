@@ -241,7 +241,7 @@ void GameView::showInterface() {
     std::vector<Rect> equipamiento;
     Rect primaryWeaponContainer;
     Rect primaryWeaponSprite;
-    if (true) { // tiene la primaria
+    if (playerData.inventory.primary != NONE) { // tiene la primaria
         Rect primaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, 0);
         equipamiento.push_back(primaryWeaponContainer);
         Rect primaryWeaponSprite;

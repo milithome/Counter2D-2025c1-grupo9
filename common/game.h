@@ -54,7 +54,7 @@ private:
 public:
   Game(std::vector<std::vector<CellType>> game_map)
       : map(std::move(game_map)) {}
-  
+
   // son privados
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
   void updateRotation(const std::string &name, float currentRotation);
