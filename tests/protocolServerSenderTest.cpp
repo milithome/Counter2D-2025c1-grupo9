@@ -140,8 +140,8 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         player.type = PLAYER;
         player.x = 10.0f;
         player.y = 20.0f;
-        player.data = PlayerData{"Carlos", 45.0f, 3, 1500, 100.0f, {M3, GLOCK, 10, 20}};
-
+        player.data = PlayerData{"Carlos", 45.0f, 3, 1500, 100.0f, {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY};
+        
         Entity bomb;
         bomb.type = BOMB;
         bomb.x = 12.0f;
