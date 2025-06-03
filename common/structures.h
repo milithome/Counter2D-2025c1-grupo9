@@ -1,52 +1,44 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 
+#include "common/utilities/map.h"
+#include "common/utilities/queue.h"
 #include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>
-#include <cstdint>
-#include <variant>
-#include "common/utilities/queue.h"
-#include "common/utilities/map.h"
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
-    NAME, // mandar name
-    LIST, // mandar/recibir lista de lobbies
-    CREATE, // crear un lobby y recibir confirmacion
-    JOIN, //unirse a un lobby y recibir confirmacion
-    LEAVE, // salir de un lobby y recibir confirmacion
-    STATE_LOBBY, // recibir estado del lobby
-    LOBBY_READY, // recibir que el lobby se lleno
-    START, // mandar iniciar partida
-    INITIAL_DATA, // recibir datos inicales
-    ACTION, // mandar accion
-    STATE, // recibir estado
-    FINISH, // recibir fin de la partida
-    DISCONNECT // mandar desconeccion
+  NAME,         // mandar name
+  LIST,         // mandar/recibir lista de lobbies
+  CREATE,       // crear un lobby y recibir confirmacion
+  JOIN,         // unirse a un lobby y recibir confirmacion
+  LEAVE,        // salir de un lobby y recibir confirmacion
+  STATE_LOBBY,  // recibir estado del lobby
+  LOBBY_READY,  // recibir que el lobby se lleno
+  START,        // mandar iniciar partida
+  INITIAL_DATA, // recibir datos inicales
+  ACTION,       // mandar accion
+  STATE,        // recibir estado
+  FINISH,       // recibir fin de la partida
+  DISCONNECT    // mandar desconeccion
 };
 
 // Tipos de armas disponibles en el juego
 enum class WeaponType {
-    PRIMARY,
-    SECONDARY,
-    KNIFE,
+  PRIMARY,
+  SECONDARY,
+  KNIFE,
 };
 
-enum WeaponName {
-    AK47,
-    M3,
-    AWP,
-    GLOCK,
-    KNIFE
-};
+enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE };
 
 // Tipos de entidades del juego
-enum EntityType { 
-    PLAYER,
-    BOMB,
-    WEAPON,
+enum EntityType {
+  PLAYER,
+  BOMB,
+  WEAPON,
 };
 
 struct Inventory {
@@ -68,68 +60,65 @@ struct PlayerData {
 };
 
 struct BombData {
-    bool planted;
+  bool planted;
 };
 
 struct WeaponData {
-    WeaponType type;
-    WeaponName weapon;
+  WeaponType type;
+  WeaponName weapon;
 };
 
-using EntityData = std::variant<std::monostate, PlayerData, BombData, WeaponData>;
+using EntityData =
+    std::variant<std::monostate, PlayerData, BombData, WeaponData>;
 
 // Representación de una entidad en el mundo del juego
 struct Entity {
-    EntityType type;
-    float x;
-    float y;
-    EntityData data;
+  EntityType type;
+  float x;
+  float y;
+  EntityData data;
 };
 
 // Acciones posibles del jugador
 enum class ActionType {
-    MOVE,
-    POINT_TO,
-    SHOOT,
-    STOP_SHOOTING,
-    PLANT,
-    STOP_PLANTING,
-    DEFUSE,
-    STOP_DEFUSING,
-    BUY_BULLET,
-    BUY_WEAPON,
-    GRAB,
-    CHANGE_WEAPON,
-    FINISH
+  MOVE,
+  POINT_TO,
+  SHOOT,
+  STOP_SHOOTING,
+  PLANT,
+  STOP_PLANTING,
+  DEFUSE,
+  STOP_DEFUSING,
+  BUY_BULLET,
+  BUY_WEAPON,
+  GRAB,
+  CHANGE_WEAPON,
+  FINISH
 };
 
 struct MoveAction {
-    uint32_t id;
-    int vx;
-    int vy;
+  uint32_t id;
+  int vx;
+  int vy;
 };
 
 struct PointToAction {
-    float value;
+  float value;
 };
 
 struct BuyBulletAction {
-    WeaponType type;
+  WeaponType type;
 };
 
 struct BuyWeaponAction {
-    WeaponName weapon;
+  WeaponName weapon;
 };
 
 struct ChangeWeaponAction {
-    WeaponType type;
+  WeaponType type;
 };
 
-enum class LobbyEventType {
-    LEAVE,
-    JOIN,
-    START
-};
+enum class LobbyEventType { LEAVE, JOIN, START };
 
 struct LobbyEvent {
   LobbyEventType type;
@@ -153,51 +142,53 @@ struct StopDefusingAction {};
 struct GrabAction {};
 */
 
-using ActionData = std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction, BuyWeaponAction, ChangeWeaponAction>;
+using ActionData =
+    std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction,
+                 BuyWeaponAction, ChangeWeaponAction>;
 
 struct Action {
-    ActionType type;
-    ActionData data;
+  ActionType type;
+  ActionData data;
 };
 
 // Estado del juego
-enum Phase {
-    PURCHASE,
-    BOMB_PLANTING,
-    BOMB_DEFUSING
-};
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING };
+
+enum IMPACT { HUMAN, BLOCK, NOTHING };
 
 struct Bullet {
-    float origin_x;
-    float origin_y;
-    float target_x;
-    float target_y;
-    float angle;
+  float origin_x;
+  float origin_y;
+  float target_x;
+  float target_y;
+  float angle;
+  IMPACT impact;
 };
 
 struct StateGame {
-    Phase phase;
-    std::vector<Entity> entities;
-    std::queue<Bullet> bullets;
+  Phase phase;
+  std::vector<Entity> entities;
+  std::queue<Bullet> bullets;
 };
 
 // Datos iniciales del juego, como el mapa
 struct InitialData {
-    MapData data;
-    std::vector<std::string> players;
+  MapData data;
+  std::vector<std::string> players;
 };
 
 // Lista de lobbies disponibles
-struct LobbyList{
-    std::vector<std::string> lobbies;
+struct LobbyList {
+  std::vector<std::string> lobbies;
 };
 
 // Estado del lobby, como los jugadores en el lobby
-struct StateLobby{
-    std::vector<std::string> players;
+struct StateLobby {
+  std::vector<std::string> players;
 };
 
-using ResponseData = std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
+using ResponseData =
+    std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
 
 // Respuesta enviada por el servidor al cliente
 struct Response {
@@ -207,23 +198,16 @@ struct Response {
   std::string message;
 };
 
-
 // Mensaje enviado por el cliente al servidor
 struct Message {
-    Type type;
-    uint16_t size;
-    std::string name;
-    Action action;
+  Type type;
+  uint16_t size;
+  std::string name;
+  Action action;
 };
-
 
 // Estructuras del servidor
-enum LobbyRequestType {
-    LEAVE_LOBBY,
-    JOIN_LOBBY,
-    START_LOBBY,
-    READY_LOBBY
-};
+enum LobbyRequestType { LEAVE_LOBBY, JOIN_LOBBY, START_LOBBY, READY_LOBBY };
 
 struct LobbyRequest {
   LobbyRequestType type;
@@ -231,17 +215,17 @@ struct LobbyRequest {
 };
 
 struct ActionRequest {
-    Action action;
-    std::string playerName;
+  Action action;
+  std::string playerName;
 };
 
 struct LobbyChannels {
-    std::shared_ptr<Queue<LobbyRequest>> toLobby;
-    std::shared_ptr<Queue<LobbyRequest>> fromLobby;
+  std::shared_ptr<Queue<LobbyRequest>> toLobby;
+  std::shared_ptr<Queue<LobbyRequest>> fromLobby;
 };
 
 struct GameChannels {
-    std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::shared_ptr<Queue<ActionRequest>> fromGame;
+  std::shared_ptr<Queue<ActionRequest>> toGame;
+  std::shared_ptr<Queue<ActionRequest>> fromGame;
 };
 #endif
