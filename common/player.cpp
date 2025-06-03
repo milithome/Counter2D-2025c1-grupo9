@@ -142,11 +142,6 @@ bool Player::isShooting() { return shooting; }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
   timeLastBullet = 0.0f;
-  if (typeEquipped == WeaponType::PRIMARY) {
-    bulletsPrimary = bulletsPrimary - 1;
-  } else if (typeEquipped == WeaponType::SECONDARY) {
-    bulletsSecondary = bulletsSecondary - 1;
-  }
   Hitbox hb = getHitbox();
 
   float origin_x = hb.x + hb.width / 2.0f;
