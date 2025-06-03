@@ -14,13 +14,13 @@ private:
   Hitbox hitbox;
   Role role;
   int money = 1000;
-  Weapon equipped = Weapons::AK47;
-  WeaponType typeEquipped = WeaponType::PRIMARY;
+  Weapon equipped = Weapons::Glock;
+  WeaponType typeEquipped = WeaponType::SECONDARY;
   Weapon knife = Weapons::Knife;
-  Weapon primaryWeapon = Weapons::AK47;
+  Weapon primaryWeapon = Weapons::None;
   Weapon secondaryWeapon = Weapons::Glock;
-  uint32_t bulletsPrimary = 10;
-  uint32_t bulletsSecondary = 10;
+  uint32_t bulletsPrimary = 0;
+  uint32_t bulletsSecondary = 0;
   float rotation;
   float health = 100;
   float vx = 0, vy = 0;

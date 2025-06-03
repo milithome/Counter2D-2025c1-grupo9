@@ -47,7 +47,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         case SDLK_1: {
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
-            if (inventory.primary != NONE) {
+            if (inv.primary != WeaponName::NONE) {
                 Action action;
                 action.type = ActionType::CHANGE_WEAPON;
                 action.data = ChangeWeaponAction{WeaponType::PRIMARY};
@@ -71,7 +71,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         case SDLK_4: {
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
-            if (inventory.has_the_bomb) {
+            if (inv.has_the_bomb) {
                 // Action action{ActionType::PLANT};
                 // game.execute(player_name, action);
                 return;
@@ -168,7 +168,7 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
             uint32_t y = event.button.y;
 
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
-            if (inventory.primary != NONE && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+            if (inv.primary != WeaponName::NONE  && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
                 Action action;
                 action.type = ActionType::BUY_BULLET;
                 action.data = BuyBulletAction{WeaponType::PRIMARY};

@@ -241,8 +241,10 @@ void GameView::showInterface() {
     std::vector<Rect> equipamiento;
     Rect primaryWeaponContainer;
     Rect primaryWeaponSprite;
-    if (playerData.inventory.primary != NONE) { // tiene la primaria
-        Rect primaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, 0);
+    int position = 0;
+    if (playerData.inventory.primary != WeaponName::NONE) { // tiene la primaria
+
+        Rect primaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
         equipamiento.push_back(primaryWeaponContainer);
         Rect primaryWeaponSprite;
         Texture primaryTexture(renderer, AKInvSprite);
@@ -276,7 +278,8 @@ void GameView::showInterface() {
             NullOpt,
             primaryWeaponSprite);
     }
-    Rect secondaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, 1);
+
+    Rect secondaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
     Rect secondaryWeaponSprite = interfaceLayout.createWeaponSprite(secondaryWeaponContainer, glockInvSprite);
     equipamiento.push_back(secondaryWeaponContainer);
     if (playerData.equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
@@ -290,8 +293,9 @@ void GameView::showInterface() {
         secondaryTexture,
         NullOpt,
         secondaryWeaponSprite);
-    Rect knifeContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, 2);
+    Rect knifeContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
     Rect knifeSprite = interfaceLayout.createWeaponSprite(knifeContainer, knifeInvSprite);
+
     equipamiento.push_back(knifeContainer);
     if (playerData.equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
         renderer.SetDrawColor(255, 255, 255, 64);
@@ -304,10 +308,9 @@ void GameView::showInterface() {
         knifeTexture,
         NullOpt,
         knifeSprite);
-    
         
     if (playerData.inventory.has_the_bomb) {  // tiene la bomba
-        Rect bombContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, 3);
+        Rect bombContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
         Rect bombSprite = interfaceLayout.createWeaponSprite(bombContainer, bombInvSprite);
         equipamiento.push_back(bombContainer);
         Texture bombTexture(renderer, bombInvSprite);
@@ -542,7 +545,7 @@ void GameView::showShop() {
     Texture ammoSectionLabelTexture(renderer, ammoSectionLabel);
     renderer.Copy(ammoSectionLabelTexture, NullOpt, shopLayout.ammoLabel);
 
-    if (inv.bulletsPrimary >= Weapons::getWeapon(inv.primary).maxAmmo) {
+    if (inv.bulletsPrimary >= Weapons::getWeapon(inv.primary).maxAmmo && inv.primary != WeaponName::NONE) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
@@ -556,8 +559,13 @@ void GameView::showShop() {
     }
     renderer.FillRect(shopLayout.secondaryAmmoContainer);
 
-
-    Surface primaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsPrimary) + "/" + std::to_string(Weapons::getWeapon(inv.primary).maxAmmo), Color(255, 255, 255));
+    std::string ammoBoughtText;
+    if (inv.primary != WeaponName::NONE) {
+        ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(Weapons::getWeapon(inv.primary).maxAmmo);
+    } else {
+        ammoBoughtText = "No disponible";
+    }
+    Surface primaryAmmoBoughtLabel = font.RenderText_Blended(ammoBoughtText, Color(255, 255, 255));
     Texture primaryAmmoBoughtLabelTexture(renderer, primaryAmmoBoughtLabel);
 
     Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
@@ -576,12 +584,6 @@ void GameView::showShop() {
             primaryAmmoBoughtLabelTexture.GetWidth(), 
             primaryAmmoBoughtLabelTexture.GetHeight()));
 
-    std::string ammoBoughtText;
-    if (inv.primary) {
-        ammoBoughtText = std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo);
-    } else {
-        ammoBoughtText = "No disponible";
-    }
     Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo), Color(255, 255, 255));
     Texture secondaryAmmoBoughtLabelTexture(renderer, secondaryAmmoBoughtLabel);
 
