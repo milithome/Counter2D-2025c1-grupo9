@@ -173,9 +173,9 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   Player& player = findPlayerByName(name);
   if (player.getMoney() >= 40) { // constante, todo el cargador
     if (type == WeaponType::PRIMARY) {
-      player.restorePrimaryBullets();
+      player.resetPrimaryBullets();
     } else {
-      player.restoreSecondaryBullets();
+      player.resetSecondaryBullets();
     }
     player.updateMoney(-40);
   }

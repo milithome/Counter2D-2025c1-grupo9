@@ -243,3 +243,13 @@ void Player::updateIsPlanting(bool isPlanting) { planting = isPlanting; }
 bool Player::getAlreadyShot() { return alreadyShot; }
 
 void Player::setAlreadyShot(bool value) { alreadyShot = value; }
+
+int Player::getBullets(){
+  if (typeEquipped == WeaponType::PRIMARY) {
+    return bulletsPrimary;
+  } else if (typeEquipped == WeaponType::SECONDARY) {
+    return bulletsSecondary;
+  } else {
+    return 1;
+  }
+}

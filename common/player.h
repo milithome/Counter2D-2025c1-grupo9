@@ -93,8 +93,6 @@ public:
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateTimeLastBullet(float deltaTime);
   void updateVelocity(float vx, float vy);
-  void restorePrimaryBullets();
-  void restoreSecondaryBullets();
   void updatePrimaryBullets(int value);
   void updateSecondaryBullets(int value);
   int getBullets();
