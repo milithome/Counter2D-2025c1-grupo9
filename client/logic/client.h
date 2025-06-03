@@ -41,6 +41,8 @@ private:
     // Estos podrian ser construidos en esta clase y pasados por referencia
     // a la clase q se encarga de Qt y la clase q se encarga de SDL
     std::string clientName;
+    std::unique_ptr<Queue<Response>> recv_queue;
+    std::unique_ptr<Queue<std::shared_ptr<MessageEvent>>> send_queue;
     std::unique_ptr<RecvLoop> receiver;
     std::unique_ptr<SendLoop> sender;
 
@@ -50,20 +52,20 @@ private:
     bool started;
     QPoint w_pos_when_started;
     std::vector<std::string> players;  // Raro, SDL la usa para inicializar el juego
-    // pero me pareceria raro q fuera un atributo de la clase de Qt
+    // pero me pareceria raro q fuera un atributo de la clase de Qt, se podria ver de q el cliente vaya recibiendo los jugadores de alguna manera, quizas mediante eventos
 
     // Exclusivo Qt
+    std::unique_ptr<QApplication> app;
     std::unique_ptr<QtWindow> menuWindow;
-    QTimer* timer;
+    std::unique_ptr<QTimer> timer;
     std::unique_ptr<MenuController> menuController;
-    // aca seria logico q esta la QApplication tambien
 
     // Exclusivo SDL
     std::unique_ptr<GameView> gameView;
     std::unique_ptr<GameController> gameController;
 
-    void prepare_Queues(std::string name_server, int port);
-    void SDL_start();
+    void prepare_Queues_and_QT_start(std::string name_server, int port);
+    //void QT_start(Protocol protocol);
     void connect_Q_object();
     void recv_from_action(Response msg);
 

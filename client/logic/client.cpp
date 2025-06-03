@@ -1,27 +1,24 @@
 #include "client.h"
 
-Client::Client(std::string clientName, std::string name_server, int port)
+Client::Client(std::string clientName, std::string name_server, int port): clientName(clientName), started(false)
 {
-    clientName = clientName;
-    started = false;
-    prepare_Queues(name_server, port);
-
-    SDL_start();
+    prepare_Queues_and_QT_start(name_server, port);
 
 }
 
 void Client::run() {
 
+    SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	// Menu loop
-    timer = new QTimer(&menuController);
-    connect_menu();    
+    timer = std::make_unique<QTimer>(menuController.get());
     timer->start(0);
 
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
-		send_queue.try_push(std::shared_ptr<MessageEvent>(event));
-	});
+	QObject::connect(menuController.get(), &MenuController::nuevoEvento, [this](MessageEvent* event) {
+        send_queue->try_push(std::shared_ptr<MessageEvent>(event));
+    });
 
-	app.exec();
+	app->exec();
+
 	
 	if (!started) {
 		game_not_started();
@@ -32,14 +29,18 @@ void Client::run() {
 	game_ended();
 }
 
-void Client::prepare_Queues(std::string name_server, int port)
+void Client::prepare_Queues_and_QT_start(std::string name_server, int port)
 {
-    Socket clientSocket(name_server, port);
-	Protocol protocol = protocol(std::move(clientSocket));
+    Socket clientSocket(name_server.c_str(), std::to_string(port).c_str());
+	Protocol protocol(std::move(clientSocket));
+
     protocol.send_name(clientName);
     
-    receiver = std::make_unique<RecvLoop>(protocol, Queue<Response> recv_queue(100));
-    sender = std::make_unique<SendLoop>(protocol, Queue<std::shared_ptr<MessageEvent>> send_queue(100));
+    recv_queue = std::make_unique<Queue<Response>>(100);
+    send_queue = std::make_unique<Queue<std::shared_ptr<MessageEvent>>>(100);
+
+    receiver = std::make_unique<RecvLoop>(protocol, recv_queue);
+    sender = std::make_unique<SendLoop>(protocol, send_queue);
 
     if (receiver) {
     receiver->start();
@@ -47,23 +48,24 @@ void Client::prepare_Queues(std::string name_server, int port)
     if (sender) {
         sender->start();
     }
+    app = std::make_unique<QApplication>(0, nullptr);
+	menuWindow = std::make_unique<QtWindow>(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
+	menuController = std::make_unique<MenuController>(menuWindow, protocol);
 }
 
-void Client::SDL_start()
+/* void Client::QT_start(Protocol protocol)
 {
-    SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	
-    QApplication app(0, nullptr);
+    app = app(0, nullptr);
 	menuWindow = std::make_unique<QtWindow>(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
 	menuController = std::make_unique<MenuController>(menuWindow, protocol);
 
-}
+} */
 
 void Client::connect_Q_object()
 {
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &w_pos_when_game_started, &menuController, &menuWindow, &started, &players] {
+    QObject::connect(timer, &QTimer::timeout, &menuController, [this] {
         Response msg;
-        while (recv_queue.try_pop(msg)) {
+        while (this->recv_queue.try_pop(msg)) {
             recv_from_action(msg);
         }
     });
