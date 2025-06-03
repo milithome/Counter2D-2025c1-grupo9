@@ -115,8 +115,12 @@ int main(int argc, char **argv) try {
     timer->start(16); // limita el menu a 60fps
 
 
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
-		send_queue.try_push(std::shared_ptr<MessageEvent>(event));
+	// QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
+	// 	send_queue.try_push(std::shared_ptr<MessageEvent>(event));
+	// });
+
+	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::shared_ptr<MessageEvent> event) {
+		send_queue.try_push(event);
 	});
 
 	app.exec();

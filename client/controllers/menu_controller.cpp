@@ -58,7 +58,7 @@ void MenuController::listenToPartyView(PartyView& partyView) {
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
-    emit nuevoEvento(new LeaveEvent());
+    emit nuevoEvento(std::make_shared<LeaveEvent>());
     window.clearWindow();
     mainView = MainView();
     listenToMainView(mainView);
@@ -66,9 +66,7 @@ void MenuController::onPartyViewLeaveButtonClicked() {
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
-    emit nuevoEvento(new StartEvent());
-    // window.clearWindow();
-    // window.quit();
+    emit nuevoEvento(std::make_shared<StartEvent>());
 }
 
 void MenuController::onGameStarted() {
@@ -84,7 +82,7 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 }
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
-    emit nuevoEvento(new ListEvent());
+    emit nuevoEvento(std::make_shared<ListEvent>());
     window.clearWindow();
     searchPartyView = SearchPartyView();
     listenToSearchPartyView(searchPartyView);
@@ -92,7 +90,7 @@ void MenuController::onMainViewSearchPartyButtonClicked() {
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(new CreateEvent(partyName));
+    emit nuevoEvento(std::make_shared<CreateEvent>(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);
@@ -108,7 +106,7 @@ void MenuController::onCreatePartyViewBackButtonClicked() {
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(new JoinEvent(partyName));
+    emit nuevoEvento(std::make_shared<JoinEvent>(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);

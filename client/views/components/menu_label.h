@@ -10,7 +10,6 @@
 #include <QGraphicsDropShadowEffect>
 
 class MenuLabel : public QLabel {
-    QGraphicsDropShadowEffect *effect;
 
 public:
     MenuLabel(const QString &text, QWidget *parent = nullptr)

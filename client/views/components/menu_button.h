@@ -13,6 +13,10 @@ class MenuButton : public QPushButton {
     QGraphicsDropShadowEffect *effect;
 
 public:
+
+    ~MenuButton() {
+        delete effect;
+    }
     MenuButton(const QString &text, QWidget *parent = nullptr)
         : QPushButton(text, parent)
     {
@@ -20,14 +24,13 @@ public:
             "QPushButton {"
             "   background-color: rgba(0, 0, 0, 0);"
             "   color: white;"
-            "   border-radius: 10px;"
-            // "   padding: 0px;"
+            "   border-radius: 10px;" // esta linea de codigo hace q magicamente el boton sea transparente
             "}"
             "QPushButton:hover {"
             "   color: yellow;"                             
             "}"
             "QPushButton:disabled {"
-            "   color: rgba(255, 255, 255, 128);"  // Color cuando está deshabilitado
+            "   color: rgba(255, 255, 255, 128);" 
             "}"
         );
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
