@@ -493,6 +493,7 @@ void GameView::showShop() {
         }
         renderer.FillRect(shopLayout.weaponItemContainers[i]);
 
+
         Surface weaponLabel = font.RenderText_Blended(weaponLabelText, Color(255, 255, 255));
         Texture weaponLabelTexture(renderer, weaponLabel);
         Surface weaponPriceLabel = font.RenderText_Blended("$" + std::to_string(price), Color(255, 255, 255));
