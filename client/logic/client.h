@@ -36,21 +36,24 @@ using namespace SDL2pp;
 class Client {
 private:
     std::string clientName;
+    std::unique_ptr<Queue<Response>> recv_queue;
+    std::unique_ptr<Queue<std::shared_ptr<MessageEvent>>> send_queue;
     std::unique_ptr<RecvLoop> receiver;
     std::unique_ptr<SendLoop> sender;
     bool started;
 
+    std::unique_ptr<QApplication> app;
     std::vector<std::string> players;
 	QPoint w_pos_when_started;
     std::unique_ptr<QtWindow> menuWindow;
-    QTimer* timer;
+    std::unique_ptr<QTimer> timer;
     std::unique_ptr<MenuController> menuController;
 
     std::unique_ptr<GameView> gameView;
     std::unique_ptr<GameController> gameController;
 
-    void prepare_Queues(std::string name_server, int port);
-    void SDL_start();
+    void prepare_Queues_and_QT_start(std::string name_server, int port);
+    //void QT_start(Protocol protocol);
     void connect_Q_object();
     void recv_from_action(Response msg);
 
