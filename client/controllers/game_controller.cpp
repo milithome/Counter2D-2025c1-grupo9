@@ -13,9 +13,10 @@ void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
 
-    while (!game.bulletQueueIsEmpty()) {
-        view.addShotEffect(game.bulletQueuePop());
-        view.playShotSound();
+    while (!game.shotQueueIsEmpty()) {
+        Shot shot = game.shotQueuePop();
+        view.addBulletEffects(shot);
+        soundHandler.playShotSound(shot);
     }
 }
 
