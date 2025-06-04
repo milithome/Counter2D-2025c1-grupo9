@@ -3,10 +3,8 @@
 Game::Game(std::vector<std::vector<CellType>> game_map)
     : map(std::move(game_map)) {
       
-      spawnTeamA = findSpawnTeam(true);
-      spawnTeamB = findSpawnTeam(false);
-      teamA.setRole(Role::COUNTER_TERRORIST);
-      teamB.setRole(Role::TERRORIST);
+      spawnTeamTerrorist = findSpawnTeam(false); //true para terrorist
+      spawnTeamCounter = findSpawnTeam(true);
 }
 
 bool Game::addPlayer(const std::string &name) {
@@ -14,21 +12,20 @@ bool Game::addPlayer(const std::string &name) {
   if (teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     teamA.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    newPlayer.setTeam(true);
     newPlayer.setRole(Role::COUNTER_TERRORIST);
-    placePlayerInSpawnTeam(newPlayer, spawnTeamA);
+    placePlayerInSpawnTeam(newPlayer, spawnTeamCounter);
     return true;
   }
 
   if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     teamB.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    newPlayer.setTeam(false);
     newPlayer.setRole(Role::TERRORIST);
-    placePlayerInSpawnTeam(newPlayer, spawnTeamB);
+    placePlayerInSpawnTeam(newPlayer, spawnTeamTerrorist);
     return true;
   }
-
+  teamA.setRole(Role::COUNTER_TERRORIST);
+  teamB.setRole(Role::TERRORIST);
   return false;
 }
 
@@ -243,10 +240,22 @@ void Game::updateRounds(){
   roundsUntilRoleChange-=1;
   roundsUntilEndGame-=1;
   if(roundsUntilRoleChange==0){
-  //cambiar de equipo a todos
+    teamA.invertRole();
+    teamB.invertRole();
+    placeTeamsInSpawn();
   }
   if(roundsUntilEndGame==0){
     running = false;
+  }
+}
+
+void Game::placeTeamsInSpawn(){
+  for (auto &player : players) {
+    if (player.getRole()== Role::TERRORIST){
+      placePlayerInSpawnTeam(player, spawnTeamTerrorist);
+    }else{
+      placePlayerInSpawnTeam(player, spawnTeamCounter);
+    }
   }
 }
 

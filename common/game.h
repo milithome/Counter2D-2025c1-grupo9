@@ -25,8 +25,8 @@ private:
   int roundsUntilRoleChange = INITIAL_ROUNDS_UNTIL_ROLE_CHANGE;
   int roundsUntilEndGame = INITIAL_ROUNDS_UNTIL_END_GAME;
   Phase phase= Phase::PURCHASE;
-  std::vector<std::pair<int, int>> spawnTeamA;
-  std::vector<std::pair<int, int>> spawnTeamB;
+  std::vector<std::pair<int, int>> spawnTeamTerrorist;
+  std::vector<std::pair<int, int>> spawnTeamCounter;
   bool running = true;
   float time;
   Spike spike;
@@ -62,6 +62,7 @@ private:
   float timeToPlantBomb= TIME_TO_PLANT;
   void updateRounds();
   int checkRoundWinner();
+  void placeTeamsInSpawn();
 
 public:
   Game(std::vector<std::vector<CellType>> game_map);

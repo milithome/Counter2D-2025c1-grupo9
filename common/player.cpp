@@ -74,9 +74,10 @@ const Hitbox &Player::getHitbox() const { return hitbox; }
 
 void Player::updateHealth(int value) {
   health += value;
-  if (health < 0)
+  if (health < 0){
     health = 0;
     alive=false;
+  }
 }
 
 void Player::restoreHealth(){
@@ -251,8 +252,8 @@ int Player::getBullets(){
   }
 };
 
-void Player::setTeam(bool teamA){
-  team=teamA;
+void Player::setTeam(bool terrorist){
+  team=terrorist;
 }
 
 Role Player::getRole(){

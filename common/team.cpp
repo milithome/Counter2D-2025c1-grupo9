@@ -33,10 +33,11 @@ void Team::invertRole() {
   }
 }
 
-void Team::setRole(Role rol) {
-  // cuando ya hayan entrado todos los jugadores, queremos un rol inicial random
-  // para cada equipo gestionar cual desde el juego
-  currentRole = rol;
+void Team::setRole(Role role) {
+  currentRole = role;
+  for (auto &player : players){
+    player.setRole(role);
+  }
 }
 
 void Team::restartPlayersAlive() { 
