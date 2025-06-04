@@ -26,7 +26,7 @@ void GameSoundHandler::playShotSound(float distance, WeaponName weapon) {
 }
 
 void GameSoundHandler::playBombSound(float distance) {
-
+    mixer.PlayChannel(-1, deathSound, 0);
 };
         
 void GameSoundHandler::playDeathSound(float distance) {

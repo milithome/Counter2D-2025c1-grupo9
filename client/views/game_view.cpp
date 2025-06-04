@@ -19,7 +19,7 @@ GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_p
         renderer.SetDrawColor(0, 0, 0, 255);
         renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
 
-        mixer.SetVolume(-1, MIX_MAX_VOLUME); 
+        // mixer.SetVolume(-1, MIX_MAX_VOLUME); 
 
         AK47ShopSprite.SetColorKey(true, SDL_MapRGB(AK47ShopSprite.Get()->format, 255, 0, 255));
         M3ShopSprite.SetColorKey(true, SDL_MapRGB(M3ShopSprite.Get()->format, 255, 0, 255));
@@ -173,6 +173,10 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
 
+                if (!data.alive) {
+                    continue;
+                }
+
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 break;
@@ -181,6 +185,24 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 break;
             }
         }
+    }
+}
+
+void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime) {
+
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    for (auto it = death_effects.begin(); it < death_effects.end();) {
+        DeathEffect death = *it;
+
+        if (death.time_left <= 0) {
+            it = death_effects.erase(it);
+            continue;
+        }
+
+        Rect dst(cameraX + death.dead_body_x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + death.dead_body_y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+        renderer.Copy(playerTiles, src, dst, death.dead_body_rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+        death.time_left -= deltaTime;
+        ++it;
     }
 }
 
@@ -1010,6 +1032,9 @@ void GameView::addBulletEffects(Shot shot) {
     }
 }
 
+void GameView::addDeathEffect(float x, float y, float angle) {
+    death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION});
+}
 
 void GameView::switchShopVisibility() {
     shopIsVisible = !shopIsVisible;

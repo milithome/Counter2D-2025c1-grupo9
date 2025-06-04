@@ -14,8 +14,10 @@
 
 using namespace SDL2pp;
 
+
+#define DEATH_DURATION 1
 #define BULLET_SPEED 120
-#define BULLET_DURATION 10
+#define BULLET_DURATION 1
 #define BULLET_THICKNESS 2
 #define BULLET_LENGTH 8
 
@@ -27,6 +29,14 @@ struct BulletEffect {
     float target_x;
     float target_y;
     float angle;
+    float time_left;
+};
+
+struct DeathEffect {
+    float dead_body_x;
+    float dead_body_y;
+    float dead_body_rotation;
+    //Surface dead_body_skin;
     float time_left;
 };
 
@@ -121,6 +131,7 @@ public:
     void update(float deltaTime);
     SDL_Point getCenterPoint();
     void addBulletEffects(Shot shot);
+    void addDeathEffect(float x, float y, float angle);
     void switchShopVisibility();
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
@@ -128,7 +139,7 @@ public:
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
-    Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    // Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
     Renderer renderer;
     Game& game;
@@ -174,6 +185,7 @@ private:
 
     bool shopIsVisible = false;
     std::vector<BulletEffect> bullet_effects;
+    std::vector<DeathEffect> death_effects;
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -182,6 +194,8 @@ private:
     void showMap(float cameraX, float cameraY);
     void showBullets(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
+    void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+
     void showInterface();
     void showShop();
     ShopLayout createShopLayout();

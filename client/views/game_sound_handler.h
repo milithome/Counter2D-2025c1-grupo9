@@ -42,8 +42,7 @@ class GameSoundHandler {
         Chunk knifeHit = Chunk("../assets/sfx/weapons/knife_hit.wav");
 
         Chunk bombSound = Chunk("../assets/sfx/weapons/c4_explode.wav");
-
-        Chunk bombSound = Chunk("../assets/sfx/weapons/c4_explode.wav");
+        Chunk deathSound = Chunk("../assets/sfx/weapons/die1.wav");
 
 };
 

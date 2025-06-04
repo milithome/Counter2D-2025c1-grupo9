@@ -27,7 +27,7 @@ public:
 private:
     GameView& view;    
     Game& game;
-    GameSoundHandler soundHandler  
+    GameSoundHandler soundHandler;
     std::string player_name;
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
