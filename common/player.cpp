@@ -3,8 +3,6 @@
 
 std::string Player::getName() const { return name; }
 
-void Player::setRole(Role new_role) { role = new_role; }
-
 float Player::getX() const { return x; }
 
 float Player::getY() const { return y; }
@@ -249,3 +247,14 @@ int Player::getBullets(){
     return 1;
   }
 };
+
+void Player::setTeam(bool teamA){
+  team=teamA;
+}
+
+Role Player::getRole(){
+  return role;
+}
+void Player::setRole(Role newRole){
+  role=newRole;
+}

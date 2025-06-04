@@ -13,6 +13,7 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
+  bool team= false; //true es A, false es B
   int money = 1000;
   Weapon equipped = Weapons::AK47;
   WeaponType typeEquipped = WeaponType::PRIMARY;
@@ -46,6 +47,7 @@ public:
   bool getAlreadyShot();
   float getX() const;
   float getY() const;
+  void setTeam(bool teamA);
   int getBulletsPerShoot();
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
@@ -78,7 +80,6 @@ public:
   void setHealth(float value);
   void setLastMoveId(uint32_t id);
   void setPosition(float x, float y);
-  void setRole(Role new_role);
   void setRotation(float currentRotation);
   void startShooting();
   void stopShooting();
@@ -96,5 +97,7 @@ public:
   void updatePrimaryBullets(int value);
   void updateSecondaryBullets(int value);
   int getBullets();
+  Role getRole();
+  void setRole(Role newRole);
 };
 #endif

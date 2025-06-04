@@ -156,18 +156,18 @@ enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING };
 
 enum IMPACT { HUMAN, BLOCK, NOTHING };
 
-struct Shot {
-  float origin_x;
-  float origin_y;
-  std::vector<Bullet> bullets;
-  WeaponName weapon;
-};
-
 struct Bullet {
   float target_x;
   float target_y;
   float angle;
   IMPACT impact;
+};
+
+struct Shot {
+  float origin_x;
+  float origin_y;
+  std::vector<Bullet> bullets;
+  WeaponName weapon;
 };
 
 struct StateGame {

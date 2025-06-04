@@ -1,24 +1,50 @@
 #include "game.h"
 
+Game::Game(std::vector<std::vector<CellType>> game_map)
+    : map(std::move(game_map)) {
+
+      spawnTeamA = findSpawnTeam(true);
+      spawnTeamB = findSpawnTeam(false);
+    }
+
 bool Game::addPlayer(const std::string &name) {
   Player newPlayer(name);
-  newPlayer.setPosition(2, 2); // ahora mismo hardcodeo una cualquiera
   if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team1.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    // newPlayer.setTeam(1);
+    newPlayer.setTeam(true);
+    newPlayer.setRole(Role::COUNTER_TERRORIST);
+    placePlayerInSpawnTeam(newPlayer, spawnTeamA);
     return true;
   }
 
   if (team2.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     team2.addPlayer(newPlayer);
     players.push_back(newPlayer);
-    // newPlayer.setTeam(2);
+    newPlayer.setTeam(false);
+    newPlayer.setRole(Role::TERRORIST);
+    placePlayerInSpawnTeam(newPlayer, spawnTeamB);
     return true;
   }
 
   return false;
 }
+
+float Game::randomFloatInRange(float min, float max) {
+    return min + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX) + 1) * (max - min);
+}
+
+void Game::placePlayerInSpawnTeam(Player& player, const std::vector<std::pair<int, int>>& spawn) {
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    auto [row, col] = spawn[std::rand() % spawn.size()];
+
+    float x = randomFloatInRange(static_cast<float>(col), static_cast<float>(col + 1));
+    float y = randomFloatInRange(static_cast<float>(row), static_cast<float>(row + 1));
+
+    player.setPosition(x, y);
+}
+
 
 Player &Game::findPlayerByName(const std::string &name) {
   for (auto &player : players) {
@@ -27,6 +53,24 @@ Player &Game::findPlayerByName(const std::string &name) {
   }
   throw std::runtime_error("Player not found");
 }
+
+std::vector<std::pair<int, int>> Game::findSpawnTeam(bool teamA) {
+    std::vector<std::pair<int, int>> result;
+
+    for (size_t row = 0; row < map.size(); ++row) {
+        for (size_t col = 0; col < map[row].size(); ++col) {
+            if (teamA && map[row][col] == CellType::SpawnTeamA) {
+                result.emplace_back(row, col);
+            }
+            if (!teamA && map[row][col] == CellType::SpawnTeamB) {
+                result.emplace_back(row, col);
+            }
+        }
+    }
+
+    return result;
+}
+
 
 void Game::stopShooting(const std::string &name) {
   Player& player = findPlayerByName(name);
@@ -181,6 +225,44 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   }
 }
 
+void Game::updateGamePhase(float deltaTime) { 
+  //falta limitar el numero de rondas y decidir ganador de cada una
+  switch (phase) {
+    case Phase::PURCHASE:
+      purchaseElapsedTime +=deltaTime;
+      if(purchaseElapsedTime >= purchaseDuration){
+        isBombPlanted=false;
+        purchaseElapsedTime = 0.0f;
+        phase=Phase::BOMB_PLANTING;
+      }
+    break;
+
+    case Phase::BOMB_PLANTING:
+      plantingElapsedTime +=deltaTime;
+      if(plantingElapsedTime >= timeToPlantBomb){ //pierden atacantes
+        isBombPlanted=false;
+        plantingElapsedTime=0.0f;
+        phase=Phase::PURCHASE;
+      }
+      if(isBombPlanted){ 
+        phase=Phase::BOMB_DEFUSING;
+      }
+    break;
+
+    case Phase::BOMB_DEFUSING:
+      bombElapsedTime +=deltaTime;
+      if(bombElapsedTime >=timeUntilBombExplode){ //pierden defensores
+        bombElapsedTime = 0.0f;
+        isBombPlanted = false;
+        phase=Phase::PURCHASE;
+      }
+    break;
+
+    default:
+    break;
+  }
+}
+
 StateGame Game::getState() {
   StateGame state;
   state.phase = phase;
@@ -241,7 +323,6 @@ bool Game::isRunning() { return running; }
 void Game::stop() { running = false; }
 
 void Game::makeShot(Player &shooter, const std::string &shooterName) {
-  // devolver a que le pegó, si a una pared o a un personaje
   int bullets = shooter.getBulletsPerShoot();
   if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
     shooter.updatePrimaryBullets(-bullets);

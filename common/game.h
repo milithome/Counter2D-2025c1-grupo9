@@ -1,6 +1,9 @@
+#ifndef GAME_H
+#define GAME_H
 #include "player.h"
 #include "store.h"
 #include "structures.h"
+#include "gameConstants.h"
 #include "team.h"
 #include <algorithm>
 #include <cmath>
@@ -11,17 +14,17 @@
 #include <random>
 #include <string>
 #include <vector>
-#ifndef GAME_H
-#define GAME_H
 
 class Game {
 private:
   std::vector<Player> players;
   Team team1;
   Team team2;
+  Phase phase= Phase::PURCHASE;
+  std::vector<std::pair<int, int>> spawnTeamA;
+  std::vector<std::pair<int, int>> spawnTeamB;
   bool running = true;
   float time;
-  Phase phase;
   Spike spike;
   std::queue<Shot> shot_queue;
   std::vector<std::vector<CellType>> map;
@@ -42,10 +45,20 @@ private:
   void updatePlanting(const std::string &name);
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
-  
+  std::vector<std::pair<int, int>> findSpawnTeam(bool teamA);
+  void placePlayerInSpawnTeam(Player& player, const std::vector<std::pair<int, int>>& spawn);
+  float randomFloatInRange(float min, float max);
+  void updateGamePhase(float deltaTime);
+  float bombElapsedTime = 0.0f;
+  float plantingElapsedTime = 0.0f;
+  float purchaseElapsedTime = 0.0f;
+  bool isBombPlanted = false;
+  float timeUntilBombExplode = BOMB_DURATION;
+  float purchaseDuration= PURCHASE_DURATION;
+  float timeToPlantBomb= TIME_TO_PLANT;
+
 public:
-  Game(std::vector<std::vector<CellType>> game_map)
-      : map(std::move(game_map)) {}
+  Game(std::vector<std::vector<CellType>> game_map);
   
   // son privados
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);

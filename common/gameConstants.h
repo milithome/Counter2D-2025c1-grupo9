@@ -23,4 +23,8 @@ const float MAX_ACELERATION = 2.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
+const float PURCHASE_DURATION = 15.0f;
+const float BOMB_DURATION = 30.0f;
+const float TIME_TO_PLANT = 30.0f;
+
 #endif
