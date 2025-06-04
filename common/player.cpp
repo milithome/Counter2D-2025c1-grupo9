@@ -76,10 +76,15 @@ void Player::updateHealth(int value) {
   health += value;
   if (health < 0)
     health = 0;
+    alive=false;
 }
 
 void Player::restoreHealth(){
   health = MAX_HEALTH;
+}
+
+void Player::setIsAlive(bool isAlive){
+  alive=isAlive;
 }
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
@@ -88,7 +93,7 @@ void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
 
 int Player::getHealth() const { return health; }
 
-bool Player::isAlive() const { return health > 0; }
+bool Player::isAlive() const { return alive; }
 
 void Player::updateVelocity(float newVx, float newVy) {
   if (newVx != 0.0f || newVy != 0.0f) {

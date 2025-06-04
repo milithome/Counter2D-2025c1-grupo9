@@ -43,6 +43,7 @@ void Team::restartPlayersAlive() {
   playersAlive = players.size(); 
   for (auto &player : players){
     player.restoreHealth();
+    player.setIsAlive(true);
   }
 }
 

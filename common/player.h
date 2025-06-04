@@ -37,6 +37,7 @@ private:
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
   uint32_t lastMoveId = 0;
+  bool alive= true;
 
 public:
   Player(const std::string &name)
@@ -68,6 +69,7 @@ public:
   float getSpreadAngle();
   float getTimeLastBullet();
   bool isAlive() const;
+  void setIsAlive(bool isAlive);
   bool isPlanting();
   bool isShooting();
   void move(float deltaTime, bool onlyX, bool onlyY);
