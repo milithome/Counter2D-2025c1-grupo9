@@ -6,6 +6,7 @@
 #include "leave_event.h"
 #include "list_event.h"
 #include "create_event.h"
+#include "start_event.h"
 
 MenuController::MenuController(QtWindow& window, Protocol& protocol) : window(window), protocol(protocol) {
     mainView = MainView();
@@ -57,7 +58,7 @@ void MenuController::listenToPartyView(PartyView& partyView) {
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
-    emit nuevoEvento(new LeaveEvent());
+    emit nuevoEvento(std::make_shared<LeaveEvent>());
     window.clearWindow();
     mainView = MainView();
     listenToMainView(mainView);
@@ -65,8 +66,7 @@ void MenuController::onPartyViewLeaveButtonClicked() {
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
-    // window.clearWindow();
-    // window.quit();
+    emit nuevoEvento(std::make_shared<StartEvent>());
 }
 
 void MenuController::onGameStarted() {
@@ -82,7 +82,7 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 }
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
-    emit nuevoEvento(new ListEvent());
+    emit nuevoEvento(std::make_shared<ListEvent>());
     window.clearWindow();
     searchPartyView = SearchPartyView();
     listenToSearchPartyView(searchPartyView);
@@ -90,7 +90,7 @@ void MenuController::onMainViewSearchPartyButtonClicked() {
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(new CreateEvent(partyName));
+    emit nuevoEvento(std::make_shared<CreateEvent>(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);
@@ -106,7 +106,7 @@ void MenuController::onCreatePartyViewBackButtonClicked() {
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(new JoinEvent(partyName));
+    emit nuevoEvento(std::make_shared<JoinEvent>(partyName));
     window.clearWindow();
     partyView = PartyView(partyName);
     listenToPartyView(partyView);
@@ -119,7 +119,6 @@ void MenuController::onSearchPartyViewBackButtonClicked() {
     listenToMainView(mainView);
     window.showView(mainView);
 }
-
 
 
 
@@ -161,4 +160,10 @@ void MenuController::onCreatePartyResponseReceived(const std::string& message, c
 void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t result) {
     (void)message;
     (void)result;
+}
+
+
+void MenuController::onLobbyReady() {
+    QPushButton *startButton = partyView.getStartButton();
+    startButton->setEnabled(true);
 }

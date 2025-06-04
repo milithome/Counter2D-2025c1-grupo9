@@ -94,6 +94,7 @@ void PartyView::buildPartyNameLabel() {
 
 void PartyView::buildStartButton() {
     startButton = new MenuButton("Iniciar partida");
+    startButton->setEnabled(false);
 }
 
 void PartyView::buildLeaveButton() {
