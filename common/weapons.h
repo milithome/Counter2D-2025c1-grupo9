@@ -25,7 +25,7 @@ extern const Weapon Glock;
 extern const Weapon AK47;
 extern const Weapon M3;
 extern const Weapon AWP;
-extern const Weapon NONE;
+extern const Weapon None;
 
 const Weapon &getWeapon(WeaponName name);
 }
