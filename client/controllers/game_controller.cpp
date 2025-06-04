@@ -277,7 +277,6 @@ void GameController::updateGameState(StateGame state) {
                 }
                 // Actualizar vida
                 game.updatePlayerHealth(data.name, data.health);
-
                 break;
             }
 
@@ -286,7 +285,6 @@ void GameController::updateGameState(StateGame state) {
             }
         }
     }
-
     std::queue<Shot> shots = state.shot;
     while (!shots.empty()) {
         Shot shot = shots.front();

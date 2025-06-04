@@ -139,15 +139,12 @@ public:
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
-    // Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
     Window window;
     Renderer renderer;
     Game& game;
     std::string playerName;
     Map& map;
-
-
-    Chunk glockSound = Chunk("../assets/sfx/weapons/usp_silenced.wav");
 
     Texture mapTiles;
     Texture backgroundTexture;

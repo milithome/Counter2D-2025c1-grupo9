@@ -35,6 +35,9 @@ void GameSoundHandler::playShotSound(float distance, WeaponName weapon) {
             mixer.PlayChannel(-1, knifeSound, 0);
             break;
         }
+        default: {
+            break;
+        }
     }
 }
 

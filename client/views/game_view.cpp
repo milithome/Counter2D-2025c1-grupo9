@@ -172,11 +172,11 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 PlayerData data = std::get<PlayerData>(gameState[i].data);
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
-
+                /*
                 if (!data.alive) {
                     continue;
                 }
-
+                */
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 break;

@@ -13,6 +13,7 @@ using namespace SDL2pp;
 
 class GameSoundHandler {
     public:
+
         GameSoundHandler() {
             mixer.SetVolume(-1, MIX_MAX_VOLUME); 
         }   
@@ -35,7 +36,6 @@ class GameSoundHandler {
 
     private:
         Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-        int soundsPlaying = 0;
 
 
         Chunk glockSound = Chunk("../assets/sfx/weapons/glock18.wav");
@@ -46,7 +46,7 @@ class GameSoundHandler {
         Chunk knifeHit = Chunk("../assets/sfx/weapons/knife_hit.wav");
 
         Chunk bombSound = Chunk("../assets/sfx/weapons/c4_explode.wav");
-        Chunk deathSound = Chunk("../assets/sfx/weapons/die1.wav");
+        Chunk deathSound = Chunk("../assets/sfx/player/die1.wav");
 
         int gunshot_sound_cooldown = 0;
 
