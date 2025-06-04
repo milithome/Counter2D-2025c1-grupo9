@@ -18,8 +18,6 @@ public:
 
   int getRoundsWon() const;
 
-  void updatePlayersAlive();
-
   void incrementRoundsWon();
 
   void setRole(Role rol);
@@ -29,6 +27,8 @@ public:
   int getTeamSize();
 
   void restartPlayersAlive();
+
+  int getPlayersAlive() const;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #define GAME_H
 #include "player.h"
 #include "store.h"
+#include "gameMap.h"
 #include "structures.h"
 #include "gameConstants.h"
 #include "team.h"
@@ -18,8 +19,11 @@
 class Game {
 private:
   std::vector<Player> players;
-  Team team1;
-  Team team2;
+  Team teamA;
+  Team teamB;
+  int roundNumber = 1;
+  int roundsUntilRoleChange = INITIAL_ROUNDS_UNTIL_ROLE_CHANGE;
+  int roundsUntilEndGame = INITIAL_ROUNDS_UNTIL_END_GAME;
   Phase phase= Phase::PURCHASE;
   std::vector<std::pair<int, int>> spawnTeamA;
   std::vector<std::pair<int, int>> spawnTeamB;
@@ -27,7 +31,7 @@ private:
   float time;
   Spike spike;
   std::queue<Shot> shot_queue;
-  std::vector<std::vector<CellType>> map;
+  GameMap map;
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter, const std::string &shooterName);
   void plantBomb(const std::string &name);
@@ -56,6 +60,8 @@ private:
   float timeUntilBombExplode = BOMB_DURATION;
   float purchaseDuration= PURCHASE_DURATION;
   float timeToPlantBomb= TIME_TO_PLANT;
+  void updateRounds();
+  int checkRoundWinner();
 
 public:
   Game(std::vector<std::vector<CellType>> game_map);

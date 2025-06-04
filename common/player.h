@@ -23,7 +23,7 @@ private:
   uint32_t bulletsPrimary = 10;
   uint32_t bulletsSecondary = 10;
   float rotation;
-  float health = 100;
+  int health = 100;
   float vx = 0, vy = 0;
   float aceleration = 0;
   bool hasTheSpike = false;
@@ -54,7 +54,7 @@ public:
   int getBurstFireBullets();
   std::pair<float, float> getDamageRange() const;
   bool getHasTheSpike();
-  float getHealth() const;
+  int getHealth() const;
   const Hitbox &getHitbox() const;
   uint32_t getLastMoveId() const;
   std::string getName() const;
@@ -77,7 +77,7 @@ public:
   void resetSecondaryBullets();
   void resetTimeLastBullet();
   void setAlreadyShot(bool value);
-  void setHealth(float value);
+  void restoreHealth();
   void setLastMoveId(uint32_t id);
   void setPosition(float x, float y);
   void setRotation(float currentRotation);
@@ -88,7 +88,7 @@ public:
   void updateAceleration(float deltaTime);
   void updateBurstFireBullets(int value);
   void updateCooldown(float deltaTime);
-  void updateHealth(float value);
+  void updateHealth(int value);
   void updateIsPlanting(bool isPlanting);
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);

@@ -5,6 +5,16 @@ void Team::addPlayer(const Player &player) {
   size++;
 }
 
+int Team::getPlayersAlive() const {
+    int aliveCount = 0;
+    for (const auto& player : players) {
+        if (player.isAlive()) {
+            aliveCount++;
+        }
+    }
+    return aliveCount;
+}
+
 int Team::getRoundsWon() const { return roundsWon; }
 
 void Team::incrementRoundsWon() { roundsWon++; }
@@ -29,8 +39,11 @@ void Team::setRole(Role rol) {
   currentRole = rol;
 }
 
-void Team::updatePlayersAlive() { playersAlive = playersAlive - 1; }
-
-void Team::restartPlayersAlive() { playersAlive = players.size(); }
+void Team::restartPlayersAlive() { 
+  playersAlive = players.size(); 
+  for (auto &player : players){
+    player.restoreHealth();
+  }
+}
 
 int Team::getTeamSize() { return size; }

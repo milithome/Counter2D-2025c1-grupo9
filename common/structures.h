@@ -54,7 +54,7 @@ struct PlayerData {
     float rotation;
     uint32_t lastMoveId;
     int money;
-    float health;
+    int health;
     Inventory inventory;
     WeaponType equippedWeapon;
 };

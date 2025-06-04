@@ -17,6 +17,7 @@ struct Spike {
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
 #define AMMO_PRICE 40
+#define MAX_HEALTH 1000
 
 const float ACELERATION_RATE = 2.0f;
 const float MAX_ACELERATION = 2.0f;
@@ -26,5 +27,9 @@ const float SLIDE_DURATION = 0.15f;
 const float PURCHASE_DURATION = 15.0f;
 const float BOMB_DURATION = 30.0f;
 const float TIME_TO_PLANT = 30.0f;
+
+const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 5;
+const int INITIAL_ROUNDS_UNTIL_END_GAME = 10;
+
 
 #endif

@@ -2,15 +2,17 @@
 
 Game::Game(std::vector<std::vector<CellType>> game_map)
     : map(std::move(game_map)) {
-
+      
       spawnTeamA = findSpawnTeam(true);
       spawnTeamB = findSpawnTeam(false);
-    }
+      teamA.setRole(Role::COUNTER_TERRORIST);
+      teamB.setRole(Role::TERRORIST);
+}
 
 bool Game::addPlayer(const std::string &name) {
   Player newPlayer(name);
-  if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    team1.addPlayer(newPlayer);
+  if (teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
+    teamA.addPlayer(newPlayer);
     players.push_back(newPlayer);
     newPlayer.setTeam(true);
     newPlayer.setRole(Role::COUNTER_TERRORIST);
@@ -18,8 +20,8 @@ bool Game::addPlayer(const std::string &name) {
     return true;
   }
 
-  if (team2.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    team2.addPlayer(newPlayer);
+  if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
+    teamB.addPlayer(newPlayer);
     players.push_back(newPlayer);
     newPlayer.setTeam(false);
     newPlayer.setRole(Role::TERRORIST);
@@ -54,24 +56,6 @@ Player &Game::findPlayerByName(const std::string &name) {
   throw std::runtime_error("Player not found");
 }
 
-std::vector<std::pair<int, int>> Game::findSpawnTeam(bool teamA) {
-    std::vector<std::pair<int, int>> result;
-
-    for (size_t row = 0; row < map.size(); ++row) {
-        for (size_t col = 0; col < map[row].size(); ++col) {
-            if (teamA && map[row][col] == CellType::SpawnTeamA) {
-                result.emplace_back(row, col);
-            }
-            if (!teamA && map[row][col] == CellType::SpawnTeamB) {
-                result.emplace_back(row, col);
-            }
-        }
-    }
-
-    return result;
-}
-
-
 void Game::stopShooting(const std::string &name) {
   Player& player = findPlayerByName(name);
   player.setAlreadyShot(false);
@@ -85,31 +69,6 @@ void Game::movePlayer(const std::string &name, float vx, float vy,
   player.updateVelocity(vx, vy);
 }
 
-bool Game::isColliding(float x, float y, float width, float height) const {
-  const float epsilon = 0.1f;
-  float left = x + epsilon;
-  float right = x + width - epsilon;
-  float top = y + epsilon;
-  float bottom = y + height - epsilon;
-
-  int leftCell = static_cast<int>(std::floor(left));
-  int rightCell = static_cast<int>(std::floor(right));
-  int topCell = static_cast<int>(std::floor(top));
-  int bottomCell = static_cast<int>(std::floor(bottom));
-
-  for (int row = topCell; row <= bottomCell; ++row) {
-    for (int col = leftCell; col <= rightCell; ++col) {
-      if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-          col >= static_cast<int>(map[row].size())) {
-        continue;
-      }
-      if (map[row][col] == CellType::Blocked) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
 // plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o
 // defiende
 void Game::plantBomb(
@@ -139,11 +98,10 @@ void Game::plantBomb(
 
   for (int row = topCell; row <= bottomCell; ++row) {
     for (int col = leftCell; col <= rightCell; ++col) {
-      if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-          col >= static_cast<int>(map[row].size())) {
+      if (!map.isValidCell(row, col)) {
         continue;
       }
-      if (map[row][col] == CellType::SpikeSite) {
+      if (map.isSpikeSite(row, col)) {
         spike.position.x = row;
         spike.position.y = col;
         spike.isPlanted = true;
@@ -225,8 +183,21 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   }
 }
 
+int Game::checkRoundWinner() {
+    if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0) {
+        teamA.incrementRoundsWon();
+        return 1;
+    }
+    if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0) {
+        teamB.incrementRoundsWon();
+        return 2;
+    }
+    return 0;
+}
+
+
+
 void Game::updateGamePhase(float deltaTime) { 
-  //falta limitar el numero de rondas y decidir ganador de cada una
   switch (phase) {
     case Phase::PURCHASE:
       purchaseElapsedTime +=deltaTime;
@@ -239,10 +210,11 @@ void Game::updateGamePhase(float deltaTime) {
 
     case Phase::BOMB_PLANTING:
       plantingElapsedTime +=deltaTime;
-      if(plantingElapsedTime >= timeToPlantBomb){ //pierden atacantes
+      if(checkRoundWinner() !=0 || plantingElapsedTime >= timeToPlantBomb){ //pierden atacantes
         isBombPlanted=false;
         plantingElapsedTime=0.0f;
         phase=Phase::PURCHASE;
+        updateRounds();
       }
       if(isBombPlanted){ 
         phase=Phase::BOMB_DEFUSING;
@@ -251,15 +223,30 @@ void Game::updateGamePhase(float deltaTime) {
 
     case Phase::BOMB_DEFUSING:
       bombElapsedTime +=deltaTime;
-      if(bombElapsedTime >=timeUntilBombExplode){ //pierden defensores
+      if(checkRoundWinner() !=0 || bombElapsedTime >=timeUntilBombExplode){ //pierden defensores
         bombElapsedTime = 0.0f;
         isBombPlanted = false;
         phase=Phase::PURCHASE;
+        updateRounds();
       }
+
     break;
 
     default:
     break;
+  }
+}
+void Game::updateRounds(){
+  teamA.restartPlayersAlive(); //contador en team y vida de c/u
+  teamB.restartPlayersAlive();
+  roundNumber+=1;
+  roundsUntilRoleChange-=1;
+  roundsUntilEndGame-=1;
+  if(roundsUntilRoleChange==0){
+  //cambiar de equipo a todos
+  }
+  if(roundsUntilEndGame==0){
+    running = false;
   }
 }
 
@@ -290,7 +277,7 @@ StateGame Game::getState() {
     entities.push_back(entity);
   }
   state.entities = entities;
-  //state.shots= shot_queue;
+  //state.shots= shot_queue; TODO
   return state;
 }
 
@@ -410,8 +397,9 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     float randomDamage = dis(gen);
 
     float finalDamage = std::min(clampedDamage, randomDamage);
+    int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
-    target.updateHealth(-finalDamage);
+    target.updateHealth(-finalDamageInt);
 }
 
 
@@ -477,12 +465,11 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const {
     int row = static_cast<int>(std::floor(y));
     int col = static_cast<int>(std::floor(x));
 
-    if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-        col >= static_cast<int>(map[row].size())) {
+    if (!map.isValidCell(row,col)) {
       break;
     }
 
-    if (map[row][col] == CellType::Blocked) { // colisión con la pared
+    if (map.isBlocked(row,col)) { // colisión con la pared
       return std::make_pair(x, y);
     }
 
