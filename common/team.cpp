@@ -40,6 +40,10 @@ void Team::setRole(Role role) {
   }
 }
 
+Role Team::getRole(){
+  return currentRole;
+}
+
 void Team::restartPlayersAlive() { 
   playersAlive = players.size(); 
   for (auto &player : players){

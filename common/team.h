@@ -24,6 +24,8 @@ public:
 
   void invertRole();
 
+  Role getRole();
+
   int getTeamSize();
 
   void restartPlayersAlive();

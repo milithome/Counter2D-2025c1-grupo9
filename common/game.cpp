@@ -2,30 +2,27 @@
 
 Game::Game(std::vector<std::vector<CellType>> game_map)
     : map(std::move(game_map)) {
-      
-      spawnTeamTerrorist = findSpawnTeam(false); //true para terrorist
-      spawnTeamCounter = findSpawnTeam(true);
+    teamA.setRole(Role::COUNTER_TERRORIST);
+    teamB.setRole(Role::TERRORIST);
+    spawnTeamTerrorist = findSpawnTeam(false); //true para terrorist
+    spawnTeamCounter = findSpawnTeam(true);
 }
 
 bool Game::addPlayer(const std::string &name) {
-  Player newPlayer(name);
+  players.emplace_back(name);
+  Player& player= findPlayerByName(name);
   if (teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    teamA.addPlayer(newPlayer);
-    players.push_back(newPlayer);
-    newPlayer.setRole(Role::COUNTER_TERRORIST);
-    placePlayerInSpawnTeam(newPlayer, spawnTeamCounter);
+    teamA.addPlayer(player);
+    player.setRole(teamA.getRole());
+    placePlayerInSpawnTeam(player);
     return true;
   }
-
   if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    teamB.addPlayer(newPlayer);
-    players.push_back(newPlayer);
-    newPlayer.setRole(Role::TERRORIST);
-    placePlayerInSpawnTeam(newPlayer, spawnTeamTerrorist);
+    teamB.addPlayer(player);
+    player.setRole(teamB.getRole());
+    placePlayerInSpawnTeam(player);
     return true;
   }
-  teamA.setRole(Role::COUNTER_TERRORIST);
-  teamB.setRole(Role::TERRORIST);
   return false;
 }
 
@@ -33,7 +30,10 @@ float Game::randomFloatInRange(float min, float max) {
     return min + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX) + 1) * (max - min);
 }
 
-void Game::placePlayerInSpawnTeam(Player& player, const std::vector<std::pair<int, int>>& spawn) {
+void Game::placePlayerInSpawnTeam(Player& player) {
+    std::vector<std::pair<int, int>>& spawn = 
+    (player.getRole() == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
+
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
     auto [row, col] = spawn[std::rand() % spawn.size()];
@@ -243,6 +243,7 @@ void Game::updateRounds(){
     teamA.invertRole();
     teamB.invertRole();
     placeTeamsInSpawn();
+    
   }
   if(roundsUntilEndGame==0){
     running = false;
@@ -251,11 +252,7 @@ void Game::updateRounds(){
 
 void Game::placeTeamsInSpawn(){
   for (auto &player : players) {
-    if (player.getRole()== Role::TERRORIST){
-      placePlayerInSpawnTeam(player, spawnTeamTerrorist);
-    }else{
-      placePlayerInSpawnTeam(player, spawnTeamCounter);
-    }
+    placePlayerInSpawnTeam(player);
   }
 }
 

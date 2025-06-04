@@ -50,7 +50,7 @@ private:
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
   std::vector<std::pair<int, int>> findSpawnTeam(bool teamA);
-  void placePlayerInSpawnTeam(Player& player, const std::vector<std::pair<int, int>>& spawn);
+  void placePlayerInSpawnTeam(Player& player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
   float bombElapsedTime = 0.0f;
