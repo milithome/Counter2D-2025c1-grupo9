@@ -115,10 +115,6 @@ int main(int argc, char **argv) try {
     timer->start(16); // limita el menu a 60fps
 
 
-	// QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
-	// 	send_queue.try_push(std::shared_ptr<MessageEvent>(event));
-	// });
-
 	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::shared_ptr<MessageEvent> event) {
 		send_queue.try_push(event);
 	});
@@ -141,23 +137,15 @@ int main(int argc, char **argv) try {
 	GameController gameController = GameController(gameView, game, clientName);
 
 
-	const int FPS = 60; // limite de fps ingame
-	const int frameDelay = 1000 / FPS;
 
-	uint32_t lastTime = 0;
+	const std::chrono::milliseconds TICK_DURATION(16);
+
+    auto lastTime = std::chrono::steady_clock::now();
 	while (game.isRunning()) {
-		uint32_t currentTime = SDL_GetTicks();
-		float deltaTime = (currentTime - lastTime) / 1000.0f;
-		lastTime = currentTime;
-		gameView.update(deltaTime);
-		gameController.processEvents();
-		gameController.update(deltaTime);
+        auto currentTime = std::chrono::steady_clock::now();
+        float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+        lastTime = currentTime;
 
-		while (!gameController.actionQueueIsEmpty()) {
-			Action action = gameController.actionQueuePop();
-			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
-			send_queue.try_push(event);
-		}
 		Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
@@ -176,12 +164,22 @@ int main(int argc, char **argv) try {
 			}
 		}
 
+		gameController.processEvents();
+		gameController.update(deltaTime);
+		gameView.update(deltaTime);
 
-		Uint32 frameTime = SDL_GetTicks() - currentTime;
-
-		if (frameDelay > frameTime) {
-			SDL_Delay(frameDelay - frameTime);
+		while (!gameController.actionQueueIsEmpty()) {
+			Action action = gameController.actionQueuePop();
+			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
+			send_queue.try_push(event);
 		}
+
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - currentTime
+        );
+        if (elapsed < TICK_DURATION) {
+            std::this_thread::sleep_for(TICK_DURATION - elapsed);
+        }
 	}
 
 	receiver.stop();
