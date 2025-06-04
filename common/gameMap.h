@@ -4,6 +4,8 @@
 #include <vector>
 #include <utility>
 #include "structures.h"
+#include <cmath>
+#include "gameConstants.h"
 
 class GameMap {
 private:
@@ -14,7 +16,7 @@ public:
 
     std::vector<std::pair<int, int>> findSpawnTeam(bool teamA);
 
-    bool isColliding(float x, float y, float width, float height) const;
+    bool isColliding(PlayerCellBounds bounds) const;
 
     bool isSpikeSite(int row, int col) const;
 

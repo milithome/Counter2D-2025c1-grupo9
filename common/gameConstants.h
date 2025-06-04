@@ -12,6 +12,13 @@ struct Spike {
     bool isPlanted;
 };
 
+struct PlayerCellBounds {
+    int leftCell;
+    int rightCell;
+    int topCell;
+    int bottomCell;
+};
+
 #define SPEED 5.0f
 #define MAX_PLAYERS_PER_TEAM 5
 #define PLAYER_WIDTH 0.7f

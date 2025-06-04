@@ -1,5 +1,5 @@
 #include "gameMap.h"
-#include <cmath>
+
 
 GameMap::GameMap(std::vector<std::vector<CellType>> game_map) : map(std::move(game_map)) {}
 
@@ -20,20 +20,10 @@ std::vector<std::pair<int, int>> GameMap::findSpawnTeam(bool teamA) {
     return result;
 }
 
-bool GameMap::isColliding(float x, float y, float width, float height) const {
-    const float epsilon = 0.1f;
-    float left = x + epsilon;
-    float right = x + width - epsilon;
-    float top = y + epsilon;
-    float bottom = y + height - epsilon;
+bool GameMap::isColliding(PlayerCellBounds bounds) const {
 
-    int leftCell = static_cast<int>(std::floor(left));
-    int rightCell = static_cast<int>(std::floor(right));
-    int topCell = static_cast<int>(std::floor(top));
-    int bottomCell = static_cast<int>(std::floor(bottom));
-
-    for (int row = topCell; row <= bottomCell; ++row) {
-        for (int col = leftCell; col <= rightCell; ++col) {
+    for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+        for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
             if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
                 col >= static_cast<int>(map[row].size())) {
                 continue;

@@ -43,13 +43,14 @@ private:
   rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const;
   void buyWeapon(const std::string &name, WeaponName weaponName);
   void buyBullet(const std::string &name, WeaponType weaponName);
-  bool isColliding(float x, float y, float width, float height) const;
   void updatePlayerMovement(Player &player, float deltaTime);
   void updateDefusing(const std::string &name);
   void updatePlanting(const std::string &name);
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
-  std::vector<std::pair<int, int>> findSpawnTeam(bool teamA);
+  std::tuple<float, float, float, float> getPlayerHitbox(const Player& player) const;
+  PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
+  
   void placePlayerInSpawnTeam(Player& player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
@@ -62,6 +63,7 @@ private:
   float timeToPlantBomb= TIME_TO_PLANT;
   void updateRounds();
   int checkRoundWinner();
+  
   void placeTeamsInSpawn();
 
 public:

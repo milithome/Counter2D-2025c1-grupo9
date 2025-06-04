@@ -4,8 +4,8 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
     : map(std::move(game_map)) {
     teamA.setRole(Role::COUNTER_TERRORIST);
     teamB.setRole(Role::TERRORIST);
-    spawnTeamTerrorist = findSpawnTeam(false); //true para terrorist
-    spawnTeamCounter = findSpawnTeam(true);
+    spawnTeamTerrorist = map.findSpawnTeam(false); //true para terrorist
+    spawnTeamCounter = map.findSpawnTeam(true);
 }
 
 bool Game::addPlayer(const std::string &name) {
@@ -44,7 +44,6 @@ void Game::placePlayerInSpawnTeam(Player& player) {
     player.setPosition(x, y);
 }
 
-
 Player &Game::findPlayerByName(const std::string &name) {
   for (auto &player : players) {
     if (player.getName() == name)
@@ -69,39 +68,24 @@ void Game::movePlayer(const std::string &name, float vx, float vy,
 // plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o
 // defiende
 void Game::plantBomb(
-    const std::string
-        &name) { // ahora se planta automaticamente, falta un update y que
+  const std::string &name) { // ahora se planta automaticamente, falta un update y que
                  // despues de x tiempo se cambie a true
   Player& player = findPlayerByName(name);
-  if (!player.getHasTheSpike()) { // falta agregar si puede defusear o sea si
-                                  // esta defendiendo
+  if (!player.getHasTheSpike()) { //solo puede tenerla si es atacante
     return;
   }
-  Hitbox hb = player.getHitbox();
-  float x = player.getX();
-  float y = player.getY();
-  float width = hb.getWidth();
-  float height = hb.getHeight();
+  auto [x, y, width, height] = getPlayerHitbox(player);
+  PlayerCellBounds bounds = getCellBounds(x, y, width, height);
 
-  float left = x;
-  float right = x + width;
-  float top = y;
-  float bottom = y + height;
-
-  int leftCell = static_cast<int>(std::floor(left));
-  int rightCell = static_cast<int>(std::floor(right));
-  int topCell = static_cast<int>(std::floor(top));
-  int bottomCell = static_cast<int>(std::floor(bottom));
-
-  for (int row = topCell; row <= bottomCell; ++row) {
-    for (int col = leftCell; col <= rightCell; ++col) {
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
       if (!map.isValidCell(row, col)) {
         continue;
       }
       if (map.isSpikeSite(row, col)) {
         spike.position.x = row;
         spike.position.y = col;
-        spike.isPlanted = true;
+        spike.isPlanted = true; //todo sacar de aca y hacerlo en update
         return;
       }
     }
@@ -117,7 +101,55 @@ void Game::updatePlanting(const std::string &name) {
   findPlayerByName(name).updateIsPlanting(false);
 }
 
-void Game::defuseBomb(const std::string &playerName) { (void)playerName; }
+std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player& player) const {
+    Hitbox hb = player.getHitbox();
+    float x = player.getX();
+    float y = player.getY();
+    float width = hb.getWidth();
+    float height = hb.getHeight();
+    return {x, y, width, height};
+}
+
+
+PlayerCellBounds Game::getCellBounds(float x,float y, float width, float height) const {
+
+    float left = x;
+    float right = x + width;
+    float top = y;
+    float bottom = y + height;
+
+    PlayerCellBounds bounds;
+    bounds.leftCell = static_cast<int>(std::floor(left));
+    bounds.rightCell = static_cast<int>(std::floor(right));
+    bounds.topCell = static_cast<int>(std::floor(top));
+    bounds.bottomCell = static_cast<int>(std::floor(bottom));
+
+    return bounds;
+}
+
+void Game::defuseBomb(const std::string &name) { 
+  Player& player = findPlayerByName(name);
+  if (player.getRole()==Role::TERRORIST) { //solo puede defusear si es defensor
+    return;
+  }
+  auto [x, y, width, height] = getPlayerHitbox(player);
+  PlayerCellBounds bounds = getCellBounds(x, y, width, height);
+
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
+      if (!map.isValidCell(row, col)) {
+        continue;
+      }
+      if (map.isSpikeSite(row, col)) {
+        spike.position.x = row;
+        spike.position.y = col;
+        spike.isPlanted = false; //todo sacar de aca y hacerlo en update
+        return;
+      }
+    }
+  }
+  return;
+}
 
 void Game::stopDefuse(const std::string &playerName) { (void)playerName; }
 
@@ -133,19 +165,23 @@ void Game::updatePlayerMovement(Player &player, float deltaTime) {
   float newY = newPos.second;
   float width = hb.getWidth();
   float height = hb.getHeight();
-
   float originalX = player.getX();
   float originalY = player.getY();
+  PlayerCellBounds bounds = getCellBounds(newX, newY, width, height); 
 
-  if (!isColliding(newX, newY, width, height)) {
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, false);
     return;
   }
-
-  if (!isColliding(newX, originalY, width, height)) {
+  bounds = getCellBounds(newX, originalY, width, height); 
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, true, false);
-  } else if (!isColliding(originalX, newY, width, height)) {
+    return;
+  } 
+  bounds = getCellBounds(originalX, newY, width, height); 
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, true);
+    return;
   }
 }
 
@@ -263,24 +299,7 @@ StateGame Game::getState() {
   std::vector<Entity> entities;
 
   for (const auto &player : players) {
-    Entity entity;
-    entity.type = PLAYER;
-    entity.x = player.getX();
-    entity.y = player.getY();
-    Inventory inv;
-    inv.primary = player.getPrimaryWeaponName();
-    inv.secondary = player.getSecondaryWeaponName();
-    inv.bulletsPrimary = player.getBulletsPrimary();
-    inv.bulletsSecondary = player.getBulletsSecondary();
-    PlayerData data;
-    data.inventory = inv;
-    data.name = player.getName();
-    data.rotation = player.getRotation();
-    data.lastMoveId = player.getLastMoveId();
-    data.health = player.getHealth();
-    data.money = player.getMoney();
-    entity.data = data;
-    entities.push_back(entity);
+    entities.push_back(getPlayerState(player.getName()));
   }
   state.entities = entities;
   //state.shots= shot_queue; TODO
