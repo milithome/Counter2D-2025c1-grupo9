@@ -20,6 +20,8 @@ using namespace SDL2pp;
 #define SHOT_LENGTH 8
 
 
+#define FONT_SIZE 20
+
 
 struct ShotEffect {
     float x;
@@ -51,23 +53,23 @@ struct ShopLayout {
 }
 */
 ///////////////////////////////////////////////////////////////////////////
-struct ShopLayout {
-    Rect container;
-    Rect primaryWeaponLabel;
-    std::vector<Rect> weaponItemContainers;
-    std::vector<Rect> weaponLabels;
-    std::vector<Rect> weaponPriceLabels;
-    std::vector<Rect> boughtLabels;
-    std::vector<Rect> weaponSprites;
+// struct ShopLayout {
+//     Rect container;
+//     Rect primaryWeaponLabel;
+//     std::vector<Rect> weaponItemContainers;
+//     std::vector<Rect> weaponLabels;
+//     std::vector<Rect> weaponPriceLabels;
+//     std::vector<Rect> boughtLabels;
+//     std::vector<Rect> weaponSprites;
 
-    Rect ammoLabel;
-    Rect primaryAmmoContainer;
-    Rect secondaryAmmoContainer;
-    Rect primaryAmmoLabel;
-    Rect secondaryAmmoLabel;
-    Rect primaryAmmoPriceLabel;
-    Rect secondaryAmmoPriceLabel;
-};
+//     Rect ammoLabel;
+//     Rect primaryAmmoContainer;
+//     Rect secondaryAmmoContainer;
+//     Rect primaryAmmoLabel;
+//     Rect secondaryAmmoLabel;
+//     Rect primaryAmmoPriceLabel;
+//     Rect secondaryAmmoPriceLabel;
+// };
 
 
 struct InterfaceLayout {
@@ -144,7 +146,7 @@ private:
     Texture mapTiles;
     Texture backgroundTexture;
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
-    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", 20);
+    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", FONT_SIZE);
 
     // T skins
     Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
@@ -159,9 +161,27 @@ private:
     Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
 
 
-    Surface AK47ShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
-    Surface M3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
-    Surface AWPShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+    Surface akShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
+    Surface m3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
+    Surface awpShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+ 
+    std::unordered_map<WeaponName, std::string> weaponTexts = {
+        {AK47, "AK-47"},
+        {M3, "M3"},
+        {AWP, "AWP"},
+        {GLOCK, "Glock"}
+    };
+
+    Surface& getWeaponSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47: return akShopSprite;
+            case M3:   return m3ShopSprite;
+            case AWP:  return awpShopSprite;
+            default:   throw std::exception();
+        }
+    }
+
+
 
     Surface AKInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
     Surface M3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
@@ -187,10 +207,10 @@ private:
     void showEntities(float cameraX, float cameraY);
     void showInterface();
     void showShop();
-    ShopLayout createShopLayout();
+    // ShopLayout createShopLayout();
     InterfaceLayout createInterfaceLayout();
 
-    ShopLayout shopLayout = createShopLayout();
+    // ShopLayout shopLayout = createShopLayout();
     InterfaceLayout interfaceLayout = createInterfaceLayout();
 
 
