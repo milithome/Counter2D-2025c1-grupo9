@@ -16,7 +16,10 @@ void GameController::update(float deltaTime) {
     while (!game.shotQueueIsEmpty()) {
         Shot shot = game.shotQueuePop();
         view.addBulletEffects(shot);
-        soundHandler.playShotSound(shot);
+        float player_x = game.getX(player_name);
+        float player_y = game.getY(player_name);
+        float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+        soundHandler.playShotSound(distance, shot.weapon);
     }
 }
 

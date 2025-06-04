@@ -72,10 +72,6 @@ void GameView::update(float deltaTime) {
 }
 
 
-void GameView::playShotSound() {
-    mixer.PlayChannel(-1, glockSound, 0);
-}
-
 void GameView::showBackground() {
     renderer.SetDrawColor(0, 0, 0, 255);
     Rect src(0, 0, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
@@ -106,37 +102,37 @@ void GameView::showMap(float cameraX, float cameraY) {
 
 void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
     renderer.SetDrawColor(0, 0, 0, 255);
-    for (auto it = shot_effects.begin(); it != shot_effects.end();) {
-        ShotEffect& shot = *it;
+    for (auto it = bullet_effects.begin(); it != bullet_effects.end();) {
+        BulletEffect& bullet = *it;
 
-        if (shot.time_left <= 0) {
-            it = shot_effects.erase(it);
+        if (bullet.time_left <= 0) {
+            it = bullet_effects.erase(it);
             continue;
         }
-        shot.time_left -= deltaTime; 
+        bullet.time_left -= deltaTime; 
 
-        float radians = shot.angle * M_PI / 180.0 ;
+        float radians = bullet.angle * M_PI / 180.0 ;
         float dx = std::cos(radians);
         float dy = std::sin(radians);
 
 
-        float prev_x = shot.x;
-        float prev_y = shot.y;
+        float prev_x = bullet.x;
+        float prev_y = bullet.y;
 
-        shot.x += dx * SHOT_SPEED * deltaTime;
-        shot.y += dy * SHOT_SPEED * deltaTime;
+        bullet.x += dx * BULLET_SPEED * deltaTime;
+        bullet.y += dy * BULLET_SPEED * deltaTime;
 
-        float dot = (shot.target_x - prev_x) * (shot.target_x - shot.x) + (shot.target_y - prev_y) * (shot.target_y - shot.y);
+        float dot = (bullet.target_x - prev_x) * (bullet.target_x - bullet.x) + (bullet.target_y - prev_y) * (bullet.target_y - bullet.y);
 
         if (dot < 0.0f) {
-            it = shot_effects.erase(it);
+            it = bullet_effects.erase(it);
             continue;
         }
 
-        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
-        int32_t length = std::min(distance_to_target, SHOT_LENGTH) + 1;
+        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((bullet.x - bullet.target_x) * (bullet.x - bullet.target_x) + (bullet.y - bullet.target_y) * (bullet.y - bullet.target_y));
+        int32_t length = std::min(distance_to_target, BULLET_LENGTH) + 1;
         Surface surface(
-            0, length, SHOT_THICKNESS, 32,
+            0, length, BULLET_THICKNESS, 32,
             0x00FF0000, // Rmask
             0x0000FF00, // Gmask
             0x000000FF, // Bmask
@@ -149,17 +145,17 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         Texture texture(renderer, surface);
         
         Rect dst(
-            cameraX + shot.x * BLOCK_SIZE, 
-            cameraY + shot.y * BLOCK_SIZE, 
-            SHOT_THICKNESS, 
+            cameraX + bullet.x * BLOCK_SIZE, 
+            cameraY + bullet.y * BLOCK_SIZE, 
+            BULLET_THICKNESS, 
             length);
         
         renderer.Copy(
             texture, 
             NullOpt, 
             dst, 
-            shot.angle - 90.0f, 
-            Point(0, SHOT_THICKNESS / 2), 
+            bullet.angle - 90.0f, 
+            Point(0, BULLET_THICKNESS / 2), 
             SDL_FLIP_NONE);
             
         ++it;
@@ -1007,8 +1003,11 @@ SDL_Point GameView::getCenterPoint() {
 
 
 
-void GameView::addShotEffect(Bullet bullet) {
-    shot_effects.push_back(ShotEffect{bullet.origin_x, bullet.origin_y, bullet.target_x, bullet.target_y, bullet.angle, SHOT_DURATION});
+void GameView::addBulletEffects(Shot shot) {
+    for (size_t i = 0; i < shot.bullets.size(); i++) {
+        Bullet bullet = shot.bullets[i];
+        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION});
+    }
 }
 
 

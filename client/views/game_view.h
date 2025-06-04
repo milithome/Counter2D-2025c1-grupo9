@@ -14,14 +14,14 @@
 
 using namespace SDL2pp;
 
-#define SHOT_SPEED 120
-#define SHOT_DURATION 10
-#define SHOT_THICKNESS 2
-#define SHOT_LENGTH 8
+#define BULLET_SPEED 120
+#define BULLET_DURATION 10
+#define BULLET_THICKNESS 2
+#define BULLET_LENGTH 8
 
 
 
-struct ShotEffect {
+struct BulletEffect {
     float x;
     float y;
     float target_x;
@@ -120,11 +120,8 @@ public:
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
     SDL_Point getCenterPoint();
-    void addShotEffect(Bullet bullet);
+    void addBulletEffects(Shot shot);
     void switchShopVisibility();
-
-    void playShotSound();
-
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
@@ -176,7 +173,7 @@ private:
     Texture AWPInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
 
     bool shopIsVisible = false;
-    std::vector<ShotEffect> shot_effects;
+    std::vector<BulletEffect> bullet_effects;
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
