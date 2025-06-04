@@ -482,13 +482,13 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
-Bullet Game::bulletQueuePop() {
-  Bullet top = bullet_queue.front();
-  bullet_queue.pop();
+Shot Game::shotQueuePop() {
+  Shot top = shot_queue.front();
+  shot_queue.pop();
   return top;
 }
 
-bool Game::bulletQueueIsEmpty() { return bullet_queue.empty(); }
+bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
 
 float Game::getX(const std::string &name) {
   return findPlayerByName(name).getX();

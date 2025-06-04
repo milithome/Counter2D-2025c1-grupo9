@@ -23,7 +23,7 @@ private:
   float time;
   Phase phase;
   Spike spike;
-  std::queue<Bullet> bullet_queue;
+  std::queue<Shot> shot_queue;
   std::vector<std::vector<CellType>> map;
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter, const std::string &shooterName);
@@ -69,8 +69,8 @@ public:
   float getX(const std::string &name);
   float getY(const std::string &name);
 
-  Bullet bulletQueuePop();
-  bool bulletQueueIsEmpty();
+  Shot shotQueuePop();
+  bool shotQueueIsEmpty();
 };
 
 #endif
