@@ -7,6 +7,10 @@
 
 using namespace SDL2pp;
 
+
+#define MAX_SOUND_DISTANCE 10
+#define GUNSHOT_SOUND_COOLDOWN 80
+
 class GameSoundHandler {
     public:
         GameSoundHandler() {
@@ -44,6 +48,9 @@ class GameSoundHandler {
         Chunk bombSound = Chunk("../assets/sfx/weapons/c4_explode.wav");
         Chunk deathSound = Chunk("../assets/sfx/weapons/die1.wav");
 
+        int gunshot_sound_cooldown = 0;
+
+        void adjustVolume(Chunk& sound, float distance);
 };
 
 #endif
