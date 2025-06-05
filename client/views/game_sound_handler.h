@@ -48,7 +48,10 @@ class GameSoundHandler {
         Chunk bombSound = Chunk("../assets/sfx/weapons/c4_explode.wav");
         Chunk deathSound = Chunk("../assets/sfx/player/die1.wav");
 
-        int gunshot_sound_cooldown = 0;
+        int akSoundCooldown = 0;
+        int m3SoundCooldown = 0;
+        int awpSoundCooldown = 0;
+        int glockSoundCooldown = 0;
 
         void adjustVolume(Chunk& sound, float distance);
 };
