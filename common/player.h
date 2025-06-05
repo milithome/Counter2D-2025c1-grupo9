@@ -17,7 +17,7 @@ private:
   Weapon equipped = Weapons::Glock;
   WeaponType typeEquipped = WeaponType::SECONDARY;
   Weapon knife = Weapons::Knife;
-  Weapon primaryWeapon = Weapons::None;
+  Weapon primaryWeapon = Weapons::AWP;
   Weapon secondaryWeapon = Weapons::Glock;
   uint32_t bulletsPrimary = 0;
   uint32_t bulletsSecondary = 0;
@@ -60,7 +60,7 @@ public:
   Weapon getEquipped();
   WeaponName getPrimaryWeaponName() const;
   WeaponName getSecondaryWeaponName() const;
-  WeaponType getTypeEquipped();
+  WeaponType getTypeEquipped() const;
   float getRotation() const;
   float getShootCooldown();
   float getSpreadAngle();

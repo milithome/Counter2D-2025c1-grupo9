@@ -31,39 +31,6 @@ struct ShotEffect {
     float angle;
     float time_left;
 };
-/*
-struct ShopLayout {
-    Rect container;
-    Rect primaryWeaponLabel;
-    std::vector<Rect> weaponItemContainers;
-    std::vector<Rect> weaponLabels;
-    std::vector<Rect> weaponPriceLabels;
-    std::vector<Rect> boughtLabels;
-    std::vector<Rect> weaponSprites;
-
-    Rect ammoLabel;
-    Rect primaryAmmoContainer;
-    Rect secondaryAmmoContainer;
-    Rect primaryAmmoLabel;
-    Rect secondaryAmmoLabel;
-    Rect primaryAmmoPriceLabel;
-    Rect secondaryAmmoPriceLabel;
-    Rect primaryAmmoBoughtLabel;
-    Rect secondaryAmmoBoughtLabel;
-};
-*/
-
-
-struct InterfaceLayout {
-    Rect container;
-    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> health;
-    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> ammo;
-    std::function<Rect(Rect parent, Surface& label)> time;
-
-    std::function<Rect(Rect parent, std::vector<Rect> parentsChildren, uint32_t position)> createWeaponContainer;
-    std::function<Rect(Rect parent, Surface& sprite)> createWeaponSprite;
-
-};
 
 
 
@@ -73,7 +40,6 @@ struct InterfaceLayout {
 
 class GameView {
 public:
-    //GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
     GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
@@ -82,7 +48,6 @@ public:
     void addShotEffect(Bullet bullet);
     void switchShopVisibility();
 
-    void playShotSound();
     void resizeHud();
 
 
@@ -119,10 +84,6 @@ private:
     Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
 
 
-    Surface akShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
-    Surface m3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
-    Surface awpShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
- 
     std::unordered_map<WeaponName, std::string> weaponTexts = {
         {AK47, "AK-47"},
         {M3, "M3"},
@@ -130,7 +91,10 @@ private:
         {GLOCK, "Glock"}
     };
 
-    Surface& getWeaponSprite(WeaponName weapon) {
+    Surface akShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
+    Surface m3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
+    Surface awpShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+    Surface& getWeaponShopSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47: return akShopSprite;
             case M3:   return m3ShopSprite;
@@ -141,17 +105,53 @@ private:
 
 
 
-    Surface AKInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
-    Surface M3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
-    Surface AWPInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
 
+
+    Surface akInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
+    Surface m3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
+    Surface awpInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
     Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
     Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
     Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
+    Surface& getWeaponInvSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akInvSprite;
+            case M3:    return m3InvSprite;
+            case AWP:   return awpInvSprite;
+            case GLOCK: return glockInvSprite;
+            case KNIFE: return knifeInvSprite;
+            default:    throw std::exception();
+        }
+    }
 
-    Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
-    Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
-    Texture AWPInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+    Texture akInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
+    Texture m3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
+    Texture awpInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+    Texture glockInGameSprite = Texture(renderer, "../assets/gfx/weapons/glock.bmp");
+    Texture knifeInGameSprite = Texture(renderer, "../assets/gfx/weapons/knife.bmp");
+    Texture& getWeaponInGameSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akInGameSprite;
+            case M3:    return m3InGameSprite;
+            case AWP:   return awpInGameSprite;
+            case GLOCK:   return glockInGameSprite;
+            case KNIFE:   return knifeInGameSprite;
+            default:    throw std::exception();
+        }
+    }
+
+
+    Texture akDroppedSprite = Texture(renderer, "../assets/gfx/weapons/ak47_d.bmp");
+    Texture m3DroppedSprite = Texture(renderer, "../assets/gfx/weapons/m3_d.bmp");
+    Texture awpDroppedSprite = Texture(renderer, "../assets/gfx/weapons/awp_d.bmp");
+    Texture& getWeaponDroppedSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akDroppedSprite;
+            case M3:    return m3DroppedSprite;
+            case AWP:   return awpDroppedSprite;
+            default:    throw std::exception();
+        }
+    }
 
     bool shopIsVisible = false;
     std::vector<ShotEffect> shot_effects;
@@ -165,11 +165,7 @@ private:
     void showEntities(float cameraX, float cameraY);
     void showInterface();
     void showShop();
-    // ShopLayout createShopLayout();
-    InterfaceLayout createInterfaceLayout();
 
-    // ShopLayout shopLayout = createShopLayout();
-    InterfaceLayout interfaceLayout = createInterfaceLayout();
 
 
 

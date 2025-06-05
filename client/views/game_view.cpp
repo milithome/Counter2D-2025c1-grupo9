@@ -23,9 +23,9 @@ GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_p
         m3ShopSprite.SetColorKey(true, SDL_MapRGB(m3ShopSprite.Get()->format, 255, 0, 255));
         awpShopSprite.SetColorKey(true, SDL_MapRGB(awpShopSprite.Get()->format, 255, 0, 255));
 
-        AKInvSprite.SetColorKey(true, SDL_MapRGB(AKInvSprite.Get()->format, 0, 0, 0));
-        M3InvSprite.SetColorKey(true, SDL_MapRGB(M3InvSprite.Get()->format, 0, 0, 0));
-        AWPInvSprite.SetColorKey(true, SDL_MapRGB(AWPInvSprite.Get()->format, 0, 0, 0));
+        akInvSprite.SetColorKey(true, SDL_MapRGB(akInvSprite.Get()->format, 0, 0, 0));
+        m3InvSprite.SetColorKey(true, SDL_MapRGB(m3InvSprite.Get()->format, 0, 0, 0));
+        awpInvSprite.SetColorKey(true, SDL_MapRGB(awpInvSprite.Get()->format, 0, 0, 0));
         glockInvSprite.SetColorKey(true, SDL_MapRGB(glockInvSprite.Get()->format, 0, 0, 0));
         knifeInvSprite.SetColorKey(true, SDL_MapRGB(knifeInvSprite.Get()->format, 0, 0, 0));
         bombInvSprite.SetColorKey(true, SDL_MapRGB(bombInvSprite.Get()->format, 0, 0, 0));
@@ -47,7 +47,6 @@ Renderer GameView::createRenderer(Window& window) {
 void GameView::update(float deltaTime) {
     renderer.Clear();
 
-    // graficar
     // TODO: cambiar el tamaño de las cosas cuando se cambia el tamaño de la ventana
     // int block_size = renderer.GetOutputHeight() / 24;
     SDL_Point center = getCenterPoint();
@@ -175,150 +174,46 @@ void GameView::showEntities(float cameraX, float cameraY) {
 
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+
+
+                float angleRad = (data.rotation) * M_PI / 180.0f;
+                // Vector desplazamiento (16 px hacia adelante)
+                float dx = std::cos(angleRad) * BLOCK_SIZE/2;
+                float dy = std::sin(angleRad) * BLOCK_SIZE/2;
+
+                Rect weaponDst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2 + dx, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2 + dy, BLOCK_SIZE, BLOCK_SIZE);
+                switch (data.equippedWeapon) {
+                    case WeaponType::PRIMARY: {
+                        renderer.Copy(getWeaponInGameSprite(data.inventory.primary), NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+                        break;
+                    }
+                    case WeaponType::SECONDARY: {
+                        renderer.Copy(glockInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+                        break;
+                    }
+                    case WeaponType::KNIFE: {
+                        renderer.Copy(knifeInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+                        break;
+                    }
+                }
                 break;
             }
-            default: {
+            case WEAPON: {  
+                WeaponData data = std::get<WeaponData>(gameState[i].data);
+                float weaponX = gameState[i].x;
+                float weaponY = gameState[i].y;
+                Rect dst(cameraX + weaponX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + weaponY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+                renderer.Copy(getWeaponDroppedSprite(data.weapon), src, dst);
                 break;
+            }
+            case BOMB: {
+
             }
         }
     }
 }
-// TODO: Fijarse en el TODO de createInterfaceLayout
+// TODO: Similar a showShop
 void GameView::showInterface() {
-    renderer.SetDrawColor(255, 255, 255, 0);
-    renderer.FillRect(interfaceLayout.container);
-    Entity player = game.getPlayerState(playerName);
-    PlayerData playerData = std::get<PlayerData>(player.data);
-
-
-    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(playerData.health), Color(255, 255, 255));
-    Texture healthLabelTexture(renderer, healthLabel);
-    Rect healthLabelRect = interfaceLayout.health(interfaceLayout.container, healthLabel, {}, 0);
-    renderer.Copy(
-        healthLabelTexture,  
-        NullOpt, 
-        healthLabelRect);
-
-
-    switch (playerData.equippedWeapon) {
-        case WeaponType::PRIMARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsPrimary), Color(255, 255, 255));
-            Texture ammoLabelTexture(renderer, ammoLabel);
-            renderer.Copy(
-                ammoLabelTexture,  
-                NullOpt, 
-                interfaceLayout.ammo(interfaceLayout.container, ammoLabel, {healthLabelRect}, 1));
-            break;
-        }
-        case WeaponType::SECONDARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsSecondary), Color(255, 255, 255));
-            Texture ammoLabelTexture(renderer, ammoLabel);
-            renderer.Copy(
-                ammoLabelTexture,  
-                NullOpt, 
-                interfaceLayout.ammo(interfaceLayout.container, ammoLabel, {healthLabelRect}, 1));
-            break;
-        }
-        case WeaponType::KNIFE: {
-            break;
-        }
-    }
-    Surface timeLabel = font.RenderText_Blended("1:45", Color(255, 255, 255));
-    Texture timeLabelTexture(renderer, timeLabel);
-    renderer.Copy(
-        timeLabelTexture,  
-        NullOpt, 
-        interfaceLayout.time(interfaceLayout.container, timeLabel));
-    std::vector<Rect> equipamiento;
-    Rect primaryWeaponContainer;
-    Rect primaryWeaponSprite;
-    int position = 0;
-    if (playerData.inventory.primary != WeaponName::NONE) { // tiene la primaria
-
-        Rect primaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
-        equipamiento.push_back(primaryWeaponContainer);
-        Rect primaryWeaponSprite;
-        Texture primaryTexture(renderer, AKInvSprite);
-        switch (playerData.inventory.primary) {
-            case AK47: {
-                primaryWeaponSprite = interfaceLayout.createWeaponSprite(primaryWeaponContainer, AKInvSprite);
-                break;
-            }
-            case M3: {
-                primaryWeaponSprite = interfaceLayout.createWeaponSprite(primaryWeaponContainer, M3InvSprite);
-                primaryTexture = Texture(renderer, M3InvSprite);
-                break;
-            }
-            case AWP: {
-                primaryWeaponSprite = interfaceLayout.createWeaponSprite(primaryWeaponContainer, AWPInvSprite);
-                primaryTexture = Texture(renderer, AWPInvSprite);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        if (playerData.equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
-            renderer.SetDrawColor(255, 255, 255, 64);
-        } else {
-            renderer.SetDrawColor(0, 0, 0, 64);
-        }
-        renderer.FillRect(primaryWeaponContainer);
-        renderer.Copy(
-            primaryTexture,
-            NullOpt,
-            primaryWeaponSprite);
-    }
-
-    Rect secondaryWeaponContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
-    Rect secondaryWeaponSprite = interfaceLayout.createWeaponSprite(secondaryWeaponContainer, glockInvSprite);
-    equipamiento.push_back(secondaryWeaponContainer);
-    if (playerData.equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
-        renderer.SetDrawColor(255, 255, 255, 64);
-    } else {
-        renderer.SetDrawColor(0, 0, 0, 64);
-    }
-    renderer.FillRect(secondaryWeaponContainer);
-    Texture secondaryTexture(renderer, glockInvSprite);
-    renderer.Copy(
-        secondaryTexture,
-        NullOpt,
-        secondaryWeaponSprite);
-    Rect knifeContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
-    Rect knifeSprite = interfaceLayout.createWeaponSprite(knifeContainer, knifeInvSprite);
-
-    equipamiento.push_back(knifeContainer);
-    if (playerData.equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
-        renderer.SetDrawColor(255, 255, 255, 64);
-    } else {
-        renderer.SetDrawColor(0, 0, 0, 64);
-    }
-    renderer.FillRect(knifeContainer);
-    Texture knifeTexture(renderer, knifeInvSprite);
-    renderer.Copy(
-        knifeTexture,
-        NullOpt,
-        knifeSprite);
-        
-    if (playerData.inventory.has_the_bomb) {  // tiene la bomba
-        Rect bombContainer = interfaceLayout.createWeaponContainer(interfaceLayout.container, equipamiento, position++);
-        Rect bombSprite = interfaceLayout.createWeaponSprite(bombContainer, bombInvSprite);
-        equipamiento.push_back(bombContainer);
-        Texture bombTexture(renderer, bombInvSprite);
-        renderer.Copy(
-            bombTexture,
-            NullOpt,
-            bombSprite);
-    }
-
-}
-
-
-// TODO: Plantear de otra forma para que los elementos se puedan acceder de manera fija, no en forma de funciones
-// Y que esto se vuelva a ejecutar cada vez q el jugador hace algo para que cambie
-InterfaceLayout GameView::createInterfaceLayout() {
-    InterfaceLayout layout;
-
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 15;
@@ -330,18 +225,24 @@ InterfaceLayout GameView::createInterfaceLayout() {
     const int INVENTORY_VERTICAL_SPACING = 10;
     float text_scale = 1.0f/static_cast<float>(FONT_SIZE) * (static_cast<float>(height)/24.0f);
 
-
-    layout.container = Rect(
+    Rect container(
         MARGIN,
         MARGIN,
         width - MARGIN * 2,
         height - MARGIN * 2
     );
 
-    layout.health = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position) {
-        uint32_t relative_position = 0;
+    renderer.SetDrawColor(255, 255, 255, 0);
+    renderer.FillRect(container);
+    Entity player = game.getPlayerState(playerName);
+    PlayerData playerData = std::get<PlayerData>(player.data);
 
-        for (uint32_t i = 0; i < position; i++) {
+
+
+
+    auto layoutLeftVBox = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren) {
+        uint32_t relative_position = 0;
+        for (size_t i = 0; i < parentsChildren.size(); i++) {
             relative_position += parentsChildren[i].GetH() + HEALTH_AMMO_VERTICAL_SPACING;
         }
         return Rect(
@@ -351,22 +252,43 @@ InterfaceLayout GameView::createInterfaceLayout() {
             label.GetHeight() * text_scale 
         );
     };
+    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(playerData.health), Color(255, 255, 255));
+    Rect healthLabelRect = layoutLeftVBox(container, healthLabel, {});
 
-    layout.ammo = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position) {
-        uint32_t relative_position = 0;
+    Texture healthLabelTexture(renderer, healthLabel);
+    renderer.Copy(
+        healthLabelTexture,  
+        NullOpt, 
+        healthLabelRect);
 
-        for (uint32_t i = 0; i < position; i++) {
-            relative_position += parentsChildren[i].GetH() + HEALTH_AMMO_VERTICAL_SPACING;
+
+        
+    switch (playerData.equippedWeapon) {
+        case WeaponType::PRIMARY: {
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsPrimary), Color(255, 255, 255));
+            Texture ammoLabelTexture(renderer, ammoLabel);
+            renderer.Copy(
+                ammoLabelTexture,  
+                NullOpt, 
+                layoutLeftVBox(container, ammoLabel, {healthLabelRect}));
+            break;
         }
-        return Rect(
-            parent.GetX() + CONTAINER_MARGIN,
-            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN - relative_position,
-            label.GetWidth() * text_scale,
-            label.GetHeight() * text_scale
-        );
-    };
+        case WeaponType::SECONDARY: {
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsSecondary), Color(255, 255, 255));
+            Texture ammoLabelTexture(renderer, ammoLabel);
+            renderer.Copy(
+                ammoLabelTexture,  
+                NullOpt, 
+                layoutLeftVBox(container, ammoLabel, {healthLabelRect}));
+            break;
+        }
+        case WeaponType::KNIFE: {
+            break;
+        }
+    }
+    Surface timeLabel = font.RenderText_Blended("1:45", Color(255, 255, 255));
 
-    layout.time = [=](Rect parent, Surface& label) {
+    auto layoutCenterLabel = [=](Rect parent, Surface& label) {
         return Rect(
             parent.GetX() + parent.GetW()/2 - label.GetHeight() * text_scale / 2,
             parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN,
@@ -375,11 +297,20 @@ InterfaceLayout GameView::createInterfaceLayout() {
         );
     };
 
+    Texture timeLabelTexture(renderer, timeLabel);
+    renderer.Copy(
+        timeLabelTexture,  
+        NullOpt, 
+        layoutCenterLabel(container, timeLabel));
+    
+    std::vector<Rect> equipamiento;
+    Rect primaryWeaponContainer;
+    Rect primaryWeaponSprite;
 
-    layout.createWeaponContainer = [=](Rect parent, std::vector<Rect> parentsChildren, uint32_t position) {
+    auto layoutRightVBox = [=](Rect parent, std::vector<Rect> parentsChildren) {
         uint32_t relative_position = 0;
 
-        for (uint32_t i = 0; i < position; i++) {
+        for (size_t i = 0; i < parentsChildren.size(); i++) {
             relative_position += parentsChildren[i].GetH() + INVENTORY_VERTICAL_SPACING;
         }
 
@@ -392,7 +323,8 @@ InterfaceLayout GameView::createInterfaceLayout() {
         );
     };
 
-    layout.createWeaponSprite = [=](Rect parent, Surface& sprite) {
+
+    auto createWeaponSprite = [=](Rect parent, Surface& sprite) {
 
         uint32_t weapon_image_container_x = parent.GetX() + WEAPON_CONTAINER_MARGIN;
         uint32_t weapon_image_container_y = parent.GetY() + WEAPON_CONTAINER_MARGIN;
@@ -436,11 +368,74 @@ InterfaceLayout GameView::createInterfaceLayout() {
     };
 
 
-    return layout;
+
+    if (playerData.inventory.primary != WeaponName::NONE) { // tiene la primaria
+
+        Rect primaryWeaponContainer = layoutRightVBox(container, equipamiento);
+        equipamiento.push_back(primaryWeaponContainer);
+    
+        if (playerData.equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
+            renderer.SetDrawColor(255, 255, 255, 64);
+        } else {
+            renderer.SetDrawColor(0, 0, 0, 64);
+        }
+        renderer.FillRect(primaryWeaponContainer);
+
+        Surface& primaryWeaponSprite = getWeaponInvSprite(playerData.inventory.primary);
+        Rect primaryWeaponSpriteRect = createWeaponSprite(primaryWeaponContainer, primaryWeaponSprite);
+        Texture primaryWeaponTexture(renderer, primaryWeaponSprite);
+        renderer.Copy(
+            primaryWeaponTexture,
+            NullOpt,
+            primaryWeaponSpriteRect);
+    }
+
+    Rect secondaryWeaponContainer = layoutRightVBox(container, equipamiento);
+    Rect secondaryWeaponSprite = createWeaponSprite(secondaryWeaponContainer, glockInvSprite);
+    equipamiento.push_back(secondaryWeaponContainer);
+    if (playerData.equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
+        renderer.SetDrawColor(255, 255, 255, 64);
+    } else {
+        renderer.SetDrawColor(0, 0, 0, 64);
+    }
+    renderer.FillRect(secondaryWeaponContainer);
+    Texture secondaryTexture(renderer, glockInvSprite);
+    renderer.Copy(
+        secondaryTexture,
+        NullOpt,
+        secondaryWeaponSprite);
+    Rect knifeContainer = layoutRightVBox(container, equipamiento);
+    Rect knifeSprite = createWeaponSprite(knifeContainer, knifeInvSprite);
+
+    equipamiento.push_back(knifeContainer);
+    if (playerData.equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
+        renderer.SetDrawColor(255, 255, 255, 64);
+    } else {
+        renderer.SetDrawColor(0, 0, 0, 64);
+    }
+    renderer.FillRect(knifeContainer);
+    Texture knifeTexture(renderer, knifeInvSprite);
+    renderer.Copy(
+        knifeTexture,
+        NullOpt,
+        knifeSprite);
+        
+    if (playerData.inventory.has_the_bomb) {  // tiene la bomba
+        Rect bombContainer = layoutRightVBox(container, equipamiento);
+        Rect bombSprite = createWeaponSprite(bombContainer, bombInvSprite);
+        equipamiento.push_back(bombContainer);
+        Texture bombTexture(renderer, bombInvSprite);
+        renderer.Copy(
+            bombTexture,
+            NullOpt,
+            bombSprite);
+    }
+
 }
 
+
 void GameView::resizeHud() {
-    interfaceLayout = createInterfaceLayout();
+
 }
 
 // TODO: Metodo extremadamente largo, cambiar el planteamiento para que por un lado se creen los Rect
@@ -566,7 +561,7 @@ void GameView::showShop() {
 
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        Surface& weaponSprite = getWeaponSprite(weapon);
+        Surface& weaponSprite = getWeaponShopSprite(weapon);
 
 
         uint32_t weapon_image_container_x = itemContainer.GetX() + ITEM_CONTAINER_MARGIN;

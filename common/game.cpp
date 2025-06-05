@@ -198,6 +198,7 @@ StateGame Game::getState() {
     inv.bulletsPrimary = player.getBulletsPrimary();
     inv.bulletsSecondary = player.getBulletsSecondary();
     PlayerData data;
+    data.equippedWeapon = player.getTypeEquipped();
     data.inventory = inv;
     data.name = player.getName();
     data.rotation = player.getRotation();
