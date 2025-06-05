@@ -38,6 +38,7 @@ struct DeathEffect {
     float dead_body_rotation;
     //Surface dead_body_skin;
     float time_left;
+    int alpha = 255;
 };
 
 // Delirio
@@ -148,20 +149,20 @@ private:
 
     Texture mapTiles;
     Texture backgroundTexture;
-    Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
+    Surface playerTiles = Surface("../assets/gfx/player/ct1.bmp"); // temporal
     Font font = Font("../assets/gfx/fonts/sourcesans.ttf", 20);
 
     // T skins
-    Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
-    Texture L337Krew = Texture(renderer, "../assets/gfx/player/t2.bmp");
-    Texture arcticAvenger = Texture(renderer, "../assets/gfx/player/t3.bmp");
-    Texture Guerrilla = Texture(renderer, "../assets/gfx/player/t4.bmp");
+    Surface phoenix = Surface("../assets/gfx/player/t1.bmp");
+    Surface l337Krew = Surface("../assets/gfx/player/t2.bmp");
+    Surface arcticAvenger = Surface("../assets/gfx/player/t3.bmp");
+    Surface guerrilla = Surface("../assets/gfx/player/t4.bmp");
 
     // CT skins
-    Texture sealForce = Texture(renderer, "../assets/gfx/player/ct1.bmp");
-    Texture germanGSG9 = Texture(renderer, "../assets/gfx/player/ct2.bmp");
-    Texture UKSAS = Texture(renderer, "../assets/gfx/player/ct3.bmp");
-    Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
+    Surface sealForce = Surface("../assets/gfx/player/ct1.bmp");
+    Surface germanGSG9 = Surface("../assets/gfx/player/ct2.bmp");
+    Surface UKSAS = Surface("../assets/gfx/player/ct3.bmp");
+    Surface frenchGIGN = Surface("../assets/gfx/player/ct4.bmp");
 
 
     Surface AK47ShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");

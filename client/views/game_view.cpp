@@ -178,7 +178,9 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 }
                 */
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
-                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+                
+                Texture playerTexture = Texture(renderer, playerTiles);
+                renderer.Copy(playerTexture, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 break;
             }
             default: {
@@ -200,7 +202,16 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
         }
 
         Rect dst(cameraX + death.dead_body_x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + death.dead_body_y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
-        renderer.Copy(playerTiles, src, dst, death.dead_body_rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+        
+
+        death.alpha -= (255 * deltaTime) / DEATH_DURATION;
+        if (death.alpha < 0) {
+            death.alpha = 0;
+        }
+        Texture playerTexture = Texture(renderer, playerTiles);
+        playerTexture.SetAlphaMod(death.alpha);
+
+        renderer.Copy(playerTexture, src, dst, death.dead_body_rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
         death.time_left -= deltaTime;
         ++it;
     }
