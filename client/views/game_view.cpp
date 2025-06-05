@@ -48,6 +48,8 @@ void GameView::update(float deltaTime) {
     renderer.Clear();
 
     // graficar
+    // TODO: cambiar el tamaño de las cosas cuando se cambia el tamaño de la ventana
+    // int block_size = renderer.GetOutputHeight() / 24;
     SDL_Point center = getCenterPoint();
     float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
     float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
@@ -181,7 +183,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
         }
     }
 }
-
+// TODO: Fijarse en el TODO de createInterfaceLayout
 void GameView::showInterface() {
     renderer.SetDrawColor(255, 255, 255, 0);
     renderer.FillRect(interfaceLayout.container);
@@ -311,6 +313,9 @@ void GameView::showInterface() {
 
 }
 
+
+// TODO: Plantear de otra forma para que los elementos se puedan acceder de manera fija, no en forma de funciones
+// Y que esto se vuelva a ejecutar cada vez q el jugador hace algo para que cambie
 InterfaceLayout GameView::createInterfaceLayout() {
     InterfaceLayout layout;
 
@@ -318,11 +323,12 @@ InterfaceLayout GameView::createInterfaceLayout() {
     int height = renderer.GetOutputHeight();
     const int MARGIN = 15;
     const int CONTAINER_MARGIN = 0;
-    const int WEAPON_CONTAINER_HEIGHT = 60;
-    const int WEAPON_CONTAINER_WIDTH = 100;
+    const int WEAPON_CONTAINER_HEIGHT = 60.0f * static_cast<float>(height)/480.0f;
+    const int WEAPON_CONTAINER_WIDTH = 100.0f * static_cast<float>(width)/640.0f;
     const int WEAPON_CONTAINER_MARGIN = 5;
     const int HEALTH_AMMO_VERTICAL_SPACING = 5;
     const int INVENTORY_VERTICAL_SPACING = 10;
+    float text_scale = 1.0f/static_cast<float>(FONT_SIZE) * (static_cast<float>(height)/24.0f);
 
 
     layout.container = Rect(
@@ -333,9 +339,6 @@ InterfaceLayout GameView::createInterfaceLayout() {
     );
 
     layout.health = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position) {
-        // parent = container
-        // position = 0;
-        // parentsChildren = {}
         uint32_t relative_position = 0;
 
         for (uint32_t i = 0; i < position; i++) {
@@ -343,15 +346,13 @@ InterfaceLayout GameView::createInterfaceLayout() {
         }
         return Rect(
             parent.GetX() + CONTAINER_MARGIN,
-            parent.GetY() + parent.GetH() - label.GetHeight() - CONTAINER_MARGIN - relative_position,
-            label.GetWidth(),
-            label.GetHeight()
+            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN - relative_position,
+            label.GetWidth() * text_scale,
+            label.GetHeight() * text_scale 
         );
     };
 
     layout.ammo = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position) {
-        // position = 1;
-        // parentsChildren = {layout.health}
         uint32_t relative_position = 0;
 
         for (uint32_t i = 0; i < position; i++) {
@@ -359,25 +360,23 @@ InterfaceLayout GameView::createInterfaceLayout() {
         }
         return Rect(
             parent.GetX() + CONTAINER_MARGIN,
-            parent.GetY() + parent.GetH() - label.GetHeight() - CONTAINER_MARGIN - relative_position,
-            label.GetWidth(),
-            label.GetHeight()
+            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN - relative_position,
+            label.GetWidth() * text_scale,
+            label.GetHeight() * text_scale
         );
     };
 
     layout.time = [=](Rect parent, Surface& label) {
         return Rect(
-            parent.GetX() + parent.GetW()/2,
-            parent.GetY() + parent.GetH() - label.GetHeight() - CONTAINER_MARGIN,
-            label.GetWidth(),
-            label.GetHeight()
+            parent.GetX() + parent.GetW()/2 - label.GetHeight() * text_scale / 2,
+            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN,
+            label.GetWidth() * text_scale,
+            label.GetHeight() * text_scale
         );
     };
 
 
     layout.createWeaponContainer = [=](Rect parent, std::vector<Rect> parentsChildren, uint32_t position) {
-        // position = 0;
-        // parentsChildren = {}
         uint32_t relative_position = 0;
 
         for (uint32_t i = 0; i < position; i++) {
@@ -440,7 +439,14 @@ InterfaceLayout GameView::createInterfaceLayout() {
     return layout;
 }
 
+void GameView::resizeHud() {
+    interfaceLayout = createInterfaceLayout();
+}
 
+// TODO: Metodo extremadamente largo, cambiar el planteamiento para que por un lado se creen los Rect
+// y se almacenen de algun modo, y cada vez que se actualiza algo (osea, el jugador compra algo o cambia el tamaño de la ventana)
+// se vuelvan a crear los Rects. Por otro lado va a ver un metodo que grafique los sprites, los textos,
+// y los contenedores de la interfaz dentro de esos rects.
 void GameView::showShop() {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
@@ -452,8 +458,8 @@ void GameView::showShop() {
     const int ITEM_CONTAINER_MARGIN = 10;
     const int ITEM_CONTAINER_VERTICAL_SPACING = 5;
 
-    float text_scale = 1/FONT_SIZE * (height/24);
-    (void)text_scale;
+    float text_scale = 1.0f/static_cast<float>(FONT_SIZE) * (static_cast<float>(height)/24.0f);
+
 
 
     //////////////////////////////////////////////////////////////////////
@@ -481,8 +487,8 @@ void GameView::showShop() {
     Rect primaryWeaponSectionLabelRect(
             container.GetX() + CONTAINER_MARGIN,
             container.GetY() + CONTAINER_MARGIN, 
-            primaryWeaponSectionLabel.GetWidth() , 
-            primaryWeaponSectionLabel.GetHeight());
+            primaryWeaponSectionLabel.GetWidth() * text_scale, 
+            primaryWeaponSectionLabel.GetHeight() * text_scale);
     ///////////////////////////////////////////////////
 
     renderer.Copy(
@@ -510,9 +516,9 @@ void GameView::showShop() {
         ////////////////////////////////////////////////////
         Rect itemContainer(
             itemContainerX, 
-            container.GetY() + CONTAINER_MARGIN + primaryWeaponSectionLabel.GetHeight() + SECTION_VERTICAL_SPACING, 
+            container.GetY() + CONTAINER_MARGIN + primaryWeaponSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
             (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/shop.size(), 
-            container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabel.GetHeight() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
+            container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
         //////////////////////////////////////////////////
         weaponShopButtons[weapon] = {{itemContainer.GetX(), itemContainer.GetY()}, {itemContainer.GetW(), itemContainer.GetH()}};
 
@@ -530,8 +536,8 @@ void GameView::showShop() {
         Rect weaponLabelRect(
             itemContainer.GetX() + ITEM_CONTAINER_MARGIN, 
             itemContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-            weaponLabel.GetWidth(), 
-            weaponLabel.GetHeight());
+            weaponLabel.GetWidth() * text_scale, 
+            weaponLabel.GetHeight() * text_scale);
         /////////////////////////////////////////////
 
         Texture weaponLabelTexture(renderer, weaponLabel);
@@ -543,10 +549,10 @@ void GameView::showShop() {
         ////////////////////////////////////////////////
         Surface weaponPriceLabel = font.RenderText_Blended("$" + std::to_string(price), Color(255, 255, 255));
         Rect weaponPriceLabelRect(
-            itemContainer.GetX() + itemContainer.GetW() - weaponPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
+            itemContainer.GetX() + itemContainer.GetW() - weaponPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
             itemContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-            weaponPriceLabel.GetWidth(), 
-            weaponPriceLabel.GetHeight());
+            weaponPriceLabel.GetWidth() * text_scale, 
+            weaponPriceLabel.GetHeight() * text_scale);
         ///////////////////////////////////////////////
 
         Texture weaponPriceLabelTexture(renderer, weaponPriceLabel);
@@ -564,9 +570,9 @@ void GameView::showShop() {
 
 
         uint32_t weapon_image_container_x = itemContainer.GetX() + ITEM_CONTAINER_MARGIN;
-        uint32_t weapon_image_container_y = itemContainer.GetY() + ITEM_CONTAINER_MARGIN + weaponLabel.GetHeight() + ITEM_CONTAINER_VERTICAL_SPACING;
+        uint32_t weapon_image_container_y = itemContainer.GetY() + ITEM_CONTAINER_MARGIN + weaponLabelRect.GetH() + ITEM_CONTAINER_VERTICAL_SPACING;
         uint32_t weapon_image_container_w = itemContainer.GetW() - ITEM_CONTAINER_MARGIN * 2;
-        uint32_t weapon_image_container_h = itemContainer.GetH() - ITEM_CONTAINER_MARGIN * 2 - ITEM_CONTAINER_VERTICAL_SPACING * 2 - weaponLabel.GetHeight() * 2;
+        uint32_t weapon_image_container_h = itemContainer.GetH() - ITEM_CONTAINER_MARGIN * 2 - ITEM_CONTAINER_VERTICAL_SPACING * 2 - weaponLabelRect.GetH() * 2;
 
 
 
@@ -612,10 +618,10 @@ void GameView::showShop() {
 
         //////////////////////////////////////////////////////////////////////////////////
         Rect boughtLabelRect(
-            itemContainer.GetX() + ITEM_CONTAINER_MARGIN + ((itemContainer.GetW() - BoughtLabel.GetWidth() - 2 * ITEM_CONTAINER_MARGIN)/2), 
-            itemContainer.GetY() + itemContainer.GetH() - BoughtLabel.GetHeight() - ITEM_CONTAINER_MARGIN, 
-            BoughtLabel.GetWidth(), 
-            BoughtLabel.GetHeight());
+            itemContainer.GetX() + ITEM_CONTAINER_MARGIN + ((itemContainer.GetW() - BoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
+            itemContainer.GetY() + itemContainer.GetH() - BoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 
+            BoughtLabel.GetWidth() * text_scale, 
+            BoughtLabel.GetHeight() * text_scale);
         ///////////////////////////////////////////////////////////////////////////////////
         if (inv.primary == weapon) {
             renderer.Copy(
@@ -632,8 +638,8 @@ void GameView::showShop() {
     Rect ammoSectionLabelRect(
         container.GetX() + CONTAINER_MARGIN, 
         container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2, 
-        ammoSectionLabel.GetWidth(), 
-        ammoSectionLabel.GetHeight());
+        ammoSectionLabel.GetWidth() * text_scale, 
+        ammoSectionLabel.GetHeight() * text_scale);
     ////////////////////////////////////////////////////////////////////////////////
 
     Texture ammoSectionLabelTexture(renderer, ammoSectionLabel);
@@ -643,9 +649,9 @@ void GameView::showShop() {
     ///////////////////////////////////////////////////////////////////////////////////
     Rect primaryAmmoContainer(
         container.GetX() + CONTAINER_MARGIN, 
-        container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2 + ammoSectionLabel.GetHeight() + SECTION_VERTICAL_SPACING, 
+        container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2 + ammoSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
         (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/3, 
-        container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabel.GetHeight() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
+        container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     buyPrimaryAmmoButton = {{primaryAmmoContainer.GetX(), primaryAmmoContainer.GetY()}, {primaryAmmoContainer.GetW(), primaryAmmoContainer.GetH()}};
 
@@ -672,17 +678,12 @@ void GameView::showShop() {
     }
     renderer.FillRect(secondaryAmmoContainer);
 
-
-
-
-
-
     Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
     Rect primaryAmmoLabelRect(
         primaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN, 
         primaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-        primaryAmmoLabel.GetWidth(), 
-        primaryAmmoLabel.GetHeight());
+        primaryAmmoLabel.GetWidth() * text_scale, 
+        primaryAmmoLabel.GetHeight() * text_scale);
 
 
     Texture primaryAmmoLabelTexture(renderer, primaryAmmoLabel);
@@ -691,10 +692,10 @@ void GameView::showShop() {
 
     Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
     Rect primaryAmmoPriceLabelRect(
-        primaryAmmoContainer.GetX() + primaryAmmoContainer.GetW() - primaryAmmoPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
+        primaryAmmoContainer.GetX() + primaryAmmoContainer.GetW() - primaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         primaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-        primaryAmmoPriceLabel.GetWidth(), 
-        primaryAmmoPriceLabel.GetHeight());
+        primaryAmmoPriceLabel.GetWidth() * text_scale, 
+        primaryAmmoPriceLabel.GetHeight() * text_scale);
 
     Texture primaryAmmoPriceLabelTexture(renderer, primaryAmmoPriceLabel);
     renderer.Copy(primaryAmmoPriceLabelTexture, NullOpt, primaryAmmoPriceLabelRect);
@@ -708,10 +709,10 @@ void GameView::showShop() {
     }
     Surface primaryAmmoBoughtLabel = font.RenderText_Blended(ammoBoughtText, Color(255, 255, 255));
     Rect primaryAmmoBoughtLabelRect(
-            primaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((primaryAmmoContainer.GetW() - primaryAmmoBoughtLabel.GetWidth() - 2 * ITEM_CONTAINER_MARGIN)/2), 
-            primaryAmmoContainer.GetY() + primaryAmmoContainer.GetH() - primaryAmmoBoughtLabel.GetHeight() - ITEM_CONTAINER_MARGIN, 
-            primaryAmmoBoughtLabel.GetWidth(), 
-            primaryAmmoBoughtLabel.GetHeight());
+            primaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((primaryAmmoContainer.GetW() - primaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
+            primaryAmmoContainer.GetY() + primaryAmmoContainer.GetH() - primaryAmmoBoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 
+            primaryAmmoBoughtLabel.GetWidth() * text_scale, 
+            primaryAmmoBoughtLabel.GetHeight() * text_scale);
     //////////////////////////////////////////////////
 
 
@@ -728,8 +729,8 @@ void GameView::showShop() {
     Rect secondaryAmmoLabelRect(
         secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN, 
         secondaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-        secondaryAmmoLabel.GetWidth(), 
-        secondaryAmmoLabel.GetHeight());
+        secondaryAmmoLabel.GetWidth() * text_scale, 
+        secondaryAmmoLabel.GetHeight() * text_scale);
     ////////////////////////////////////////////////////////////////////////////////
 
     Texture secondaryAmmoLabelTexture(renderer, secondaryAmmoLabel);
@@ -739,10 +740,10 @@ void GameView::showShop() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
     Rect secondaryAmmoPriceLabelRect(
-        secondaryAmmoContainer.GetX() + secondaryAmmoContainer.GetW() - secondaryAmmoPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
+        secondaryAmmoContainer.GetX() + secondaryAmmoContainer.GetW() - secondaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         secondaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
-        secondaryAmmoPriceLabel.GetWidth(), 
-        secondaryAmmoPriceLabel.GetHeight());
+        secondaryAmmoPriceLabel.GetWidth() * text_scale, 
+        secondaryAmmoPriceLabel.GetHeight() * text_scale);
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     Texture secondaryAmmoPriceLabelTexture(renderer, secondaryAmmoPriceLabel);
@@ -752,10 +753,10 @@ void GameView::showShop() {
 
     Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo), Color(255, 255, 255));
     Rect secondaryAmmoBoughtLabelRect(
-            secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((secondaryAmmoContainer.GetW() - secondaryAmmoBoughtLabel.GetWidth() - 2 * ITEM_CONTAINER_MARGIN)/2), 
-            secondaryAmmoContainer.GetY() + secondaryAmmoContainer.GetH() - secondaryAmmoBoughtLabel.GetHeight() - ITEM_CONTAINER_MARGIN, 
-            secondaryAmmoBoughtLabel.GetWidth(), 
-            secondaryAmmoBoughtLabel.GetHeight());
+            secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((secondaryAmmoContainer.GetW() - secondaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
+            secondaryAmmoContainer.GetY() + secondaryAmmoContainer.GetH() - secondaryAmmoBoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 
+            secondaryAmmoBoughtLabel.GetWidth() * text_scale, 
+            secondaryAmmoBoughtLabel.GetHeight() * text_scale);
     
     //////////////////////////////////////////////////////////////////////////
     Texture secondaryAmmoBoughtLabelTexture(renderer, secondaryAmmoBoughtLabel);
@@ -765,226 +766,16 @@ void GameView::showShop() {
     ///////////////////////////////////////////////////////////////////
     Surface moneyLabel = font.RenderText_Blended("Money: $" + std::to_string(money), Color(255, 255, 255));
     Rect moneyLabelRect(
-        container.GetX() + container.GetW() - CONTAINER_MARGIN - moneyLabel.GetWidth(), 
-        container.GetY() + container.GetH() - CONTAINER_MARGIN - moneyLabel.GetHeight(), 
-        moneyLabel.GetWidth(), 
-        moneyLabel.GetHeight());
+        container.GetX() + container.GetW() - CONTAINER_MARGIN - moneyLabel.GetWidth() * text_scale, 
+        container.GetY() + container.GetH() - CONTAINER_MARGIN - moneyLabel.GetHeight() * text_scale, 
+        moneyLabel.GetWidth() * text_scale, 
+        moneyLabel.GetHeight() * text_scale);
     ///////////////////////////////////////////////////////////////////////////////
 
     Texture moneyLabelTexture(renderer, moneyLabel);
     renderer.Copy(moneyLabelTexture, NullOpt, moneyLabelRect);
 }
-/*
-ShopLayout GameView::createShopLayout() {
 
-    ShopLayout layout;
-
-    int width = renderer.GetOutputWidth();
-    int height = renderer.GetOutputHeight();
-    const int MARGIN = 40;
-    const int CONTAINER_MARGIN = 20;
-    const int SECTION_VERTICAL_SPACING = 10; // el spacing que hay entre el label Primary Weapon y los botones de las armas, mismo para la seccion de ammo
-    const int SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING = 20;
-    const int CONTAINER_VERTICAL_SPACING = 20;
-    const int ITEM_CONTAINER_MARGIN = 10;
-    const int ITEM_CONTAINER_VERTICAL_SPACING = 5;
-
-    
-    Rect container(MARGIN, MARGIN, width - 2 * MARGIN, height - 2 * MARGIN);
-    layout.container = container;
-    
-    int item_container_hbox_width = container.GetW() - CONTAINER_MARGIN * 2;
-
-
-    auto shop = game.getStore();
-
-
-    
-    Surface primaryWeaponSectionLabel = font.RenderText_Blended("PRIMARY WEAPONS", Color(255, 255, 255));
-
-    Rect primaryWeaponSectionLabelRect(
-            container.GetX() + CONTAINER_MARGIN, 
-            container.GetY() + CONTAINER_MARGIN, 
-            primaryWeaponSectionLabel.GetWidth(), 
-            primaryWeaponSectionLabel.GetHeight());
-    
-    layout.primaryWeaponLabel = primaryWeaponSectionLabelRect;
-
-
-    Surface BoughtLabel = font.RenderText_Blended("Comprada", Color(255, 255, 255));
-    
-    int item_container_x = container.GetX() + CONTAINER_MARGIN;
-    for (size_t i = 0; i < shop.size(); i++) {
-        WeaponName weapon = shop[i].first;
-        int price = shop[i].second;
-        std::string weaponLabelText;
-
-        Texture weaponTexture(renderer, AK47ShopSprite);
-        switch (weapon) {
-            case WeaponName::AK47: {
-                weaponLabelText = "AK-47";
-                break;
-            }
-            case WeaponName::AWP: {
-                weaponLabelText = "AWP";
-                weaponTexture = Texture(renderer, AWPShopSprite);
-                break;
-            }
-            case WeaponName::M3: {
-                weaponLabelText = "M3";
-                weaponTexture = Texture(renderer, M3ShopSprite);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-
-        Rect item_container(
-            item_container_x, 
-            container.GetY() + CONTAINER_MARGIN + primaryWeaponSectionLabel.GetHeight() + SECTION_VERTICAL_SPACING, 
-            (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/3, 
-            container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabel.GetHeight() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
-        layout.weaponItemContainers.push_back(item_container);
-
-        weaponShopButtons[weapon] = {{item_container.GetX(), item_container.GetY()}, {item_container.GetW(), item_container.GetH()}};
-        item_container_x = item_container.GetX() + item_container.GetW() + SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING;
-
-
-
-    
-
-        Surface weaponLabel = font.RenderText_Blended(weaponLabelText, Color(255, 255, 255));
-        Rect weaponLabelRect(
-                item_container.GetX() + ITEM_CONTAINER_MARGIN, 
-                item_container.GetY() + ITEM_CONTAINER_MARGIN, 
-                weaponLabel.GetWidth(), 
-                weaponLabel.GetHeight());
-        layout.weaponLabels.push_back(weaponLabelRect);
-
-        Surface weaponPriceLabel = font.RenderText_Blended("$" + std::to_string(price), Color(255, 255, 255));
-        Rect weaponPriceLabelRect(
-                item_container.GetX() + item_container.GetW() - weaponPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
-                item_container.GetY() + ITEM_CONTAINER_MARGIN, 
-                weaponPriceLabel.GetWidth(), 
-                weaponPriceLabel.GetHeight());
-        layout.weaponPriceLabels.push_back(weaponPriceLabelRect);
-        
-        uint32_t weapon_image_container_x = item_container.GetX() + ITEM_CONTAINER_MARGIN;
-        uint32_t weapon_image_container_y = item_container.GetY() + ITEM_CONTAINER_MARGIN + weaponLabel.GetHeight() + ITEM_CONTAINER_VERTICAL_SPACING;
-        uint32_t weapon_image_container_w = item_container.GetW() - ITEM_CONTAINER_MARGIN * 2;
-        uint32_t weapon_image_container_h = item_container.GetH() - ITEM_CONTAINER_MARGIN * 2 - ITEM_CONTAINER_VERTICAL_SPACING * 2 - weaponLabel.GetHeight() * 2;
-
-
-        float width_to_height_texture_scalar = static_cast<float>(weaponTexture.GetHeight()) / static_cast<float>(weaponTexture.GetWidth());
-        float height_to_width_texture_scalar = static_cast<float>(weaponTexture.GetWidth()) / static_cast<float>(weaponTexture.GetHeight());
-
-
-        uint32_t weapon_texture_x;
-        uint32_t weapon_texture_y;
-        uint32_t weapon_texture_w;
-        uint32_t weapon_texture_h;
-        if (
-            weapon_image_container_w * width_to_height_texture_scalar 
-            > weapon_image_container_h) {
-                weapon_texture_y = weapon_image_container_y;
-                weapon_texture_h = weapon_image_container_h;
-                weapon_texture_w = weapon_image_container_h * height_to_width_texture_scalar;
-                weapon_texture_x = weapon_image_container_x + ((weapon_image_container_w - weapon_texture_w)/2);
-
-        } else if (
-            weapon_image_container_h * height_to_width_texture_scalar
-            > weapon_image_container_w) {
-                weapon_texture_x = weapon_image_container_x;
-                weapon_texture_w = weapon_image_container_w;
-                weapon_texture_h = weapon_image_container_w * width_to_height_texture_scalar;
-
-                weapon_texture_y = weapon_image_container_y;
-                weapon_texture_y = weapon_image_container_y + ((weapon_image_container_h - weapon_texture_h)/2);
-
-        }
-
-        Rect weaponTextureRect(
-            weapon_texture_x, 
-            weapon_texture_y, 
-            weapon_texture_w, 
-            weapon_texture_h);
-        layout.weaponSprites.push_back(weaponTextureRect);
-
-
-        Rect boughtLabelRect(
-            item_container.GetX() + ITEM_CONTAINER_MARGIN + ((item_container.GetW() - BoughtLabel.GetWidth() - 2 * ITEM_CONTAINER_MARGIN)/2), 
-            item_container.GetY() + item_container.GetH() - BoughtLabel.GetHeight() - ITEM_CONTAINER_MARGIN, 
-            BoughtLabel.GetWidth(), 
-            BoughtLabel.GetHeight());
-        layout.boughtLabels.push_back(boughtLabelRect);
-        
-    }
-
-
-    Surface ammoSectionLabel = font.RenderText_Blended("AMMO", Color(255, 255, 255));
-    Rect ammoSectionLabelRect(
-        container.GetX() + CONTAINER_MARGIN, 
-        container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2, 
-        ammoSectionLabel.GetWidth(), 
-        ammoSectionLabel.GetHeight());
-    layout.ammoLabel = ammoSectionLabelRect;
-
-    Rect primary_ammo_container(
-        container.GetX() + CONTAINER_MARGIN, 
-        container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2 + ammoSectionLabel.GetHeight() + SECTION_VERTICAL_SPACING, 
-        (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/3, 
-        container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabel.GetHeight() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
-    layout.primaryAmmoContainer = primary_ammo_container;
-
-    Rect secondary_ammo_container(
-        primary_ammo_container.GetX() + primary_ammo_container.GetW() + SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING,
-        primary_ammo_container.GetY(), 
-        primary_ammo_container.GetW(), 
-        primary_ammo_container.GetH());
-    layout.secondaryAmmoContainer = secondary_ammo_container;
-
-
-    buyPrimaryAmmoButton = {{primary_ammo_container.GetX(), primary_ammo_container.GetY()}, {primary_ammo_container.GetW(), primary_ammo_container.GetH()}};
-    buySecondaryAmmoButton = {{secondary_ammo_container.GetX(), secondary_ammo_container.GetY()}, {secondary_ammo_container.GetW(), secondary_ammo_container.GetH()}};
-
-    Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
-    Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
-    Rect primaryAmmoLabelRect(
-        primary_ammo_container.GetX() + ITEM_CONTAINER_MARGIN, 
-        primary_ammo_container.GetY() + ITEM_CONTAINER_MARGIN, 
-        primaryAmmoLabel.GetWidth(), 
-        primaryAmmoLabel.GetHeight());
-    layout.primaryAmmoLabel = primaryAmmoLabelRect;
-
-    Rect primaryAmmoPriceLabelRect(
-        primary_ammo_container.GetX() + primary_ammo_container.GetW() - primaryAmmoPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
-        primary_ammo_container.GetY() + ITEM_CONTAINER_MARGIN, 
-        primaryAmmoPriceLabel.GetWidth(), 
-        primaryAmmoPriceLabel.GetHeight());
-    layout.primaryAmmoPriceLabel = primaryAmmoPriceLabelRect;
-
-    Surface secondaryAmmoLabel = font.RenderText_Blended("Second.", Color(255, 255, 255));
-    Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
-
-    Rect secondaryAmmoLabelRect(
-        secondary_ammo_container.GetX() + ITEM_CONTAINER_MARGIN, 
-        secondary_ammo_container.GetY() + ITEM_CONTAINER_MARGIN, 
-        secondaryAmmoLabel.GetWidth(), 
-        secondaryAmmoLabel.GetHeight());
-    layout.secondaryAmmoLabel = secondaryAmmoLabelRect;
-
-    Rect secondaryAmmoPriceLabelRect(
-        secondary_ammo_container.GetX() + secondary_ammo_container.GetW() - secondaryAmmoPriceLabel.GetWidth() - ITEM_CONTAINER_MARGIN, 
-        secondary_ammo_container.GetY() + ITEM_CONTAINER_MARGIN, 
-        secondaryAmmoPriceLabel.GetWidth(), 
-        secondaryAmmoPriceLabel.GetHeight());
-    layout.secondaryAmmoPriceLabel = secondaryAmmoPriceLabelRect;
-
-
-    return layout;
-}
-*/
 
 SDL_Point GameView::getCenterPoint() {
     int width = renderer.GetOutputWidth();

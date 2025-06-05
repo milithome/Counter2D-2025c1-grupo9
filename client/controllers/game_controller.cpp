@@ -298,9 +298,23 @@ void GameController::processEvents() {
                 onMouseLeftClickReleased(e);
                 break;
             }
+            case SDL_WINDOWEVENT: {
+                onWindowEvent(e);
+            }
             default: {
                 break;
             }
         }
+    }
+}
+
+
+void GameController::onWindowEvent(const SDL_Event& event) {
+    switch (event.window.event) {
+        case SDL_WINDOWEVENT_SIZE_CHANGED: {
+            view.resizeHud();
+            break;
+        }
+        default: break;
     }
 }

@@ -30,6 +30,7 @@ private:
     std::string player_name;
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
+    void onWindowEvent(const SDL_Event& event);
     void onQuitPressed();
     void onMouseMovement();
     void onMouseLeftClick(const SDL_Event& event);

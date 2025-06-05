@@ -20,7 +20,7 @@ using namespace SDL2pp;
 #define SHOT_LENGTH 8
 
 
-#define FONT_SIZE 20
+#define FONT_SIZE 32
 
 
 struct ShotEffect {
@@ -31,45 +31,27 @@ struct ShotEffect {
     float angle;
     float time_left;
 };
-
-// Delirio
-//////////////////////////////////////////////////////////////////////////
 /*
 struct ShopLayout {
-    SdlContainer container;
-    std::vector<SdlContainer> weaponItemContainers;
-    std::vector<SdlSurfaceWidget> weaponLabels;
-    std::vector<SdlSurfaceWidget> weaponPriceLabels;
-    std::vector<SdlSurfaceWidget> boughtLabels;
-    std::vector<SdlSurfaceWidget> weaponSprites;
-    SdlContainer primaryAmmoContainer;
-    SdlSurfaceWidget primaryAmmoLabel;
-    SdlSurfaceWidget primaryAmmoPriceLabel;
-    SdlSurfaceWidget primaryAmmoBoughtLabel;
-    SdlContainer secondaryAmmoContainer;
-    SdlSurfaceWidget secondaryAmmoLabel;
-    SdlSurfaceWidget secondaryAmmoPriceLabel;
-    SdlSurfaceWidget secondaryAmmoBoughtLabel;
-}
-*/
-///////////////////////////////////////////////////////////////////////////
-// struct ShopLayout {
-//     Rect container;
-//     Rect primaryWeaponLabel;
-//     std::vector<Rect> weaponItemContainers;
-//     std::vector<Rect> weaponLabels;
-//     std::vector<Rect> weaponPriceLabels;
-//     std::vector<Rect> boughtLabels;
-//     std::vector<Rect> weaponSprites;
+    Rect container;
+    Rect primaryWeaponLabel;
+    std::vector<Rect> weaponItemContainers;
+    std::vector<Rect> weaponLabels;
+    std::vector<Rect> weaponPriceLabels;
+    std::vector<Rect> boughtLabels;
+    std::vector<Rect> weaponSprites;
 
-//     Rect ammoLabel;
-//     Rect primaryAmmoContainer;
-//     Rect secondaryAmmoContainer;
-//     Rect primaryAmmoLabel;
-//     Rect secondaryAmmoLabel;
-//     Rect primaryAmmoPriceLabel;
-//     Rect secondaryAmmoPriceLabel;
-// };
+    Rect ammoLabel;
+    Rect primaryAmmoContainer;
+    Rect secondaryAmmoContainer;
+    Rect primaryAmmoLabel;
+    Rect secondaryAmmoLabel;
+    Rect primaryAmmoPriceLabel;
+    Rect secondaryAmmoPriceLabel;
+    Rect primaryAmmoBoughtLabel;
+    Rect secondaryAmmoBoughtLabel;
+};
+*/
 
 
 struct InterfaceLayout {
@@ -83,32 +65,7 @@ struct InterfaceLayout {
 
 };
 
-// TODO: cambiar el createShopLayout para que use esto
-// struct ShopLayout {
-//     Rect container;
 
-//     std::function<Rect(std::vector<Rect> children)> sectionVBox;
-//     std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)> primaryWeaponLabel;
-//     std::vector<std::function<Rect(std::vector<Rect> parentsChildren, uint32_t position)>> weaponItemContainers; // Es una HBox
-//     ////////////////////////////////////////////////////////
-
-//     // Forman parte de una "VBox" que esta adentro de cada itemContainer
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponLabels;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponPriceLabels;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponSprites;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> boughtLabels;
-//     /////////////////////////////////////////////////////////////////////
-
-//     std::function<Rect()> ammoLabel;
-//     std::function<Rect()> primaryAmmoContainer;
-//     std::function<Rect()> secondaryAmmoContainer;
-//     std::function<Rect()> primaryAmmoLabel;
-//     std::function<Rect()> secondaryAmmoLabel;
-//     std::function<Rect()> primaryAmmoPriceLabel;
-//     std::function<Rect()> secondaryAmmoPriceLabel;
-//     std::function<Rect()> primaryAmmoBoughtLabel;
-//     std::function<Rect()> secondaryAmmoBoughtLabel;
-// };
 
 // d inventory, dropped
 // m shop
@@ -126,6 +83,7 @@ public:
     void switchShopVisibility();
 
     void playShotSound();
+    void resizeHud();
 
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
