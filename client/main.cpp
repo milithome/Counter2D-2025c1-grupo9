@@ -39,12 +39,10 @@ int main(int argc, char **argv) try {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-	std::string clientName = argv[1];
+	/* std::string clientName = argv[1];
 	game_run(clientName);
-	return 0;
+	return 0; */
 
-
-/*
 	bool partida_iniciada = false;
 	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
@@ -123,11 +121,20 @@ int main(int argc, char **argv) try {
 		return 0;
 	};
 
-	Game game(10, 10);
+	Response msg = protocol.recv_response();
+	if(msg.type != Type::INITIAL_DATA) {
+		std::cerr << "Error: Expected INITIAL_DATA, received " << msg.type << std::endl;
+		return 1;
+	}
+	InitialData masg = std::get<InitialData>(msg.data);
+	Map map = Map(masg.data);
+	Game game(masg.data.game_map); 
 	for (size_t i = 0; i < players.size(); i++) {
 		game.addPlayer(players[i]);
 	}
-	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()});
+
+
+	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
 	GameController gameController = GameController(gameView, game, clientName);
 
 	uint32_t lastTime = 0;
@@ -170,14 +177,14 @@ int main(int argc, char **argv) try {
 	send_queue.close();
 
 	return 0;
-*/
+
 } catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;
 	return 1;
 }
 
 // main reducido para testear
-void game_run(std::string clientName) {
+/* void game_run(std::string clientName) {
 	SDL sdl(SDL_INIT_VIDEO);
 	TTF_Init();
 	
@@ -199,4 +206,4 @@ void game_run(std::string clientName) {
 	}
 
 	TTF_Quit();
-}
+} */
