@@ -4,9 +4,7 @@ Server::Server() : admin(), acceptor(DEFAULT_PORT, admin) {}
 
 Server::Server(std::string& port) : admin(), acceptor(port, admin) {} 
 
-Server::~Server() {
-
-}
+Server::~Server() {}
 
 void Server::start(std::istream& input) {
     acceptor.start();

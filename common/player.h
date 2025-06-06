@@ -2,11 +2,11 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
-#include "weapons.h"
 #include "structures.h"
+#include "weapons.h"
 #include <cmath>
-#include <string>
 #include <random>
+#include <string>
 class Player {
 private:
   std::string name;
@@ -15,80 +15,86 @@ private:
   Role role;
   int money = 1000;
   Weapon equipped = Weapons::Glock;
-  WeaponType weaponEquipped = WeaponType::SECONDARY;
-  Weapon knife= Weapons::Knife;
-  Weapon primaryWeapon= Weapons::M3;
+  WeaponType typeEquipped = WeaponType::SECONDARY;
+  Weapon knife = Weapons::Knife;
+  Weapon primaryWeapon = Weapons::None;
   Weapon secondaryWeapon = Weapons::Glock;
-  uint32_t bulletsPrimary = 10;
-  uint32_t bulletsSecondary = 10;
+  uint32_t bulletsPrimary = 0;
+  uint32_t bulletsSecondary = 0;
   float rotation;
   float health = 100;
-  bool hasTheSpike=false;
   float vx = 0, vy = 0;
   float aceleration = 0;
+  bool hasTheSpike = false;
   bool shooting = false;
   bool planting = false;
+  bool alreadyShot = false;
   float shootCooldown = 0.0f;
-  uint32_t lastMoveId = 0;
   float timeLastBullet = 0.0f;
-  int burstFireBullets=1;
-  bool alreadyShot= false;
+  int burstFireBullets = 1;
+  float lastVx = 0.0f;
+  float lastVy = 0.0f;
+  float slideTimer = 0.0f;
+  uint32_t lastMoveId = 0;
 
 public:
   Player(const std::string &name)
-      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},role(Role::COUNTER_TERRORIST), rotation(0) {}
+      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
+        role(Role::COUNTER_TERRORIST), rotation(0) {}
 
-  std::string getName() const;
-  void setRole(Role new_role);
+  void changeWeapon(WeaponType newEquippedWeapon);
+  bool getAlreadyShot();
   float getX() const;
   float getY() const;
-  void move(float deltaTime, bool onlyX, bool onlyY);
-  std::pair<float, float> tryMove(float deltaTime);
-  void setPosition(float x, float y);
-  float getRotation() const;
-  void setRotation(float currentRotation);
-  const Hitbox &getHitbox() const;
-  void updateHealth(float value);
-  void setHealth(float value);
-  float getHealth() const;
-  bool isAlive() const;
-  void updateMovement(float deltaTime, bool onlyX, bool onlyY);
-  void updateVelocity(float vx, float vy);
-  void stopShooting();
-  void startShooting();
-  void updateCooldown(float deltaTime);
-  float getShootCooldown();
-  void resetCooldown();
-  bool isShooting();
-  bool isPlanting();
-  void updateIsPlanting(bool isPlanting);
-  std::tuple<float, float, float, float, float, float> shoot();
   int getBulletsPerShoot();
-  float getSpreadAngle();
-  std::pair<float, float> getDamageRange();
-  void changeWeapon(WeaponType newEquippedWeapon);
-  void replaceWeapon(WeaponName weapon);
-  WeaponName getPrimaryWeaponName() const;
-  WeaponName getSecondaryWeaponName() const;
-  uint32_t getLastMoveId() const;
-  void setLastMoveId(uint32_t id);
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
-  int getMoney() const;
-  void updateMoney(int value);
-  void updatePrimaryBullets();
-  void updateSecondaryBullets();
-  WeaponType getWeaponEquipped();
-  float getTimeLastBullet();
-  void updateTimeLastBullet(float deltaTime);
-  Weapon getEquipped();
   int getBurstFireBullets();
-  void updateBurstFireBullets(int value);
-  void resetTimeLastBullet();
+  std::pair<float, float> getDamageRange() const;
   bool getHasTheSpike();
-  void updateAceleration(float deltaTime);
-  bool getAlreadyShot();
+  float getHealth() const;
+  const Hitbox &getHitbox() const;
+  uint32_t getLastMoveId() const;
+  std::string getName() const;
+  int getMoney() const;
+  Weapon getEquipped();
+  WeaponName getPrimaryWeaponName() const;
+  WeaponName getSecondaryWeaponName() const;
+  WeaponType getTypeEquipped();
+  float getRotation() const;
+  float getShootCooldown();
+  float getSpreadAngle();
+  float getTimeLastBullet();
+  bool isAlive() const;
+  bool isPlanting();
+  bool isShooting();
+  void move(float deltaTime, bool onlyX, bool onlyY);
+  void replaceWeapon(WeaponName weapon);
+  void resetCooldown();
+  void resetPrimaryBullets();
+  void resetSecondaryBullets();
+  void resetTimeLastBullet();
   void setAlreadyShot(bool value);
+  void setHealth(float value);
+  void setLastMoveId(uint32_t id);
+  void setPosition(float x, float y);
+  void setRole(Role new_role);
+  void setRotation(float currentRotation);
+  void startShooting();
+  void stopShooting();
+  std::tuple<float, float, float, float, float, float> shoot();
+  std::pair<float, float> tryMove(float deltaTime);
+  void updateAceleration(float deltaTime);
+  void updateBurstFireBullets(int value);
+  void updateCooldown(float deltaTime);
+  void updateHealth(float value);
+  void updateIsPlanting(bool isPlanting);
+  void updateMoney(int value);
+  void updateMovement(float deltaTime, bool onlyX, bool onlyY);
+  void updateTimeLastBullet(float deltaTime);
+  void updateVelocity(float vx, float vy);
+  void updatePrimaryBullets(int value);
+  void updateSecondaryBullets(int value);
+  int getBullets();
 };
-
 #endif

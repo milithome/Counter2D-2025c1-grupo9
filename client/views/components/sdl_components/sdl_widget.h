@@ -3,6 +3,7 @@
 #include <memory>
 #include <SDL2pp/Rect.hh>
 #include <SDL2pp/Surface.hh>
+#include <SDL2pp/Texture.hh>
 #include <SDL2pp/Renderer.hh>
 
 
@@ -17,6 +18,9 @@ enum SizePolicy {
 
 class SdlWidget {
 public:
+
+    SdlWidget() {}
+
 
     SdlWidget(const SDL2pp::Rect& rect)
         : rect_(rect) {}

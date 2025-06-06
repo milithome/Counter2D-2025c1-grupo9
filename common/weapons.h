@@ -3,11 +3,7 @@
 
 #include "structures.h"
 
-enum class EquippedWeapon {
-  KNIFE,
-  PRIMARY,
-  SECONDARY
-};
+enum class EquippedWeapon { KNIFE, PRIMARY, SECONDARY };
 
 struct Weapon {
   WeaponName name;
@@ -24,13 +20,14 @@ struct Weapon {
 };
 
 namespace Weapons {
-  extern const Weapon Knife;
-  extern const Weapon Glock;
-  extern const Weapon AK47;
-  extern const Weapon M3;
-  extern const Weapon AWP;
+extern const Weapon Knife;
+extern const Weapon Glock;
+extern const Weapon AK47;
+extern const Weapon M3;
+extern const Weapon AWP;
+extern const Weapon None;
 
-  const Weapon& getWeapon(WeaponName name);
+const Weapon &getWeapon(WeaponName name);
 }
 
 #endif

@@ -27,7 +27,7 @@ public:
   void invertRole();
 
   int getTeamSize();
-  
+
   void restartPlayersAlive();
 };
 

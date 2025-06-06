@@ -30,6 +30,27 @@ struct ShotEffect {
     float time_left;
 };
 
+// Delirio
+//////////////////////////////////////////////////////////////////////////
+/*
+struct ShopLayout {
+    SdlContainer container;
+    std::vector<SdlContainer> weaponItemContainers;
+    std::vector<SdlSurfaceWidget> weaponLabels;
+    std::vector<SdlSurfaceWidget> weaponPriceLabels;
+    std::vector<SdlSurfaceWidget> boughtLabels;
+    std::vector<SdlSurfaceWidget> weaponSprites;
+    SdlContainer primaryAmmoContainer;
+    SdlSurfaceWidget primaryAmmoLabel;
+    SdlSurfaceWidget primaryAmmoPriceLabel;
+    SdlSurfaceWidget primaryAmmoBoughtLabel;
+    SdlContainer secondaryAmmoContainer;
+    SdlSurfaceWidget secondaryAmmoLabel;
+    SdlSurfaceWidget secondaryAmmoPriceLabel;
+    SdlSurfaceWidget secondaryAmmoBoughtLabel;
+}
+*/
+///////////////////////////////////////////////////////////////////////////
 struct ShopLayout {
     Rect container;
     Rect primaryWeaponLabel;
@@ -102,18 +123,23 @@ public:
     void addShotEffect(Bullet bullet);
     void switchShopVisibility();
 
+    void playShotSound();
+
+
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
-    // Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
     Renderer renderer;
     Game& game;
     std::string playerName;
     Map& map;
 
+
+    Chunk glockSound = Chunk("../assets/sfx/weapons/usp_silenced.wav");
 
     Texture mapTiles;
     Texture backgroundTexture;
