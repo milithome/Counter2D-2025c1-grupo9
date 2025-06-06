@@ -7,20 +7,9 @@ Acceptor::Acceptor(const std::string& port, Admin& admin)
 void Acceptor::run() {
     try {
         while (active) {
-            Socket client = skt.accept();
-            Protocol protocol(std::move(client));
-
-            auto handler = std::make_shared<ClientHandler>(
-                std::move(protocol),
-                admin,
-                [this, weak_handler = std::weak_ptr<ClientHandler>{}](std::string name, std::shared_ptr<ClientHandler> handler) mutable {
-                    weak_handler = handler;
-                    admin.registerHandler(name, handler);
-                    unnamedHandlers.erase(handler);
-                }
-            );
-            unnamedHandlers.insert(handler);
-            handler->start();
+            Socket clientSkt = skt.accept();
+            Protocol protocol(std::move(clientSkt));
+            auto client = admin.createClient(std::move(protocol));
         }
     } catch (const std::exception& e) {
         if (active) {
@@ -35,9 +24,6 @@ void Acceptor::run() {
 
 void Acceptor::stop() {
     active = false;
-    for (const auto& handler : unnamedHandlers) {
-            handler->stop();
-    }
     skt.shutdown(SHUT_RDWR);
     skt.close();  
 }

@@ -4,7 +4,6 @@
 #include "common/utilities/thread.h"
 #include "../common/communication/socket.h"
 #include "../common/communication/protocol.h"
-#include "clientHandler.h"
 #include "admin.h"
 #include <unordered_set>
 #include <memory>
@@ -22,7 +21,6 @@ private:
     Socket skt;
     std::atomic<bool> active;
     Admin& admin;
-    std::unordered_set<std::shared_ptr<ClientHandler>> unnamedHandlers;
 };
 
 #endif

@@ -47,8 +47,12 @@ Renderer GameView::createRenderer(Window& window) {
 void GameView::update(float deltaTime) {
     renderer.Clear();
 
+<<<<<<< HEAD
     // TODO: cambiar el tamaño de las cosas cuando se cambia el tamaño de la ventana
     // int block_size = renderer.GetOutputHeight() / 24;
+=======
+    // graficar
+>>>>>>> dev
     SDL_Point center = getCenterPoint();
     float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
     float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
@@ -71,6 +75,13 @@ void GameView::update(float deltaTime) {
 }
 
 
+<<<<<<< HEAD
+=======
+void GameView::playShotSound() {
+    mixer.PlayChannel(-1, glockSound, 0);
+}
+
+>>>>>>> dev
 void GameView::showBackground() {
     renderer.SetDrawColor(0, 0, 0, 255);
     Rect src(0, 0, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);

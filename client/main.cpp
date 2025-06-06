@@ -32,19 +32,19 @@ using namespace SDL2pp;
 #include <variant>
 
 
-void game_run(std::string clientName);
+// void game_run(std::string clientName);
 
 int main(int argc, char **argv) try {
 	if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-	std::string clientName = argv[1];
-	game_run(clientName);
-	return 0;
+	// std::string clientName = argv[1];
+	// game_run(clientName);
+	// return 0;
 
 
-/*
+
 	bool partida_iniciada = false;
 	Socket serverSocket(NAME_SERVER, PORT);
 	Protocol protocol(std::move(serverSocket));
@@ -63,6 +63,7 @@ int main(int argc, char **argv) try {
 	protocol.send_name(clientName);
 
 	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	TTF_Init();
 	
     QApplication app(argc, argv);
 	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -95,6 +96,10 @@ int main(int argc, char **argv) try {
 					menuController.onLobbyPlayersReceived(players, msg.message, msg.result);
 					break;
 				}
+				case LOBBY_READY: {
+					menuController.onLobbyReady();
+					break;
+				}
 				case START: {
 					partida_iniciada = true;
 					w_pos_when_game_started = menuWindow.getPosition();
@@ -107,11 +112,11 @@ int main(int argc, char **argv) try {
 			}
         }
     });
-    timer->start(0);
+    timer->start(16); // limita el menu a 60fps
 
 
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](MessageEvent* event) {
-		send_queue.try_push(std::shared_ptr<MessageEvent>(event));
+	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::shared_ptr<MessageEvent> event) {
+		send_queue.try_push(event);
 	});
 
 	app.exec();
@@ -123,27 +128,24 @@ int main(int argc, char **argv) try {
 		return 0;
 	};
 
-	Game game(10, 10);
+	Map map = Map("../assets/maps/default.yaml");
+	Game game(map.getMapData().game_map);
 	for (size_t i = 0; i < players.size(); i++) {
 		game.addPlayer(players[i]);
 	}
-	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()});
+	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
 	GameController gameController = GameController(gameView, game, clientName);
 
-	uint32_t lastTime = 0;
-	while (game.isRunning()) {
-		uint32_t currentTime = SDL_GetTicks();
-		float deltaTime = (currentTime - lastTime) / 1000.0f;
-		lastTime = currentTime;
-		gameView.update(deltaTime);
-		gameController.processEvents();
-		gameController.update(deltaTime);
 
-		while (!gameController.actionQueueIsEmpty()) {
-			Action action = gameController.actionQueuePop();
-			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
-			send_queue.try_push(event);
-		}
+
+	const std::chrono::milliseconds TICK_DURATION(16);
+
+    auto lastTime = std::chrono::steady_clock::now();
+	while (game.isRunning()) {
+        auto currentTime = std::chrono::steady_clock::now();
+        float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+        lastTime = currentTime;
+
 		Response msg;
         while (recv_queue.try_pop(msg)) {
 			switch (msg.type) {
@@ -161,7 +163,25 @@ int main(int argc, char **argv) try {
 				}
 			}
 		}
+
+		gameController.processEvents();
+		gameController.update(deltaTime);
+		gameView.update(deltaTime);
+
+		while (!gameController.actionQueueIsEmpty()) {
+			Action action = gameController.actionQueuePop();
+			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
+			send_queue.try_push(event);
+		}
+
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - currentTime
+        );
+        if (elapsed < TICK_DURATION) {
+            std::this_thread::sleep_for(TICK_DURATION - elapsed);
+        }
 	}
+
 	receiver.stop();
 	sender.stop();
 	receiver.join();
@@ -169,34 +189,36 @@ int main(int argc, char **argv) try {
 	recv_queue.close();
 	send_queue.close();
 
+	TTF_Quit();
+
 	return 0;
-*/
+
 } catch (std::exception& e) {
 	std::cerr << e.what() << std::endl;
 	return 1;
 }
 
-// main reducido para testear
-void game_run(std::string clientName) {
-	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	TTF_Init();
+// // main reducido para testear
+// void game_run(std::string clientName) {
+// 	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+// 	TTF_Init();
 	
-	Map map = Map("../assets/maps/default.yaml");
-	Game game(map.getMapData().game_map);
-	game.addPlayer(clientName);
-	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
-	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
-	GameController gameController = GameController(gameView, game, clientName);
+// 	Map map = Map("../assets/maps/default.yaml");
+// 	Game game(map.getMapData().game_map);
+// 	game.addPlayer(clientName);
+// 	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
+// 	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
+// 	GameController gameController = GameController(gameView, game, clientName);
 
-	uint32_t lastTime = 0;
-	while (game.isRunning()) {
-		uint32_t currentTime = SDL_GetTicks();
-		float deltaTime = (currentTime - lastTime) / 1000.0f;
-		lastTime = currentTime;
-		gameView.update(deltaTime);
-		gameController.processEvents();
-		gameController.update(deltaTime);
-	}
+// 	uint32_t lastTime = 0;
+// 	while (game.isRunning()) {
+// 		uint32_t currentTime = SDL_GetTicks();
+// 		float deltaTime = (currentTime - lastTime) / 1000.0f;
+// 		lastTime = currentTime;
+// 		gameView.update(deltaTime);
+// 		gameController.processEvents();
+// 		gameController.update(deltaTime);
+// 	}
 
-	TTF_Quit();
-}
+// 	TTF_Quit();
+// }

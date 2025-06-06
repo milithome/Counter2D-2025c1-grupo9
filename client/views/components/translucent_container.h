@@ -12,6 +12,11 @@
 class TranslucentContainer : public QWidget {
     QVBoxLayout *marginLayout; // define margenes
 public:
+
+    ~TranslucentContainer() {
+        delete marginLayout;
+    }
+
     TranslucentContainer() {
         setObjectName("backgroundContainer");
         setStyleSheet(
