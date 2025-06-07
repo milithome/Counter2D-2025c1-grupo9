@@ -78,6 +78,7 @@ public:
   void
   updatePlayerPosition(const std::string &name, float x,
                        float y); // público por tema de sincronizacion cliente
+  void updatePlayerHealth(const std::string &name, int health); // público por tema de sincronizacion cliente
   bool addPlayer(const std::string &name);
   StateGame getState();
   Entity getPlayerState(const std::string& name);

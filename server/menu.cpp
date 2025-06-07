@@ -9,7 +9,9 @@ Menu::Menu(Admin& admin, std::shared_ptr<Client> client, std::shared_ptr<Queue<M
 
 Menu::~Menu() {}
 
-void Menu::run() {
+
+void Menu::run()
+{
     try {
         while (active) {
             Message message = client->channels.requests->pop();

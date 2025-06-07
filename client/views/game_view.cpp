@@ -79,7 +79,6 @@ void GameView::update(float deltaTime) {
 }
 
 
-
 void GameView::showBackground() {
     renderer.SetDrawColor(0, 0, 0, 255);
     Rect src(0, 0, BACKGROUND_TEXTURE_SIZE, BACKGROUND_TEXTURE_SIZE);
@@ -111,27 +110,27 @@ void GameView::showMap(float cameraX, float cameraY) {
 
 void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
     renderer.SetDrawColor(0, 0, 0, 255);
-    for (auto it = shot_effects.begin(); it != shot_effects.end();) {
-        ShotEffect& shot = *it;
+    for (auto it = bullet_effects.begin(); it != bullet_effects.end();) {
+        BulletEffect& bullet = *it;
 
-        if (shot.time_left <= 0) {
-            it = shot_effects.erase(it);
+        if (bullet.time_left <= 0) {
+            it = bullet_effects.erase(it);
             continue;
         }
-        shot.time_left -= deltaTime; 
+        bullet.time_left -= deltaTime; 
 
-        float radians = shot.angle * M_PI / 180.0 ;
+        float radians = bullet.angle * M_PI / 180.0 ;
         float dx = std::cos(radians);
         float dy = std::sin(radians);
 
 
-        float prev_x = shot.x;
-        float prev_y = shot.y;
+        float prev_x = bullet.x;
+        float prev_y = bullet.y;
 
-        shot.x += dx * SHOT_SPEED * deltaTime;
-        shot.y += dy * SHOT_SPEED * deltaTime;
+        bullet.x += dx * BULLET_SPEED * deltaTime;
+        bullet.y += dy * BULLET_SPEED * deltaTime;
 
-        float dot = (shot.target_x - prev_x) * (shot.target_x - shot.x) + (shot.target_y - prev_y) * (shot.target_y - shot.y);
+        float dot = (bullet.target_x - prev_x) * (bullet.target_x - bullet.x) + (bullet.target_y - prev_y) * (bullet.target_y - bullet.y);
 
         if (dot < 0.0f) {
             if (false) { // impacto en un jugador
@@ -139,10 +138,10 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
                 for (uint32_t i = 0; i < BLOOD_EFFECT_PARTICLES; i++) {
                     Particle blood_drop{
 
-                        shot.target_x, 
-                        shot.target_y, 
+                        bullet.target_x, 
+                        bullet.target_y, 
                         randomFloat(BLOOD_PARTICLE_MIN_SPEED, BLOOD_PARTICLE_MAX_SPEED),
-                        randomFloat(shot.angle - BLOOD_PARTICLE_DISPERSION, shot.angle + BLOOD_PARTICLE_DISPERSION),
+                        randomFloat(bullet.angle - BLOOD_PARTICLE_DISPERSION, bullet.angle + BLOOD_PARTICLE_DISPERSION),
                         randomFloat(BLOOD_PARTICLE_MIN_DURATION, BLOOD_PARTICLE_MAX_DURATION)};
                     blood.particles.push_back(blood_drop);
                 }
@@ -151,8 +150,8 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
                 HitEffect sparks;
                 for (uint32_t i = 0; i < SPARK_EFFECT_PARTICLES; i++) {
                     Particle spark{
-                        shot.target_x, 
-                        shot.target_y, 
+                        bullet.target_x, 
+                        bullet.target_y, 
                         randomFloat(SPARK_PARTICLE_MIN_SPEED, SPARK_PARTICLE_MAX_SPEED),
                         randomFloat(0.0f, 360.0f),
                         randomFloat(SPARK_PARTICLE_MIN_DURATION, SPARK_PARTICLE_MAX_DURATION)};
@@ -160,14 +159,14 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
                 }
                 sparks_effects.push_back(sparks);
             }
-            it = shot_effects.erase(it);
+            it = bullet_effects.erase(it);
             continue;
         }
 
-        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((shot.x - shot.target_x) * (shot.x - shot.target_x) + (shot.y - shot.target_y) * (shot.y - shot.target_y));
-        int32_t length = std::min(distance_to_target, SHOT_LENGTH) + 1;
+        int32_t distance_to_target = BLOCK_SIZE * std::sqrt((bullet.x - bullet.target_x) * (bullet.x - bullet.target_x) + (bullet.y - bullet.target_y) * (bullet.y - bullet.target_y));
+        int32_t length = std::min(distance_to_target, BULLET_LENGTH) + 1;
         Surface surface(
-            0, length, SHOT_THICKNESS, 32,
+            0, length, BULLET_THICKNESS, 32,
             0x00FF0000, // Rmask
             0x0000FF00, // Gmask
             0x000000FF, // Bmask
@@ -180,17 +179,17 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         Texture texture(renderer, surface);
         
         Rect dst(
-            cameraX + shot.x * BLOCK_SIZE, 
-            cameraY + shot.y * BLOCK_SIZE, 
-            SHOT_THICKNESS, 
+            cameraX + bullet.x * BLOCK_SIZE, 
+            cameraY + bullet.y * BLOCK_SIZE, 
+            BULLET_THICKNESS, 
             length);
         
         renderer.Copy(
             texture, 
             NullOpt, 
             dst, 
-            shot.angle - 90.0f, 
-            Point(0, SHOT_THICKNESS / 2), 
+            bullet.angle - 90.0f, 
+            Point(0, BULLET_THICKNESS / 2), 
             SDL_FLIP_NONE);
             
         ++it;
@@ -300,7 +299,11 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 PlayerData data = std::get<PlayerData>(gameState[i].data);
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
-
+                /*
+                if (!data.alive) {
+                    continue;
+                }
+                */
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
 
@@ -340,7 +343,34 @@ void GameView::showEntities(float cameraX, float cameraY) {
         }
     }
 }
-// TODO: Similar a showShop
+
+void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime) {
+
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    for (auto it = death_effects.begin(); it < death_effects.end();) {
+        DeathEffect death = *it;
+
+        if (death.time_left <= 0) {
+            it = death_effects.erase(it);
+            continue;
+        }
+
+        Rect dst(cameraX + death.dead_body_x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + death.dead_body_y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+        
+
+        death.alpha -= (255 * deltaTime) / DEATH_DURATION;
+        if (death.alpha < 0) {
+            death.alpha = 0;
+        }
+        Texture playerTexture = Texture(renderer, sealForceS);
+        playerTexture.SetAlphaMod(death.alpha);
+
+        renderer.Copy(playerTexture, src, dst, death.dead_body_rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+        death.time_left -= deltaTime;
+        ++it;
+    }
+}
+
 void GameView::showInterface() {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
@@ -905,10 +935,16 @@ SDL_Point GameView::getCenterPoint() {
 
 
 
-void GameView::addShotEffect(Bullet shot) {
-    shot_effects.push_back(ShotEffect{shot.origin_x, shot.origin_y, shot.target_x, shot.target_y, shot.angle, SHOT_DURATION});
+void GameView::addBulletEffects(Shot shot) {
+    for (size_t i = 0; i < shot.bullets.size(); i++) {
+        Bullet bullet = shot.bullets[i];
+        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION});
+    }
 }
 
+void GameView::addDeathEffect(float x, float y, float angle) {
+    death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION});
+}
 
 
 void GameView::switchShopVisibility() {

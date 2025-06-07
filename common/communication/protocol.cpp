@@ -787,6 +787,8 @@ Bullet Protocol::deserialize_bullet() {
     b.impact = static_cast<Impact>(impact_val);
 
     return b;
+    */
+   return Bullet{0, 0, 0, NOTHING};
 }
 
 Shot Protocol::deserialize_shot() {

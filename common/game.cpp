@@ -157,6 +157,14 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
 
+// Manuel: puse esto pq es necesario para sincronizar el cliente
+// Esta asi de forma medio hack, despues vos cambialo si queres pero la idea era q la vida del jugador
+// se actualice a la pasada por parametro
+void Game::updatePlayerHealth(const std::string &name, int health) {
+  Player& player = findPlayerByName(name);
+  player.updateHealth(health - player.getHealth());
+}
+
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
   Hitbox hb = player.getHitbox();
 
@@ -326,6 +334,7 @@ Entity Game::getPlayerState(const std::string& name) {
   data.lastMoveId = player.getLastMoveId();
   data.health = player.getHealth();
   data.money = player.getMoney();
+  data.alive = player.isAlive();
   entity.data = data;
   return entity;
 }

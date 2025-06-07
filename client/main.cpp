@@ -8,8 +8,9 @@
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
-#include "client/clientSenderLoop.h"
-#include "client/clientReceiverLoop.h"
+#include "client/receiver&sender/clientReceiverLoop.h"
+#include "client/receiver&sender/clientSenderLoop.h"
+#include "client/client.h"
 
 
 #include <iostream>
@@ -32,164 +33,17 @@ using namespace SDL2pp;
 #include <variant>
 
 
-// void game_run(std::string clientName);
+void game_run(std::string clientName);
 
 int main(int argc, char **argv) try {
 	if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-	// std::string clientName = argv[1];
-	// game_run(clientName);
-	// return 0;
+	game_run(argv[1]);
 
-
-
-	bool partida_iniciada = false;
-	Socket serverSocket(NAME_SERVER, PORT);
-	Protocol protocol(std::move(serverSocket));
-
-	
-	Queue<Response> recv_queue(100);
-	Queue<std::shared_ptr<MessageEvent>> send_queue(100);
-
-	RecvLoop receiver(protocol, recv_queue);
-	SendLoop sender(protocol, send_queue);
-
-	receiver.start();
-	sender.start();
-
-	std::string clientName = argv[1];
-	protocol.send_name(clientName);
-
-	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	TTF_Init();
-	
-    QApplication app(argc, argv);
-	QtWindow menuWindow = QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
-	MenuController menuController(menuWindow, protocol);
-	std::vector<std::string> players;
-	QPoint w_pos_when_game_started;
-
-	// Menu loop
-    QTimer* timer = new QTimer(&menuController);
-    QObject::connect(timer, &QTimer::timeout, &menuController, [&recv_queue, &w_pos_when_game_started, &menuController, &menuWindow, &partida_iniciada, &players] {
-        Response msg;
-        while (recv_queue.try_pop(msg)) {
-			switch (msg.type) {
-				case LIST: {
-					LobbyList data = std::get<LobbyList>(msg.data);
-					menuController.onPartyListReceived(data.lobbies, msg.message, msg.result);
-					break;
-				}
-				case JOIN: {
-					menuController.onJoinPartyResponseReceived(msg.message, msg.result);
-					break;
-				}
-				case LEAVE: {
-					menuController.onLeavePartyResponseReceived(msg.message, msg.result);
-					break;
-				}
-				case STATE_LOBBY: {
-					StateLobby data = std::get<StateLobby>(msg.data);
-					players = data.players;
-					menuController.onLobbyPlayersReceived(players, msg.message, msg.result);
-					break;
-				}
-				case LOBBY_READY: {
-					menuController.onLobbyReady();
-					break;
-				}
-				case START: {
-					partida_iniciada = true;
-					w_pos_when_game_started = menuWindow.getPosition();
-					menuController.onGameStarted();
-					break;
-				}
-				default: {
-					break;
-				}
-			}
-        }
-    });
-    timer->start(16); // limita el menu a 60fps
-
-
-	QObject::connect(&menuController, &MenuController::nuevoEvento, [&send_queue](std::shared_ptr<MessageEvent> event) {
-		send_queue.try_push(event);
-	});
-
-	app.exec();
-	
-	if (!partida_iniciada) {
-		protocol.send_disconnect();
-		Response msg = protocol.recv_response();
-		std::cout << msg.message << std::endl;
-		return 0;
-	};
-
-	Map map = Map("../assets/maps/default.yaml");
-	Game game(map.getMapData().game_map);
-	for (size_t i = 0; i < players.size(); i++) {
-		game.addPlayer(players[i]);
-	}
-	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
-	GameController gameController = GameController(gameView, game, clientName);
-
-
-
-	const std::chrono::milliseconds TICK_DURATION(16);
-
-    auto lastTime = std::chrono::steady_clock::now();
-	while (game.isRunning()) {
-        auto currentTime = std::chrono::steady_clock::now();
-        float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-        lastTime = currentTime;
-
-		Response msg;
-        while (recv_queue.try_pop(msg)) {
-			switch (msg.type) {
-				case STATE: {
-					StateGame data = std::get<StateGame>(msg.data);
-					gameController.updateGameState(data);
-					break;
-				}
-				case FINISH: {
-					game.stop();
-					break;
-				}
-				default: {
-					break;
-				}
-			}
-		}
-
-		gameController.processEvents();
-		gameController.update(deltaTime);
-		gameView.update(deltaTime);
-
-		while (!gameController.actionQueueIsEmpty()) {
-			Action action = gameController.actionQueuePop();
-			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
-			send_queue.try_push(event);
-		}
-
-		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now() - currentTime
-        );
-        if (elapsed < TICK_DURATION) {
-            std::this_thread::sleep_for(TICK_DURATION - elapsed);
-        }
-	}
-
-	receiver.stop();
-	sender.stop();
-	receiver.join();
-	sender.join();
-	recv_queue.close();
-	send_queue.close();
-
-	TTF_Quit();
+	// Client client = Client(argv[1], NAME_SERVER, PORT);
+	// client.run();
 
 	return 0;
 
@@ -198,27 +52,26 @@ int main(int argc, char **argv) try {
 	return 1;
 }
 
-// // main reducido para testear
-// void game_run(std::string clientName) {
-// 	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-// 	TTF_Init();
+// main reducido para testear
+void game_run(std::string clientName) {
+	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	TTF_Init();
 	
-// 	Map map = Map("../assets/maps/default.yaml");
-// 	Game game(map.getMapData().game_map);
-// 	game.addPlayer(clientName);
-// 	//GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
-// 	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
-// 	GameController gameController = GameController(gameView, game, clientName);
+	Map map = Map("../assets/maps/default.yaml");
+	Game game(map.getMapData().game_map);
+	game.addPlayer(clientName);
+	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
+	GameController gameController = GameController(gameView, game, clientName);
 
-// 	uint32_t lastTime = 0;
-// 	while (game.isRunning()) {
-// 		uint32_t currentTime = SDL_GetTicks();
-// 		float deltaTime = (currentTime - lastTime) / 1000.0f;
-// 		lastTime = currentTime;
-// 		gameView.update(deltaTime);
-// 		gameController.processEvents();
-// 		gameController.update(deltaTime);
-// 	}
+	uint32_t lastTime = 0;
+	while (game.isRunning()) {
+		uint32_t currentTime = SDL_GetTicks();
+		float deltaTime = (currentTime - lastTime) / 1000.0f;
+		lastTime = currentTime;
+		gameView.update(deltaTime);
+		gameController.processEvents();
+		gameController.update(deltaTime);
+	}
 
-// 	TTF_Quit();
-// }
+	TTF_Quit();
+}

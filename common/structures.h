@@ -56,7 +56,8 @@ struct PlayerData {
     int money;
     int health; // de float a int
     Inventory inventory;
-    WeaponType equippedWeapon; // add
+    WeaponType equippedWeapon;
+    bool alive;
 };
 
 struct BombData {
