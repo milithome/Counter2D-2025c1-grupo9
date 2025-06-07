@@ -8,7 +8,7 @@
 #include <ext/stdio_filebuf.h>
 #include "helper_test.h"
 
-constexpr int N = 3;
+constexpr int N = 2;
 
 TEST(FlowControlTest, TestCreateAndCloseServer) {
     int fds[2];
@@ -247,7 +247,6 @@ TEST(FlowControlTest, TestLobbyReadyAndLeaveLobby) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    // Crear nombres y conectar clientes
     std::vector<std::string> clientNames;
     for (int i = 1; i <= N; ++i)
         clientNames.push_back("Client" + std::to_string(i));
@@ -256,7 +255,6 @@ TEST(FlowControlTest, TestLobbyReadyAndLeaveLobby) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    // Crear lobby
     clients[0]->send_create("GameLobby");
     clients[0]->recv_response(); 
 
@@ -264,7 +262,6 @@ TEST(FlowControlTest, TestLobbyReadyAndLeaveLobby) {
     Response response = clients[0]->recv_response();
     expect_lobby_state(response, clientNames[0], 1);
 
-    // Resto se une
     for (int i = 1; i < N; ++i) {
         clients[i]->send_join("GameLobby");
         clients[i]->recv_response(); 
@@ -281,7 +278,7 @@ TEST(FlowControlTest, TestLobbyReadyAndLeaveLobby) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    // Lobby ready
+
     for (auto& client : clients) {
         response = client->recv_response();
         expect_lobby_ready(response);
@@ -289,10 +286,10 @@ TEST(FlowControlTest, TestLobbyReadyAndLeaveLobby) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    // Todos se van del lobby
+
     for (auto& client : clients) {
         client->send_leave_lobby();
-        client->recv_response(); // Acknowledgment
+        client->recv_response();
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));

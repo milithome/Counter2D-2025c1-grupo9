@@ -407,18 +407,18 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
       applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
       bullet.target_x=closestHitPoint.first;
       bullet.target_y=closestHitPoint.second;
-      bullet.impact=IMPACT::HUMAN;
+      bullet.impact=Impact::HUMAN;
 
     } else if (wallHit) {
       std::cout << shooterName << " disparó y la bala impactó una pared en ("
                 << wallPoint.first << ", " << wallPoint.second << ")\n";
       bullet.target_x=wallPoint.first;
       bullet.target_y=wallPoint.second;
-      bullet.impact=IMPACT::BLOCK;
+      bullet.impact=Impact::BLOCK;
     } else {
       bullet.target_x=targetX;
       bullet.target_y=targetY;
-      bullet.impact=IMPACT::NOTHING;
+      bullet.impact=Impact::NOTHING;
     }
     shot.bullets.push_back(bullet);
   }

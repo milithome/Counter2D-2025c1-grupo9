@@ -250,7 +250,7 @@ int Player::getBullets(){
   } else {
     return 1;
   }
-};
+}
 
 void Player::setTeam(bool terrorist){
   team=terrorist;

@@ -18,7 +18,7 @@ private:
   Weapon equipped = Weapons::Glock;
   WeaponType typeEquipped = WeaponType::SECONDARY;
   Weapon knife = Weapons::Knife;
-  Weapon primaryWeapon = Weapons::AWP;
+  Weapon primaryWeapon = Weapons::None;
   Weapon secondaryWeapon = Weapons::Glock;
   uint32_t bulletsPrimary = 0;
   uint32_t bulletsSecondary = 0;
