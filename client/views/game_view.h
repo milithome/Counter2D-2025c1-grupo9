@@ -14,16 +14,18 @@
 
 using namespace SDL2pp;
 
-#define SHOT_SPEED 120
-#define SHOT_DURATION 10
-#define SHOT_THICKNESS 2
-#define SHOT_LENGTH 8
+
+#define DEATH_DURATION 1
+#define BULLET_SPEED 120
+#define BULLET_DURATION 1
+#define BULLET_THICKNESS 2
+#define BULLET_LENGTH 8
 
 
 #define FONT_SIZE 32
 
 
-struct ShotEffect {
+struct BulletEffect {
     float x;
     float y;
     float target_x;
@@ -32,7 +34,14 @@ struct ShotEffect {
     float time_left;
 };
 
-
+struct DeathEffect {
+    float dead_body_x;
+    float dead_body_y;
+    float dead_body_rotation;
+    //Surface dead_body_skin;
+    float time_left;
+    int alpha = 255;
+};
 
 #define PARTICLE_SIZE 2
 #define PARTICLE_ACCELERATION -60
@@ -93,7 +102,8 @@ public:
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
     SDL_Point getCenterPoint();
-    void addShotEffect(Bullet bullet);
+    void addBulletEffects(Shot shot);
+    void addDeathEffect(float x, float y, float angle);
     void switchShopVisibility();
 
     void resizeHud();
@@ -274,10 +284,11 @@ private:
     }
 
     bool shopIsVisible = false;
-    std::vector<ShotEffect> shot_effects;
 
     std::vector<HitEffect> blood_effects;
     std::vector<HitEffect> sparks_effects;
+    std::vector<BulletEffect> bullet_effects;
+    std::vector<DeathEffect> death_effects;
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -288,6 +299,8 @@ private:
     void showBloodEffects(float cameraX, float cameraY, float deltaTime);
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
+    void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+
     void showInterface();
     void showShop();
 

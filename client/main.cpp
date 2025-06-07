@@ -33,7 +33,7 @@ using namespace SDL2pp;
 #include <variant>
 
 
-// void game_run(std::string clientName);
+void game_run(std::string clientName);
 
 int main(int argc, char **argv) try {
 	if (argc != 2) {

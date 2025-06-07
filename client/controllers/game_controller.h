@@ -1,7 +1,7 @@
 #ifndef GAMECONTROLLER_H
 #define GAMECONTROLLER_H
 
-
+#include "client/views/game_sound_handler.h"
 #include "client/views/game_view.h"
 #include "common/game.h"
 #include "common/player.h"
@@ -26,7 +26,8 @@ public:
 
 private:
     GameView& view;    
-    Game& game;        
+    Game& game;
+    GameSoundHandler soundHandler;
     std::string player_name;
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);

@@ -209,7 +209,7 @@ StateGame Game::getState() {
     entities.push_back(entity);
   }
   state.entities = entities;
-  state.bullets = bullet_queue;
+  //state.shots= shot_queue;
   return state;
 }
 
@@ -250,11 +250,15 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
   if (shooter.getTypeEquipped()== WeaponType::SECONDARY){
     shooter.updateSecondaryBullets(-bullets);
   }
+  Shot shot;
   
   for (int i = 0; i < bullets; i++) {
     auto [maxDistance, originX, originY, targetX, targetY, angle] =
         shooter.shoot();
-
+    shot.origin_x=originX;
+    shot.origin_y=originY;
+    Bullet bullet;
+    
     Player *closestPlayer = nullptr;
     float closestPlayerDist = maxDistance + 1.0f;
     std::pair<float, float> closestHitPoint;
@@ -276,6 +280,7 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
         }
       }
     }
+    
 
     auto wallHit = rayHitsWall(originX, originY, targetX, targetY, maxDistance);
 
@@ -288,22 +293,28 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
       float dy = wallPoint.second - originY;
       wallDist = std::sqrt(dx * dx + dy * dy);
     }
-
+    bullet.angle=angle;
     if (closestPlayer && closestPlayerDist < wallDist) {
       applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
+      bullet.target_x=closestHitPoint.first;
+      bullet.target_y=closestHitPoint.second;
+      bullet.impact=IMPACT::HUMAN;
 
-      bullet_queue.push(Bullet{originX, originY, closestHitPoint.first,
-                               closestHitPoint.second, angle, IMPACT::HUMAN});
     } else if (wallHit) {
       std::cout << shooterName << " disparó y la bala impactó una pared en ("
                 << wallPoint.first << ", " << wallPoint.second << ")\n";
-      bullet_queue.push(Bullet{originX, originY, wallPoint.first,
-                               wallPoint.second, angle, IMPACT::BLOCK});
+      bullet.target_x=wallPoint.first;
+      bullet.target_y=wallPoint.second;
+      bullet.impact=IMPACT::BLOCK;
     } else {
-      bullet_queue.push(
-          Bullet{originX, originY, targetX, targetY, angle, IMPACT::NOTHING});
+      bullet.target_x=targetX;
+      bullet.target_y=targetY;
+      bullet.impact=IMPACT::NOTHING;
     }
+    shot.bullets.push_back(bullet);
   }
+  shot.weapon=shooter.getEquipped().name;
+  shot_queue.push(shot);
   shooter.setAlreadyShot(true);
 }
 
@@ -483,13 +494,13 @@ void Game::execute(const std::string &name, Action action) {
   }
 }
 
-Bullet Game::bulletQueuePop() {
-  Bullet top = bullet_queue.front();
-  bullet_queue.pop();
+Shot Game::shotQueuePop() {
+  Shot top = shot_queue.front();
+  shot_queue.pop();
   return top;
 }
 
-bool Game::bulletQueueIsEmpty() { return bullet_queue.empty(); }
+bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
 
 float Game::getX(const std::string &name) {
   return findPlayerByName(name).getX();

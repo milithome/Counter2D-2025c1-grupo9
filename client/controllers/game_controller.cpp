@@ -13,9 +13,21 @@ void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
 
+<<<<<<< HEAD
     while (!game.bulletQueueIsEmpty()) {
         view.addShotEffect(game.bulletQueuePop());
+=======
+
+    float player_x = game.getX(player_name);
+    float player_y = game.getY(player_name);
+    while (!game.shotQueueIsEmpty()) {
+        Shot shot = game.shotQueuePop();
+        view.addBulletEffects(shot);
+        float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+        soundHandler.playShotSound(distance, shot.weapon);
+>>>>>>> sound
     }
+
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
@@ -227,29 +239,49 @@ bool GameController::actionQueueIsEmpty() {
 }
 
 void GameController::updateGameState(StateGame state) {
+    float client_player_x_from_server;
+    float client_player_y_from_server;
     std::vector<Entity> entities = state.entities;
     for (size_t i = 0; i < entities.size(); i++) {
         Entity entity = entities[i];
         switch (entity.type) {
             case PLAYER: {
-                PlayerData data = std::get<PlayerData>(entity.data);
-                if (data.name == player_name) {
-                    if (data.lastMoveId == lastMoveIdFromServer) {
+                PlayerData serverData = std::get<PlayerData>(entity.data);                               // El estado del jugador que tiene el server
+                PlayerData clientData = std::get<PlayerData>(game.getPlayerState(serverData.name).data); // El estado del jugador que tiene el cliente
+
+                // Si el jugador es el que maneja este cliente manejar la desincronizacion del movimiento
+                if (serverData.name == player_name) {
+                    client_player_x_from_server = entity.x;
+                    client_player_y_from_server = entity.y;
+                    if (serverData.lastMoveId == lastMoveIdFromServer) {
                         continue;
                     } else {
-                        lastMoveIdFromServer = data.lastMoveId;
+                        lastMoveIdFromServer = serverData.lastMoveId;
                     }
-                    std::pair<float, float> position = move_actions[data.lastMoveId];
+                    std::pair<float, float> position = move_actions[serverData.lastMoveId];
                     float position_x = position.first;
                     float position_y = position.second;
                     
                     if (std::sqrt((entity.x - position_x) * (entity.x - position_x) + (entity.y - position_y) * (entity.y - position_y)) >= DESYNC_TOLERANCE) {
                         game.updatePlayerPosition(player_name, entity.x, entity.y);
                     }
-                    continue;
+                // Si no, actualizar posicion y rotacion normalmente
+                } else {
+                    game.updatePlayerPosition(serverData.name, entity.x, entity.y);
+                    game.updateRotation(serverData.name, serverData.rotation);
                 }
-                game.updatePlayerPosition(data.name, entity.x, entity.y);
-                game.updateRotation(data.name, data.rotation);
+                // Comparar estados del cliente y server para saber si el jugador acaba de morir
+                if (serverData.alive != clientData.alive) {
+                    view.addDeathEffect(entity.x, entity.y, serverData.rotation);
+                    float player_x = game.getX(player_name);
+                    float player_y = game.getY(player_name);
+                    float dead_player_x = entity.x;
+                    float dead_player_y = entity.y;
+                    float distance = std::sqrt((player_x - dead_player_x) * (player_x - dead_player_x) + (player_y - dead_player_y) * (player_y - dead_player_y));
+                    soundHandler.playDeathSound(distance);
+                }
+                // Actualizar vida
+                game.updatePlayerHealth(data.name, data.health);
                 break;
             }
             case BOMB: {
@@ -268,12 +300,21 @@ void GameController::updateGameState(StateGame state) {
             }
         }
     }
+    std::queue<Shot> shots = state.shot;
+    while (!shots.empty()) {
+        Shot shot = shots.front();
+        shots.pop();
+        if (shot.origin_y = client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
+            continue;
+        }
 
-    std::queue<Bullet> bullets = state.bullets;
-    while (!bullets.empty()) {
-        Bullet bullet = bullets.front();
-        bullets.pop();
-        view.addShotEffect(bullet);
+        view.addBulletEffects(shot);
+
+        float player_x = game.getX(player_name);
+        float player_y = game.getY(player_name);
+        float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+        soundHandler.playShotSound(distance, shot.weapon);
+
     }
     Phase phase = state.phase;
     (void)phase;
