@@ -246,6 +246,7 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
     buf.push_back(static_cast<uint8_t>(pdata.inventory.has_the_bomb));
 
     buf.push_back(static_cast<uint8_t>(pdata.equippedWeapon));
+    buf.push_back(static_cast<uint8_t>(pdata.alive));
 }
 
 void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bdata) {
@@ -311,7 +312,6 @@ void Protocol::serialize_shot(std::vector<uint8_t>& buf, const Shot& s) {
     buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[0]);
     buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[1]);
 
-    // Serialize each bullet
     for (const Bullet& b : s.bullets) {
         serialize_bullet(buf, b);
     }
@@ -746,6 +746,11 @@ PlayerData Protocol::recv_player_data() {
         throw std::runtime_error("Error receiving equippedWeapon");
     p.equippedWeapon = static_cast<WeaponType>(equippedWeapon);
 
+    uint8_t alive;
+    if (skt.recvall(&alive, sizeof(alive)) == 0)
+        throw std::runtime_error("Error receiving alive");
+    p.alive = static_cast<bool>(alive);
+
     return p;
 }
 
@@ -787,8 +792,6 @@ Bullet Protocol::deserialize_bullet() {
     b.impact = static_cast<Impact>(impact_val);
 
     return b;
-    */
-   return Bullet{0, 0, 0, NOTHING};
 }
 
 Shot Protocol::deserialize_shot() {
@@ -804,11 +807,6 @@ Shot Protocol::deserialize_shot() {
     s.origin_x = values[0];
     s.origin_y = values[1];
 
-    uint8_t weapon_val;
-    if (skt.recvall(&weapon_val, sizeof(weapon_val)) == 0)
-        throw std::runtime_error("Error receiving weapon");
-    s.weapon = static_cast<WeaponName>(weapon_val);
-
     uint16_t bullet_count_net;
     if (skt.recvall(&bullet_count_net, sizeof(bullet_count_net)) == 0)
         throw std::runtime_error("Error receiving bullet count");
@@ -817,6 +815,11 @@ Shot Protocol::deserialize_shot() {
     for (uint16_t i = 0; i < bullet_count; ++i) {
         s.bullets.push_back(deserialize_bullet());
     }
+
+    uint8_t weapon_val;
+    if (skt.recvall(&weapon_val, sizeof(weapon_val)) == 0)
+        throw std::runtime_error("Error receiving weapon");
+    s.weapon = static_cast<WeaponName>(weapon_val);
 
     return s;
 }

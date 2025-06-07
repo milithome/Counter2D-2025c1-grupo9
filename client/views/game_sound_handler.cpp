@@ -68,16 +68,16 @@ void GameSoundHandler::playShotSound(float distance, WeaponName weapon) {
 void GameSoundHandler::playBombSound(float distance) {
     adjustVolume(bombSound, distance);
     mixer.PlayChannel(-1, bombSound, 0);
-};
+}
         
 void GameSoundHandler::playDeathSound(float distance) {
     adjustVolume(deathSound, distance);
     mixer.PlayChannel(-1, deathSound, 0);
-};
+}
 
 void GameSoundHandler::playMusic() {
 
-};
+}
 
 void GameSoundHandler::adjustVolume(Chunk& sound, float distance) {
     int volume;

@@ -142,7 +142,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         player.y = 20.0f;
         player.data = PlayerData{
             "Carlos", 45.0f, 3, 1500, 100,
-            {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY
+            {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY, true
         };
 
         Entity bomb;
@@ -188,6 +188,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     Protocol client_protocol(std::move(client_socket));
 
     Response response = client_protocol.recv_response();
+    
     ASSERT_EQ(response.type, Type::STATE);
     ASSERT_EQ(response.result, 0);
     ASSERT_EQ(response.message, "Game State");
@@ -213,6 +214,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     EXPECT_EQ(player.inventory.bulletsSecondary, 20);
     EXPECT_TRUE(player.inventory.has_the_bomb);
     EXPECT_EQ(player.equippedWeapon, WeaponType::PRIMARY);
+    EXPECT_TRUE(player.alive);
 
     entity = state.entities[1];
     ASSERT_EQ(entity.type, BOMB);
