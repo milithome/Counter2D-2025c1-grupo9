@@ -27,7 +27,6 @@ void Client::run() {
         }
     }
 
-    // Solo inicializar audio si el backend está disponible
     Uint32 flags = SDL_INIT_VIDEO;
     if (pulse_available)
         flags |= SDL_INIT_AUDIO;
@@ -59,9 +58,17 @@ void Client::run() {
 	}
 	GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
 
-    GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl);
+    try {
+        GameClient game_client(game, map, gameView, players, recv_queue, send_queue, clientName, sdl, pulse_available);
+        game_client.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Excepción atrapada: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Excepción desconocida atrapada." << std::endl;
+    }
 
-    gameClient.run();
+    //GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl);
+    //gameClient.run();
 
     receiver.stop();
 	sender.stop();

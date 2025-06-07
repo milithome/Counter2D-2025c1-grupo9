@@ -4,8 +4,8 @@
 
 #define DESYNC_TOLERANCE 0.2
 
-GameController::GameController(GameView& view, Game& game, const std::string& player_name)
-    : view(view), game(game), player_name(player_name) {
+GameController::GameController(GameView& view, Game& game, const std::string& player_name, bool pulse_available)
+    : view(view), game(game), soundHandler(pulse_available), player_name(player_name) {
 }
 
 void GameController::update(float deltaTime) {
@@ -293,8 +293,12 @@ void GameController::updateGameState(StateGame state) {
         }
     }
     std::queue<Shot> shots = state.shots;
+
+    std::cout << "SIZE SHOTS " << shots.size() << std::endl;
+
     while (!shots.empty()) {
         Shot shot = shots.front();
+        std::cout << "SIZE BULLETS " << shot.bullets.size() << std::endl;
         shots.pop();
         if (shot.origin_y == client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
             continue;

@@ -172,7 +172,7 @@ void Match::startTimeoutThread(Game& game) {
         std::this_thread::sleep_for(std::chrono::minutes(1));
         game.stop();
         inGame = false;
-        std::cout << "pasaron 10 segundos" << std::endl;
+        std::cout << "pasaron 1 minuto" << std::endl;
     });
     timeoutThread.detach();
 }
@@ -195,6 +195,8 @@ void Match::runGameLoop(Game& game) {
         game.update(deltaTime);
 
         StateGame state = game.getState();
+
+        std::cout << state.shots.size() << std::endl;
 
         broadcastGameState(state);
 

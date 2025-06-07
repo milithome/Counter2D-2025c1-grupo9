@@ -1,17 +1,22 @@
 #include "gameClient.h"
 
-GameClient::GameClient(Game &game, Map &map, GameView &gameView, std::vector<std::string> players, Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, 
-                       std::string const clientName, SDL &sdl)
-    : sdl(sdl), 
+GameClient::GameClient(
+	Game &game,
+	Map &map,
+	GameView &gameView,
+	std::vector<std::string> players,
+	Queue<Response> &recv_queue,
+	Queue<std::shared_ptr<MessageEvent>> &send_queue, 
+    std::string const clientName,
+	SDL &sdl,
+	bool pulse_available
+) : sdl(sdl), 
     game(game), 
-    gameController(gameView, game, clientName), 
+    gameController(gameView, game, clientName, pulse_available), 
     map(map), gameView(gameView), 
     players(players), 
     recv_queue(recv_queue), 
-    send_queue(send_queue)
-
-{
-}
+    send_queue(send_queue) {}
 
 void GameClient::run() {
     

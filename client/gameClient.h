@@ -39,8 +39,17 @@ using namespace SDL2pp;
 
 class GameClient {
 public:
-    GameClient(Game& game, Map& map, GameView& gameView, std::vector<std::string> players,Queue<Response>& recv_queue, 
-         Queue<std::shared_ptr<MessageEvent>>& send_queue, std::string const clientName, SDL &sdl);
+    GameClient(
+        Game& game,
+        Map& map,
+        GameView& gameView,
+        std::vector<std::string> players,
+        Queue<Response>& recv_queue, 
+        Queue<std::shared_ptr<MessageEvent>>& send_queue,
+        std::string const clientName,
+        SDL &sdl,
+        bool pulse_available
+    );
 
     void run();
 

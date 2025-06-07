@@ -16,7 +16,7 @@
 
 class GameController {
 public:
-    GameController(GameView& view, Game& game, const std::string& player_name);
+    GameController(GameView& view, Game& game, const std::string& player_name, bool pulse_available);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);

@@ -1,90 +1,67 @@
-#include "game_sound_handler.h"  
-        
-void GameSoundHandler::playShotSound(float distance, WeaponName weapon) {
+#include "game_sound_handler.h"
 
+void GameSoundHandler::playShotSound(float distance, WeaponName weapon) {
+    if (!mixer) return;
+
+    uint32_t now = SDL_GetTicks();
 
     switch (weapon) {
-        case AK47: {
-            uint32_t now = SDL_GetTicks();
-            if (now - akSoundCooldown > GUNSHOT_SOUND_COOLDOWN) {
-                akSoundCooldown = now;
-            } else {
-                return;
-            }
-
-            adjustVolume(akSound, distance);
-            mixer.PlayChannel(-1, akSound, 0);
+        case AK47:
+            if (!akSound || now - akSoundCooldown <= GUNSHOT_SOUND_COOLDOWN) return;
+            akSoundCooldown = now;
+            adjustVolume(*akSound, distance);
+            mixer->PlayChannel(-1, *akSound, 0);
             break;
-        }
-        case M3: {
-            uint32_t now = SDL_GetTicks();
-            if (now - m3SoundCooldown > GUNSHOT_SOUND_COOLDOWN) {
-                m3SoundCooldown = now;
-            } else {
-                return;
-            }
 
+        case M3:
+            if (!m3Sound || now - m3SoundCooldown <= GUNSHOT_SOUND_COOLDOWN) return;
+            m3SoundCooldown = now;
+            adjustVolume(*m3Sound, distance);
+            mixer->PlayChannel(-1, *m3Sound, 0);
+            break;
 
-            adjustVolume(m3Sound, distance);
-            mixer.PlayChannel(-1, m3Sound, 0);
+        case AWP:
+            if (!awpSound || now - awpSoundCooldown <= GUNSHOT_SOUND_COOLDOWN) return;
+            awpSoundCooldown = now;
+            adjustVolume(*awpSound, distance);
+            mixer->PlayChannel(-1, *awpSound, 0);
             break;
-        }
-        case AWP: {
-            uint32_t now = SDL_GetTicks();
-            if (now - awpSoundCooldown > GUNSHOT_SOUND_COOLDOWN) {
-                awpSoundCooldown = now;
-            } else {
-                return;
-            }
 
-            adjustVolume(awpSound, distance);
-            mixer.PlayChannel(-1, awpSound, 0);
+        case GLOCK:
+            if (!glockSound || now - glockSoundCooldown <= GUNSHOT_SOUND_COOLDOWN) return;
+            glockSoundCooldown = now;
+            adjustVolume(*glockSound, distance);
+            mixer->PlayChannel(-1, *glockSound, 0);
             break;
-        }
-        case GLOCK: {
-            uint32_t now = SDL_GetTicks();
-            if (now - glockSoundCooldown > GUNSHOT_SOUND_COOLDOWN) {
-                glockSoundCooldown = now;
-            } else {
-                return;
-            }
 
+        case KNIFE:
+            if (!knifeSound) return;
+            adjustVolume(*knifeSound, distance);
+            mixer->PlayChannel(-1, *knifeSound, 0);
+            break;
 
-            adjustVolume(glockSound, distance);
-            mixer.PlayChannel(-1, glockSound, 0);
+        default:
             break;
-        }
-        case KNIFE: {
-            adjustVolume(knifeSound, distance);
-            mixer.PlayChannel(-1, knifeSound, 0);
-            break;
-        }
-        default: {
-            break;
-        }
     }
 }
 
 void GameSoundHandler::playBombSound(float distance) {
-    adjustVolume(bombSound, distance);
-    mixer.PlayChannel(-1, bombSound, 0);
+    if (!mixer || !bombSound) return;
+    adjustVolume(*bombSound, distance);
+    mixer->PlayChannel(-1, *bombSound, 0);
 }
-        
+
 void GameSoundHandler::playDeathSound(float distance) {
-    adjustVolume(deathSound, distance);
-    mixer.PlayChannel(-1, deathSound, 0);
+    if (!mixer || !deathSound) return;
+    adjustVolume(*deathSound, distance);
+    mixer->PlayChannel(-1, *deathSound, 0);
 }
 
-void GameSoundHandler::playMusic() {
-
-}
+void GameSoundHandler::playMusic() {}
 
 void GameSoundHandler::adjustVolume(Chunk& sound, float distance) {
-    int volume;
-    if (distance >= MAX_SOUND_DISTANCE) {
-        volume = 0;
-    } else {
-        volume = MIX_MAX_VOLUME - (distance / MAX_SOUND_DISTANCE) * MIX_MAX_VOLUME;
-    }
+    int volume = (distance >= MAX_SOUND_DISTANCE)
+        ? 0
+        : MIX_MAX_VOLUME - (distance / MAX_SOUND_DISTANCE) * MIX_MAX_VOLUME;
     Mix_VolumeChunk(sound.Get(), volume);
 }

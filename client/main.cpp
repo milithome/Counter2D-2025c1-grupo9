@@ -52,7 +52,7 @@ int main(int argc, char **argv) try {
 	return 1;
 }
 
-// main reducido para testear
+/*
 void game_run(std::string clientName) {
 	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	TTF_Init();
@@ -76,3 +76,4 @@ void game_run(std::string clientName) {
 
 	TTF_Quit();
 }
+*/
