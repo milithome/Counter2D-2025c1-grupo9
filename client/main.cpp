@@ -60,6 +60,7 @@ void game_run(std::string clientName) {
 	Map map = Map("../assets/maps/default.yaml");
 	Game game(map.getMapData().game_map);
 	game.addPlayer(clientName);
+	game.addPlayer("test");
 	GameView gameView = GameView(game, clientName, SDL_Point{0, 0}, map);
 	GameController gameController = GameController(gameView, game, clientName);
 

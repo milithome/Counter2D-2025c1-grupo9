@@ -32,6 +32,7 @@ struct BulletEffect {
     float target_y;
     float angle;
     float time_left;
+    IMPACT impact;
 };
 
 struct DeathEffect {

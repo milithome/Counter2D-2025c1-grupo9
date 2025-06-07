@@ -133,7 +133,7 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         float dot = (bullet.target_x - prev_x) * (bullet.target_x - bullet.x) + (bullet.target_y - prev_y) * (bullet.target_y - bullet.y);
 
         if (dot < 0.0f) {
-            if (false) { // impacto en un jugador
+            if (bullet.impact == HUMAN) { // impacto en un jugador
                 HitEffect blood;
                 for (uint32_t i = 0; i < BLOOD_EFFECT_PARTICLES; i++) {
                     Particle blood_drop{
@@ -146,7 +146,7 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
                     blood.particles.push_back(blood_drop);
                 }
                 blood_effects.push_back(blood);
-            } else if (true) {
+            } else if (bullet.impact == BLOCK) {
                 HitEffect sparks;
                 for (uint32_t i = 0; i < SPARK_EFFECT_PARTICLES; i++) {
                     Particle spark{
@@ -938,7 +938,7 @@ SDL_Point GameView::getCenterPoint() {
 void GameView::addBulletEffects(Shot shot) {
     for (size_t i = 0; i < shot.bullets.size(); i++) {
         Bullet bullet = shot.bullets[i];
-        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION});
+        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION, bullet.impact});
     }
 }
 
