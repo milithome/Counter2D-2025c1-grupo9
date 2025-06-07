@@ -15,20 +15,23 @@ namespace fs = std::filesystem;
 
 
 GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
-    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()), bloodTexture(createBloodTexture()), sparkTexture(createSparkTexture()) {
-        renderer.SetDrawColor(0, 0, 0, 255);
-        renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-
-        akShopSprite.SetColorKey(true, SDL_MapRGB(akShopSprite.Get()->format, 255, 0, 255));
-        m3ShopSprite.SetColorKey(true, SDL_MapRGB(m3ShopSprite.Get()->format, 255, 0, 255));
-        awpShopSprite.SetColorKey(true, SDL_MapRGB(awpShopSprite.Get()->format, 255, 0, 255));
-
-        akInvSprite.SetColorKey(true, SDL_MapRGB(akInvSprite.Get()->format, 0, 0, 0));
-        m3InvSprite.SetColorKey(true, SDL_MapRGB(m3InvSprite.Get()->format, 0, 0, 0));
-        awpInvSprite.SetColorKey(true, SDL_MapRGB(awpInvSprite.Get()->format, 0, 0, 0));
-        glockInvSprite.SetColorKey(true, SDL_MapRGB(glockInvSprite.Get()->format, 0, 0, 0));
-        knifeInvSprite.SetColorKey(true, SDL_MapRGB(knifeInvSprite.Get()->format, 0, 0, 0));
-        bombInvSprite.SetColorKey(true, SDL_MapRGB(bombInvSprite.Get()->format, 0, 0, 0));
+    : 
+    window(createWindow(window_pos)), 
+    renderer(createRenderer(window)), game(game), 
+    playerName(playerName), map(map), 
+    mapTiles(Texture(renderer, map.get_sprite_path())), 
+    backgroundTexture(renderer, map.get_background_path()), 
+    bloodTexture(createBloodTexture()), 
+    sparkTexture(createSparkTexture()),
+    akShopSprite(createShopTexture("../assets/gfx/weapons/ak47_m.bmp")),
+    m3ShopSprite(createShopTexture("../assets/gfx/weapons/m3_m.bmp")),
+    awpShopSprite(createShopTexture("../assets/gfx/weapons/awp_m.bmp")),
+    akInvSprite(createInvTexture("../assets/gfx/weapons/ak47_k.bmp")),
+    m3InvSprite(createInvTexture("../assets/gfx/weapons/m3_k.bmp")),
+    awpInvSprite(createInvTexture("../assets/gfx/weapons/awp_k.bmp")),
+    glockInvSprite(createInvTexture("../assets/gfx/weapons/glock_k.bmp")),
+    knifeInvSprite(createInvTexture("../assets/gfx/weapons/knife_k.bmp")),
+    bombInvSprite(createInvTexture("../assets/gfx/weapons/bomb_d.bmp")) {
 }
 
 
@@ -40,7 +43,10 @@ Window GameView::createWindow(SDL_Point window_pos) {
 }
 
 Renderer GameView::createRenderer(Window& window) {
-    return Renderer(window, -1, SDL_RENDERER_ACCELERATED);
+    Renderer r(window, -1, SDL_RENDERER_ACCELERATED);
+    r.SetDrawColor(0, 0, 0, 255);
+    r.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+    return r;
 }
 
 
@@ -71,6 +77,7 @@ void GameView::update(float deltaTime) {
 
     renderer.Present();
 }
+
 
 
 void GameView::showBackground() {
@@ -299,7 +306,6 @@ void GameView::showEntities(float cameraX, float cameraY) {
 
 
                 float angleRad = (data.rotation) * M_PI / 180.0f;
-                // Vector desplazamiento (16 px hacia adelante)
                 float dx = std::cos(angleRad) * BLOCK_SIZE/2;
                 float dy = std::sin(angleRad) * BLOCK_SIZE/2;
 
@@ -446,7 +452,7 @@ void GameView::showInterface() {
     };
 
 
-    auto createWeaponSprite = [=](Rect parent, Surface& sprite) {
+    auto createWeaponSprite = [=](Rect parent, Texture& sprite) {
 
         uint32_t weapon_image_container_x = parent.GetX() + WEAPON_CONTAINER_MARGIN;
         uint32_t weapon_image_container_y = parent.GetY() + WEAPON_CONTAINER_MARGIN;
@@ -503,11 +509,10 @@ void GameView::showInterface() {
         }
         renderer.FillRect(primaryWeaponContainer);
 
-        Surface& primaryWeaponSprite = getWeaponInvSprite(playerData.inventory.primary);
+        Texture& primaryWeaponSprite = getWeaponInvSprite(playerData.inventory.primary);
         Rect primaryWeaponSpriteRect = createWeaponSprite(primaryWeaponContainer, primaryWeaponSprite);
-        Texture primaryWeaponTexture(renderer, primaryWeaponSprite);
         renderer.Copy(
-            primaryWeaponTexture,
+            primaryWeaponSprite,
             NullOpt,
             primaryWeaponSpriteRect);
     }
@@ -521,9 +526,8 @@ void GameView::showInterface() {
         renderer.SetDrawColor(0, 0, 0, 64);
     }
     renderer.FillRect(secondaryWeaponContainer);
-    Texture secondaryTexture(renderer, glockInvSprite);
     renderer.Copy(
-        secondaryTexture,
+        glockInvSprite,
         NullOpt,
         secondaryWeaponSprite);
     Rect knifeContainer = layoutRightVBox(container, equipamiento);
@@ -536,9 +540,8 @@ void GameView::showInterface() {
         renderer.SetDrawColor(0, 0, 0, 64);
     }
     renderer.FillRect(knifeContainer);
-    Texture knifeTexture(renderer, knifeInvSprite);
     renderer.Copy(
-        knifeTexture,
+        knifeInvSprite,
         NullOpt,
         knifeSprite);
         
@@ -546,9 +549,8 @@ void GameView::showInterface() {
         Rect bombContainer = layoutRightVBox(container, equipamiento);
         Rect bombSprite = createWeaponSprite(bombContainer, bombInvSprite);
         equipamiento.push_back(bombContainer);
-        Texture bombTexture(renderer, bombInvSprite);
         renderer.Copy(
-            bombTexture,
+            bombInvSprite,
             NullOpt,
             bombSprite);
     }
@@ -683,7 +685,7 @@ void GameView::showShop() {
 
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        Surface& weaponSprite = getWeaponShopSprite(weapon);
+        Texture& weaponSprite = getWeaponShopSprite(weapon);
 
 
         uint32_t weapon_image_container_x = itemContainer.GetX() + ITEM_CONTAINER_MARGIN;
@@ -726,9 +728,8 @@ void GameView::showShop() {
             weapon_texture_w, 
             weapon_texture_h);
         /////////////////////////////////////////////////////////////////////////////////////
-        Texture weaponTexture(renderer, weaponSprite);
         renderer.Copy(
-            weaponTexture, 
+            weaponSprite, 
             NullOpt, 
             weaponTextureRect);
 

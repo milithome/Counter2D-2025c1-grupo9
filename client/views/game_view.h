@@ -52,6 +52,13 @@ struct ShotEffect {
 #define SPARK_PARTICLE_MAX_SPEED 6
 
 
+#define FLARE_EFFECT_DURATION 0.5
+
+struct FlareEffect {
+    float x, y;
+    float time_left;
+};
+
 struct Particle {
     float x, y;
     float speed;
@@ -61,6 +68,17 @@ struct Particle {
 
 struct HitEffect {
     std::vector<Particle> particles;
+};
+
+enum Skin {
+    PHOENIX,
+    L337_KREW, 
+    ARCTIC_AVENGER,
+    GUERRILLA,
+    SEAL_FORCE,
+    GERMAN_GSG9,
+    UKSAS,
+    FRENCH_GIGN
 };
 
 
@@ -86,7 +104,6 @@ public:
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
-    Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
     Renderer renderer;
     Game& game;
@@ -94,24 +111,59 @@ private:
     Map& map;
 
 
-    Chunk glockSound = Chunk("../assets/sfx/weapons/usp_silenced.wav");
 
     Texture mapTiles;
     Texture backgroundTexture;
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
     Font font = Font("../assets/gfx/fonts/sourcesans.ttf", FONT_SIZE);
 
+    // Surfaces de las skins para poder crear otras texturas, util para hacer las animaciones de muerte
+    Surface phoenixS = Surface("../assets/gfx/player/t1.bmp");
+    Surface l337KrewS = Surface("../assets/gfx/player/t2.bmp");
+    Surface arcticAvengerS = Surface("../assets/gfx/player/t3.bmp");
+    Surface guerrillaS = Surface("../assets/gfx/player/t4.bmp");
+    Surface sealForceS = Surface("../assets/gfx/player/ct1.bmp");
+    Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
+    Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
+    Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
+    Surface& getSkinSpriteSurface(Skin skin) {
+        switch (skin) {
+            case PHOENIX:           return phoenixS;
+            case L337_KREW:         return l337KrewS;
+            case ARCTIC_AVENGER:    return arcticAvengerS;
+            case GUERRILLA:         return guerrillaS;
+            case SEAL_FORCE:        return sealForceS;
+            case GERMAN_GSG9:       return germanGsg9S;
+            case UKSAS:             return uksasS;
+            case FRENCH_GIGN:       return frenchGignS;
+            default:                throw std::exception();
+        }
+    }
+
     // T skins
-    Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
-    Texture L337Krew = Texture(renderer, "../assets/gfx/player/t2.bmp");
-    Texture arcticAvenger = Texture(renderer, "../assets/gfx/player/t3.bmp");
-    Texture Guerrilla = Texture(renderer, "../assets/gfx/player/t4.bmp");
+    Texture phoenix = Texture(renderer, phoenixS);
+    Texture l337Krew = Texture(renderer, l337KrewS);
+    Texture arcticAvenger = Texture(renderer, arcticAvengerS);
+    Texture guerrilla = Texture(renderer, guerrillaS);
 
     // CT skins
-    Texture sealForce = Texture(renderer, "../assets/gfx/player/ct1.bmp");
-    Texture germanGSG9 = Texture(renderer, "../assets/gfx/player/ct2.bmp");
-    Texture UKSAS = Texture(renderer, "../assets/gfx/player/ct3.bmp");
-    Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
+    Texture sealForce = Texture(renderer, sealForceS);
+    Texture germanGsg9 = Texture(renderer, germanGsg9S);
+    Texture uksas = Texture(renderer, uksasS);
+    Texture frenchGign = Texture(renderer, frenchGignS);
+    Texture& getSkinSprite(Skin skin) {
+        switch (skin) {
+            case PHOENIX:           return phoenix;
+            case L337_KREW:         return l337Krew;
+            case ARCTIC_AVENGER:    return arcticAvenger;
+            case GUERRILLA:         return guerrilla;
+            case SEAL_FORCE:        return sealForce;
+            case GERMAN_GSG9:       return germanGsg9;
+            case UKSAS:             return uksas;
+            case FRENCH_GIGN:       return frenchGign;
+            default:                throw std::exception();
+        }
+    }
 
     Texture bloodTexture;
     Texture createBloodTexture() {
@@ -151,10 +203,16 @@ private:
         {GLOCK, "Glock"}
     };
 
-    Surface akShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
-    Surface m3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
-    Surface awpShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
-    Surface& getWeaponShopSprite(WeaponName weapon) {
+    Texture akShopSprite;
+    Texture m3ShopSprite;
+    Texture awpShopSprite;
+    Texture createShopTexture(const std::string& path) {
+        Surface ShopSpriteS = Surface(path);
+        ShopSpriteS.SetColorKey(true, SDL_MapRGB(ShopSpriteS.Get()->format, 255, 0, 255));
+        return Texture(renderer, ShopSpriteS);
+    }
+
+    Texture& getWeaponShopSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47: return akShopSprite;
             case M3:   return m3ShopSprite;
@@ -163,35 +221,19 @@ private:
         }
     }
 
-
-
-
-
-    Surface akInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
-    Surface m3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
-    Surface awpInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
-    Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
-    Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
-    Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
-    Surface& getWeaponInvSprite(WeaponName weapon) {
-        switch (weapon) {
-            case AK47:  return akInvSprite;
-            case M3:    return m3InvSprite;
-            case AWP:   return awpInvSprite;
-            case GLOCK: return glockInvSprite;
-            case KNIFE: return knifeInvSprite;
-            default:    throw std::exception();
-        }
-    }
-
     
-    Surface akInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
-    Surface m3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
-    Surface awpInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
-    Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
-    Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
-    Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
-    Surface& getWeaponInvSprite(WeaponName weapon) {
+    Texture akInvSprite;
+    Texture m3InvSprite;
+    Texture awpInvSprite;
+    Texture glockInvSprite;
+    Texture knifeInvSprite;
+    Texture bombInvSprite;
+    Texture createInvTexture(const std::string& path) {
+        Surface invSpriteS = Surface(path);
+        invSpriteS.SetColorKey(true, SDL_MapRGB(invSpriteS.Get()->format, 0, 0, 0));
+        return Texture(renderer, invSpriteS);
+    }
+    Texture& getWeaponInvSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47:  return akInvSprite;
             case M3:    return m3InvSprite;
