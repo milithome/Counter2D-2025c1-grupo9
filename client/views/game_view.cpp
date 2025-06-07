@@ -98,6 +98,7 @@ void GameView::showBackground() {
 void GameView::showMap(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
     auto tiles_map = map.get_tiles_map();
+    auto game_map = map.get_game_map();
     for (size_t i = 0; i < tiles_map.size(); i++) {
         for (size_t j = 0; j < tiles_map[i].size(); j++) {
             uint16_t tile = tiles_map[i][j];
@@ -105,6 +106,10 @@ void GameView::showMap(float cameraX, float cameraY) {
             Rect src(clip.x, clip.y, CLIP_SIZE, CLIP_SIZE);
             Rect dst(cameraX + j * BLOCK_SIZE, cameraY + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
             renderer.Copy(mapTiles, src, dst);
+            if (game_map[i][j] == CellType::SpikeSite) {
+                renderer.SetDrawColor(255, 255, 0, 40);
+                renderer.FillRect(dst);       
+            }
         }
     }
 }
@@ -301,7 +306,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
                 if (!data.alive) {
-                    if (test) {
+                    if (test) { // temporal, cuando el cliente este conectado al server ya no va a ser necesario esto
                         test = false;
                         death_effects.push_back(DeathEffect{playerX, playerY, data.rotation, DEATH_DURATION, 255});
                     }
@@ -336,12 +341,21 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 WeaponData data = std::get<WeaponData>(gameState[i].data);
                 float weaponX = gameState[i].x;
                 float weaponY = gameState[i].y;
-                Rect dst(cameraX + weaponX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + weaponY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+                Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(getWeaponDroppedSprite(data.weapon), src, dst);
                 break;
             }
             case BOMB: {
-
+                BombData data = std::get<BombData>(gameState[i].data);
+                float bombX = gameState[i].x;
+                float bombY = gameState[i].y;
+                Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                if (data.planted) {
+                    renderer.Copy(bombInGameSprite, src, dst);
+                } else {
+                    renderer.Copy(bombInvSprite, src, dst);
+                }
+                break;
             }
         }
     }
@@ -362,7 +376,6 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
         
 
         death.alpha -= (255 * deltaTime) / DEATH_DURATION;
-        std::cout << death.alpha << std::endl;
         if (death.alpha < 0) {
             death.alpha = 0;
         }

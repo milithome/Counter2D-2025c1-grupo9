@@ -143,6 +143,9 @@ struct StopDefusingAction {};
 struct GrabAction {};
 */
 
+
+
+
 using ActionData =
     std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction,
                  BuyWeaponAction, ChangeWeaponAction>;

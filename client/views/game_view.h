@@ -260,6 +260,7 @@ private:
     Texture awpInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
     Texture glockInGameSprite = Texture(renderer, "../assets/gfx/weapons/glock.bmp");
     Texture knifeInGameSprite = Texture(renderer, "../assets/gfx/weapons/knife.bmp");
+    Texture bombInGameSprite = Texture(renderer, "../assets/gfx/weapons/bomb.bmp");
     Texture& getWeaponInGameSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47:  return akInGameSprite;
@@ -312,7 +313,7 @@ private:
         return dis(gen);
     }
 
-    bool test = true;
+    bool test = true; // temporal, cuando el cliente este conectado al server ya no va a ser necesario esto
 
 };
 

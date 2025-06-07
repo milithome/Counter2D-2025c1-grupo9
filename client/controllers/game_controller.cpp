@@ -78,8 +78,8 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         case SDLK_4: {
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
             if (inv.has_the_bomb) {
-                // Action action{ActionType::PLANT};
-                // game.execute(player_name, action);
+                Action action{ActionType::PLANT, {}};
+                game.execute(player_name, action);
                 return;
             }
             break;  
@@ -124,8 +124,8 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
-            // Action action{ActionType::STOP_PLANTING};
-            // game.execute(player_name, action);
+            Action action{ActionType::STOP_PLANTING, {}};
+            game.execute(player_name, action);
             break;
         }
         case SDLK_e: {

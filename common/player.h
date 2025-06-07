@@ -26,7 +26,7 @@ private:
   int health = 100;
   float vx = 0, vy = 0;
   float aceleration = 0;
-  bool hasTheSpike = false;
+  bool hasTheSpike = true;
   bool shooting = false;
   bool planting = false;
   bool alreadyShot = false;
