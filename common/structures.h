@@ -46,7 +46,7 @@ struct Inventory {
     WeaponName secondary;
     uint32_t bulletsPrimary;
     uint32_t bulletsSecondary;
-    bool has_the_bomb;
+    bool has_the_bomb; // add
 };
 
 struct PlayerData {
@@ -54,9 +54,9 @@ struct PlayerData {
     float rotation;
     uint32_t lastMoveId;
     int money;
-    int health;
+    int health; // de float a int
     Inventory inventory;
-    WeaponType equippedWeapon;
+    WeaponType equippedWeapon; // add
 };
 
 struct BombData {
@@ -154,16 +154,16 @@ struct Action {
 // Estado del juego
 enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING };
 
-enum IMPACT { HUMAN, BLOCK, NOTHING };
+enum Impact { HUMAN, BLOCK, NOTHING };
 
 struct Bullet {
   float target_x;
   float target_y;
   float angle;
-  IMPACT impact;
+  Impact impact; // add
 };
 
-struct Shot {
+struct Shot { //add
   float origin_x;
   float origin_y;
   std::vector<Bullet> bullets;
@@ -173,7 +173,7 @@ struct Shot {
 struct StateGame {
   Phase phase;
   std::vector<Entity> entities;
-  std::queue<Bullet> bullets;
+  std::queue<Shot> shots;
 };
 
 // Datos iniciales del juego, como el mapa
@@ -211,6 +211,11 @@ struct Message {
     Action action;
     std::string clientName;
 };
+
+
+
+
+
 
 // Estructuras del servidor
 enum LobbyRequestType { LEAVE_LOBBY, JOIN_LOBBY, START_LOBBY, READY_LOBBY };

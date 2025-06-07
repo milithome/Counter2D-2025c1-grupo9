@@ -233,9 +233,7 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
     int32_t money_net = htonl(pdata.money);
     buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&money_net), reinterpret_cast<uint8_t*>(&money_net) + sizeof(money_net));
 
-    uint32_t health_net;
-    std::memcpy(&health_net, &pdata.health, sizeof(float));
-    health_net = htonl(health_net);
+    int32_t health_net = ntohl(pdata.health);
     buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&health_net), reinterpret_cast<uint8_t*>(&health_net) + sizeof(health_net));
 
     buf.push_back(static_cast<uint8_t>(pdata.inventory.primary));
@@ -245,6 +243,9 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
     uint32_t bs_net = htonl(pdata.inventory.bulletsSecondary);
     buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&bp_net), reinterpret_cast<uint8_t*>(&bp_net) + sizeof(bp_net));
     buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&bs_net), reinterpret_cast<uint8_t*>(&bs_net) + sizeof(bs_net));
+    buf.push_back(static_cast<uint8_t>(pdata.inventory.has_the_bomb));
+
+    buf.push_back(static_cast<uint8_t>(pdata.equippedWeapon));
 }
 
 void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bdata) {
@@ -286,20 +287,42 @@ void Protocol::serialize_entity(std::vector<uint8_t>& buf, const Entity& entity)
 }
 
 void Protocol::serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b) {
-    float values[5] = {b.origin_x, b.origin_y, b.target_x, b.target_y, b.angle};
-    for (int i = 0; i < 5; ++i) {
+    float values[3] = {b.target_x, b.target_y, b.angle};
+    for (int i = 0; i < 3; ++i) {
         uint32_t net;
         std::memcpy(&net, &values[i], sizeof(float));
         net = htonl(net);
         buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&net), reinterpret_cast<uint8_t*>(&net) + sizeof(net));
     }
+
+    buf.push_back(static_cast<uint8_t>(b.impact));
+}
+
+void Protocol::serialize_shot(std::vector<uint8_t>& buf, const Shot& s) {
+    float origins[2] = {s.origin_x, s.origin_y};
+    for (int i = 0; i < 2; ++i) {
+        uint32_t net;
+        std::memcpy(&net, &origins[i], sizeof(float));
+        net = htonl(net);
+        buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&net), reinterpret_cast<uint8_t*>(&net) + sizeof(net));
+    }
+
+    uint16_t bullet_count = htons(s.bullets.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[1]);
+
+    // Serialize each bullet
+    for (const Bullet& b : s.bullets) {
+        serialize_bullet(buf, b);
+    }
+
+    buf.push_back(static_cast<uint8_t>(s.weapon));
 }
 
 std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     const StateGame& game = std::get<StateGame>(r.data);
     std::vector<uint8_t> buf = {static_cast<uint8_t>(r.type)};
     buf.push_back(static_cast<uint8_t>(r.result));
-
     buf.push_back(static_cast<uint8_t>(game.phase));
 
     uint16_t size = htons(game.entities.size());
@@ -310,13 +333,13 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
         serialize_entity(buf, entity);
     }
 
-    uint16_t bullet_count = htons(game.bullets.size());
-    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[0]);
-    buf.push_back(reinterpret_cast<uint8_t*>(&bullet_count)[1]);
+    std::queue<Shot> copy = game.shots;
+    uint16_t shot_count = htons(copy.size());
+    buf.push_back(reinterpret_cast<uint8_t*>(&shot_count)[0]);
+    buf.push_back(reinterpret_cast<uint8_t*>(&shot_count)[1]);
 
-    std::queue<Bullet> copy = game.bullets;
     while (!copy.empty()) {
-        serialize_bullet(buf, copy.front());
+        serialize_shot(buf, copy.front());
         copy.pop();
     }
 
@@ -699,24 +722,29 @@ PlayerData Protocol::recv_player_data() {
         throw std::runtime_error("Error receiving player money");
     p.money = ntohl(money_net);
 
-    uint32_t health_net;
+    int32_t health_net;
     if (skt.recvall(&health_net, sizeof(health_net)) == 0)
         throw std::runtime_error("Error receiving player health");
-    health_net = ntohl(health_net);
-    std::memcpy(&p.health, &health_net, sizeof(float));
+    p.health = ntohl(health_net);
 
-
-    uint8_t prim, sec;
+    uint8_t prim, sec, has_bomb;
     uint32_t bprim_net, bsec_net;
     if (skt.recvall(&prim, sizeof(prim)) == 0 ||
         skt.recvall(&sec, sizeof(sec)) == 0 ||
         skt.recvall(&bprim_net, sizeof(bprim_net)) == 0 ||
-        skt.recvall(&bsec_net, sizeof(bsec_net)) == 0)
+        skt.recvall(&bsec_net, sizeof(bsec_net)) == 0 ||
+        skt.recvall(&has_bomb, sizeof(has_bomb)) == 0)
         throw std::runtime_error("Error receiving inventory");
     p.inventory.primary = static_cast<WeaponName>(prim);
     p.inventory.secondary = static_cast<WeaponName>(sec);
     p.inventory.bulletsPrimary = ntohl(bprim_net);
     p.inventory.bulletsSecondary = ntohl(bsec_net);
+    p.inventory.has_the_bomb = static_cast<bool>(has_bomb);
+
+    uint8_t equippedWeapon;
+    if (skt.recvall(&equippedWeapon, sizeof(equippedWeapon)) == 0)
+        throw std::runtime_error("Error receiving equippedWeapon");
+    p.equippedWeapon = static_cast<WeaponType>(equippedWeapon);
 
     return p;
 }
@@ -739,17 +767,56 @@ WeaponData Protocol::recv_weapon_data() {
     return w;
 }
 
-Bullet Protocol::recv_bullet() {
+Bullet Protocol::deserialize_bullet() {
     Bullet b;
-    float* fields[5] = {&b.origin_x, &b.origin_y, &b.target_x, &b.target_y, &b.angle};
-    for (int i = 0; i < 5; ++i) {
+    float values[3];
+    for (int i = 0; i < 3; ++i) {
         uint32_t net;
         if (skt.recvall(&net, sizeof(net)) == 0)
             throw std::runtime_error("Error receiving bullet field");
         net = ntohl(net);
-        std::memcpy(fields[i], &net, sizeof(float));
+        std::memcpy(&values[i], &net, sizeof(float));
     }
+    b.target_x = values[0];
+    b.target_y = values[1];
+    b.angle = values[2];
+
+    uint8_t impact_val;
+    if (skt.recvall(&impact_val, sizeof(impact_val)) == 0)
+        throw std::runtime_error("Error receiving bullet impact");
+    b.impact = static_cast<Impact>(impact_val);
+
     return b;
+}
+
+Shot Protocol::deserialize_shot() {
+    Shot s;
+    float values[2];
+    for (int i = 0; i < 2; ++i) {
+        uint32_t net;
+        if (skt.recvall(&net, sizeof(net)) == 0)
+            throw std::runtime_error("Error receiving shot origin");
+        net = ntohl(net);
+        std::memcpy(&values[i], &net, sizeof(float));
+    }
+    s.origin_x = values[0];
+    s.origin_y = values[1];
+
+    uint8_t weapon_val;
+    if (skt.recvall(&weapon_val, sizeof(weapon_val)) == 0)
+        throw std::runtime_error("Error receiving weapon");
+    s.weapon = static_cast<WeaponName>(weapon_val);
+
+    uint16_t bullet_count_net;
+    if (skt.recvall(&bullet_count_net, sizeof(bullet_count_net)) == 0)
+        throw std::runtime_error("Error receiving bullet count");
+    uint16_t bullet_count = ntohs(bullet_count_net);
+
+    for (uint16_t i = 0; i < bullet_count; ++i) {
+        s.bullets.push_back(deserialize_bullet());
+    }
+
+    return s;
 }
 
 Entity Protocol::deserialize_entity_player(float x, float y) {
@@ -836,17 +903,16 @@ Response Protocol::deserialize_state() {
         state.entities.push_back(deserialize_entity());
     }
 
-    uint16_t bullet_count_net;
-    if (skt.recvall(&bullet_count_net, sizeof(bullet_count_net)) == 0)
-        throw std::runtime_error("Error receiving bullet count");
-    uint16_t bullet_count = ntohs(bullet_count_net);
+    uint16_t shot_count_net;
+    if (skt.recvall(&shot_count_net, sizeof(shot_count_net)) == 0)
+        throw std::runtime_error("Error receiving shot count");
+    uint16_t shot_count = ntohs(shot_count_net);
 
-    for (uint16_t i = 0; i < bullet_count; ++i) {
-        state.bullets.push(recv_bullet());
+    for (uint16_t i = 0; i < shot_count; ++i) {
+        state.shots.push(deserialize_shot());
     }
 
     r.data = std::move(state);
-
     r.message = deserialize_string();
     return r;
 }
