@@ -252,7 +252,17 @@ void GameController::updateGameState(StateGame state) {
                 game.updateRotation(data.name, data.rotation);
                 break;
             }
+            case BOMB: {
+                BombData data = std::get<BombData>(entity.data);
+                if (data.planted) { //esta plantada ahora mismo segun el server
+                    
+                }
+                else { //no hay nada plantado
+                    
+                }
 
+            }
+            //ENTIDAD BOMBA Y ENTIDAD WEAPON EN EL PISO
             default: {
                 break;
             }
