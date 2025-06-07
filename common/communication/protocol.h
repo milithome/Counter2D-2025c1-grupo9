@@ -65,6 +65,7 @@ private:
     void serialize_weapon_data(std::vector<uint8_t>& buf, const WeaponData& wdata);
     void serialize_entity(std::vector<uint8_t>& buf, const Entity& entity);
     void serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b);
+    void serialize_shot(std::vector<uint8_t>& buf, const Shot& s);
     std::vector<uint8_t> serialize_state(const Response& r);
     std::vector<uint8_t> serialize_state_lobby(const Response& r);
     void serialize_2d_vector(const std::vector<std::vector<CellType>>& matrix, std::vector<uint8_t>& buf);
@@ -89,7 +90,8 @@ private:
     PlayerData recv_player_data();
     BombData recv_bomb_data();
     WeaponData recv_weapon_data();
-    Bullet recv_bullet();
+    Bullet deserialize_bullet();
+    Shot deserialize_shot();
     Entity deserialize_entity_player(float x, float y);
     Entity deserialize_entity_bomb(float x, float y);
     Entity deserialize_entity_weapon(float x, float y);
