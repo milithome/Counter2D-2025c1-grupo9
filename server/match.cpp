@@ -193,7 +193,10 @@ void Match::runGameLoop(Game& game) {
         lastTime = currentTime;
 
         game.update(deltaTime);
-        broadcastGameState(game.getState());
+
+        StateGame state = game.getState();
+
+        broadcastGameState(state);
 
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time

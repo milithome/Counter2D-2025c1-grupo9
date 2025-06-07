@@ -17,7 +17,23 @@ void Client::run() {
     // Enviar el nombre del cliente al servidor
     protocol.send_name(clientName);
 
-    SDL sdl(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    int num_audio_drivers = SDL_GetNumAudioDrivers();
+    bool pulse_available = false;
+    for (int i = 0; i < num_audio_drivers; ++i) {
+        const char* driver = SDL_GetAudioDriver(i);
+        if (strcmp(driver, "pulse") == 0) {
+            pulse_available = true;
+            break;
+        }
+    }
+
+    // Solo inicializar audio si el backend está disponible
+    Uint32 flags = SDL_INIT_VIDEO;
+    if (pulse_available)
+        flags |= SDL_INIT_AUDIO;
+
+    SDL sdl(flags);
+
     TTF_Init();
 
     int argc = 1;

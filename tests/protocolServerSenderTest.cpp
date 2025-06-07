@@ -141,7 +141,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         player.x = 10.0f;
         player.y = 20.0f;
         player.data = PlayerData{
-            "Carlos", 45.0f, 3, 1500, 100,
+            "Carlos", 45.0f, 3, 1500, 10,
             {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY, true
         };
 
@@ -207,7 +207,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     EXPECT_FLOAT_EQ(player.rotation, 45.0f);
     EXPECT_EQ(player.lastMoveId, 3);
     EXPECT_EQ(player.money, 1500);
-    EXPECT_EQ(player.health, 100);
+    EXPECT_EQ(player.health, 10);
     EXPECT_EQ(player.inventory.primary, M3);
     EXPECT_EQ(player.inventory.secondary, GLOCK);
     EXPECT_EQ(player.inventory.bulletsPrimary, 10);

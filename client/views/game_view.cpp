@@ -136,7 +136,8 @@ void GameView::showFov() {
         tWidth,
         tHeight);
 
-    renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point(tWidth / 2.0f, tHeight / 2.0f), SDL_FLIP_NONE);
+    //renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point(tWidth / 2.0f, tHeight / 2.0f), SDL_FLIP_NONE);
+    renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point{static_cast<int>(tWidth / 2.0f), static_cast<int>(tHeight / 2.0f)}, SDL_FLIP_NONE);
 }
 
 

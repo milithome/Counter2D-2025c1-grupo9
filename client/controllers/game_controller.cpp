@@ -8,7 +8,6 @@ GameController::GameController(GameView& view, Game& game, const std::string& pl
     : view(view), game(game), player_name(player_name) {
 }
 
-
 void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
@@ -102,7 +101,6 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         game.execute(player_name, action);
     }
 }
-
 
 void GameController::onKeyReleased(const SDL_Event& event) {
     switch (event.key.keysym.sym) {
@@ -362,7 +360,6 @@ void GameController::processEvents() {
         }
     }
 }
-
 
 void GameController::onWindowEvent(const SDL_Event& event) {
     switch (event.window.event) {

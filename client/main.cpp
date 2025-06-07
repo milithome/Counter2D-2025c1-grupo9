@@ -40,9 +40,9 @@ int main(int argc, char **argv) try {
         std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
         return 1;
     }
-	// game_run(argv[1]);
+	//game_run(argv[1]);
 
-	Client client = Client(argv[1], NAME_SERVER, PORT);
+	Client client(argv[1], NAME_SERVER, PORT);
 	client.run();
 
 	return 0;
