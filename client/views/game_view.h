@@ -41,7 +41,7 @@ struct DeathEffect {
     float dead_body_rotation;
     //Surface dead_body_skin;
     float time_left;
-    int alpha = 255;
+    int alpha;
 };
 
 #define PARTICLE_SIZE 2
@@ -312,7 +312,7 @@ private:
         return dis(gen);
     }
 
-
+    bool test = true;
 
 };
 

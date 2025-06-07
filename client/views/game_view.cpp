@@ -66,6 +66,7 @@ void GameView::update(float deltaTime) {
     showBloodEffects(cameraX, cameraY, deltaTime);
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
+    showDeathAnimations(cameraX, cameraY, deltaTime);
 
     if (!shopIsVisible) {
         showInterface();
@@ -299,11 +300,13 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 PlayerData data = std::get<PlayerData>(gameState[i].data);
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
-                /*
                 if (!data.alive) {
+                    if (test) {
+                        test = false;
+                        death_effects.push_back(DeathEffect{playerX, playerY, data.rotation, DEATH_DURATION, 255});
+                    }
                     continue;
                 }
-                */
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
 
@@ -348,7 +351,7 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
 
     Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
     for (auto it = death_effects.begin(); it < death_effects.end();) {
-        DeathEffect death = *it;
+        DeathEffect& death = *it;
 
         if (death.time_left <= 0) {
             it = death_effects.erase(it);
@@ -359,6 +362,7 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
         
 
         death.alpha -= (255 * deltaTime) / DEATH_DURATION;
+        std::cout << death.alpha << std::endl;
         if (death.alpha < 0) {
             death.alpha = 0;
         }
@@ -943,7 +947,7 @@ void GameView::addBulletEffects(Shot shot) {
 }
 
 void GameView::addDeathEffect(float x, float y, float angle) {
-    death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION});
+    death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION, 255});
 }
 
 

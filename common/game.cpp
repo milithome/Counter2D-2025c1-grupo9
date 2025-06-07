@@ -446,12 +446,8 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   if (shooter.getShootCooldown() > 0) {
     return;
   }
-  std::cout << "Balas actuales: " << shooter.getBullets()
-          << ", Balas necesarias: " << shooter.getBulletsPerShoot()
-          << std::endl;
 
   if (shooter.getBullets() < shooter.getBulletsPerShoot()) {
-      std::cout << "No se puede disparar: no hay suficientes balas" << std::endl;
       return;
   }
 
