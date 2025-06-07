@@ -44,6 +44,8 @@ struct DeathEffect {
     int alpha;
 };
 
+#define FOV M_PI/2
+
 #define PARTICLE_SIZE 2
 #define PARTICLE_ACCELERATION -60
 
@@ -302,6 +304,7 @@ private:
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+    void showFov();
 
     void showInterface();
     void showShop();

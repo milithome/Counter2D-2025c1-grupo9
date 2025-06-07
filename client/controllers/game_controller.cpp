@@ -324,28 +324,8 @@ void GameController::processEvents() {
     while (SDL_PollEvent(&e)) {
         SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
         switch (eventType) {
-            case SDL_KEYDOWN: {
-                onKeyPressed(e);
-                break;
-            }
-            case SDL_KEYUP: {
-                onKeyReleased(e);
-                break;
-            }
             case SDL_QUIT: {
                 onQuitPressed();
-                break;
-            }
-            case SDL_MOUSEMOTION: {
-                onMouseMovement();
-                break;
-            }
-            case SDL_MOUSEBUTTONDOWN: {
-                onMouseLeftClick(e);
-                break;
-            }
-            case SDL_MOUSEBUTTONUP: {
-                onMouseLeftClickReleased(e);
                 break;
             }
             case SDL_WINDOWEVENT: {
@@ -353,6 +333,34 @@ void GameController::processEvents() {
             }
             default: {
                 break;
+            }
+        }
+        PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
+        if (data.alive) {
+            switch (eventType) {
+                case SDL_KEYDOWN: {
+                    onKeyPressed(e);
+                    break;
+                }
+                case SDL_KEYUP: {
+                    onKeyReleased(e);
+                    break;
+                }
+                case SDL_MOUSEMOTION: {
+                    onMouseMovement();
+                    break;
+                }
+                case SDL_MOUSEBUTTONDOWN: {
+                    onMouseLeftClick(e);
+                    break;
+                }
+                case SDL_MOUSEBUTTONUP: {
+                    onMouseLeftClickReleased(e);
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         }
     }

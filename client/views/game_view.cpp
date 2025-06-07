@@ -67,6 +67,7 @@ void GameView::update(float deltaTime) {
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
     showDeathAnimations(cameraX, cameraY, deltaTime);
+    showFov();
 
     if (!shopIsVisible) {
         showInterface();
@@ -75,8 +76,67 @@ void GameView::update(float deltaTime) {
         showShop();
     }
 
-
     renderer.Present();
+}
+
+
+void GameView::showFov() {
+    float angle = game.getRotation(playerName);
+    int width = renderer.GetOutputWidth() ;
+    int height = renderer.GetOutputHeight();
+    int tWidth = width * 3;
+    int tHeight = height * 3;
+
+
+    Texture visionTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        tWidth,
+        tHeight);
+    visionTexture.SetBlendMode(SDL_BLENDMODE_MOD);
+    
+    renderer.SetTarget(visionTexture);
+    
+    renderer.SetDrawColor(0, 0, 0, 200);
+    renderer.Clear();
+
+
+    float cx = tWidth / 2.0f;
+    float cy = tHeight / 2.0f;
+
+    float half_angle = FOV / 2.0f;
+    float radius = 50 * BLOCK_SIZE;
+
+    SDL_Vertex verts[3];
+    verts[0].position = {cx, cy};
+    verts[0].color = {255, 255, 255, 255};
+
+
+    verts[1].position = {
+        cx + radius * std::cos(-half_angle),
+        cy + radius * std::sin(-half_angle)
+    };
+    verts[1].color = {255, 255, 255, 255};
+ 
+    verts[2].position = {
+        cx + radius * std::cos(half_angle),
+        cy + radius * std::sin(half_angle)
+    };
+    verts[2].color = {255, 255, 255, 255};
+
+    // Usamos la API raw de SDL porque SDL2pp no tiene RenderGeometry
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts, 3, nullptr, 0);
+
+    renderer.SetTarget();
+
+    Rect dst = Rect(
+        -tWidth / 3,
+        -tHeight / 3,
+        tWidth,
+        tHeight);
+
+    renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point(tWidth / 2.0f, tHeight / 2.0f), SDL_FLIP_NONE);
 }
 
 
