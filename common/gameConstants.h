@@ -31,6 +31,11 @@ struct DroppedWeapon {
 #define MAX_PLAYERS_PER_TEAM 5
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
+#define WEAPON_WIDTH 0.7f
+#define WEAPON_HEIGHT 0.7f
+#define BOMB_WIDTH 0.7f
+#define BOMB_HEIGHT 0.7f
+
 #define AMMO_PRICE 40
 #define MAX_HEALTH 1000
 

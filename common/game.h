@@ -53,6 +53,8 @@ private:
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
   std::tuple<float, float, float, float> getPlayerHitbox(const Player& player) const;
   PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
+  bool rectsOverlap(float ax, float ay, float aw, float ah,
+                  float bx, float by, float bw, float bh);
   void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player& player);
   float randomFloatInRange(float min, float max);

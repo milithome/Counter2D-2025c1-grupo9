@@ -505,14 +505,40 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     }
 }
 
-void Game::grab(const std::string &name) { //TODO
-  (void)name;
-  //Player& player = findPlayerByName(name);
-  if (spike.isDropped){
-    //chequear si colisiona con la spike
-  }
-  //for armas dropeadas, ver si colisiona con alguna
+bool Game::rectsOverlap(float ax, float ay, float aw, float ah,
+                  float bx, float by, float bw, float bh) {
+    return (ax < bx + bw) && (ax + aw > bx) &&
+           (ay < by + bh) && (ay + ah > by);
 }
+
+void Game::grab(const std::string &name) {
+  Player& player = findPlayerByName(name);
+
+  if (spike.isDropped) {
+    if (rectsOverlap(player.getX(), player.getY(), player.getHitbox().getWidth(), player.getHitbox().getHeight(),
+                     spike.position.x, spike.position.y, BOMB_WIDTH, BOMB_HEIGHT)) {
+      player.setHasSpike(true);
+      spike.isDropped = false;
+      return;
+    }
+  }
+
+  for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end(); ++weapon) {
+    if (rectsOverlap(player.getX(), player.getY(), player.getHitbox().getWidth(), player.getHitbox().getHeight(),
+                     weapon->x, weapon->y, WEAPON_WIDTH, WEAPON_HEIGHT)) {
+
+      droppedWeapons.erase(weapon);
+      Weapon pw =player.getPrimaryWeapon();
+      if(pw.name != WeaponName::NONE){
+        dropWeapon(pw, player.getX(), player.getY());
+      }
+      
+      player.replaceWeapon(weapon->name);
+      return;
+    }
+  }
+}
+
 
 void Game::dropWeapon(const Weapon& weapon, float x, float y) {
   droppedWeapons.push_back({weapon.name, x, y});
