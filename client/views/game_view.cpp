@@ -67,7 +67,7 @@ void GameView::update(float deltaTime) {
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
     showDeathAnimations(cameraX, cameraY, deltaTime);
-    showFov();
+    // showFov();
 
     if (!shopIsVisible) {
         showInterface();
@@ -199,7 +199,7 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         float dot = (bullet.target_x - prev_x) * (bullet.target_x - bullet.x) + (bullet.target_y - prev_y) * (bullet.target_y - bullet.y);
 
         if (dot < 0.0f) {
-            if (bullet.impact == HUMAN) { // impacto en un jugador
+            if (bullet.impact == HUMAN) {
                 HitEffect blood;
                 for (uint32_t i = 0; i < BLOOD_EFFECT_PARTICLES; i++) {
                     Particle blood_drop{
@@ -366,10 +366,6 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 float playerX = gameState[i].x;
                 float playerY = gameState[i].y;
                 if (!data.alive) {
-                    if (test) { // temporal, cuando el cliente este conectado al server ya no va a ser necesario esto
-                        test = false;
-                        death_effects.push_back(DeathEffect{playerX, playerY, data.rotation, DEATH_DURATION, 255});
-                    }
                     continue;
                 }
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);

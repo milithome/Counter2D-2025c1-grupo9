@@ -316,7 +316,6 @@ private:
         return dis(gen);
     }
 
-    bool test = true; // temporal, cuando el cliente este conectado al server ya no va a ser necesario esto
 
 };
 

@@ -163,6 +163,7 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
 void Game::updatePlayerHealth(const std::string &name, int health) {
   Player& player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
+  std::cout << health << std::endl;
 }
 
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
@@ -310,7 +311,7 @@ StateGame Game::getState() {
     entities.push_back(getPlayerState(player.getName()));
   }
   state.entities = entities;
-  //state.shots= shot_queue; TODO
+  state.shots= shot_queue;
   return state;
 }
 

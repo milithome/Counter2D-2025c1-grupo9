@@ -22,7 +22,6 @@ void GameController::update(float deltaTime) {
         float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
         soundHandler.playShotSound(distance, shot.weapon);
     }
-
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
