@@ -1,23 +1,47 @@
 #include "game.h"
 
+Game::Game(std::vector<std::vector<CellType>> game_map)
+    : map(std::move(game_map)) {
+    teamA.setRole(Role::COUNTER_TERRORIST);
+    teamB.setRole(Role::TERRORIST);
+    spawnTeamTerrorist = map.findSpawnTeam(false); //true para terrorist
+    spawnTeamCounter = map.findSpawnTeam(true);
+}
+
 bool Game::addPlayer(const std::string &name) {
-  Player newPlayer(name);
-  newPlayer.setPosition(2, 2); // ahora mismo hardcodeo una cualquiera
-  if (team1.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    team1.addPlayer(newPlayer);
-    players.push_back(newPlayer);
-    // newPlayer.setTeam(1);
+  players.emplace_back(name);
+  Player& player= findPlayerByName(name);
+  if (teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
+    teamA.addPlayer(player);
+    player.setRole(teamA.getRole());
+    placePlayerInSpawnTeam(player);
     return true;
   }
-
-  if (team2.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
-    team2.addPlayer(newPlayer);
-    players.push_back(newPlayer);
-    // newPlayer.setTeam(2);
+  if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
+    teamB.addPlayer(player);
+    player.setRole(teamB.getRole());
+    placePlayerInSpawnTeam(player);
     return true;
   }
-
   return false;
+}
+
+float Game::randomFloatInRange(float min, float max) {
+    return min + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX) + 1) * (max - min);
+}
+
+void Game::placePlayerInSpawnTeam(Player& player) {
+    std::vector<std::pair<int, int>>& spawn = 
+    (player.getRole() == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
+
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    auto [row, col] = spawn[std::rand() % spawn.size()];
+
+    float x = randomFloatInRange(static_cast<float>(col), static_cast<float>(col + 1));
+    float y = randomFloatInRange(static_cast<float>(row), static_cast<float>(row + 1));
+
+    player.setPosition(x, y);
 }
 
 Player &Game::findPlayerByName(const std::string &name) {
@@ -41,68 +65,27 @@ void Game::movePlayer(const std::string &name, float vx, float vy,
   player.updateVelocity(vx, vy);
 }
 
-bool Game::isColliding(float x, float y, float width, float height) const {
-  const float epsilon = 0.1f;
-  float left = x + epsilon;
-  float right = x + width - epsilon;
-  float top = y + epsilon;
-  float bottom = y + height - epsilon;
-
-  int leftCell = static_cast<int>(std::floor(left));
-  int rightCell = static_cast<int>(std::floor(right));
-  int topCell = static_cast<int>(std::floor(top));
-  int bottomCell = static_cast<int>(std::floor(bottom));
-
-  for (int row = topCell; row <= bottomCell; ++row) {
-    for (int col = leftCell; col <= rightCell; ++col) {
-      if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-          col >= static_cast<int>(map[row].size())) {
-        continue;
-      }
-      if (map[row][col] == CellType::Blocked) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
 // plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o
 // defiende
 void Game::plantBomb(
-    const std::string
-        &name) { // ahora se planta automaticamente, falta un update y que
+  const std::string &name) { // ahora se planta automaticamente, falta un update y que
                  // despues de x tiempo se cambie a true
   Player& player = findPlayerByName(name);
-  if (!player.getHasTheSpike()) { // falta agregar si puede defusear o sea si
-                                  // esta defendiendo
+  if (!player.getHasTheSpike()) { //solo puede tenerla si es atacante
     return;
   }
-  Hitbox hb = player.getHitbox();
-  float x = player.getX();
-  float y = player.getY();
-  float width = hb.getWidth();
-  float height = hb.getHeight();
+  auto [x, y, width, height] = getPlayerHitbox(player);
+  PlayerCellBounds bounds = getCellBounds(x, y, width, height);
 
-  float left = x;
-  float right = x + width;
-  float top = y;
-  float bottom = y + height;
-
-  int leftCell = static_cast<int>(std::floor(left));
-  int rightCell = static_cast<int>(std::floor(right));
-  int topCell = static_cast<int>(std::floor(top));
-  int bottomCell = static_cast<int>(std::floor(bottom));
-
-  for (int row = topCell; row <= bottomCell; ++row) {
-    for (int col = leftCell; col <= rightCell; ++col) {
-      if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-          col >= static_cast<int>(map[row].size())) {
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
+      if (!map.isValidCell(row, col)) {
         continue;
       }
-      if (map[row][col] == CellType::SpikeSite) {
+      if (map.isSpikeSite(row, col)) {
         spike.position.x = row;
         spike.position.y = col;
-        spike.isPlanted = true;
+        spike.isPlanted = true; //todo sacar de aca y hacerlo en update
         return;
       }
     }
@@ -118,12 +101,68 @@ void Game::updatePlanting(const std::string &name) {
   findPlayerByName(name).updateIsPlanting(false);
 }
 
-void Game::defuseBomb(const std::string &playerName) { (void)playerName; }
+std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player& player) const {
+    Hitbox hb = player.getHitbox();
+    float x = player.getX();
+    float y = player.getY();
+    float width = hb.getWidth();
+    float height = hb.getHeight();
+    return {x, y, width, height};
+}
+
+
+PlayerCellBounds Game::getCellBounds(float x,float y, float width, float height) const {
+
+    float left = x;
+    float right = x + width;
+    float top = y;
+    float bottom = y + height;
+
+    PlayerCellBounds bounds;
+    bounds.leftCell = static_cast<int>(std::floor(left));
+    bounds.rightCell = static_cast<int>(std::floor(right));
+    bounds.topCell = static_cast<int>(std::floor(top));
+    bounds.bottomCell = static_cast<int>(std::floor(bottom));
+
+    return bounds;
+}
+
+void Game::defuseBomb(const std::string &name) { 
+  Player& player = findPlayerByName(name);
+  if (player.getRole()==Role::TERRORIST) { //solo puede defusear si es defensor
+    return;
+  }
+  auto [x, y, width, height] = getPlayerHitbox(player);
+  PlayerCellBounds bounds = getCellBounds(x, y, width, height);
+
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
+      if (!map.isValidCell(row, col)) {
+        continue;
+      }
+      if (map.isSpikeSite(row, col)) {
+        spike.position.x = row;
+        spike.position.y = col;
+        spike.isPlanted = false; //todo sacar de aca y hacerlo en update
+        return;
+      }
+    }
+  }
+  return;
+}
 
 void Game::stopDefuse(const std::string &playerName) { (void)playerName; }
 
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
+}
+
+// Manuel: puse esto pq es necesario para sincronizar el cliente
+// Esta asi de forma medio hack, despues vos cambialo si queres pero la idea era q la vida del jugador
+// se actualice a la pasada por parametro
+void Game::updatePlayerHealth(const std::string &name, int health) {
+  Player& player = findPlayerByName(name);
+  player.updateHealth(health - player.getHealth());
 }
 
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
@@ -134,19 +173,23 @@ void Game::updatePlayerMovement(Player &player, float deltaTime) {
   float newY = newPos.second;
   float width = hb.getWidth();
   float height = hb.getHeight();
-
   float originalX = player.getX();
   float originalY = player.getY();
+  PlayerCellBounds bounds = getCellBounds(newX, newY, width, height); 
 
-  if (!isColliding(newX, newY, width, height)) {
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, false);
     return;
   }
-
-  if (!isColliding(newX, originalY, width, height)) {
+  bounds = getCellBounds(newX, originalY, width, height); 
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, true, false);
-  } else if (!isColliding(originalX, newY, width, height)) {
+    return;
+  } 
+  bounds = getCellBounds(originalX, newY, width, height); 
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, true);
+    return;
   }
 }
 
@@ -181,6 +224,82 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   }
 }
 
+int Game::checkRoundWinner() {
+    if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0) {
+        teamA.incrementRoundsWon();
+        return 1;
+    }
+    if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0) {
+        teamB.incrementRoundsWon();
+        return 2;
+    }
+    return 0;
+}
+
+
+
+void Game::updateGamePhase(float deltaTime) { 
+  switch (phase) {
+    case Phase::PURCHASE:
+      purchaseElapsedTime +=deltaTime;
+      if(purchaseElapsedTime >= purchaseDuration){
+        isBombPlanted=false;
+        purchaseElapsedTime = 0.0f;
+        phase=Phase::BOMB_PLANTING;
+      }
+    break;
+
+    case Phase::BOMB_PLANTING:
+      plantingElapsedTime +=deltaTime;
+      if(checkRoundWinner() !=0 || plantingElapsedTime >= timeToPlantBomb){ //pierden atacantes
+        isBombPlanted=false;
+        plantingElapsedTime=0.0f;
+        phase=Phase::PURCHASE;
+        updateRounds();
+      }
+      if(isBombPlanted){ 
+        phase=Phase::BOMB_DEFUSING;
+      }
+    break;
+
+    case Phase::BOMB_DEFUSING:
+      bombElapsedTime +=deltaTime;
+      if(checkRoundWinner() !=0 || bombElapsedTime >=timeUntilBombExplode){ //pierden defensores
+        bombElapsedTime = 0.0f;
+        isBombPlanted = false;
+        phase=Phase::PURCHASE;
+        updateRounds();
+      }
+
+    break;
+
+    default:
+    break;
+  }
+}
+void Game::updateRounds(){
+  teamA.restartPlayersAlive(); //contador en team y vida de c/u
+  teamB.restartPlayersAlive();
+  roundNumber+=1;
+  roundsUntilRoleChange-=1;
+  roundsUntilEndGame-=1;
+  if(roundsUntilRoleChange==0){
+    teamA.invertRole();
+    teamB.invertRole();
+    placeTeamsInSpawn();
+    
+  }
+  if(roundsUntilEndGame==0){
+    running = false;
+  }
+}
+
+void Game::placeTeamsInSpawn(){
+  for (auto &player : players) {
+    placePlayerInSpawnTeam(player);
+  }
+}
+
 StateGame Game::getState() {
   StateGame state;
   state.phase = phase;
@@ -188,28 +307,10 @@ StateGame Game::getState() {
   std::vector<Entity> entities;
 
   for (const auto &player : players) {
-    Entity entity;
-    entity.type = PLAYER;
-    entity.x = player.getX();
-    entity.y = player.getY();
-    Inventory inv;
-    inv.primary = player.getPrimaryWeaponName();
-    inv.secondary = player.getSecondaryWeaponName();
-    inv.bulletsPrimary = player.getBulletsPrimary();
-    inv.bulletsSecondary = player.getBulletsSecondary();
-    PlayerData data;
-    data.equippedWeapon = player.getTypeEquipped();
-    data.inventory = inv;
-    data.name = player.getName();
-    data.rotation = player.getRotation();
-    data.lastMoveId = player.getLastMoveId();
-    data.health = player.getHealth();
-    data.money = player.getMoney();
-    entity.data = data;
-    entities.push_back(entity);
+    entities.push_back(getPlayerState(player.getName()));
   }
   state.entities = entities;
-  //state.shots= shot_queue;
+  //state.shots= shot_queue; TODO
   return state;
 }
 
@@ -233,6 +334,7 @@ Entity Game::getPlayerState(const std::string& name) {
   data.lastMoveId = player.getLastMoveId();
   data.health = player.getHealth();
   data.money = player.getMoney();
+  data.alive = player.isAlive();
   entity.data = data;
   return entity;
 }
@@ -242,7 +344,6 @@ bool Game::isRunning() { return running; }
 void Game::stop() { running = false; }
 
 void Game::makeShot(Player &shooter, const std::string &shooterName) {
-  // devolver a que le pegó, si a una pared o a un personaje
   int bullets = shooter.getBulletsPerShoot();
   if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
     shooter.updatePrimaryBullets(-bullets);
@@ -330,8 +431,9 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     float randomDamage = dis(gen);
 
     float finalDamage = std::min(clampedDamage, randomDamage);
+    int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
-    target.updateHealth(-finalDamage);
+    target.updateHealth(-finalDamageInt);
 }
 
 
@@ -397,12 +499,11 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const {
     int row = static_cast<int>(std::floor(y));
     int col = static_cast<int>(std::floor(x));
 
-    if (row < 0 || col < 0 || row >= static_cast<int>(map.size()) ||
-        col >= static_cast<int>(map[row].size())) {
+    if (!map.isValidCell(row,col)) {
       break;
     }
 
-    if (map[row][col] == CellType::Blocked) { // colisión con la pared
+    if (map.isBlocked(row,col)) { // colisión con la pared
       return std::make_pair(x, y);
     }
 

@@ -18,17 +18,19 @@ public:
 
   int getRoundsWon() const;
 
-  void updatePlayersAlive();
-
   void incrementRoundsWon();
 
   void setRole(Role rol);
 
   void invertRole();
 
+  Role getRole();
+
   int getTeamSize();
 
   void restartPlayersAlive();
+
+  int getPlayersAlive() const;
 };
 
 #endif

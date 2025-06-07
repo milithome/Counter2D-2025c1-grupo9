@@ -1,6 +1,10 @@
+#ifndef GAME_H
+#define GAME_H
 #include "player.h"
 #include "store.h"
+#include "gameMap.h"
 #include "structures.h"
+#include "gameConstants.h"
 #include "team.h"
 #include <algorithm>
 #include <cmath>
@@ -11,20 +15,23 @@
 #include <random>
 #include <string>
 #include <vector>
-#ifndef GAME_H
-#define GAME_H
 
 class Game {
 private:
   std::vector<Player> players;
-  Team team1;
-  Team team2;
+  Team teamA;
+  Team teamB;
+  int roundNumber = 1;
+  int roundsUntilRoleChange = INITIAL_ROUNDS_UNTIL_ROLE_CHANGE;
+  int roundsUntilEndGame = INITIAL_ROUNDS_UNTIL_END_GAME;
+  Phase phase= Phase::PURCHASE;
+  std::vector<std::pair<int, int>> spawnTeamTerrorist;
+  std::vector<std::pair<int, int>> spawnTeamCounter;
   bool running = true;
   float time;
-  Phase phase;
   Spike spike;
   std::queue<Shot> shot_queue;
-  std::vector<std::vector<CellType>> map;
+  GameMap map;
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter, const std::string &shooterName);
   void plantBomb(const std::string &name);
@@ -36,17 +43,32 @@ private:
   rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const;
   void buyWeapon(const std::string &name, WeaponName weaponName);
   void buyBullet(const std::string &name, WeaponType weaponName);
-  bool isColliding(float x, float y, float width, float height) const;
   void updatePlayerMovement(Player &player, float deltaTime);
   void updateDefusing(const std::string &name);
   void updatePlanting(const std::string &name);
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
+  std::tuple<float, float, float, float> getPlayerHitbox(const Player& player) const;
+  PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
   
-public:
-  Game(std::vector<std::vector<CellType>> game_map)
-      : map(std::move(game_map)) {}
+  void placePlayerInSpawnTeam(Player& player);
+  float randomFloatInRange(float min, float max);
+  void updateGamePhase(float deltaTime);
+  float bombElapsedTime = 0.0f;
+  float plantingElapsedTime = 0.0f;
+  float purchaseElapsedTime = 0.0f;
+  bool isBombPlanted = false;
+  float timeUntilBombExplode = BOMB_DURATION;
+  float purchaseDuration= PURCHASE_DURATION;
+  float timeToPlantBomb= TIME_TO_PLANT;
+  void updateRounds();
+  int checkRoundWinner();
+  
+  void placeTeamsInSpawn();
 
+public:
+  Game(std::vector<std::vector<CellType>> game_map);
+  
   // son privados
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
   void updateRotation(const std::string &name, float currentRotation);
@@ -56,6 +78,7 @@ public:
   void
   updatePlayerPosition(const std::string &name, float x,
                        float y); // público por tema de sincronizacion cliente
+  void updatePlayerHealth(const std::string &name, int health); // público por tema de sincronizacion cliente
   bool addPlayer(const std::string &name);
   StateGame getState();
   Entity getPlayerState(const std::string& name);

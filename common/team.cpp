@@ -5,6 +5,16 @@ void Team::addPlayer(const Player &player) {
   size++;
 }
 
+int Team::getPlayersAlive() const {
+    int aliveCount = 0;
+    for (const auto& player : players) {
+        if (player.isAlive()) {
+            aliveCount++;
+        }
+    }
+    return aliveCount;
+}
+
 int Team::getRoundsWon() const { return roundsWon; }
 
 void Team::incrementRoundsWon() { roundsWon++; }
@@ -23,14 +33,23 @@ void Team::invertRole() {
   }
 }
 
-void Team::setRole(Role rol) {
-  // cuando ya hayan entrado todos los jugadores, queremos un rol inicial random
-  // para cada equipo gestionar cual desde el juego
-  currentRole = rol;
+void Team::setRole(Role role) {
+  currentRole = role;
+  for (auto &player : players){
+    player.setRole(role);
+  }
 }
 
-void Team::updatePlayersAlive() { playersAlive = playersAlive - 1; }
+Role Team::getRole(){
+  return currentRole;
+}
 
-void Team::restartPlayersAlive() { playersAlive = players.size(); }
+void Team::restartPlayersAlive() { 
+  playersAlive = players.size(); 
+  for (auto &player : players){
+    player.restoreHealth();
+    player.setIsAlive(true);
+  }
+}
 
 int Team::getTeamSize() { return size; }

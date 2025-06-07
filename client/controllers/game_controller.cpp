@@ -13,10 +13,6 @@ void GameController::update(float deltaTime) {
 
     game.update(deltaTime);
 
-<<<<<<< HEAD
-    while (!game.bulletQueueIsEmpty()) {
-        view.addShotEffect(game.bulletQueuePop());
-=======
 
     float player_x = game.getX(player_name);
     float player_y = game.getY(player_name);
@@ -25,7 +21,6 @@ void GameController::update(float deltaTime) {
         view.addBulletEffects(shot);
         float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
         soundHandler.playShotSound(distance, shot.weapon);
->>>>>>> sound
     }
 
 }
@@ -281,7 +276,7 @@ void GameController::updateGameState(StateGame state) {
                     soundHandler.playDeathSound(distance);
                 }
                 // Actualizar vida
-                game.updatePlayerHealth(data.name, data.health);
+                game.updatePlayerHealth(serverData.name, serverData.health);
                 break;
             }
             case BOMB: {
@@ -300,24 +295,27 @@ void GameController::updateGameState(StateGame state) {
             }
         }
     }
-    std::queue<Shot> shots = state.shot;
-    while (!shots.empty()) {
-        Shot shot = shots.front();
-        shots.pop();
-        if (shot.origin_y = client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
-            continue;
-        }
+    // std::queue<Shot> shots = state.shot;
+    // while (!shots.empty()) {
+    //     Shot shot = shots.front();
+    //     shots.pop();
+    //     if (shot.origin_y = client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
+    //         continue;
+    //     }
 
-        view.addBulletEffects(shot);
+    //     view.addBulletEffects(shot);
 
-        float player_x = game.getX(player_name);
-        float player_y = game.getY(player_name);
-        float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
-        soundHandler.playShotSound(distance, shot.weapon);
+    //     float player_x = game.getX(player_name);
+    //     float player_y = game.getY(player_name);
+    //     float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+    //     soundHandler.playShotSound(distance, shot.weapon);
 
-    }
+    // }
     Phase phase = state.phase;
     (void)phase;
+
+    (void)client_player_x_from_server;
+    (void)client_player_y_from_server;
 }
 
 

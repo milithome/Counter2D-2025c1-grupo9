@@ -3,8 +3,6 @@
 
 std::string Player::getName() const { return name; }
 
-void Player::setRole(Role new_role) { role = new_role; }
-
 float Player::getX() const { return x; }
 
 float Player::getY() const { return y; }
@@ -74,25 +72,29 @@ void Player::setRotation(float currentRotation) { rotation = currentRotation; }
 
 const Hitbox &Player::getHitbox() const { return hitbox; }
 
-void Player::updateHealth(float value) {
+void Player::updateHealth(int value) {
   health += value;
-  if (health < 0.0f)
-    health = 0.0f;
+  if (health < 0){
+    health = 0;
+    alive=false;
+  }
 }
 
-void Player::setHealth(float value) {
-  health = value;
-  if (health < 0.0f)
-    health = 0.0f;
+void Player::restoreHealth(){
+  health = MAX_HEALTH;
+}
+
+void Player::setIsAlive(bool isAlive){
+  alive=isAlive;
 }
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
 }
 
-float Player::getHealth() const { return health; }
+int Player::getHealth() const { return health; }
 
-bool Player::isAlive() const { return health > 0.0f; }
+bool Player::isAlive() const { return alive; }
 
 void Player::updateVelocity(float newVx, float newVy) {
   if (newVx != 0.0f || newVy != 0.0f) {
@@ -249,3 +251,14 @@ int Player::getBullets(){
     return 1;
   }
 };
+
+void Player::setTeam(bool terrorist){
+  team=terrorist;
+}
+
+Role Player::getRole(){
+  return role;
+}
+void Player::setRole(Role newRole){
+  role=newRole;
+}

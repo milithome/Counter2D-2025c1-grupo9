@@ -286,6 +286,9 @@ void Protocol::serialize_entity(std::vector<uint8_t>& buf, const Entity& entity)
 }
 
 void Protocol::serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b) {
+    (void)b;
+    (void)buf;
+    /*
     float values[5] = {b.origin_x, b.origin_y, b.target_x, b.target_y, b.angle};
     for (int i = 0; i < 5; ++i) {
         uint32_t net;
@@ -293,6 +296,7 @@ void Protocol::serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b) {
         net = htonl(net);
         buf.insert(buf.end(), reinterpret_cast<uint8_t*>(&net), reinterpret_cast<uint8_t*>(&net) + sizeof(net));
     }
+    */
 }
 
 std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
@@ -740,6 +744,7 @@ WeaponData Protocol::recv_weapon_data() {
 }
 
 Bullet Protocol::recv_bullet() {
+    /*
     Bullet b;
     float* fields[5] = {&b.origin_x, &b.origin_y, &b.target_x, &b.target_y, &b.angle};
     for (int i = 0; i < 5; ++i) {
@@ -750,6 +755,8 @@ Bullet Protocol::recv_bullet() {
         std::memcpy(fields[i], &net, sizeof(float));
     }
     return b;
+    */
+   return Bullet{0, 0, 0, NOTHING};
 }
 
 Entity Protocol::deserialize_entity_player(float x, float y) {
