@@ -2,7 +2,7 @@
 #include <iostream>
 #include "common/structures.h"
 
-#define DESYNC_TOLERANCE 0.05
+#define DESYNC_TOLERANCE 0.2
 
 GameController::GameController(GameView& view, Game& game, const std::string& player_name)
     : view(view), game(game), player_name(player_name) {
@@ -23,19 +23,19 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         return;
     }
     switch (event.key.keysym.sym) {
-        case SDLK_UP: {
+        case SDLK_w: {
             movement_keys_vector[1] -= 1;
             break;
         }
-        case SDLK_DOWN: {
+        case SDLK_s: {
             movement_keys_vector[1] += 1;
             break;
         }
-        case SDLK_LEFT: {
+        case SDLK_a: {
             movement_keys_vector[0] -= 1;
             break;
         }
-        case SDLK_RIGHT: {
+        case SDLK_d: {
             movement_keys_vector[0] += 1;
             break;
         }
@@ -45,8 +45,8 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_1: {
-            // PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
-            if (true) { // el jugador tiene arma primaria
+            Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
+            if (inv.primary != WeaponName::NONE) {
                 Action action;
                 action.type = ActionType::CHANGE_WEAPON;
                 action.data = ChangeWeaponAction{WeaponType::PRIMARY};
@@ -69,8 +69,8 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
-            PlayerData playerData = std::get<PlayerData>(game.getPlayerState(player_name).data);
-            if (playerData.inventory.has_the_bomb) {
+            Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
+            if (inv.has_the_bomb) {
                 // Action action{ActionType::PLANT};
                 // game.execute(player_name, action);
                 return;
@@ -100,19 +100,19 @@ void GameController::onKeyPressed(const SDL_Event& event) {
 
 void GameController::onKeyReleased(const SDL_Event& event) {
     switch (event.key.keysym.sym) {
-        case SDLK_UP: {
+        case SDLK_w: {
             movement_keys_vector[1] += 1;
             break;
         }
-        case SDLK_DOWN: {
+        case SDLK_s: {
             movement_keys_vector[1] -= 1;
             break;
         }
-        case SDLK_LEFT: {
+        case SDLK_a: {
             movement_keys_vector[0] += 1;
             break;
         }
-        case SDLK_RIGHT: {
+        case SDLK_d: {
             movement_keys_vector[0] -= 1;
             break;
         }
@@ -167,7 +167,7 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
             uint32_t y = event.button.y;
 
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
-            if (inv.primary && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+            if (inv.primary != WeaponName::NONE  && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
                 Action action;
                 action.type = ActionType::BUY_BULLET;
                 action.data = BuyBulletAction{WeaponType::PRIMARY};
@@ -252,6 +252,7 @@ void GameController::updateGameState(StateGame state) {
                 game.updateRotation(data.name, data.rotation);
                 break;
             }
+
             default: {
                 break;
             }
@@ -298,9 +299,23 @@ void GameController::processEvents() {
                 onMouseLeftClickReleased(e);
                 break;
             }
+            case SDL_WINDOWEVENT: {
+                onWindowEvent(e);
+            }
             default: {
                 break;
             }
         }
+    }
+}
+
+
+void GameController::onWindowEvent(const SDL_Event& event) {
+    switch (event.window.event) {
+        case SDL_WINDOWEVENT_SIZE_CHANGED: {
+            view.resizeHud();
+            break;
+        }
+        default: break;
     }
 }

@@ -12,17 +12,7 @@ void RecvLoop::run() {
     try {
             while (should_keep_running()) {
                 Response msg = protocol.recv_response();
-                queue.try_push(msg);
-                // ActionEvent event;
-                // switch (msg.type)
-                // {
-                // case Type::ACTION:
-                //     event.action = msg.action;
-                //     queue.try_push(std::move(event));
-                //     break;
-                // default:
-                //     break;
-                // }
+                queue.push(msg);
             }
     } catch (const std::exception& e) {
         std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;

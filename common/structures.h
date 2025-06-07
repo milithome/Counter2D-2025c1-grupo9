@@ -205,10 +205,11 @@ struct Response {
 
 // Mensaje enviado por el cliente al servidor
 struct Message {
-  Type type;
-  uint16_t size;
-  std::string name;
-  Action action;
+    Type type;
+    uint16_t size;
+    std::string name;
+    Action action;
+    std::string clientName;
 };
 
 // Estructuras del servidor
@@ -225,12 +226,14 @@ struct ActionRequest {
 };
 
 struct LobbyChannels {
-  std::shared_ptr<Queue<LobbyRequest>> toLobby;
-  std::shared_ptr<Queue<LobbyRequest>> fromLobby;
+    std::shared_ptr<Queue<LobbyRequest>> toLobby;
+    std::shared_ptr<Queue<Response>> fromLobby;
 };
 
 struct GameChannels {
-  std::shared_ptr<Queue<ActionRequest>> toGame;
-  std::shared_ptr<Queue<ActionRequest>> fromGame;
+    std::shared_ptr<Queue<ActionRequest>> toGame;
+    std::shared_ptr<Queue<Response>> fromGame;
 };
+
+
 #endif

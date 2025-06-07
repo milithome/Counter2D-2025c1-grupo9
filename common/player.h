@@ -15,13 +15,13 @@ private:
   Role role;
   bool team= false; //true es A, false es B
   int money = 1000;
-  Weapon equipped = Weapons::AK47;
-  WeaponType typeEquipped = WeaponType::PRIMARY;
+  Weapon equipped = Weapons::Glock;
+  WeaponType typeEquipped = WeaponType::SECONDARY;
   Weapon knife = Weapons::Knife;
   Weapon primaryWeapon = Weapons::None;
   Weapon secondaryWeapon = Weapons::Glock;
-  uint32_t bulletsPrimary = 10;
-  uint32_t bulletsSecondary = 10;
+  uint32_t bulletsPrimary = 0;
+  uint32_t bulletsSecondary = 0;
   float rotation;
   int health = 100;
   float vx = 0, vy = 0;
@@ -63,7 +63,7 @@ public:
   Weapon getEquipped();
   WeaponName getPrimaryWeaponName() const;
   WeaponName getSecondaryWeaponName() const;
-  WeaponType getTypeEquipped();
+  WeaponType getTypeEquipped() const;
   float getRotation() const;
   float getShootCooldown();
   float getSpreadAngle();

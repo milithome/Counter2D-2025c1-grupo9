@@ -218,7 +218,7 @@ void Player::resetSecondaryBullets() { // llenar cargador
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
 
-WeaponType Player::getTypeEquipped() { return typeEquipped; }
+WeaponType Player::getTypeEquipped() const { return typeEquipped; }
 
 float Player::getTimeLastBullet() { return timeLastBullet; }
 

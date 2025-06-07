@@ -8,7 +8,9 @@
 class SdlHBoxContainer : public SdlWidget {
 
 public:
-    SdlHBoxContainer(SDL2pp::Rect& rect, std::vector<std::reference_wrapper<SdlWidget>> children) : SdlWidget(rect), rect(rect), children(children) { build(); };
+    SdlHBoxContainer(SDL2pp::Rect rect, std::vector<std::reference_wrapper<SdlWidget>> children) : SdlWidget(rect), rect(rect), children(children) { build(); };
+
+    SdlHBoxContainer() {}
 
     void setSpacing(int amount) { spacing = amount; }
     void build() {
@@ -30,10 +32,15 @@ public:
         }
     }
 
+    void addChild(std::reference_wrapper<SdlWidget> child) {
+        children.push_back(child);
+        build();
+    }
+
 
 
 private:
-    SDL2pp::Rect& rect;
+    SDL2pp::Rect rect;
     std::vector<std::reference_wrapper<SdlWidget>> children;
     int spacing = 0;
 };
