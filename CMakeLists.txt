@@ -122,13 +122,12 @@ endif()
 # ---------------
 if(TALLER_CLIENT)
 
-
-
-
     file(GLOB_RECURSE SOURCES
         client/*.cpp
         client/views/*.cpp
+        client/views/components/*.cpp
         client/controllers/*.cpp
+        client/receivers&senders/*.cpp
     )
     # HEY!! TODO XXX: Change the name of the executable to the one you like!
     #add_executable(taller_client)
