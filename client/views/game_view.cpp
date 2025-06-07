@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 
 GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
-    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()) {
+    : window(createWindow(window_pos)), renderer(createRenderer(window)), game(game), playerName(playerName), map(map), mapTiles(Texture(renderer, map.get_sprite_path())), backgroundTexture(renderer, map.get_background_path()), bloodTexture(createBloodTexture()), sparkTexture(createSparkTexture()) {
         renderer.SetDrawColor(0, 0, 0, 255);
         renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
 
@@ -57,6 +57,8 @@ void GameView::update(float deltaTime) {
     showBackground();
     showMap(cameraX, cameraY);
     showBullets(cameraX, cameraY, deltaTime);
+    showBloodEffects(cameraX, cameraY, deltaTime);
+    showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
 
     if (!shopIsVisible) {
@@ -125,6 +127,32 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         float dot = (shot.target_x - prev_x) * (shot.target_x - shot.x) + (shot.target_y - prev_y) * (shot.target_y - shot.y);
 
         if (dot < 0.0f) {
+            if (false) { // impacto en un jugador
+                HitEffect blood;
+                for (uint32_t i = 0; i < BLOOD_EFFECT_PARTICLES; i++) {
+                    Particle blood_drop{
+
+                        shot.target_x, 
+                        shot.target_y, 
+                        randomFloat(BLOOD_PARTICLE_MIN_SPEED, BLOOD_PARTICLE_MAX_SPEED),
+                        randomFloat(shot.angle - BLOOD_PARTICLE_DISPERSION, shot.angle + BLOOD_PARTICLE_DISPERSION),
+                        randomFloat(BLOOD_PARTICLE_MIN_DURATION, BLOOD_PARTICLE_MAX_DURATION)};
+                    blood.particles.push_back(blood_drop);
+                }
+                blood_effects.push_back(blood);
+            } else if (true) {
+                HitEffect sparks;
+                for (uint32_t i = 0; i < SPARK_EFFECT_PARTICLES; i++) {
+                    Particle spark{
+                        shot.target_x, 
+                        shot.target_y, 
+                        randomFloat(SPARK_PARTICLE_MIN_SPEED, SPARK_PARTICLE_MAX_SPEED),
+                        randomFloat(0.0f, 360.0f),
+                        randomFloat(SPARK_PARTICLE_MIN_DURATION, SPARK_PARTICLE_MAX_DURATION)};
+                    sparks.particles.push_back(spark);
+                }
+                sparks_effects.push_back(sparks);
+            }
             it = shot_effects.erase(it);
             continue;
         }
@@ -161,6 +189,99 @@ void GameView::showBullets(float cameraX, float cameraY, float deltaTime) {
         ++it;
     }
 }
+
+void GameView::showBloodEffects(float cameraX, float cameraY, float deltaTime) {
+    renderer.SetDrawColor(0, 0, 0, 255);
+    for (auto it = blood_effects.begin(); it != blood_effects.end();) {
+        HitEffect& hitEffect = *it;
+
+        for (auto pit = hitEffect.particles.begin(); pit != hitEffect.particles.end();) {
+            Particle& particle = *pit;
+            if (particle.time_left <= 0) {
+                pit = hitEffect.particles.erase(pit);
+                continue;
+            }
+            particle.time_left -= deltaTime; 
+
+            float radians = particle.angle * M_PI / 180.0 ;
+            float dx = std::cos(radians);
+            float dy = std::sin(radians);
+
+            particle.x += dx * std::max(particle.speed * deltaTime + PARTICLE_ACCELERATION/2 * deltaTime * deltaTime, 0.0f);
+            particle.y += dy * std::max(particle.speed * deltaTime + PARTICLE_ACCELERATION/2 * deltaTime * deltaTime, 0.0f);
+            particle.speed = std::max(particle.speed + PARTICLE_ACCELERATION * deltaTime, 0.0f);
+
+            Rect dst(
+                cameraX + particle.x * BLOCK_SIZE, 
+                cameraY + particle.y * BLOCK_SIZE, 
+                PARTICLE_SIZE, 
+                PARTICLE_SIZE);
+            
+            renderer.Copy(
+                bloodTexture, 
+                NullOpt, 
+                dst, 
+                particle.angle - 90.0f, 
+                Point(0, PARTICLE_SIZE / 2), 
+                SDL_FLIP_NONE);
+                
+            ++pit;
+        }
+        if (hitEffect.particles.empty()) {
+            it = blood_effects.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
+
+void GameView::showSparksEffects(float cameraX, float cameraY, float deltaTime) {
+    renderer.SetDrawColor(0, 0, 0, 255);
+    for (auto it = sparks_effects.begin(); it != sparks_effects.end();) {
+        HitEffect& hitEffect = *it;
+
+        for (auto pit = hitEffect.particles.begin(); pit != hitEffect.particles.end();) {
+            Particle& particle = *pit;
+            if (particle.time_left <= 0 || particle.speed <= 0) {
+                pit = hitEffect.particles.erase(pit);
+                continue;
+            }
+            particle.time_left -= deltaTime; 
+
+            float radians = particle.angle * M_PI / 180.0 ;
+            float dx = std::cos(radians);
+            float dy = std::sin(radians);
+
+            particle.x += dx * std::max(particle.speed * deltaTime + PARTICLE_ACCELERATION/2 * deltaTime * deltaTime, 0.0f);
+            particle.y += dy * std::max(particle.speed * deltaTime + PARTICLE_ACCELERATION/2 * deltaTime * deltaTime, 0.0f);
+            particle.speed = std::max(particle.speed + PARTICLE_ACCELERATION * deltaTime, 0.0f);
+            
+
+
+            Rect dst(
+                cameraX + particle.x * BLOCK_SIZE, 
+                cameraY + particle.y * BLOCK_SIZE, 
+                PARTICLE_SIZE, 
+                PARTICLE_SIZE);
+            
+            renderer.Copy(
+                sparkTexture, 
+                NullOpt, 
+                dst, 
+                particle.angle - 90.0f, 
+                Point(0, PARTICLE_SIZE / 2), 
+                SDL_FLIP_NONE);
+                
+            ++pit;
+        }
+        if (hitEffect.particles.empty()) {
+            it = sparks_effects.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
+
 
 void GameView::showEntities(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
@@ -788,6 +909,10 @@ void GameView::addShotEffect(Bullet shot) {
 }
 
 
+
 void GameView::switchShopVisibility() {
     shopIsVisible = !shopIsVisible;
 }
+
+
+
