@@ -295,27 +295,25 @@ void GameController::updateGameState(StateGame state) {
             }
         }
     }
-    // std::queue<Shot> shots = state.shot;
-    // while (!shots.empty()) {
-    //     Shot shot = shots.front();
-    //     shots.pop();
-    //     if (shot.origin_y = client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
-    //         continue;
-    //     }
+    std::queue<Shot> shots = state.shots;
+    while (!shots.empty()) {
+        Shot shot = shots.front();
+        shots.pop();
+        if (shot.origin_y == client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
+            continue;
+        }
+        std::cout << "me llegaron disparos" << std::endl;
+        view.addBulletEffects(shot);
 
-    //     view.addBulletEffects(shot);
+        float player_x = game.getX(player_name);
+        float player_y = game.getY(player_name);
+        float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+        soundHandler.playShotSound(distance, shot.weapon);
 
-    //     float player_x = game.getX(player_name);
-    //     float player_y = game.getY(player_name);
-    //     float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
-    //     soundHandler.playShotSound(distance, shot.weapon);
-
-    // }
+    }
     Phase phase = state.phase;
     (void)phase;
 
-    (void)client_player_x_from_server;
-    (void)client_player_y_from_server;
 }
 
 
