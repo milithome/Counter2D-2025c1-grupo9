@@ -316,9 +316,10 @@ StateGame Game::getState() {
   entity.data=data;
   entity.x=spike.position.x;
   entity.y=spike.position.y;
+  entities.push_back(entity);
   state.entities = entities;
  
-  state.shot= shot_queue;
+  state.shots= shot_queue;
   return state;
 }
 
@@ -389,7 +390,6 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
         }
       }
     }
-    
 
     auto wallHit = rayHitsWall(originX, originY, targetX, targetY, maxDistance);
 
