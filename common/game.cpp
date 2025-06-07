@@ -309,8 +309,16 @@ StateGame Game::getState() {
   for (const auto &player : players) {
     entities.push_back(getPlayerState(player.getName()));
   }
+  Entity entity;
+  entity.type = BOMB;
+  BombData data;
+  data.planted= spike.isPlanted;
+  entity.data=data;
+  entity.x=spike.position.x;
+  entity.y=spike.position.y;
   state.entities = entities;
-  //state.shots= shot_queue; TODO
+ 
+  state.shot= shot_queue;
   return state;
 }
 
