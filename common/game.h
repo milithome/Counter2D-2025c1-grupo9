@@ -27,11 +27,14 @@ private:
   Phase phase= Phase::PURCHASE;
   std::vector<std::pair<int, int>> spawnTeamTerrorist;
   std::vector<std::pair<int, int>> spawnTeamCounter;
+  std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
   float time;
   Spike spike;
   std::queue<Shot> shot_queue;
   GameMap map;
+  void dropWeapon(const Weapon& weapon, float x, float y);
+
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter, const std::string &shooterName);
   void plantBomb(const std::string &name);
@@ -44,13 +47,13 @@ private:
   void buyWeapon(const std::string &name, WeaponName weaponName);
   void buyBullet(const std::string &name, WeaponType weaponName);
   void updatePlayerMovement(Player &player, float deltaTime);
-  void updateDefusing(const std::string &name);
-  void updatePlanting(const std::string &name);
+  void updateDefusing(const std::string &name, float deltaTime);
+  void updatePlanting(const std::string &name, float deltaTime);
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
   std::tuple<float, float, float, float> getPlayerHitbox(const Player& player) const;
   PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
-  
+  void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player& player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
@@ -58,6 +61,10 @@ private:
   float plantingElapsedTime = 0.0f;
   float purchaseElapsedTime = 0.0f;
   bool isBombPlanted = false;
+  float timeUntilPlant = TIME_UNTIL_PLANT;
+  float timeUntilDefuse = TIME_UNTIL_DEFUSE;
+  float timePlanting = 0.0f;
+  float timeDefusing = 0.0f;
   float timeUntilBombExplode = BOMB_DURATION;
   float purchaseDuration= PURCHASE_DURATION;
   float timeToPlantBomb= TIME_TO_PLANT;
@@ -91,7 +98,8 @@ public:
   float getRotation(const std::string &name);
   float getX(const std::string &name);
   float getY(const std::string &name);
-
+  void plant(float x, float y);
+  void addDroppedWeapon(float x, float y, WeaponName weapon);
   Shot shotQueuePop();
   bool shotQueueIsEmpty();
 };

@@ -60,8 +60,14 @@ struct PlayerData {
     bool alive;
 };
 
+enum BombState {
+  INVENTORY,
+  DROPPED,
+  PLANTED,
+  DEFUSED,
+};
 struct BombData {
-  bool planted;
+  BombState state;
 };
 
 struct WeaponData {

@@ -6,6 +6,9 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
     teamB.setRole(Role::TERRORIST);
     spawnTeamTerrorist = map.findSpawnTeam(false); //true para terrorist
     spawnTeamCounter = map.findSpawnTeam(true);
+    spike.isPlanted = false;
+    spike.isDefused = false;
+    spike.isDropped = false;
 }
 
 bool Game::addPlayer(const std::string &name) {
@@ -65,15 +68,14 @@ void Game::movePlayer(const std::string &name, float vx, float vy,
   player.updateVelocity(vx, vy);
 }
 
-// plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o
-// defiende
 void Game::plantBomb(
-  const std::string &name) { // ahora se planta automaticamente, falta un update y que
-                 // despues de x tiempo se cambie a true
+  const std::string &name) {
+  timePlanting = 0.0f;
   Player& player = findPlayerByName(name);
-  if (!player.getHasTheSpike()) { //solo puede tenerla si es atacante
+  if (!player.getHasTheSpike()) {
     return;
   }
+  
   auto [x, y, width, height] = getPlayerHitbox(player);
   PlayerCellBounds bounds = getCellBounds(x, y, width, height);
 
@@ -83,22 +85,67 @@ void Game::plantBomb(
         continue;
       }
       if (map.isSpikeSite(row, col)) {
-        spike.position.x = row;
-        spike.position.y = col;
-        spike.isPlanted = true; //todo sacar de aca y hacerlo en update
-        return;
+        findPlayerByName(name).updateIsPlanting(true);
+        spike.position.x = col;
+        spike.position.y = row;
       }
     }
   }
+
   return;
+}
+
+void Game::plant(float x, float y) {
+  if(spike.isPlanted){
+    return;
+  }
+  timePlanting = 0.0f;
+  spike.position.x = x;
+  spike.position.y = y;
+  spike.isPlanted= true;
+  spike.isDropped=false;
+  spike.isDefused=false;
+
+  return;
+}
+
+void Game::addDroppedWeapon(float x, float y, WeaponName weapon) {
+    for (const DroppedWeapon& dw : droppedWeapons) {
+        if (dw.x == x && dw.y == y && dw.name== weapon) {
+            return;
+        }
+    }
+    droppedWeapons.emplace_back(DroppedWeapon{weapon,x, y});
 }
 
 void Game::stopPlantBomb(const std::string &name) {
   findPlayerByName(name).updateIsPlanting(false);
+  timePlanting = 0.0f;
 }
 
-void Game::updatePlanting(const std::string &name) {
-  findPlayerByName(name).updateIsPlanting(false);
+void Game::stopDefuse(const std::string &name) {
+  findPlayerByName(name).updateIsDefusing(false);
+  timeDefusing = 0.0f;
+}
+
+void Game::updatePlanting(const std::string &name, float deltaTime) {
+  timePlanting +=deltaTime;
+  Player& player= findPlayerByName(name);
+  if (player.isPlanting() && timePlanting >= timeUntilPlant){
+    spike.isPlanted = true;
+    spike.isDefused = false;
+    spike.isDropped = false;
+    player.setHasSpike(false);
+  }
+}
+
+void Game::updateDefusing(const std::string &name, float deltaTime){
+  timeDefusing +=deltaTime;
+  if (findPlayerByName(name).isDefusing() && timeDefusing>= timeUntilDefuse){
+    spike.isPlanted = false;
+    spike.isDefused = true;
+    spike.isDropped = false;
+  }
 }
 
 std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player& player) const {
@@ -128,6 +175,7 @@ PlayerCellBounds Game::getCellBounds(float x,float y, float width, float height)
 }
 
 void Game::defuseBomb(const std::string &name) { 
+  timeDefusing = 0.0f;
   Player& player = findPlayerByName(name);
   if (player.getRole()==Role::TERRORIST) { //solo puede defusear si es defensor
     return;
@@ -141,9 +189,7 @@ void Game::defuseBomb(const std::string &name) {
         continue;
       }
       if (map.isSpikeSite(row, col)) {
-        spike.position.x = row;
-        spike.position.y = col;
-        spike.isPlanted = false; //todo sacar de aca y hacerlo en update
+          player.updateIsDefusing(true);
         return;
       }
     }
@@ -151,18 +197,17 @@ void Game::defuseBomb(const std::string &name) {
   return;
 }
 
-void Game::stopDefuse(const std::string &playerName) { (void)playerName; }
-
 void Game::updatePlayerPosition(const std::string &name, float x, float y) {
   findPlayerByName(name).setPosition(x, y);
 }
 
-// Manuel: puse esto pq es necesario para sincronizar el cliente
-// Esta asi de forma medio hack, despues vos cambialo si queres pero la idea era q la vida del jugador
-// se actualice a la pasada por parametro
+
 void Game::updatePlayerHealth(const std::string &name, int health) {
   Player& player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
+  if(!player.isAlive() && player.getHasTheSpike()){
+    spike.isDropped=true;
+  }
 }
 
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
@@ -214,13 +259,13 @@ std::vector<std::pair<WeaponName, int>> Game::getStore() {
 
 void Game::buyBullet(const std::string &name, WeaponType type) {
   Player& player = findPlayerByName(name);
-  if (player.getMoney() >= 40) { // constante, todo el cargador
+  if (player.getMoney() >= AMMO_PRICE) { 
     if (type == WeaponType::PRIMARY) {
       player.resetPrimaryBullets();
     } else {
       player.resetSecondaryBullets();
     }
-    player.updateMoney(-40);
+    player.updateMoney(-AMMO_PRICE);
   }
 }
 
@@ -235,8 +280,6 @@ int Game::checkRoundWinner() {
     }
     return 0;
 }
-
-
 
 void Game::updateGamePhase(float deltaTime) { 
   switch (phase) {
@@ -309,16 +352,26 @@ StateGame Game::getState() {
   for (const auto &player : players) {
     entities.push_back(getPlayerState(player.getName()));
   }
-  Entity entity;
-  entity.type = BOMB;
+  Entity bomb;
+  bomb.type = BOMB;
   BombData data;
-  data.planted= spike.isPlanted;
-  entity.data=data;
-  entity.x=spike.position.x;
-  entity.y=spike.position.y;
-  entities.push_back(entity);
+
+  BombState bombState;
+  if(spike.isDefused){
+    bombState= BombState::DEFUSED;
+  }else if(spike.isDropped){
+    bombState= BombState::DROPPED;
+  }else if(spike.isPlanted){
+    bombState= BombState::PLANTED;
+  }else{
+    bombState= BombState::INVENTORY;
+  }
+  data.state= bombState;
+  bomb.data=data;
+  bomb.x=spike.position.x;
+  bomb.y=spike.position.y;
+  entities.push_back(bomb);
   state.entities = entities;
- 
   state.shots= shot_queue;
   return state;
 }
@@ -442,6 +495,27 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
     target.updateHealth(-finalDamageInt);
+    if(target.isAlive()){
+      if(target.getHasTheSpike()){
+        spike.isDropped=true;
+        spike.isDefused=false;
+        spike.isPlanted=false;
+      }
+      dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
+    }
+}
+
+void Game::grab(const std::string &name) { //TODO
+  (void)name;
+  //Player& player = findPlayerByName(name);
+  if (spike.isDropped){
+    //chequear si colisiona con la spike
+  }
+  //for armas dropeadas, ver si colisiona con alguna
+}
+
+void Game::dropWeapon(const Weapon& weapon, float x, float y) {
+  droppedWeapons.push_back({weapon.name, x, y});
 }
 
 
@@ -534,6 +608,8 @@ void Game::update(float deltaTime) {
     player.updateCooldown(deltaTime);
     shoot(player.getName(), deltaTime);
     player.updateAceleration(deltaTime);
+    updatePlanting(player.getName(), deltaTime);
+    updateDefusing(player.getName(), deltaTime);
   }
 }
 
@@ -590,6 +666,10 @@ void Game::execute(const std::string &name, Action action) {
   }
   case ActionType::STOP_DEFUSING: {
     stopDefuse(name);
+    break;
+  }
+  case ActionType::GRAB: {
+    grab(name);
     break;
   }
   default: {

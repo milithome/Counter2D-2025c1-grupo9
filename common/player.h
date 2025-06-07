@@ -29,6 +29,7 @@ private:
   bool hasTheSpike = true;
   bool shooting = false;
   bool planting = false;
+  bool defusing = false;
   bool alreadyShot = false;
   float shootCooldown = 0.0f;
   float timeLastBullet = 0.0f;
@@ -62,6 +63,7 @@ public:
   int getMoney() const;
   Weapon getEquipped();
   WeaponName getPrimaryWeaponName() const;
+  Weapon getPrimaryWeapon();
   WeaponName getSecondaryWeaponName() const;
   WeaponType getTypeEquipped() const;
   float getRotation() const;
@@ -70,7 +72,6 @@ public:
   float getTimeLastBullet();
   bool isAlive() const;
   void setIsAlive(bool isAlive);
-  bool isPlanting();
   bool isShooting();
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);
@@ -91,7 +92,9 @@ public:
   void updateBurstFireBullets(int value);
   void updateCooldown(float deltaTime);
   void updateHealth(int value);
+  void setHasSpike(bool hasSpike);
   void updateIsPlanting(bool isPlanting);
+  void updateIsDefusing(bool isDefusing);
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateTimeLastBullet(float deltaTime);
@@ -101,5 +104,7 @@ public:
   int getBullets();
   Role getRole();
   void setRole(Role newRole);
+  bool isPlanting();
+  bool isDefusing();
 };
 #endif
