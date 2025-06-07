@@ -205,8 +205,19 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
 void Game::updatePlayerHealth(const std::string &name, int health) {
   Player& player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
-  if(!player.isAlive() && player.getHasTheSpike()){
-    spike.isDropped=true;
+  if(!player.isAlive()){
+    if(player.getHasTheSpike()){
+      spike.isDropped=true;
+      spike.position.x=player.getX();
+      spike.position.y=player.getY();
+    }
+    
+    Weapon pw = player.getPrimaryWeapon();
+    if(pw.name != WeaponName::NONE){
+      dropWeapon(pw, player.getX(), player.getY());
+    }
+    player.replaceWeapon(WeaponName::NONE);
+    player.changeWeapon(WeaponType::SECONDARY);
   }
 }
 
@@ -500,6 +511,8 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
         spike.isDropped=true;
         spike.isDefused=false;
         spike.isPlanted=false;
+        spike.position.x=target.getX();
+        spike.position.y=target.getY();
       }
       dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
     }
