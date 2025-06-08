@@ -28,7 +28,7 @@ struct DroppedWeapon {
 };
 
 #define SPEED 5.0f
-#define MAX_PLAYERS_PER_TEAM 5
+#define MAX_PLAYERS_PER_TEAM 1
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
 #define WEAPON_WIDTH 0.7f

@@ -440,6 +440,12 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
     for (auto &player : players) {
       if (&player == &shooter)
         continue;
+      if(player.getRole()==shooter.getRole()){ //no permito q dañe a los de su equipo
+        continue;
+      }
+      if(!player.isAlive()){ //no permito q dispare a muertos
+        continue;
+      }
 
       Hitbox hb = player.getHitbox();
       auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
