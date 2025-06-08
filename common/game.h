@@ -25,8 +25,9 @@ private:
   int roundsUntilRoleChange = INITIAL_ROUNDS_UNTIL_ROLE_CHANGE;
   int roundsUntilEndGame = INITIAL_ROUNDS_UNTIL_END_GAME;
   Phase phase= Phase::PURCHASE;
-  std::vector<std::pair<int, int>> spawnTeamTerrorist;
-  std::vector<std::pair<int, int>> spawnTeamCounter;
+  std::vector<std::tuple<int, int, bool>> spawnTeamTerrorist;
+  std::vector<std::tuple<int, int, bool>> spawnTeamCounter;
+
   std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
   float time;
@@ -41,6 +42,7 @@ private:
   void stopPlantBomb(const std::string &name);
   void defuseBomb(const std::string &name);
   void stopDefuse(const std::string &name);
+  void resetSpawn();
   void changeWeapon(const std::string &name, WeaponType type);
   std::optional<std::pair<float, float>>
   rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const;

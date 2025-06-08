@@ -34,17 +34,33 @@ float Game::randomFloatInRange(float min, float max) {
 }
 
 void Game::placePlayerInSpawnTeam(Player& player) {
-    std::vector<std::pair<int, int>>& spawn = 
-    (player.getRole() == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
+    std::vector<std::tuple<int, int, bool>>& spawn = 
+        (player.getRole() == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
 
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
+    for (auto& pos : spawn) {
+        int row = std::get<0>(pos);
+        int col = std::get<1>(pos);
+        bool used = std::get<2>(pos);
 
-    auto [row, col] = spawn[std::rand() % spawn.size()];
+        if (!used) {
+            float x = randomFloatInRange(static_cast<float>(col), static_cast<float>(col + 1));
+            float y = randomFloatInRange(static_cast<float>(row), static_cast<float>(row + 1));
 
-    float x = randomFloatInRange(static_cast<float>(col), static_cast<float>(col + 1));
-    float y = randomFloatInRange(static_cast<float>(row), static_cast<float>(row + 1));
+            std::get<2>(pos) = true;
+            player.setPosition(x, y);
 
-    player.setPosition(x, y);
+            return;
+        }
+    }
+}
+void Game::resetSpawn() {
+
+    for (auto& pos : spawnTeamCounter) {
+      std::get<2>(pos) = false;
+    }
+    for (auto& pos : spawnTeamTerrorist) {
+      std::get<2>(pos) = false;
+    }
 }
 
 Player &Game::findPlayerByName(const std::string &name) {
@@ -232,6 +248,14 @@ void Game::updatePlayerMovement(Player &player, float deltaTime) {
   float originalX = player.getX();
   float originalY = player.getY();
   PlayerCellBounds bounds = getCellBounds(newX, newY, width, height); 
+  for (const auto& other : players) {
+      if (&other == &player) continue; 
+      Hitbox otherHB = other.getHitbox();
+      if (rectsOverlap(newX, newY, width, height, otherHB.x, otherHB.y, otherHB.width, otherHB.height)) {
+        return;
+    }
+  }
+  
 
   if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, false);
@@ -340,6 +364,7 @@ void Game::updateRounds(){
   if(roundsUntilRoleChange==0){
     teamA.invertRole();
     teamB.invertRole();
+    resetSpawn();
     placeTeamsInSpawn();
     
   }
