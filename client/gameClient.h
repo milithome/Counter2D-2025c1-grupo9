@@ -42,7 +42,7 @@ public:
     GameClient(Game& game, Map& map, GameView& gameView, std::vector<std::string> players,Queue<Response>& recv_queue, 
          Queue<std::shared_ptr<MessageEvent>>& send_queue, std::string const clientName, SDL &sdl);
 
-    void run();
+    bool run();
 
 private:
     SDL& sdl;

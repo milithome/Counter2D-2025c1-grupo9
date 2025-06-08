@@ -13,6 +13,10 @@ void RecvLoop::run() {
             while (should_keep_running()) {
                 Response msg = protocol.recv_response();
                 queue.push(msg);
+                if (msg.type == DISCONNECT) {
+                    stop();
+                }
+                std::cout << msg.message << std::endl;
             }
     } catch (const std::exception& e) {
         std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;

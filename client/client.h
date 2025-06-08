@@ -7,6 +7,7 @@
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
 #include "client/controllers/message_event.h"
+#include "client/controllers/disconnect_event.h"
 #include "client/controllers/action_event.h"
 #include "common/game.h"
 #include "common/player.h"

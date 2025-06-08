@@ -290,6 +290,9 @@ void GameController::updateGameState(StateGame state) {
                 PlayerData serverData = std::get<PlayerData>(entity.data);                               // El estado del jugador que tiene el server
                 PlayerData clientData = std::get<PlayerData>(game.getPlayerState(serverData.name).data); // El estado del jugador que tiene el cliente
 
+                if (!clientData.alive) {
+                    return;
+                }
                 // Si el jugador es el que maneja este cliente manejar la desincronizacion del movimiento
                 if (serverData.name == player_name) {
                     client_player_x_from_server = entity.x;
@@ -365,14 +368,14 @@ void GameController::updateGameState(StateGame state) {
 }
 
 
-void GameController::processEvents() {
+bool GameController::processEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
         switch (eventType) {
             case SDL_QUIT: {
                 onQuitPressed();
-                break;
+                return true;
             }
             case SDL_WINDOWEVENT: {
                 onWindowEvent(e);
@@ -401,9 +404,9 @@ void GameController::processEvents() {
             default: {
                 break;
             }
-            
         }
     }
+    return false;
 }
 
 

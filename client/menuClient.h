@@ -61,7 +61,7 @@ public:
          RecvLoop& receiver, 
          SendLoop& sender, Protocol& protocol, QPoint& w_pos_when_game_started, int argc, char** argv);
     
-    void run();
+    bool run();
 
     bool isGameStarted() const {
         return (true == partida_iniciada);
