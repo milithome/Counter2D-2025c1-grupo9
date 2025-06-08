@@ -18,6 +18,7 @@ MenuClient::MenuClient(Queue<Response> &recv_queue, Queue<std::shared_ptr<Messag
 
 
 void MenuClient::run() {
+    qputenv("QT_QPA_PLATFORM", "xcb");
 
     // Iniciar el bucle de eventos del menú
     QObject::connect(timer, &QTimer::timeout, &menuController, [this]() {

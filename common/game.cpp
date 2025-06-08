@@ -163,7 +163,11 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
 void Game::updatePlayerHealth(const std::string &name, int health) {
   Player& player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
-  std::cout << health << std::endl;
+  std::cout << player.getHealth() << std::endl;
+}
+// Manuel: metodo creado para sincronizar el cliente
+void Game::updatePrimaryWeapon(const std::string &name, WeaponName weapon) {
+  findPlayerByName(name).replaceWeapon(weapon);
 }
 
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
@@ -599,6 +603,11 @@ Shot Game::shotQueuePop() {
 }
 
 bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
+
+void Game::shotQueueClear() {
+  std::queue<Shot> empty;
+  std::swap(shot_queue, empty);
+}
 
 float Game::getX(const std::string &name) {
   return findPlayerByName(name).getX();

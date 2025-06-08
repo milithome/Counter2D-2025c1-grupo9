@@ -194,6 +194,7 @@ void Match::runGameLoop(Game& game) {
 
         game.update(deltaTime);
         broadcastGameState(game.getState());
+        game.shotQueueClear(); // se tiene q vaciar la cola si los disparos ya fueron procesados
 
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time

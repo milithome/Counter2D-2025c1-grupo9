@@ -8,7 +8,7 @@
 using namespace SDL2pp;
 
 
-#define MAX_SOUND_DISTANCE 10
+#define MAX_SOUND_DISTANCE 20
 #define GUNSHOT_SOUND_COOLDOWN 80
 
 class GameSoundHandler {
@@ -26,6 +26,13 @@ class GameSoundHandler {
 
         void playMusic();
 
+        void switchMute() {
+            if (mixer.GetVolume(-1) <= 0) {
+                unmute();
+            } else {
+                mute();
+            }
+        }
         void mute() {
             mixer.SetVolume(-1, 0); 
         }
