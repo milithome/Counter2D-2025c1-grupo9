@@ -35,6 +35,14 @@ public:
     void playDeathSound(float distance);
     void playMusic();
 
+    void switchMute() {
+            if (mixer->GetVolume(-1) <= 0) {
+                unmute();
+            } else {
+                mute();
+            }
+    }
+
     void mute() {
         if (mixer) mixer->SetVolume(-1, 0);
     }

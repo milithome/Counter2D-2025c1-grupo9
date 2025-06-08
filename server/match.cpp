@@ -169,8 +169,8 @@ void Match::setupGame(Game& game) {
 
 void Match::startTimeoutThread(Game& game) {
     std::thread timeoutThread([this, &game]() {
-        //std::this_thread::sleep_for(std::chrono::minutes(1));
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::minutes(1));
+        //std::this_thread::sleep_for(std::chrono::seconds(10));
         game.stop();
         inGame = false;
         //std::cout << "pasaron 1 minuto" << std::endl;
