@@ -18,7 +18,7 @@ GameClient::GameClient(
     recv_queue(recv_queue), 
     send_queue(send_queue) {}
 
-void GameClient::run() {
+bool GameClient::run() {
     
 	const std::chrono::milliseconds TICK_DURATION(16);
 
@@ -39,7 +39,7 @@ void GameClient::run() {
 				case FINISH: {
 					std::cout << "Finish received" << std::endl;
 					game.stop();
-					break;
+					return false;
 				}
 				default: {
 					break;
@@ -47,7 +47,10 @@ void GameClient::run() {
 			}
 		}
 
-		gameController.processEvents();
+		bool quit = gameController.processEvents();
+		if (quit) {
+			return true;
+		}
 		gameController.update(deltaTime);
 		gameView.update(deltaTime);
 
@@ -64,5 +67,5 @@ void GameClient::run() {
             std::this_thread::sleep_for(TICK_DURATION - elapsed);
         }
 	}
-
+	return false;
 }

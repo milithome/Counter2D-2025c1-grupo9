@@ -90,6 +90,8 @@ public:
   updatePlayerPosition(const std::string &name, float x,
                        float y); // público por tema de sincronizacion cliente
   void updatePlayerHealth(const std::string &name, int health); // público por tema de sincronizacion cliente
+  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); // público por tema de sincronizacion cliente
+  
   bool addPlayer(const std::string &name);
   StateGame getState();
   Entity getPlayerState(const std::string& name);
@@ -106,6 +108,9 @@ public:
   void addDroppedWeapon(float x, float y, WeaponName weapon);
   Shot shotQueuePop();
   bool shotQueueIsEmpty();
+  void shotQueueClear();
+  //void addBombEntity(float x, float y, BombState state);
+  //void addDroppedWeapon(float x, float y, WeaponName weapon);
 };
 
 #endif

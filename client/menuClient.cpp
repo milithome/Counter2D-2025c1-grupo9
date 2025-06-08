@@ -17,7 +17,8 @@ MenuClient::MenuClient(Queue<Response> &recv_queue, Queue<std::shared_ptr<Messag
 }
 
 
-void MenuClient::run() {
+bool MenuClient::run() {
+    qputenv("QT_QPA_PLATFORM", "xcb");
 
     // Iniciar el bucle de eventos del menú
     QObject::connect(timer, &QTimer::timeout, &menuController, [this]() {
@@ -69,11 +70,7 @@ void MenuClient::run() {
     // Ejecutar el bucle de eventos de la aplicación
     app.exec();
 
-    if (!partida_iniciada) {
-        protocol.send_disconnect();
-        Response msg = protocol.recv_response();
-        return;
-    };
+    return !partida_iniciada;
 }
 
 std::vector<std::string> MenuClient::allPlayers()

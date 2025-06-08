@@ -12,6 +12,7 @@ public:
 
     void send(Protocol& protocol) const override;
 
+    Type getType() const override { return JOIN; };
 private:
     std::string partyName;
 };

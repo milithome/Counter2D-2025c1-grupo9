@@ -51,7 +51,7 @@ public:
         bool pulse_available
     );
 
-    void run();
+    bool run();
 
 private:
     SDL& sdl;

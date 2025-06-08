@@ -20,7 +20,7 @@ public:
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);
-    void processEvents();
+    bool processEvents();
     void update(float deltaTime);
 
 

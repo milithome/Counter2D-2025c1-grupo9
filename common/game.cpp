@@ -236,6 +236,11 @@ void Game::updatePlayerHealth(const std::string &name, int health) {
   }
 }
 
+// Manuel: metodo creado para sincronizar el cliente
+void Game::updatePrimaryWeapon(const std::string &name, WeaponName weapon) {
+  findPlayerByName(name).replaceWeapon(weapon);
+}
+
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
   Hitbox hb = player.getHitbox();
 
@@ -757,6 +762,11 @@ Shot Game::shotQueuePop() {
 }
 
 bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
+
+void Game::shotQueueClear() {
+  std::queue<Shot> empty;
+  std::swap(shot_queue, empty);
+}
 
 float Game::getX(const std::string &name) {
   return findPlayerByName(name).getX();

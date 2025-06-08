@@ -1,21 +1,18 @@
-#ifndef LIST_EVENT_H
-#define LIST_EVENT_H
+#ifndef DISCONNECT_EVENT_H
+#define DISCONNECT_EVENT_H
 
 #include "common/communication/protocol.h"
 #include "client/controllers/message_event.h"
 #include <vector>
 #include <string>
 
-
-class ListEvent : public MessageEvent {
+class DisconnectEvent : public MessageEvent {
 public:
-    explicit ListEvent();
+    explicit DisconnectEvent();
 
     void send(Protocol& protocol) const override;
 
-    Type getType() const override { return LIST; };
-
-private:
+    Type getType() const override { return DISCONNECT; };
 };
 
 #endif

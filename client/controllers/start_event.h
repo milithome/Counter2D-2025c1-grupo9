@@ -13,6 +13,7 @@ public:
 
     void send(Protocol& protocol) const override;
 
+    Type getType() const override { return START; };
 private:
 };
 
