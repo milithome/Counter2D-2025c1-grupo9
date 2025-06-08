@@ -72,7 +72,6 @@ void MenuClient::run() {
     if (!partida_iniciada) {
         protocol.send_disconnect();
         Response msg = protocol.recv_response();
-        std::cout << msg.message << std::endl;
         return;
     };
 }

@@ -67,16 +67,13 @@ void Client::run() {
         std::cerr << "Excepción desconocida atrapada." << std::endl;
     }
 
-    //GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl);
-    //gameClient.run();
+	TTF_Quit();
+
 
     receiver.stop();
 	sender.stop();
+    recv_queue.close();
+	send_queue.close();
 	receiver.join();
 	sender.join();
-	recv_queue.close();
-	send_queue.close();
-
-	TTF_Quit();
-
 }

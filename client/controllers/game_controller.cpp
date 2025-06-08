@@ -294,16 +294,13 @@ void GameController::updateGameState(StateGame state) {
     }
     std::queue<Shot> shots = state.shots;
 
-    std::cout << "SIZE SHOTS " << shots.size() << std::endl;
-
     while (!shots.empty()) {
         Shot shot = shots.front();
-        std::cout << "SIZE BULLETS " << shot.bullets.size() << std::endl;
         shots.pop();
         if (shot.origin_y == client_player_x_from_server && shot.origin_y == client_player_y_from_server ) {
             continue;
         }
-        std::cout << "me llegaron disparos" << std::endl;
+        
         view.addBulletEffects(shot);
 
         float player_x = game.getX(player_name);

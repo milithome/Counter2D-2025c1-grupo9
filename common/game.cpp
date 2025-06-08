@@ -58,8 +58,7 @@ void Game::stopShooting(const std::string &name) {
   player.stopShooting();
 }
 
-void Game::movePlayer(const std::string &name, float vx, float vy,
-                      uint32_t id) {
+void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id) {
   Player& player = findPlayerByName(name);
   player.setLastMoveId(id);
   player.updateVelocity(vx, vy);
@@ -67,8 +66,7 @@ void Game::movePlayer(const std::string &name, float vx, float vy,
 
 // plant va a ser muy parecido a defuse, solo cambia si el jugador ataca o
 // defiende
-void Game::plantBomb(
-  const std::string &name) { // ahora se planta automaticamente, falta un update y que
+void Game::plantBomb(const std::string &name) { // ahora se planta automaticamente, falta un update y que
                  // despues de x tiempo se cambie a true
   Player& player = findPlayerByName(name);
   if (!player.getHasTheSpike()) { //solo puede tenerla si es atacante
@@ -163,7 +161,6 @@ void Game::updatePlayerPosition(const std::string &name, float x, float y) {
 void Game::updatePlayerHealth(const std::string &name, int health) {
   Player& player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
-  std::cout << health << std::endl;
 }
 
 void Game::updatePlayerMovement(Player &player, float deltaTime) {
@@ -237,8 +234,6 @@ int Game::checkRoundWinner() {
     return 0;
 }
 
-
-
 void Game::updateGamePhase(float deltaTime) { 
   switch (phase) {
     case Phase::PURCHASE:
@@ -278,6 +273,7 @@ void Game::updateGamePhase(float deltaTime) {
     break;
   }
 }
+
 void Game::updateRounds(){
   teamA.restartPlayersAlive(); //contador en team y vida de c/u
   teamB.restartPlayersAlive();
@@ -444,6 +440,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   if (!shooter.isShooting()) {
     return;
   }
+  
   if (shooter.getShootCooldown() > 0) {
     return;
   }

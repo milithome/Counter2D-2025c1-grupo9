@@ -1,11 +1,11 @@
 #include "clientSenderLoop.h"
 
 SendLoop::SendLoop(Protocol &proto, Queue<std::shared_ptr<MessageEvent>> &q)
-        : protocol(proto), queue(q) {}
+        : protocol(proto), queue(q), active(true) {}
 
 void SendLoop::run(){
     try {
-        while (should_keep_running()) {
+        while (active) {
             std::shared_ptr<MessageEvent> msg = queue.pop();
             msg->send(protocol);
         }
@@ -17,6 +17,5 @@ void SendLoop::run(){
 }
 
 void SendLoop::stop() {
-    Thread::stop();
-    queue.close();
+    active = false;
 }

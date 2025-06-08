@@ -12,6 +12,7 @@ class SendLoop : public Thread {
 private:    
     Protocol& protocol;
     Queue<std::shared_ptr<MessageEvent>>& queue;
+    bool active;
 
 public:
     SendLoop(Protocol& proto, Queue<std::shared_ptr<MessageEvent>>& q);
