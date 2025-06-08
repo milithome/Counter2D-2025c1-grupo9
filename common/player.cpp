@@ -80,6 +80,10 @@ void Player::updateHealth(int value) {
   }
 }
 
+void Player::setHasSpike(bool hasSpike){
+  hasTheSpike=hasSpike;
+}
+
 void Player::restoreHealth(){
   health = MAX_HEALTH;
 }
@@ -234,9 +238,8 @@ int Player::getBurstFireBullets() { return burstFireBullets; }
 void Player::updateBurstFireBullets(int value) { burstFireBullets += value; }
 bool Player::getHasTheSpike() { return hasTheSpike; }
 
-bool Player::isPlanting() { return planting; }
-
 void Player::updateIsPlanting(bool isPlanting) { planting = isPlanting; }
+void Player::updateIsDefusing(bool isDefusing){ defusing = isDefusing; }
 
 bool Player::getAlreadyShot() { return alreadyShot; }
 
@@ -261,4 +264,15 @@ Role Player::getRole(){
 }
 void Player::setRole(Role newRole){
   role=newRole;
+}
+
+bool Player::isPlanting(){
+  return planting;
+}
+bool Player::isDefusing(){
+  return defusing;
+}
+
+Weapon Player::getPrimaryWeapon(){
+  return primaryWeapon;
 }

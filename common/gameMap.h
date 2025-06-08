@@ -14,7 +14,7 @@ private:
 public:
     GameMap(std::vector<std::vector<CellType>> game_map);
 
-    std::vector<std::pair<int, int>> findSpawnTeam(bool teamA);
+    std::vector<std::tuple<int, int, bool>> findSpawnTeam(bool teamA);
 
     bool isColliding(PlayerCellBounds bounds) const;
 
