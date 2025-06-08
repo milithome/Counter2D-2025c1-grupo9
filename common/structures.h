@@ -66,6 +66,7 @@ enum BombState {
   PLANTED,
   DEFUSED,
 };
+
 struct BombData {
   BombState state;
 };

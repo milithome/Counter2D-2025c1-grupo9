@@ -3,14 +3,9 @@
 
 #include <string>
 #include <vector>
-#include <arpa/inet.h>
-#include <stdexcept>
-#include <cstring>
 #include <mutex>
-#include "socket.h"
 #include "../structures.h"
-
-
+#include "../utilities/serializer_utils.h"
 
 class Protocol {
 public:
@@ -72,7 +67,7 @@ private:
     void serialize_2d_vector(const std::vector<std::vector<uint16_t>>& matrix, std::vector<uint8_t>& buf);
     void serialize_legend_entry(const MapLegendEntry& entry, std::vector<uint8_t>& buf);
     void serialize_legend(const std::unordered_map<uint16_t, MapLegendEntry>& legend, std::vector<uint8_t>& buf);
-    void serialize_string(const std::string& str, std::vector<uint8_t>& buf); // esta y la de abajo de podrian reutilizar en otros lugares
+    //void serialize_string(const std::string& str, std::vector<uint8_t>& buf); // esta y la de abajo de podrian reutilizar en otros lugares
     void serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf);
     void serialize_map_data(const MapData& map, std::vector<uint8_t>& buf);
     std::vector<uint8_t> serialize_initial_data(const Response& r);
@@ -84,7 +79,7 @@ private:
     std::unordered_map<uint16_t, MapLegendEntry> deserialize_legend();
     std::vector<std::vector<CellType>> deserialize_celltype_2d_vector();
     std::vector<std::vector<uint16_t>> deserialize_2d_vector();
-    std::string deserialize_string();
+    //std::string deserialize_string();
     std::vector<std::string> deserialize_string_vector();
     Response deserialize_initial_data();
     PlayerData recv_player_data();

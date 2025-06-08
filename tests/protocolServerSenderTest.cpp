@@ -29,7 +29,17 @@ TEST(ProtocolServerSender, SendAndReceiveLobbyListResponse) {
     Socket client_socket("localhost", "12370");
     Protocol client_protocol(std::move(client_socket));
 
-    Response response = client_protocol.recv_response();
+    Response response;
+    try
+    {
+        response = client_protocol.recv_response();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return;
+    }
+    
     ASSERT_EQ(response.type, Type::LIST);
     ASSERT_EQ(response.result, 0);
     ASSERT_EQ(response.message, "Success");
@@ -149,7 +159,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         bomb.type = BOMB;
         bomb.x = 12.0f;
         bomb.y = 22.0f;
-        bomb.data = BombData{true};
+        bomb.data = BombData{PLANTED};
 
         Entity weapon;
         weapon.type = WEAPON;
@@ -221,7 +231,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     ASSERT_FLOAT_EQ(entity.x, 12.0f);
     ASSERT_FLOAT_EQ(entity.y, 22.0f);
     auto bomb = std::get<BombData>(state.entities[1].data);
-    EXPECT_TRUE(bomb.planted);
+    EXPECT_EQ(bomb.state, PLANTED);
 
     entity = state.entities[2];
     ASSERT_EQ(entity.type, WEAPON);

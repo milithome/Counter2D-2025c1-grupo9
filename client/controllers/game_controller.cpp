@@ -278,13 +278,19 @@ void GameController::updateGameState(StateGame state) {
             }
             case BOMB: {
                 BombData data = std::get<BombData>(entity.data);
-                if (data.planted) { //esta plantada ahora mismo segun el server
-                    
+                switch (data.state)
+                {
+                case BombState::INVENTORY:
+                    break;
+                case BombState::DROPPED:
+                    break;
+                case BombState::PLANTED:
+                    break;
+                case BombState::DEFUSED:
+                    break;
+                default:
+                    break;
                 }
-                else { //no hay nada plantado
-                    
-                }
-
             }
             //ENTIDAD BOMBA Y ENTIDAD WEAPON EN EL PISO
             default: {

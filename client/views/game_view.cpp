@@ -407,7 +407,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 float bombX = gameState[i].x;
                 float bombY = gameState[i].y;
                 Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                if (data.planted) {
+                if (data.state == BombState::PLANTED) {
                     renderer.Copy(bombInGameSprite, src, dst);
                 } else {
                     renderer.Copy(bombInvSprite, src, dst);
