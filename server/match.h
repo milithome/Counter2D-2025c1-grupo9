@@ -36,6 +36,7 @@ private:
     void handleLobbyMessage(const Message& message);
     void handleLeave(const std::string& clientName);
     void handleStart();
+    void handleDisconnect(const std::string& clientName);
     void broadcastLobbyState();
     void gameLoop();
     void waitForPlayers();

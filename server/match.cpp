@@ -18,6 +18,7 @@ void Match::run() {
         if (inGame) {
             gameLoop();
         }
+        
         admin.removeMatch(name);
     } catch (const std::exception& e) {
         std::cerr << "Exception in Match: " << e.what() << std::endl;
@@ -65,6 +66,9 @@ void Match::handleLobbyMessage(const Message& message) {
             break;
         case Type::START:
             handleStart();
+            break;
+        case Type::DISCONNECT:
+            handleDisconnect(message.clientName);
             break;
         default:
             std::cerr << "Unknown message type: " << static_cast<int>(message.type) << std::endl;
@@ -117,6 +121,23 @@ void Match::handleStart() {
         };
         client->channels.responses->push(response);
     }
+}
+
+void Match::handleDisconnect(const std::string& clientName) {
+    for (auto it = clients.begin(); it != clients.end(); ++it) {
+        if ((*it)->channels.name == clientName) {
+            Response response = {
+                Type::DISCONNECT,
+                0,
+                {},
+                "Disconnect successfull."
+            };
+            (*it)->channels.responses->push(response);
+            clients.erase(it);
+            break;
+        }
+    }
+    admin.removeClient(clientName);
 }
 
 void Match::broadcastLobbyState() {
@@ -173,8 +194,8 @@ void Match::startTimeoutThread(Game& game) {
         //std::this_thread::sleep_for(std::chrono::seconds(10));
         game.stop();
         inGame = false;
-        //std::cout << "pasaron 1 minuto" << std::endl;
-        std::cout << "pasaron 10 segundos" << std::endl;
+        std::cout << "paso 1 minuto" << std::endl;
+        //std::cout << "pasaron 10 segundos" << std::endl;
     });
     timeoutThread.detach();
 }
@@ -235,7 +256,7 @@ void Match::endGame() {
             "Game finished"
         };
         client->channels.responses->push(response);
-        admin.createMenu(client);
+        admin.createMenu(client, true);
     }
 }
 
@@ -276,21 +297,7 @@ void Match::broadcastGameState(const StateGame& state) {
 void Match::handleGameMessage(const Message& message) {
     switch (message.type) {
         case Type::DISCONNECT:
-            for (auto it = clients.begin(); it != clients.end(); ++it) {
-                if ((*it)->channels.name == message.clientName) {
-                    Response response = {
-                        Type::DISCONNECT,
-                        0,
-                        {},
-                        "Disconnect successfull."
-                    };
-                    (*it)->channels.responses->push(response);
-                    clients.erase(it);
-                    break;
-                }
-            }
-
-            admin.removeClient(message.clientName);
+            handleDisconnect(message.clientName);
             disconnectedClients++;
 
             if (disconnectedClients == maxPlayers) {

@@ -37,7 +37,6 @@ bool GameClient::run() {
 					break;
 				}
 				case FINISH: {
-					std::cout << "Finish received" << std::endl;
 					game.stop();
 					return false;
 				}
