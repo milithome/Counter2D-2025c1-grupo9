@@ -19,7 +19,7 @@ project(taller_tp
 option(TALLER_TESTS "Enable / disable tests." ON)
 option(TALLER_CLIENT "Enable / disable client program." ON)
 option(TALLER_SERVER "Enable / disable server program." ON)
-option(TALLER_EDITOR "Enable / disable editor program." OFF)
+option(TALLER_EDITOR "Enable / disable editor program." ON)
 option(TALLER_MAKE_WARNINGS_AS_ERRORS "Enable / disable warnings as errors." ON)
 
 message(CMAKE_CXX_COMPILER_ID="${CMAKE_CXX_COMPILER_ID}")
@@ -202,7 +202,13 @@ if(TALLER_EDITOR)
     find_package(yaml-cpp REQUIRED)
 
     # Link the taller_common lib target
-    target_link_libraries(taller_editor taller_common SDL2pp::SDL2pp yaml-cpp)
+    qt_add_resources(RESOURCES resources.qrc)
+    target_link_libraries(taller_editor taller_common
+    SDL2pp::SDL2pp
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    yaml-cpp)
 endif()
 
 
