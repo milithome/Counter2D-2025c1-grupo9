@@ -43,8 +43,8 @@ void Game::placePlayerInSpawnTeam(Player& player) {
         bool used = std::get<2>(pos);
 
         if (!used) {
-            float x = randomFloatInRange(static_cast<float>(col), static_cast<float>(col + 1));
-            float y = randomFloatInRange(static_cast<float>(row), static_cast<float>(row + 1));
+            float x = static_cast<float>(col) +0.1f;
+            float y = static_cast<float>(row) +0.1f;
 
             std::get<2>(pos) = true;
             player.setPosition(x, y);
