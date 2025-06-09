@@ -418,8 +418,24 @@ StateGame Game::getState() {
   bomb.x=spike.position.x;
   bomb.y=spike.position.y;
   entities.push_back(bomb);
+
+  for (const DroppedWeapon& dropped : droppedWeapons) {
+    Entity weaponEntity;
+    weaponEntity.type = EntityType::WEAPON;
+
+    WeaponData weaponData;
+    weaponData.weapon = dropped.name;
+
+    weaponEntity.data = weaponData;
+    weaponEntity.x = dropped.x;
+    weaponEntity.y = dropped.y;
+
+    entities.push_back(weaponEntity);
+  }
+
   state.entities = entities;
   state.shots= shot_queue;
+
   return state;
 }
 
