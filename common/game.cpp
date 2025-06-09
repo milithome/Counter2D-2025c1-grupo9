@@ -325,32 +325,39 @@ void Game::updateGamePhase(float deltaTime) {
     case Phase::PURCHASE:
       purchaseElapsedTime +=deltaTime;
       if(purchaseElapsedTime >= purchaseDuration){
-        isBombPlanted=false;
+        spike.isDefused=false;
+        spike.isPlanted=false;
         purchaseElapsedTime = 0.0f;
         phase=Phase::BOMB_PLANTING;
+        std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
       }
     break;
 
     case Phase::BOMB_PLANTING:
       plantingElapsedTime +=deltaTime;
       if(checkRoundWinner() !=0 || plantingElapsedTime >= timeToPlantBomb){ //pierden atacantes
-        isBombPlanted=false;
+        std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to PURCHASE" << std::endl;
         plantingElapsedTime=0.0f;
         phase=Phase::PURCHASE;
         updateRounds();
       }
-      if(isBombPlanted){ 
+      if(spike.isPlanted){ 
         phase=Phase::BOMB_DEFUSING;
+        std::cout << "[DEBUG] Bomb planted, transitioning to BOMB_DEFUSING" << std::endl;
       }
     break;
 
     case Phase::BOMB_DEFUSING:
       bombElapsedTime +=deltaTime;
       if(checkRoundWinner() !=0 || bombElapsedTime >=timeUntilBombExplode){ //pierden defensores
+        std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to PURCHASE" << std::endl;
         bombElapsedTime = 0.0f;
-        isBombPlanted = false;
         phase=Phase::PURCHASE;
         updateRounds();
+      }
+      if(spike.isDefused){
+        phase=Phase::PURCHASE;
+        std::cout << "[DEBUG] Bomb defused, transitioning to PURCHASE" << std::endl;
       }
 
     break;
@@ -369,13 +376,12 @@ void Game::updateRounds(){
   if(roundsUntilRoleChange==0){
     teamA.invertRole();
     teamB.invertRole();
-    resetSpawn();
-    placeTeamsInSpawn();
-    
   }
   if(roundsUntilEndGame==0){
     running = false;
   }
+  resetSpawn();
+  placeTeamsInSpawn();
 }
 
 void Game::placeTeamsInSpawn(){
@@ -680,6 +686,7 @@ float Game::getRotation(const std::string &name) {
 
 void Game::update(float deltaTime) {
   for (auto &player : players) {
+    updateGamePhase(deltaTime);
     updatePlayerMovement(player, deltaTime);
     player.updateCooldown(deltaTime);
     shoot(player.getName(), deltaTime);
