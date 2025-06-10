@@ -564,7 +564,7 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
     target.updateHealth(-finalDamageInt);
-    if(target.isAlive()){
+    if(!target.isAlive()){
       if(target.getHasTheSpike()){
         spike.isDropped=true;
         spike.isDefused=false;
