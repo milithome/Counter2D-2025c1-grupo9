@@ -399,11 +399,14 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 WeaponData data = std::get<WeaponData>(gameState[i].data);
                 float weaponX = gameState[i].x;
                 float weaponY = gameState[i].y;
-                Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, 0, 0);
                 if (data.weapon == NONE) {
                     break;
                 }
-                renderer.Copy(getWeaponDroppedSprite(data.weapon), src, dst);
+                Texture& weaponDroppedSprite = getWeaponDroppedSprite(data.weapon);
+                dst.SetH(weaponDroppedSprite.GetHeight());
+                dst.SetW(weaponDroppedSprite.GetWidth());
+                renderer.Copy(getWeaponDroppedSprite(data.weapon), NullOpt, dst);
                 break;
             }
             case BOMB: {

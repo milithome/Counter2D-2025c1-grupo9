@@ -40,9 +40,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
     }
     PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
-    if (!data.alive) {
-        return;
-    }
+    if (!data.alive) return;
     switch (event.key.keysym.sym) {
         case SDLK_w: {
             movement_keys_vector[1] -= 1;
@@ -94,6 +92,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
+            planting = true;
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
             if (inv.has_the_bomb) {
                 Action action{ActionType::PLANT, {}};
@@ -104,6 +103,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;  
         }
         case SDLK_e: {
+            defusing = true;
             Action action{ActionType::DEFUSE, {}};
             game.execute(player_name, action);
             break;
@@ -113,6 +113,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         
     }
+    if (defusing || planting) return;
     if (game.getState().phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {
         
@@ -128,9 +129,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
 
 void GameController::onKeyReleased(const SDL_Event& event) {
     PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
-    if (!data.alive) {
-        return;
-    }
+    if (!data.alive) return;
     switch (event.key.keysym.sym) {
         case SDLK_w: {
             movement_keys_vector[1] += 1;
@@ -149,17 +148,20 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
+            planting = false;
             Action action{ActionType::STOP_PLANTING, {}};
             game.execute(player_name, action);
             action_queue.push(action);
             break;
         }
         case SDLK_e: {
+            defusing = false;
             Action action{ActionType::STOP_DEFUSING, {}};
             game.execute(player_name, action);
             break;
         }
     }
+    if (defusing || planting) return;
     if (game.getState().phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {
         Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
@@ -177,9 +179,7 @@ void GameController::onQuitPressed() {
 
 void GameController::onMouseMovement() {
     PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
-    if (!data.alive) {
-        return;
-    }
+    if (!data.alive) return;
 
     SDL_Point center = view.getCenterPoint();
     SDL_Point mouse_position = SDL_Point();
@@ -195,9 +195,7 @@ void GameController::onMouseMovement() {
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
-    if (!data.alive) {
-        return;
-    }
+    if (!data.alive) return;
     if (event.button.button == SDL_BUTTON_LEFT) {
         if (shop_open) {
             auto buyPrimaryAmmoButton = view.getBuyPrimaryAmmoButton();
@@ -253,6 +251,7 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
         }
 
         if (game.getState().phase == PURCHASE) return;
+        if (defusing || planting) return;
 
         Action action;
         action.type = ActionType::SHOOT;
@@ -263,9 +262,7 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
 
 void GameController::onMouseLeftClickReleased(const SDL_Event& event) {
     PlayerData data = std::get<PlayerData>(game.getPlayerState(player_name).data);
-    if (!data.alive) {
-        return;
-    }
+    if (!data.alive) return;
     if (event.button.button == SDL_BUTTON_LEFT) {
         Action action{ActionType::STOP_SHOOTING, {}};
         game.execute(player_name, action);
@@ -297,7 +294,7 @@ void GameController::updateGameState(StateGame state) {
                 PlayerData clientData = std::get<PlayerData>(game.getPlayerState(serverData.name).data); // El estado del jugador que tiene el cliente
 
                 if (!clientData.alive) {
-                    return;
+                    continue;
                 }
                 // Si el jugador es el que maneja este cliente manejar la desincronizacion del movimiento
                 if (serverData.name == player_name) {
