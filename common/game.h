@@ -74,6 +74,8 @@ private:
   float timeUntilBombExplode = BOMB_DURATION;
   float purchaseDuration= PURCHASE_DURATION;
   float timeToPlantBomb= TIME_TO_PLANT;
+  float timeUntilNewRound = TIME_UNTIL_NEW_ROUND;
+  float endRoundElapsedTime =0.0f;
   void updateRounds();
   int checkRoundWinner();
   

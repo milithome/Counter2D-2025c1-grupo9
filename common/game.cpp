@@ -373,23 +373,25 @@ void Game::buyBullet(const std::string &name, WeaponType type)
   }
 }
 
-int Game::checkRoundWinner()
-{
-  if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0)
-  {
+int Game::checkRoundWinner(){
+  int aliveA = teamA.getPlayersAlive();
+  int aliveB = teamB.getPlayersAlive();
+  std::cout << "[DEBUG] Checking round winner: teamA alive = " << aliveA << ", teamB alive = " << aliveB << std::endl;
+
+  if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
     teamA.incrementRoundsWon();
+    std::cout << "[DEBUG] Team A wins the round" << std::endl;
     return 1;
   }
-  if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0)
-  {
+  if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0){
     teamB.incrementRoundsWon();
+    std::cout << "[DEBUG] Team B wins the round" << std::endl;
     return 2;
   }
   return 0;
 }
 
 void Game::updateGamePhase(float deltaTime){
-  std::cout << "[DEBUG] Spike state: " << static_cast<int>(spike.state) << std::endl;
 
   switch (phase){
   case Phase::PURCHASE:
@@ -411,9 +413,9 @@ void Game::updateGamePhase(float deltaTime){
   case Phase::BOMB_PLANTING:
     plantingElapsedTime += deltaTime;
     if (checkRoundWinner() != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
-      std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to PURCHASE" << std::endl;
+      std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to END_ROUND" << std::endl;
       plantingElapsedTime = 0.0f;
-      phase = Phase::PURCHASE;
+      phase = Phase::END_ROUND;
       updateRounds();
     }
     if (spike.state == BombState::PLANTED){
@@ -425,18 +427,30 @@ void Game::updateGamePhase(float deltaTime){
   case Phase::BOMB_DEFUSING:
     bombElapsedTime += deltaTime;
     if (checkRoundWinner() != 0 || bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
-      std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to PURCHASE" << std::endl;
+      std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to END_ROUND" << std::endl;
       bombElapsedTime = 0.0f;
-      phase = Phase::PURCHASE;
+      phase = Phase::END_ROUND;
       updateRounds();
     }
     if (spike.state == BombState::DEFUSED){
-      phase = Phase::PURCHASE;
-      std::cout << "[DEBUG] Bomb defused, transitioning to PURCHASE" << std::endl;
+      phase = Phase::END_ROUND;
+      std::cout << "[DEBUG] Bomb defused, transitioning to END_ROUND" << std::endl;
       updateRounds();
     }
 
     break;
+  case Phase::END_ROUND:
+    endRoundElapsedTime += deltaTime;
+    
+    if (endRoundElapsedTime >= timeUntilNewRound){
+      endRoundElapsedTime=0.0f;
+      phase = Phase::PURCHASE;
+      std::cout << "[DEBUG] Ending round, transitioning to PURCHASE" << std::endl;
+      updateRounds();
+    }
+
+    break;
+
 
   default:
     break;
