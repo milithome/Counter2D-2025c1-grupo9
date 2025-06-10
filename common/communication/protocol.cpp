@@ -316,7 +316,6 @@ void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bd
 }
 
 void Protocol::serialize_weapon_data(std::vector<uint8_t>& buf, const WeaponData& wdata) {
-    buf.push_back(static_cast<uint8_t>(wdata.type));
     buf.push_back(static_cast<uint8_t>(wdata.weapon));
 }
 
@@ -995,7 +994,6 @@ WeaponData Protocol::recv_weapon_data() {
     w.weapon = static_cast<WeaponName>(weaponName);
     */
 
-    w.type = static_cast<WeaponType>(Utilities::deserialize_uint8(skt));
     w.weapon = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
     return w;
 }
