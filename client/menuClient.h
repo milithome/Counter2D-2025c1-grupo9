@@ -47,19 +47,24 @@ private:
     Queue<std::shared_ptr<MessageEvent>>& send_queue;
     RecvLoop& receiver;
     SendLoop& sender;
+    Protocol& protocol;
     QApplication app;
-    QtWindow menuWindow;
-    MenuController menuController;
-    QTimer* timer;
+    QApplication createApp() {
+        int argc = 0;
+        char** argv = nullptr;
+        return QApplication(argc, argv);
+    }
+    // QtWindow menuWindow;
+    // MenuController menuController;
+    //QTimer* timer;
     std::vector<std::string> players;
     QPoint& w_pos_when_game_started;
-    Protocol& protocol;
 
 public:
     MenuClient(Queue<Response>& recv_queue, 
          Queue<std::shared_ptr<MessageEvent>>& send_queue, 
          RecvLoop& receiver, 
-         SendLoop& sender, Protocol& protocol, QPoint& w_pos_when_game_started, int argc, char** argv);
+         SendLoop& sender, Protocol& protocol, QPoint& w_pos_when_game_started);
     
     bool run();
 

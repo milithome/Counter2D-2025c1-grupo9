@@ -1,6 +1,7 @@
 #include "menu_controller.h"
 #include <QLayout>
 #include <QPushButton>
+#include <QString>
 #include <iostream>
 #include "join_event.h"
 #include "leave_event.h"
@@ -8,9 +9,11 @@
 #include "create_event.h"
 #include "start_event.h"
 
-MenuController::MenuController(QtWindow& window, Protocol& protocol) : window(window), protocol(protocol) {
+MenuController::MenuController(QtWindow& window, Protocol& protocol) : QWidget(nullptr), window(window), protocol(protocol) {
     mainView = MainView();
+
     listenToMainView(mainView);
+
     window.showView(mainView);
 }
 
@@ -18,11 +21,25 @@ void MenuController::listenToMainView(MainView& mainView) {
     QPushButton *searchButton = mainView.getSearchButton();
     QPushButton *createButton = mainView.getCreateButton(); 
 
+    std::cout << "antes 1" << std::endl;
+    QString dummy = searchButton->objectName();
+    (void)dummy;  
+    std::cout << "despues 1" << std::endl;
+
+    std::cout << "antes 2" << std::endl;
+    QString dummy2 = createButton->objectName();
+    (void)dummy2;  
+    std::cout << "despues 2" << std::endl;
+
     QObject::connect(createButton, &QPushButton::clicked, [this]() {
+        std::cout << "MenuController::listenToMainView 1" << std::endl;
         onMainViewCreatePartyButtonClicked();
+        std::cout << "MenuController::listenToMainView 2" << std::endl;
     });
     QObject::connect(searchButton, &QPushButton::clicked, [this]() {
+        std::cout << "MenuController::listenToMainView 3" << std::endl;
         onMainViewSearchPartyButtonClicked();
+        std::cout << "MenuController::listenToMainView 4" << std::endl;
     });
 }
 

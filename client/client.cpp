@@ -18,30 +18,32 @@ void Client::run() {
     protocol.send_name(clientName);
 
     int num_audio_drivers = SDL_GetNumAudioDrivers();
-    bool pulse_available = false;
-    for (int i = 0; i < num_audio_drivers; ++i) {
-        const char* driver = SDL_GetAudioDriver(i);
-        if (strcmp(driver, "pulse") == 0) {
-            pulse_available = true;
-            break;
-        }
-    }
+    // bool pulse_available = false;
+    // for (int i = 0; i < num_audio_drivers; ++i) {
+    //     const char* driver = SDL_GetAudioDriver(i);
+    //     if (strcmp(driver, "pulse") == 0) {
+    //         pulse_available = true;
+    //         break;
+    //     }
+    // }
 
     Uint32 flags = SDL_INIT_VIDEO;
-    if (pulse_available)
+    if (num_audio_drivers > 0)
         flags |= SDL_INIT_AUDIO;
+
 
     SDL sdl(flags);
 
     TTF_Init();
 
-    int argc = 1;
-    char* argv[] = {const_cast<char*>(clientName.c_str()), nullptr};
+    // int argc = 1;
+    // char* argv[] = {const_cast<char*>(clientName.c_str()), nullptr};
 	
     while (true) { // mientras el cliente no haya decidido irse
+        std::cout << "Client::run 1" << std::endl;
+        MenuClient menuClient(recv_queue, send_queue, receiver, sender, protocol,  w_pos_when_game_started);
 
-        MenuClient menuClient(recv_queue, send_queue, receiver, sender, protocol,  w_pos_when_game_started, argc, argv);
-
+        std::cout << "Client::run 2" << std::endl;
         bool quit = menuClient.run();
 
         if (quit) {
@@ -65,7 +67,7 @@ void Client::run() {
 
 
         GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
-        GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl, pulse_available);
+        GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl, num_audio_drivers > 0);
 
         quit = gameClient.run();
 

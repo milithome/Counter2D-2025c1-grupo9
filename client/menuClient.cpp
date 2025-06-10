@@ -1,27 +1,33 @@
 #include "menuClient.h"
 
-MenuClient::MenuClient(Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, RecvLoop &receiver, SendLoop &sender, Protocol &protocol, QPoint& w_pos_when_game_started, int argc, char** argv):
+MenuClient::MenuClient(Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, RecvLoop &receiver, SendLoop &sender, Protocol &protocol, QPoint& w_pos_when_game_started) :
     partida_iniciada(false),
     recv_queue(recv_queue),
     send_queue(send_queue),
     receiver(receiver),
     sender(sender),
-    app(argc,argv),
-    menuWindow(QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT)),
-    menuController(menuWindow, protocol),
-    timer(new QTimer(&menuController)),
+    protocol(protocol),
+    app(createApp()),
+    //menuWindow(QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT)),
+    //menuController(menuWindow, protocol),
     players(),
-    w_pos_when_game_started(w_pos_when_game_started),
-    protocol(protocol)
+    w_pos_when_game_started(w_pos_when_game_started)
 {
 }
 
 
 bool MenuClient::run() {
+
     qputenv("QT_QPA_PLATFORM", "xcb");
 
+    QtWindow menuWindow(QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT));
+    MenuController menuController(menuWindow, protocol);
+
+
+    QTimer* timer = new QTimer(nullptr);
+
     // Iniciar el bucle de eventos del menú
-    QObject::connect(timer, &QTimer::timeout, &menuController, [this]() {
+    QObject::connect(timer, &QTimer::timeout, timer, [this, &menuWindow, &menuController]() {
         Response msg;
         while (recv_queue.try_pop(msg)) {
             switch (msg.type) {
@@ -68,6 +74,7 @@ bool MenuClient::run() {
     });
 
     // Ejecutar el bucle de eventos de la aplicación
+    menuWindow.show();
     app.exec();
 
     return !partida_iniciada;
