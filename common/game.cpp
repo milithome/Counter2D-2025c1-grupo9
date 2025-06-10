@@ -12,8 +12,8 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
 
 bool Game::addPlayer(const std::string &name)
 {
-  players.emplace_back(name);
-  Player &player = findPlayerByName(name);
+  Player &player = players.emplace_back(name);
+
   if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM)
   {
     teamA.addPlayer(player);
@@ -30,6 +30,7 @@ bool Game::addPlayer(const std::string &name)
   }
   return false;
 }
+
 
 float Game::randomFloatInRange(float min, float max)
 {
@@ -72,8 +73,7 @@ void Game::resetSpawn()
   }
 }
 
-Player &Game::findPlayerByName(const std::string &name)
-{
+Player &Game::findPlayerByName(const std::string &name){
   for (auto &player : players)
   {
     if (player.getName() == name)
@@ -264,8 +264,7 @@ void Game::updatePlayerHealth(const std::string &name, int health)
 {
   Player &player = findPlayerByName(name);
   player.updateHealth(health - player.getHealth());
-  if (!player.isAlive())
-  {
+  if (!player.isAlive()){
     if (player.getHasTheSpike())
     {
       spike.state = BombState::DROPPED;
@@ -374,10 +373,6 @@ void Game::buyBullet(const std::string &name, WeaponType type)
 }
 
 int Game::checkRoundWinner(){
-  int aliveA = teamA.getPlayersAlive();
-  int aliveB = teamB.getPlayersAlive();
-  std::cout << "[DEBUG] Checking round winner: teamA alive = " << aliveA << ", teamB alive = " << aliveB << std::endl;
-
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
     teamA.incrementRoundsWon();
     std::cout << "[DEBUG] Team A wins the round" << std::endl;
@@ -395,16 +390,9 @@ void Game::updateGamePhase(float deltaTime){
 
   switch (phase){
   case Phase::PURCHASE:
-    
-    if(gameStart){
-      teamA.resetSpikeCarrier();
-      teamB.resetSpikeCarrier();
-      gameStart=false;
-    }
-    
+    std::cout << "[DEBUG] purchase phase" << std::endl;
     purchaseElapsedTime += deltaTime;
     if (purchaseElapsedTime >= purchaseDuration){
-      purchaseElapsedTime = 0.0f;
       phase = Phase::BOMB_PLANTING;
       std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
     }
@@ -414,11 +402,8 @@ void Game::updateGamePhase(float deltaTime){
     plantingElapsedTime += deltaTime;
     if (checkRoundWinner() != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
       std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to END_ROUND" << std::endl;
-      plantingElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
-      updateRounds();
-    }
-    if (spike.state == BombState::PLANTED){
+    }else if (spike.state == BombState::PLANTED){
       phase = Phase::BOMB_DEFUSING;
       std::cout << "[DEBUG] Bomb planted, transitioning to BOMB_DEFUSING" << std::endl;
     }
@@ -428,14 +413,10 @@ void Game::updateGamePhase(float deltaTime){
     bombElapsedTime += deltaTime;
     if (checkRoundWinner() != 0 || bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
       std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to END_ROUND" << std::endl;
-      bombElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
-      updateRounds();
-    }
-    if (spike.state == BombState::DEFUSED){
+    }else if (spike.state == BombState::DEFUSED){
       phase = Phase::END_ROUND;
       std::cout << "[DEBUG] Bomb defused, transitioning to END_ROUND" << std::endl;
-      updateRounds();
     }
 
     break;
@@ -458,27 +439,57 @@ void Game::updateGamePhase(float deltaTime){
 }
 
 void Game::updateRounds(){
-  teamA.restartPlayersAlive(); // contador en team y vida de c/u
-  teamB.restartPlayersAlive();
+  std::cout << "[DEBUG] start update rounds";
+  //teamA.restartPlayersAlive(); // contador en team y vida de c/u
+  //teamB.restartPlayersAlive();
+  for (auto &player : players){
+    player.restoreHealth();
+    player.setIsAlive(true);
+    std::cout << "[DEBUG] Player " << player.getName() << " health restored and alive status set." << std::endl;
+  }
+
+  endRoundElapsedTime = 0.0f;
+  plantingElapsedTime = 0.0f;
+  purchaseElapsedTime = 0.0f;
+  bombElapsedTime = 0.0f;
   roundNumber += 1;
   roundsUntilRoleChange -= 1;
   roundsUntilEndGame -= 1;
+
+  std::cout << "[DEBUG] Round number updated to " << roundNumber << std::endl;
+  std::cout << "[DEBUG] roundsUntilRoleChange: " << roundsUntilRoleChange << std::endl;
+  std::cout << "[DEBUG] roundsUntilEndGame: " << roundsUntilEndGame << std::endl;
+
   if (roundsUntilRoleChange == 0)
   {
     teamA.invertRole();
     teamB.invertRole();
   }
+
   if (roundsUntilEndGame == 0)
   {
     running = false;
+    std::cout << "[DEBUG] Game ended." << std::endl;
   }
+
   resetSpawn();
   placeTeamsInSpawn();
 
+  std::cout << "[DEBUG] Resetting spike carriers for teams..." << std::endl;
   teamA.resetSpikeCarrier();
   teamB.resetSpikeCarrier();
+
+  std::cout << "[DEBUG] Spike state reset to INVENTORY." << std::endl;
   spike.state = BombState::INVENTORY;
+
   droppedWeapons.clear();
+
+  // Debug estado final equipos y jugadores vivos
+  std::cout << "[DEBUG] Team A size: " << teamA.getTeamSize() << std::endl;
+  std::cout << "[DEBUG] Team B size: " << teamB.getTeamSize() << std::endl;
+  std::cout << "[DEBUG] Team A players alive: " << teamA.getPlayersAlive() << std::endl;
+  std::cout << "[DEBUG] Team B players alive: " << teamB.getPlayersAlive() << std::endl;
+  
 }
 
 void Game::placeTeamsInSpawn()

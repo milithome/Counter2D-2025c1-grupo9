@@ -15,10 +15,11 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <list>
 
 class Game {
 private:
-  std::vector<Player> players;
+  std::list<Player> players;
   Team teamA;
   Team teamB;
   int roundNumber = 1;
