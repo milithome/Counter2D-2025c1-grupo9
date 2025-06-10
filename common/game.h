@@ -27,11 +27,11 @@ private:
   Phase phase= Phase::PURCHASE;
   std::vector<std::tuple<int, int, bool>> spawnTeamTerrorist;
   std::vector<std::tuple<int, int, bool>> spawnTeamCounter;
-
+  bool gameStart= true;
   std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
   float time;
-  BombState spike;
+  Spike spike;
   std::queue<Shot> shot_queue;
   GameMap map;
   void dropWeapon(const Weapon& weapon, float x, float y);
@@ -58,7 +58,6 @@ private:
   bool rectsOverlap(float ax, float ay, float aw, float ah,
                   float bx, float by, float bw, float bh);
   void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
-  void updateRotation(const std::string &name, float currentRotation);
   void stopShooting(const std::string &name);
   void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player& player);
@@ -85,10 +84,10 @@ public:
   
   void
   updatePlayerPosition(const std::string &name, float x,
-                       float y); // público por tema de sincronizacion cliente
-  void updatePlayerHealth(const std::string &name, int health); // público por tema de sincronizacion cliente
-  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); // público por tema de sincronizacion cliente
-  
+                       float y);
+  void updatePlayerHealth(const std::string &name, int health);
+  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); 
+  void updateRotation(const std::string &name, float currentRotation);
   bool addPlayer(const std::string &name);
   StateGame getState();
   Entity getPlayerState(const std::string& name);

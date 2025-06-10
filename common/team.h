@@ -8,13 +8,12 @@
 class Team {
 private:
   Role currentRole;
-  std::vector<Player> players;
+  std::vector<Player*> players;
   int roundsWon = 0;
-  int size = 0;
   int playersAlive;
 
 public:
-  void addPlayer(const Player &player);
+  void addPlayer(Player &player);
 
   int getRoundsWon() const;
 
@@ -31,6 +30,8 @@ public:
   void restartPlayersAlive();
 
   int getPlayersAlive() const;
+
+  void resetSpikeCarrier();
 };
 
 #endif

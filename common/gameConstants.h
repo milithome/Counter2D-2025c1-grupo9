@@ -26,7 +26,7 @@ struct DroppedWeapon {
 };
 
 #define SPEED 5.0f
-#define MAX_PLAYERS_PER_TEAM 1
+#define MAX_PLAYERS_PER_TEAM 5
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
 #define WEAPON_WIDTH 0.7f
@@ -35,14 +35,14 @@ struct DroppedWeapon {
 #define BOMB_HEIGHT 0.7f
 
 #define AMMO_PRICE 40
-#define MAX_HEALTH 1000
+#define MAX_HEALTH 200
 
 const float ACELERATION_RATE = 35.0f;
 const float MAX_ACELERATION = 3.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
-const float PURCHASE_DURATION = 15.0f;
+const float PURCHASE_DURATION = 20.0f;
 const float BOMB_DURATION = 40.0f;
 const float TIME_TO_PLANT = 90.0f;
 const float TIME_UNTIL_PLANT = 5.0f;

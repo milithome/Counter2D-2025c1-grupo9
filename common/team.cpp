@@ -1,14 +1,13 @@
 #include "team.h"
 
-void Team::addPlayer(const Player &player) {
-  players.push_back(player);
-  size++;
+void Team::addPlayer(Player &player) {
+  players.push_back(&player);
 }
 
 int Team::getPlayersAlive() const {
     int aliveCount = 0;
     for (const auto& player : players) {
-        if (player.isAlive()) {
+        if (player->isAlive()) {
             aliveCount++;
         }
     }
@@ -29,14 +28,24 @@ void Team::invertRole() {
     newRole = Role::TERRORIST;
   }
   for (auto &player : players) {
-    player.setRole(newRole);
+    player->setRole(newRole);
+  }
+}
+
+void Team::resetSpikeCarrier(){
+  for (auto &player : players){
+    player->setHasSpike(false);
+  }
+  if (currentRole == Role::TERRORIST && !players.empty()) {
+    int carrier = rand() % players.size();
+    players[carrier]->setHasSpike(true);
   }
 }
 
 void Team::setRole(Role role) {
   currentRole = role;
   for (auto &player : players){
-    player.setRole(role);
+    player->setRole(role);
   }
 }
 
@@ -47,9 +56,9 @@ Role Team::getRole(){
 void Team::restartPlayersAlive() { 
   playersAlive = players.size(); 
   for (auto &player : players){
-    player.restoreHealth();
-    player.setIsAlive(true);
+    player->restoreHealth();
+    player->setIsAlive(true);
   }
 }
 
-int Team::getTeamSize() { return size; }
+int Team::getTeamSize() { return players.size(); }
