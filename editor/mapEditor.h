@@ -23,10 +23,10 @@ class MapEditor : public QWidget {
     Q_OBJECT
 
 public:
-    MapEditor(QWidget* parent = nullptr);
+    MapEditor(QWidget* parent, std::string nombre, int ancho, int alto);
 
 private slots:
-    void createNewMap();
+    void createNewMap(std::string name, int width, int height);
     void selectBlockType(BlockType type);
     void handleCellClick(int x, int y);
 
@@ -34,7 +34,7 @@ private:
     void drawGrid();
     void setupSidebar();
 
-    MapTemplate* currentMap;
+    MapEditorTemplate* currentMap;
     BlockType selectedBlockType;
 
     QGridLayout* gridLayout;

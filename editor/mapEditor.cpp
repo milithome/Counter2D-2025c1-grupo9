@@ -53,7 +53,7 @@ private:
 
 // ---------- MapEditor Implementation ----------
 
-MapEditor::MapEditor(QWidget* parent)
+MapEditor::MapEditor(QWidget* parent, std::string nombre, int ancho, int alto)
     : QWidget(parent), currentMap(nullptr), gridLayout(nullptr), selectedBlockType(BlockType::EMPTY) {
 
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
@@ -67,7 +67,8 @@ MapEditor::MapEditor(QWidget* parent)
     setLayout(mainLayout);
 
     // Temporario: Crear mapa de prueba
-    currentMap = new MapTemplate("MapaDemo", 10, 10);
+    currentMap = new MapTemplate(nombre.toStdString(), ancho, alto);
+    currentMap = setWindowTitle(nombre);
     drawGrid();
 }
 

@@ -49,13 +49,12 @@ EditorMenuWindow::EditorMenuWindow(QWidget *parent)
     setCentralWidget(central);
 
     connect(nuevoMapaBtn, &QPushButton::clicked, this, [this]() {
-        QString nombre = "NuevoMapa";
+        std::string nombre = "NuevoMapa";
         int ancho = 15;
         int alto = 10;
+        QWidget* parent;
 
-        MapEditor* editor = new MapEditor;
-        editor->createNewMap(nombre, ancho, alto);
-        editor->setWindowTitle(nombre);
+        MapEditor* editor = new MapEditor(parent, nombre, ancho, alto);
         editor->show();
     });
     connect(volverMenuBtn, &QPushButton::clicked, this, &QMainWindow::close);
