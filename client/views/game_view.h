@@ -14,99 +14,85 @@
 
 using namespace SDL2pp;
 
-#define SHOT_SPEED 120
-#define SHOT_DURATION 10
-#define SHOT_THICKNESS 2
-#define SHOT_LENGTH 8
+
+#define DEATH_DURATION 1
+#define BULLET_SPEED 120
+#define BULLET_DURATION 1
+#define BULLET_THICKNESS 2
+#define BULLET_LENGTH 8
 
 
+#define FONT_SIZE 32
 
-struct ShotEffect {
+
+struct BulletEffect {
     float x;
     float y;
     float target_x;
     float target_y;
     float angle;
     float time_left;
+    Impact impact;
 };
 
-// Delirio
-//////////////////////////////////////////////////////////////////////////
-/*
-struct ShopLayout {
-    SdlContainer container;
-    std::vector<SdlContainer> weaponItemContainers;
-    std::vector<SdlSurfaceWidget> weaponLabels;
-    std::vector<SdlSurfaceWidget> weaponPriceLabels;
-    std::vector<SdlSurfaceWidget> boughtLabels;
-    std::vector<SdlSurfaceWidget> weaponSprites;
-    SdlContainer primaryAmmoContainer;
-    SdlSurfaceWidget primaryAmmoLabel;
-    SdlSurfaceWidget primaryAmmoPriceLabel;
-    SdlSurfaceWidget primaryAmmoBoughtLabel;
-    SdlContainer secondaryAmmoContainer;
-    SdlSurfaceWidget secondaryAmmoLabel;
-    SdlSurfaceWidget secondaryAmmoPriceLabel;
-    SdlSurfaceWidget secondaryAmmoBoughtLabel;
-}
-*/
-///////////////////////////////////////////////////////////////////////////
-struct ShopLayout {
-    Rect container;
-    Rect primaryWeaponLabel;
-    std::vector<Rect> weaponItemContainers;
-    std::vector<Rect> weaponLabels;
-    std::vector<Rect> weaponPriceLabels;
-    std::vector<Rect> boughtLabels;
-    std::vector<Rect> weaponSprites;
-
-    Rect ammoLabel;
-    Rect primaryAmmoContainer;
-    Rect secondaryAmmoContainer;
-    Rect primaryAmmoLabel;
-    Rect secondaryAmmoLabel;
-    Rect primaryAmmoPriceLabel;
-    Rect secondaryAmmoPriceLabel;
+struct DeathEffect {
+    float dead_body_x;
+    float dead_body_y;
+    float dead_body_rotation;
+    //Surface dead_body_skin;
+    float time_left;
+    int alpha;
 };
 
+#define FOV M_PI/2
 
-struct InterfaceLayout {
-    Rect container;
-    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> health;
-    std::function<Rect(Rect parent, Surface& label, std::vector<Rect> parentsChildren, uint32_t position)> ammo;
-    std::function<Rect(Rect parent, Surface& label)> time;
+#define PARTICLE_SIZE 2
+#define PARTICLE_ACCELERATION -60
 
-    std::function<Rect(Rect parent, std::vector<Rect> parentsChildren, uint32_t position)> createWeaponContainer;
-    std::function<Rect(Rect parent, Surface& sprite)> createWeaponSprite;
 
+#define BLOOD_EFFECT_PARTICLES 16
+#define BLOOD_PARTICLE_DISPERSION 10
+#define BLOOD_PARTICLE_MAX_DURATION 0.5
+#define BLOOD_PARTICLE_MIN_DURATION 0.2
+#define BLOOD_PARTICLE_MIN_SPEED 10
+#define BLOOD_PARTICLE_MAX_SPEED 20
+
+#define SPARK_EFFECT_PARTICLES 8
+#define SPARK_PARTICLE_MAX_DURATION 0.2
+#define SPARK_PARTICLE_MIN_DURATION 0.1
+#define SPARK_PARTICLE_MIN_SPEED 3
+#define SPARK_PARTICLE_MAX_SPEED 6
+
+
+#define FLARE_EFFECT_DURATION 0.5
+
+struct NewPhaseEffect {
+    Phase phase;
+    float time_left = 2;
 };
 
-// TODO: cambiar el createShopLayout para que use esto
-// struct ShopLayout {
-//     Rect container;
+struct Particle {
+    float x, y;
+    float speed;
+    float angle;
+    float time_left;
+};
 
-//     std::function<Rect(std::vector<Rect> children)> sectionVBox;
-//     std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)> primaryWeaponLabel;
-//     std::vector<std::function<Rect(std::vector<Rect> parentsChildren, uint32_t position)>> weaponItemContainers; // Es una HBox
-//     ////////////////////////////////////////////////////////
+struct HitEffect {
+    std::vector<Particle> particles;
+};
 
-//     // Forman parte de una "VBox" que esta adentro de cada itemContainer
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponLabels;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponPriceLabels;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> weaponSprites;
-//     std::vector<std::function<Rect(Surface label, std::vector<Rect> parentsChildren, uint32_t position)>> boughtLabels;
-//     /////////////////////////////////////////////////////////////////////
+enum Skin {
+    PHOENIX,
+    L337_KREW, 
+    ARCTIC_AVENGER,
+    GUERRILLA,
+    SEAL_FORCE,
+    GERMAN_GSG9,
+    UKSAS,
+    FRENCH_GIGN
+};
 
-//     std::function<Rect()> ammoLabel;
-//     std::function<Rect()> primaryAmmoContainer;
-//     std::function<Rect()> secondaryAmmoContainer;
-//     std::function<Rect()> primaryAmmoLabel;
-//     std::function<Rect()> secondaryAmmoLabel;
-//     std::function<Rect()> primaryAmmoPriceLabel;
-//     std::function<Rect()> secondaryAmmoPriceLabel;
-//     std::function<Rect()> primaryAmmoBoughtLabel;
-//     std::function<Rect()> secondaryAmmoBoughtLabel;
-// };
 
 // d inventory, dropped
 // m shop
@@ -114,16 +100,17 @@ struct InterfaceLayout {
 
 class GameView {
 public:
-    //GameView(Game& game, const std::string& playerName, SDL_Point window_pos, const std::string& background_path, const std::string& sprite_path, const std::vector<std::vector<uint16_t>>& tiles_map, const std::unordered_map<uint16_t, MapLegendEntry>& legend_tiles);
     GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
     SDL_Point getCenterPoint();
-    void addShotEffect(Bullet bullet);
+    void addBulletEffects(Shot shot);
+    void addDeathEffect(float x, float y, float angle);
+    void addNewPhaseEffect(Phase phase);
     void switchShopVisibility();
-
-    void playShotSound();
+    void hideShop() { shopIsVisible = false; };
+    void resizeHud();
 
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
@@ -131,7 +118,6 @@ public:
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuySecondaryAmmoButton() { return buySecondaryAmmoButton; };
 
 private:
-    Mixer mixer = Mixer(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Window window;
     Renderer renderer;
     Game& game;
@@ -139,44 +125,191 @@ private:
     Map& map;
 
 
-    Chunk glockSound = Chunk("../assets/sfx/weapons/usp_silenced.wav");
 
     Texture mapTiles;
     Texture backgroundTexture;
     Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
-    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", 20);
+    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", FONT_SIZE);
+
+    // Surfaces de las skins para poder crear otras texturas, util para hacer las animaciones de muerte
+    Surface phoenixS = Surface("../assets/gfx/player/t1.bmp");
+    Surface l337KrewS = Surface("../assets/gfx/player/t2.bmp");
+    Surface arcticAvengerS = Surface("../assets/gfx/player/t3.bmp");
+    Surface guerrillaS = Surface("../assets/gfx/player/t4.bmp");
+    Surface sealForceS = Surface("../assets/gfx/player/ct1.bmp");
+    Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
+    Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
+    Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
+    Surface& getSkinSpriteSurface(Skin skin) {
+        switch (skin) {
+            case PHOENIX:           return phoenixS;
+            case L337_KREW:         return l337KrewS;
+            case ARCTIC_AVENGER:    return arcticAvengerS;
+            case GUERRILLA:         return guerrillaS;
+            case SEAL_FORCE:        return sealForceS;
+            case GERMAN_GSG9:       return germanGsg9S;
+            case UKSAS:             return uksasS;
+            case FRENCH_GIGN:       return frenchGignS;
+            default:                throw std::exception();
+        }
+    }
 
     // T skins
-    Texture phoenix = Texture(renderer, "../assets/gfx/player/t1.bmp");
-    Texture L337Krew = Texture(renderer, "../assets/gfx/player/t2.bmp");
-    Texture arcticAvenger = Texture(renderer, "../assets/gfx/player/t3.bmp");
-    Texture Guerrilla = Texture(renderer, "../assets/gfx/player/t4.bmp");
+    Texture phoenix = Texture(renderer, phoenixS);
+    Texture l337Krew = Texture(renderer, l337KrewS);
+    Texture arcticAvenger = Texture(renderer, arcticAvengerS);
+    Texture guerrilla = Texture(renderer, guerrillaS);
 
     // CT skins
-    Texture sealForce = Texture(renderer, "../assets/gfx/player/ct1.bmp");
-    Texture germanGSG9 = Texture(renderer, "../assets/gfx/player/ct2.bmp");
-    Texture UKSAS = Texture(renderer, "../assets/gfx/player/ct3.bmp");
-    Texture frenchGIGN = Texture(renderer, "../assets/gfx/player/ct4.bmp");
+    Texture sealForce = Texture(renderer, sealForceS);
+    Texture germanGsg9 = Texture(renderer, germanGsg9S);
+    Texture uksas = Texture(renderer, uksasS);
+    Texture frenchGign = Texture(renderer, frenchGignS);
+    Texture& getSkinSprite(Skin skin) {
+        switch (skin) {
+            case PHOENIX:           return phoenix;
+            case L337_KREW:         return l337Krew;
+            case ARCTIC_AVENGER:    return arcticAvenger;
+            case GUERRILLA:         return guerrilla;
+            case SEAL_FORCE:        return sealForce;
+            case GERMAN_GSG9:       return germanGsg9;
+            case UKSAS:             return uksas;
+            case FRENCH_GIGN:       return frenchGign;
+            default:                throw std::exception();
+        }
+    }
+
+    Texture bloodTexture;
+    Texture createBloodTexture() {
+            Surface surface(
+                0, PARTICLE_SIZE, PARTICLE_SIZE, 32,
+                0x00FF0000, // Rmask
+                0x0000FF00, // Gmask
+                0x000000FF, // Bmask
+                0xFF000000  // Amask
+            );
+            surface.FillRect(SDL2pp::NullOpt,
+                            SDL_MapRGBA(surface.Get()->format, 255, 0, 0, 255));
+            return Texture(renderer, surface);
+    }
+
+    Texture sparkTexture;
+    Texture createSparkTexture() {
+            Surface surface(
+                0, PARTICLE_SIZE, PARTICLE_SIZE, 32,
+                0x00FF0000, // Rmask
+                0x0000FF00, // Gmask
+                0x000000FF, // Bmask
+                0xFF000000  // Amask
+            );
+            surface.FillRect(SDL2pp::NullOpt,
+                            SDL_MapRGBA(surface.Get()->format, 255, 240, 0, 255));
+            
+            
+            return Texture(renderer, surface);
+    }
 
 
-    Surface AK47ShopSprite = Surface("../assets/gfx/weapons/ak47_m.bmp");
-    Surface M3ShopSprite = Surface("../assets/gfx/weapons/m3_m.bmp");
-    Surface AWPShopSprite = Surface("../assets/gfx/weapons/awp_m.bmp");
+    std::unordered_map<WeaponName, std::string> weaponTexts = {
+        {AK47, "AK-47"},
+        {M3, "M3"},
+        {AWP, "AWP"},
+        {GLOCK, "Glock"}
+    };
 
-    Surface AKInvSprite = Surface("../assets/gfx/weapons/ak47_k.bmp");
-    Surface M3InvSprite = Surface("../assets/gfx/weapons/m3_k.bmp");
-    Surface AWPInvSprite = Surface("../assets/gfx/weapons/awp_k.bmp");
+    Texture akShopSprite;
+    Texture m3ShopSprite;
+    Texture awpShopSprite;
+    Texture createShopTexture(const std::string& path) {
+        Surface ShopSpriteS = Surface(path);
+        ShopSpriteS.SetColorKey(true, SDL_MapRGB(ShopSpriteS.Get()->format, 255, 0, 255));
+        return Texture(renderer, ShopSpriteS);
+    }
 
-    Surface glockInvSprite = Surface("../assets/gfx/weapons/glock_k.bmp");
-    Surface knifeInvSprite = Surface("../assets/gfx/weapons/knife_k.bmp");
-    Surface bombInvSprite = Surface("../assets/gfx/weapons/bomb_d.bmp");
+    Texture& getWeaponShopSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47: return akShopSprite;
+            case M3:   return m3ShopSprite;
+            case AWP:  return awpShopSprite;
+            default:   throw std::exception();
+        }
+    }
 
-    Texture AKInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
-    Texture M3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
-    Texture AWPInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+    
+    Texture akInvSprite;
+    Texture m3InvSprite;
+    Texture awpInvSprite;
+    Texture glockInvSprite;
+    Texture knifeInvSprite;
+    Texture bombInvSprite;
+    Texture createInvTexture(const std::string& path) {
+        Surface invSpriteS = Surface(path);
+        invSpriteS.SetColorKey(true, SDL_MapRGB(invSpriteS.Get()->format, 0, 0, 0));
+        return Texture(renderer, invSpriteS);
+    }
+    Texture& getWeaponInvSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akInvSprite;
+            case M3:    return m3InvSprite;
+            case AWP:   return awpInvSprite;
+            case GLOCK: return glockInvSprite;
+            case KNIFE: return knifeInvSprite;
+            default:    throw std::exception();
+        }
+    }
+
+    Texture akInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
+    Texture m3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
+    Texture awpInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
+    Texture glockInGameSprite = Texture(renderer, "../assets/gfx/weapons/glock.bmp");
+    Texture knifeInGameSprite = Texture(renderer, "../assets/gfx/weapons/knife.bmp");
+    Texture bombInGameSprite = Texture(renderer, "../assets/gfx/weapons/bomb.bmp");
+    Texture& getWeaponInGameSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akInGameSprite;
+            case M3:    return m3InGameSprite;
+            case AWP:   return awpInGameSprite;
+            case GLOCK:   return glockInGameSprite;
+            case KNIFE:   return knifeInGameSprite;
+            default:    throw std::exception();
+        }
+    }
+
+
+    Texture akDroppedSprite = Texture(renderer, "../assets/gfx/weapons/ak47_d.bmp");
+    Texture m3DroppedSprite = Texture(renderer, "../assets/gfx/weapons/m3_d.bmp");
+    Texture awpDroppedSprite = Texture(renderer, "../assets/gfx/weapons/awp_d.bmp");
+    Texture& getWeaponDroppedSprite(WeaponName weapon) {
+        switch (weapon) {
+            case AK47:  return akDroppedSprite;
+            case M3:    return m3DroppedSprite;
+            case AWP:   return awpDroppedSprite;
+            default:    throw std::exception();
+        }
+    }
+
+
+    Surface buyPhaseLabel =  font.RenderText_Blended("Fase de compra", Color(255, 255, 255));
+    Surface roundStartLabel = font.RenderText_Blended("Inicio de ronda", Color(255, 255, 255));
+    Surface bombPlantedLabel =  font.RenderText_Blended("Bomba plantada", Color(255, 255, 255));
+    Surface roundEndLabel =  font.RenderText_Blended("Fin de ronda", Color(255, 255, 255));
+    Surface& getPhaseLabel(Phase phase) {
+        switch (phase) {
+            case PURCHASE:          return buyPhaseLabel;
+            case BOMB_PLANTING:     return roundStartLabel;
+            case BOMB_DEFUSING:     return bombPlantedLabel;
+            case END_ROUND:         return roundEndLabel;
+            default:                throw std::exception();
+        }
+    }
 
     bool shopIsVisible = false;
-    std::vector<ShotEffect> shot_effects;
+
+    std::vector<HitEffect> blood_effects;
+    std::vector<HitEffect> sparks_effects;
+    std::vector<BulletEffect> bullet_effects;
+    std::vector<DeathEffect> death_effects;
+    NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -184,16 +317,23 @@ private:
     void showBackground();
     void showMap(float cameraX, float cameraY);
     void showBullets(float cameraX, float cameraY, float deltaTime);
+    void showBloodEffects(float cameraX, float cameraY, float deltaTime);
+    void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
+    void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+    void showNewPhase(float deltaTime);
+    void showFov();
+
+
     void showInterface();
     void showShop();
-    ShopLayout createShopLayout();
-    InterfaceLayout createInterfaceLayout();
 
-    ShopLayout shopLayout = createShopLayout();
-    InterfaceLayout interfaceLayout = createInterfaceLayout();
-
-
+    float randomFloat(float min, float max) {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dis(min, max);
+        return dis(gen);
+    }
 
 
 };

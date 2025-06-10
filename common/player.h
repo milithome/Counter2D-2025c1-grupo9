@@ -13,6 +13,7 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
+  bool team= false; //true es A, false es B
   int money = 1000;
   Weapon equipped = Weapons::Glock;
   WeaponType typeEquipped = WeaponType::SECONDARY;
@@ -22,12 +23,13 @@ private:
   uint32_t bulletsPrimary = 0;
   uint32_t bulletsSecondary = 0;
   float rotation;
-  float health = 100;
+  int health = MAX_HEALTH;
   float vx = 0, vy = 0;
   float aceleration = 0;
-  bool hasTheSpike = false;
+  bool hasTheSpike = true;
   bool shooting = false;
   bool planting = false;
+  bool defusing = false;
   bool alreadyShot = false;
   float shootCooldown = 0.0f;
   float timeLastBullet = 0.0f;
@@ -36,6 +38,7 @@ private:
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
   uint32_t lastMoveId = 0;
+  bool alive= true;
 
 public:
   Player(const std::string &name)
@@ -46,27 +49,29 @@ public:
   bool getAlreadyShot();
   float getX() const;
   float getY() const;
+  void setTeam(bool teamA);
   int getBulletsPerShoot();
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
   int getBurstFireBullets();
   std::pair<float, float> getDamageRange() const;
   bool getHasTheSpike();
-  float getHealth() const;
+  int getHealth() const;
   const Hitbox &getHitbox() const;
   uint32_t getLastMoveId() const;
   std::string getName() const;
   int getMoney() const;
   Weapon getEquipped();
   WeaponName getPrimaryWeaponName() const;
+  Weapon getPrimaryWeapon();
   WeaponName getSecondaryWeaponName() const;
-  WeaponType getTypeEquipped();
+  WeaponType getTypeEquipped() const;
   float getRotation() const;
   float getShootCooldown();
   float getSpreadAngle();
   float getTimeLastBullet();
   bool isAlive() const;
-  bool isPlanting();
+  void setIsAlive(bool isAlive);
   bool isShooting();
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);
@@ -75,10 +80,9 @@ public:
   void resetSecondaryBullets();
   void resetTimeLastBullet();
   void setAlreadyShot(bool value);
-  void setHealth(float value);
+  void restoreHealth();
   void setLastMoveId(uint32_t id);
   void setPosition(float x, float y);
-  void setRole(Role new_role);
   void setRotation(float currentRotation);
   void startShooting();
   void stopShooting();
@@ -87,8 +91,10 @@ public:
   void updateAceleration(float deltaTime);
   void updateBurstFireBullets(int value);
   void updateCooldown(float deltaTime);
-  void updateHealth(float value);
+  void updateHealth(int value);
+  void setHasSpike(bool hasSpike);
   void updateIsPlanting(bool isPlanting);
+  void updateIsDefusing(bool isDefusing);
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateTimeLastBullet(float deltaTime);
@@ -96,5 +102,9 @@ public:
   void updatePrimaryBullets(int value);
   void updateSecondaryBullets(int value);
   int getBullets();
+  Role getRole();
+  void setRole(Role newRole);
+  bool isPlanting();
+  bool isDefusing();
 };
 #endif

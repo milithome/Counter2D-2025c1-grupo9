@@ -29,7 +29,17 @@ TEST(ProtocolServerSender, SendAndReceiveLobbyListResponse) {
     Socket client_socket("localhost", "12370");
     Protocol client_protocol(std::move(client_socket));
 
-    Response response = client_protocol.recv_response();
+    Response response;
+    try
+    {
+        response = client_protocol.recv_response();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return;
+    }
+    
     ASSERT_EQ(response.type, Type::LIST);
     ASSERT_EQ(response.result, 0);
     ASSERT_EQ(response.message, "Success");
@@ -140,36 +150,44 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         player.type = PLAYER;
         player.x = 10.0f;
         player.y = 20.0f;
-        player.data = PlayerData{"Carlos", 45.0f, 3, 1500, 100.0f, {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY};
-        
+        player.data = PlayerData{
+            "Carlos", 45.0f, 3, 1500, 10,
+            {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY, true
+        };
+
         Entity bomb;
         bomb.type = BOMB;
         bomb.x = 12.0f;
         bomb.y = 22.0f;
-        bomb.data = BombData{true};
-        
+        bomb.data = BombData{PLANTED};
+
         Entity weapon;
         weapon.type = WEAPON;
         weapon.x = 14.0f;
         weapon.y = 24.0f;
-        weapon.data = WeaponData{WeaponType::PRIMARY, AK47};
+        weapon.data = WeaponData{AK47};
 
         std::vector<Entity> entities = {player, bomb, weapon};
 
-        Bullet b;
-        b.origin_x = 5.0f;
-        b.origin_y = 5.0f;
-        b.target_x = 15.0f;
-        b.target_y = 15.0f;
-        b.angle = 0.5f;
+        Bullet bullet;
+        bullet.target_x = 15.0f;
+        bullet.target_y = 15.0f;
+        bullet.angle = 0.5f;
+        bullet.impact = HUMAN;
 
-        std::queue<Bullet> bullets;
-        bullets.push(b);
+        Shot shot;
+        shot.origin_x = 5.0f;
+        shot.origin_y = 5.0f;
+        shot.bullets.push_back(bullet);
+        shot.weapon = AK47;
+
+        std::queue<Shot> shots;
+        shots.push(shot);
 
         Response r;
         r.type = Type::STATE;
         r.result = 0;
-        r.data = StateGame{PURCHASE, entities, bullets};
+        r.data = StateGame{PURCHASE, entities, shots};
         r.message = "Game State";
 
         server_protocol.send_response(r);
@@ -180,6 +198,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     Protocol client_protocol(std::move(client_socket));
 
     Response response = client_protocol.recv_response();
+    
     ASSERT_EQ(response.type, Type::STATE);
     ASSERT_EQ(response.result, 0);
     ASSERT_EQ(response.message, "Game State");
@@ -198,40 +217,44 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     EXPECT_FLOAT_EQ(player.rotation, 45.0f);
     EXPECT_EQ(player.lastMoveId, 3);
     EXPECT_EQ(player.money, 1500);
-    EXPECT_FLOAT_EQ(player.health, 100.0f);
+    EXPECT_EQ(player.health, 10);
     EXPECT_EQ(player.inventory.primary, M3);
     EXPECT_EQ(player.inventory.secondary, GLOCK);
     EXPECT_EQ(player.inventory.bulletsPrimary, 10);
     EXPECT_EQ(player.inventory.bulletsSecondary, 20);
+    EXPECT_TRUE(player.inventory.has_the_bomb);
+    EXPECT_EQ(player.equippedWeapon, WeaponType::PRIMARY);
+    EXPECT_TRUE(player.alive);
 
     entity = state.entities[1];
     ASSERT_EQ(entity.type, BOMB);
     ASSERT_FLOAT_EQ(entity.x, 12.0f);
     ASSERT_FLOAT_EQ(entity.y, 22.0f);
     auto bomb = std::get<BombData>(state.entities[1].data);
-    EXPECT_TRUE(bomb.planted);
+    EXPECT_EQ(bomb.state, PLANTED);
 
-    entity = state.entities[2]; 
+    entity = state.entities[2];
     ASSERT_EQ(entity.type, WEAPON);
     ASSERT_FLOAT_EQ(entity.x, 14.0f);
     ASSERT_FLOAT_EQ(entity.y, 24.0f);
     auto weapon = std::get<WeaponData>(state.entities[2].data);
-    EXPECT_EQ(weapon.type, WeaponType::PRIMARY);
     EXPECT_EQ(weapon.weapon, AK47);
+    
+    std::queue<Shot>& shots = state.shots;
+    ASSERT_FALSE(shots.empty());
+    ASSERT_EQ(shots.size(), 1);
 
-    ASSERT_EQ(state.bullets.size(), 1);
+    Shot received_shot = shots.front();
+    EXPECT_FLOAT_EQ(received_shot.origin_x, 5.0f);
+    EXPECT_FLOAT_EQ(received_shot.origin_y, 5.0f);
+    EXPECT_EQ(received_shot.weapon, AK47);
 
-    // obtengo la cola de balas y verifico la primera
-    std::queue<Bullet>& bullets = state.bullets;
-    ASSERT_FALSE(bullets.empty());
-    ASSERT_EQ(bullets.size(), 1);
-
-    Bullet bullet = bullets.front();
-    EXPECT_FLOAT_EQ(bullet.origin_x, 5.0f);
-    EXPECT_FLOAT_EQ(bullet.origin_y, 5.0f);
-    EXPECT_FLOAT_EQ(bullet.target_x, 15.0f);
-    EXPECT_FLOAT_EQ(bullet.target_y, 15.0f);
-    EXPECT_FLOAT_EQ(bullet.angle, 0.5f);
+    ASSERT_EQ(received_shot.bullets.size(), 1);
+    Bullet received_bullet = received_shot.bullets[0];
+    EXPECT_FLOAT_EQ(received_bullet.target_x, 15.0f);
+    EXPECT_FLOAT_EQ(received_bullet.target_y, 15.0f);
+    EXPECT_FLOAT_EQ(received_bullet.angle, 0.5f);
+    EXPECT_EQ(received_bullet.impact, HUMAN);
 
     server_thread.join();
 }

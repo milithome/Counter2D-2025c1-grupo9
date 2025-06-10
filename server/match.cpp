@@ -18,6 +18,7 @@ void Match::run() {
         if (inGame) {
             gameLoop();
         }
+        
         admin.removeMatch(name);
     } catch (const std::exception& e) {
         std::cerr << "Exception in Match: " << e.what() << std::endl;
@@ -65,6 +66,9 @@ void Match::handleLobbyMessage(const Message& message) {
             break;
         case Type::START:
             handleStart();
+            break;
+        case Type::DISCONNECT:
+            handleDisconnect(message.clientName);
             break;
         default:
             std::cerr << "Unknown message type: " << static_cast<int>(message.type) << std::endl;
@@ -119,6 +123,23 @@ void Match::handleStart() {
     }
 }
 
+void Match::handleDisconnect(const std::string& clientName) {
+    for (auto it = clients.begin(); it != clients.end(); ++it) {
+        if ((*it)->channels.name == clientName) {
+            Response response = {
+                Type::DISCONNECT,
+                0,
+                {},
+                "Disconnect successfull."
+            };
+            (*it)->channels.responses->push(response);
+            clients.erase(it);
+            break;
+        }
+    }
+    admin.removeClient(clientName);
+}
+
 void Match::broadcastLobbyState() {
     StateLobby state;
     for (const auto& client : clients) {
@@ -139,7 +160,7 @@ void Match::broadcastLobbyState() {
 void Match::gameLoop() {
     try {
         waitForPlayers();
-        Map map("../assets/maps/default.yaml");
+        Map map("../assets/maps/big.yaml");
         Game game(map.getMapData().game_map);
 
         setupGame(game);
@@ -169,10 +190,12 @@ void Match::setupGame(Game& game) {
 
 void Match::startTimeoutThread(Game& game) {
     std::thread timeoutThread([this, &game]() {
-        std::this_thread::sleep_for(std::chrono::minutes(1));
+        std::this_thread::sleep_for(std::chrono::minutes(10));
+        //std::this_thread::sleep_for(std::chrono::seconds(10));
         game.stop();
         inGame = false;
-        std::cout << "pasaron 10 segundos" << std::endl;
+        std::cout << "paso 10 minutos" << std::endl;
+        //std::cout << "pasaron 10 segundos" << std::endl;
     });
     timeoutThread.detach();
 }
@@ -194,6 +217,7 @@ void Match::runGameLoop(Game& game) {
 
         game.update(deltaTime);
         broadcastGameState(game.getState());
+        game.shotQueueClear(); // se tiene q vaciar la cola si los disparos ya fueron procesados
 
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time
@@ -232,7 +256,7 @@ void Match::endGame() {
             "Game finished"
         };
         client->channels.responses->push(response);
-        admin.createMenu(client);
+        admin.createMenu(client, true);
     }
 }
 
@@ -273,21 +297,7 @@ void Match::broadcastGameState(const StateGame& state) {
 void Match::handleGameMessage(const Message& message) {
     switch (message.type) {
         case Type::DISCONNECT:
-            for (auto it = clients.begin(); it != clients.end(); ++it) {
-                if ((*it)->channels.name == message.clientName) {
-                    Response response = {
-                        Type::DISCONNECT,
-                        0,
-                        {},
-                        "Disconnect successfull."
-                    };
-                    (*it)->channels.responses->push(response);
-                    clients.erase(it);
-                    break;
-                }
-            }
-
-            admin.removeClient(message.clientName);
+            handleDisconnect(message.clientName);
             disconnectedClients++;
 
             if (disconnectedClients == maxPlayers) {

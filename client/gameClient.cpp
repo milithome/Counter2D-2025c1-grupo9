@@ -1,19 +1,24 @@
 #include "gameClient.h"
 
-GameClient::GameClient(Game &game, Map &map, GameView &gameView, std::vector<std::string> players, Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, 
-                       std::string const clientName, SDL &sdl)
-    : sdl(sdl), 
+GameClient::GameClient(
+	Game &game,
+	Map &map,
+	GameView &gameView,
+	std::vector<std::string> players,
+	Queue<Response> &recv_queue,
+	Queue<std::shared_ptr<MessageEvent>> &send_queue, 
+    std::string const clientName,
+	SDL &sdl,
+	bool pulse_available
+) : sdl(sdl), 
     game(game), 
-    gameController(gameView, game, clientName), 
+    gameController(gameView, game, clientName, pulse_available), 
     map(map), gameView(gameView), 
     players(players), 
     recv_queue(recv_queue), 
-    send_queue(send_queue)
+    send_queue(send_queue) {}
 
-{
-}
-
-void GameClient::run() {
+bool GameClient::run() {
     
 	const std::chrono::milliseconds TICK_DURATION(16);
 
@@ -33,7 +38,7 @@ void GameClient::run() {
 				}
 				case FINISH: {
 					game.stop();
-					break;
+					return false;
 				}
 				default: {
 					break;
@@ -41,7 +46,10 @@ void GameClient::run() {
 			}
 		}
 
-		gameController.processEvents();
+		bool quit = gameController.processEvents();
+		if (quit) {
+			return true;
+		}
 		gameController.update(deltaTime);
 		gameView.update(deltaTime);
 
@@ -58,5 +66,5 @@ void GameClient::run() {
             std::this_thread::sleep_for(TICK_DURATION - elapsed);
         }
 	}
-
+	return false;
 }

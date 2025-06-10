@@ -1,7 +1,7 @@
 #ifndef GAMECONTROLLER_H
 #define GAMECONTROLLER_H
 
-
+#include "client/views/game_sound_handler.h"
 #include "client/views/game_view.h"
 #include "common/game.h"
 #include "common/player.h"
@@ -16,20 +16,22 @@
 
 class GameController {
 public:
-    GameController(GameView& view, Game& game, const std::string& player_name);
+    GameController(GameView& view, Game& game, const std::string& player_name, bool pulse_available);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);
-    void processEvents();
+    bool processEvents();
     void update(float deltaTime);
 
 
 private:
     GameView& view;    
-    Game& game;        
+    Game& game;
+    GameSoundHandler soundHandler;
     std::string player_name;
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
+    void onWindowEvent(const SDL_Event& event);
     void onQuitPressed();
     void onMouseMovement();
     void onMouseLeftClick(const SDL_Event& event);
@@ -44,6 +46,10 @@ private:
     uint32_t lastMoveId = 0;
 
     bool shop_open = false;
+    bool planting = false;
+    bool defusing = false;
+
+    StateGame previous_state;
 };
 
 #endif

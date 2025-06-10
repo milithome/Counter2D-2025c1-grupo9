@@ -1,6 +1,7 @@
 #include "menu_controller.h"
 #include <QLayout>
 #include <QPushButton>
+#include <QString>
 #include <iostream>
 #include "join_event.h"
 #include "leave_event.h"
@@ -8,9 +9,11 @@
 #include "create_event.h"
 #include "start_event.h"
 
-MenuController::MenuController(QtWindow& window, Protocol& protocol) : window(window), protocol(protocol) {
+MenuController::MenuController(QtWindow& window, Protocol& protocol) : QWidget(nullptr), window(window), protocol(protocol) {
     mainView = MainView();
+
     listenToMainView(mainView);
+
     window.showView(mainView);
 }
 

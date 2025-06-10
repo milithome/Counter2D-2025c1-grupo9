@@ -15,6 +15,7 @@ class RecvLoop : public Thread {
 private:    
     Protocol& protocol;
     Queue<Response>& queue;
+    bool active;
 
 public:
     RecvLoop(Protocol& proto, Queue<Response>& q);
