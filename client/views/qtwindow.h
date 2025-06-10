@@ -15,6 +15,8 @@ public:
     void quit();
     QPoint getPosition();
 
+    void show() { window.show(); };
+
 private:
     QApplication& app;
     QWidget window;
