@@ -26,7 +26,7 @@ private:
     Admin& admin;
     bool inLobby;
     bool inGame;
-    size_t maxPlayers = 4;
+    size_t maxPlayers = 2;
     std::shared_ptr<Queue<Message>> toMatch;
     std::unordered_set<std::shared_ptr<Client>> clients;
 
