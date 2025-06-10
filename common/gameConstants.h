@@ -47,6 +47,7 @@ const float BOMB_DURATION = 40.0f;
 const float TIME_TO_PLANT = 90.0f;
 const float TIME_UNTIL_PLANT = 5.0f;
 const float TIME_UNTIL_DEFUSE = 5.0f;
+const float TIME_UNTIL_NEW_ROUND = 5.0f;
 
 const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 5;
 const int INITIAL_ROUNDS_UNTIL_END_GAME = 10;

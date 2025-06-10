@@ -162,7 +162,7 @@ struct Action {
 };
 
 // Estado del juego
-enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING };
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND};
 
 enum Impact { HUMAN, BLOCK, NOTHING };
 
