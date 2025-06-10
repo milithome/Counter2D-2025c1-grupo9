@@ -254,6 +254,7 @@ void Game::updatePlayerMovement(Player &player, float deltaTime) {
   PlayerCellBounds bounds = getCellBounds(newX, newY, width, height); 
   for (const auto& other : players) {
       if (&other == &player) continue; 
+      if (!other.isAlive()) continue;
       Hitbox otherHB = other.getHitbox();
       if (rectsOverlap(newX, newY, width, height, otherHB.x, otherHB.y, otherHB.width, otherHB.height)) {
         return;
