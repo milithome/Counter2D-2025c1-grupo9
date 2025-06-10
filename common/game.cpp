@@ -389,17 +389,19 @@ int Game::checkRoundWinner()
 }
 
 void Game::updateGamePhase(float deltaTime){
-  switch (phase)
-  {
+  std::cout << "[DEBUG] Spike state: " << static_cast<int>(spike.state) << std::endl;
+
+  switch (phase){
   case Phase::PURCHASE:
+    
     if(gameStart){
       teamA.resetSpikeCarrier();
       teamB.resetSpikeCarrier();
       gameStart=false;
     }
+    
     purchaseElapsedTime += deltaTime;
-    if (purchaseElapsedTime >= purchaseDuration)
-    {
+    if (purchaseElapsedTime >= purchaseDuration){
       purchaseElapsedTime = 0.0f;
       phase = Phase::BOMB_PLANTING;
       std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
@@ -408,15 +410,13 @@ void Game::updateGamePhase(float deltaTime){
 
   case Phase::BOMB_PLANTING:
     plantingElapsedTime += deltaTime;
-    if (checkRoundWinner() != 0 || plantingElapsedTime >= timeToPlantBomb)
-    { // pierden atacantes
+    if (checkRoundWinner() != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
       std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to PURCHASE" << std::endl;
       plantingElapsedTime = 0.0f;
       phase = Phase::PURCHASE;
       updateRounds();
     }
-    if (spike.state == BombState::PLANTED)
-    {
+    if (spike.state == BombState::PLANTED){
       phase = Phase::BOMB_DEFUSING;
       std::cout << "[DEBUG] Bomb planted, transitioning to BOMB_DEFUSING" << std::endl;
     }
@@ -424,15 +424,13 @@ void Game::updateGamePhase(float deltaTime){
 
   case Phase::BOMB_DEFUSING:
     bombElapsedTime += deltaTime;
-    if (checkRoundWinner() != 0 || bombElapsedTime >= timeUntilBombExplode)
-    { // pierden defensores
+    if (checkRoundWinner() != 0 || bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
       std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to PURCHASE" << std::endl;
       bombElapsedTime = 0.0f;
       phase = Phase::PURCHASE;
       updateRounds();
     }
-    if (spike.state == BombState::DEFUSED)
-    {
+    if (spike.state == BombState::DEFUSED){
       phase = Phase::PURCHASE;
       std::cout << "[DEBUG] Bomb defused, transitioning to PURCHASE" << std::endl;
       updateRounds();
@@ -445,8 +443,7 @@ void Game::updateGamePhase(float deltaTime){
   }
 }
 
-void Game::updateRounds()
-{
+void Game::updateRounds(){
   teamA.restartPlayersAlive(); // contador en team y vida de c/u
   teamB.restartPlayersAlive();
   roundNumber += 1;
