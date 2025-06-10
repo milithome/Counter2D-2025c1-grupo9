@@ -106,6 +106,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             defusing = true;
             Action action{ActionType::DEFUSE, {}};
             game.execute(player_name, action);
+            action_queue.push(action);
             break;
         }
         default: {
@@ -158,6 +159,7 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             defusing = false;
             Action action{ActionType::STOP_DEFUSING, {}};
             game.execute(player_name, action);
+            action_queue.push(action);
             break;
         }
     }
@@ -385,7 +387,7 @@ void GameController::updateGameState(StateGame state) {
         std::cout << state.phase << std::endl;
         if (state.phase == BOMB_PLANTING) view.hideShop();
         if (state.phase == BOMB_DEFUSING) game.plant(entities[bomb_index].x, entities[bomb_index].y);
-        // if (previous_state.phase == BOMB_DEFUSING && state.phase == PURCHASE) game.defuse();
+        if (previous_state.phase == BOMB_DEFUSING && state.phase == PURCHASE) game.defuse();
         shop_open = false;
         view.addNewPhaseEffect(state.phase);
     }

@@ -50,7 +50,7 @@ void Client::run() {
             break;
         }
 
-        Map map = Map("../assets/maps/default.yaml");  // modificar cuando este el editor (aca tendria que elegir el cliente que mapa usar)
+        Map map = Map("../assets/maps/big.yaml");  // modificar cuando este el editor (aca tendria que elegir el cliente que mapa usar)
         
         
         players = menuClient.allPlayers();

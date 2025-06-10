@@ -160,7 +160,7 @@ void Match::broadcastLobbyState() {
 void Match::gameLoop() {
     try {
         waitForPlayers();
-        Map map("../assets/maps/default.yaml");
+        Map map("../assets/maps/big.yaml");
         Game game(map.getMapData().game_map);
 
         setupGame(game);

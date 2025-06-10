@@ -298,6 +298,7 @@ private:
             case PURCHASE:          return buyPhaseLabel;
             case BOMB_PLANTING:     return roundStartLabel;
             case BOMB_DEFUSING:     return bombPlantedLabel;
+            case END_ROUND:         return roundEndLabel;
             default:                throw std::exception();
         }
     }
