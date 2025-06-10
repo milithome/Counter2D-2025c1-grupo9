@@ -66,8 +66,6 @@ void Client::run() {
 
         GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
         GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl, pulse_available);
-        gameClient.run();
-
 
         quit = gameClient.run();
 

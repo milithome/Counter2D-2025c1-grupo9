@@ -44,9 +44,9 @@ const float MAX_ACELERATION = 3.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
-const float PURCHASE_DURATION = 30.0f;
-const float BOMB_DURATION = 30.0f;
-const float TIME_TO_PLANT = 30.0f;
+const float PURCHASE_DURATION = 15.0f;
+const float BOMB_DURATION = 40.0f;
+const float TIME_TO_PLANT = 90.0f;
 const float TIME_UNTIL_PLANT = 5.0f;
 const float TIME_UNTIL_DEFUSE = 5.0f;
 

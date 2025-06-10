@@ -66,7 +66,8 @@ void GameView::update(float deltaTime) {
     showBloodEffects(cameraX, cameraY, deltaTime);
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
-    showDeathAnimations(cameraX, cameraY, deltaTime);
+    // showDeathAnimations(cameraX, cameraY, deltaTime);
+    showNewPhase(deltaTime);
     // showFov();
 
     if (!shopIsVisible) {
@@ -399,6 +400,9 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 float weaponX = gameState[i].x;
                 float weaponY = gameState[i].y;
                 Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                if (data.weapon == NONE) {
+                    break;
+                }
                 renderer.Copy(getWeaponDroppedSprite(data.weapon), src, dst);
                 break;
             }
@@ -409,7 +413,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 if (data.state == BombState::PLANTED) {
                     renderer.Copy(bombInGameSprite, src, dst);
-                } else {
+                } else if (BombState::DROPPED) {
                     renderer.Copy(bombInvSprite, src, dst);
                 }
                 break;
@@ -445,8 +449,26 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
     }
 }
 
-void GameView::showNewPhase() {
-    
+void GameView::showNewPhase(float deltaTime) {
+    if (new_phase_effect.time_left <= 0) {
+        return;
+    }
+    new_phase_effect.time_left -= deltaTime;
+    int width = renderer.GetOutputWidth();
+    int height = renderer.GetOutputHeight();
+    Surface& phaseLabel = getPhaseLabel(new_phase_effect.phase);
+    Rect phaseLabelRect(
+        (width - phaseLabel.GetWidth() * 2) / 2,
+        (height - phaseLabel.GetHeight() * 2) / 4,
+        phaseLabel.GetWidth() * 2,
+        phaseLabel.GetHeight() * 2
+    );
+
+    Texture phaseLabelTexture(renderer, phaseLabel);
+    renderer.Copy(
+        phaseLabelTexture,  
+        NullOpt, 
+        phaseLabelRect);
 }
 
 void GameView::showInterface() {
@@ -522,7 +544,7 @@ void GameView::showInterface() {
             break;
         }
     }
-    Surface timeLabel = font.RenderText_Blended("1:45", Color(255, 255, 255));
+    Surface timeLabel = font.RenderText_Blended("timer", Color(255, 255, 255));
 
     auto layoutCenterLabel = [=](Rect parent, Surface& label) {
         return Rect(
@@ -674,6 +696,7 @@ void GameView::resizeHud() {
 // y se almacenen de algun modo, y cada vez que se actualiza algo (osea, el jugador compra algo o cambia el tamaño de la ventana)
 // se vuelvan a crear los Rects. Por otro lado va a ver un metodo que grafique los sprites, los textos,
 // y los contenedores de la interfaz dentro de esos rects.
+
 void GameView::showShop() {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
@@ -1025,9 +1048,8 @@ void GameView::addDeathEffect(float x, float y, float angle) {
 }
 
 void GameView::addNewPhaseEffect(Phase phase) {
-    
+    new_phase_effect = NewPhaseEffect{phase};
 }
-
 
 void GameView::switchShopVisibility() {
     shopIsVisible = !shopIsVisible;
