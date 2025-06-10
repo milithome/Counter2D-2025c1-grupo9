@@ -374,10 +374,7 @@ void Game::buyBullet(const std::string &name, WeaponType type)
 }
 
 int Game::checkRoundWinner(){
-  int aliveA = teamA.getPlayersAlive();
-  int aliveB = teamB.getPlayersAlive();
-  std::cout << "[DEBUG] Checking round winner: teamA alive = " << aliveA << ", teamB alive = " << aliveB << std::endl;
-
+  std::cout << "[DEBUG] Team A players alive: " << teamA.getPlayersAlive() << "Team B: "  << teamB.getPlayersAlive() << std::endl;
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
     teamA.incrementRoundsWon();
     std::cout << "[DEBUG] Team A wins the round" << std::endl;
@@ -416,7 +413,6 @@ void Game::updateGamePhase(float deltaTime){
       std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to END_ROUND" << std::endl;
       plantingElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
-      updateRounds();
     }
     if (spike.state == BombState::PLANTED){
       phase = Phase::BOMB_DEFUSING;
@@ -430,12 +426,10 @@ void Game::updateGamePhase(float deltaTime){
       std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to END_ROUND" << std::endl;
       bombElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
-      updateRounds();
     }
     if (spike.state == BombState::DEFUSED){
       phase = Phase::END_ROUND;
       std::cout << "[DEBUG] Bomb defused, transitioning to END_ROUND" << std::endl;
-      updateRounds();
     }
 
     break;
@@ -460,6 +454,10 @@ void Game::updateGamePhase(float deltaTime){
 void Game::updateRounds(){
   teamA.restartPlayersAlive(); // contador en team y vida de c/u
   teamB.restartPlayersAlive();
+  endRoundElapsedTime=0.0f;
+  plantingElapsedTime = 0.0f;
+  bombElapsedTime = 0.0f;
+  
   roundNumber += 1;
   roundsUntilRoleChange -= 1;
   roundsUntilEndGame -= 1;
@@ -477,6 +475,7 @@ void Game::updateRounds(){
 
   teamA.resetSpikeCarrier();
   teamB.resetSpikeCarrier();
+  
   spike.state = BombState::INVENTORY;
   droppedWeapons.clear();
 }

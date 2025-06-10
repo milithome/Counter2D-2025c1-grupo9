@@ -384,10 +384,9 @@ void GameController::updateGameState(StateGame state) {
 
     }
     if (previous_state.phase != state.phase) {
-        std::cout << state.phase << std::endl;
         if (state.phase == BOMB_PLANTING) view.hideShop();
         if (state.phase == BOMB_DEFUSING) game.plant(entities[bomb_index].x, entities[bomb_index].y);
-        if (previous_state.phase == BOMB_DEFUSING && state.phase == PURCHASE) game.defuse();
+        if (previous_state.phase == BOMB_DEFUSING && state.phase == END_ROUND) game.defuse();
         shop_open = false;
         view.addNewPhaseEffect(state.phase);
     }

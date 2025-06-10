@@ -40,10 +40,8 @@ void Client::run() {
     // char* argv[] = {const_cast<char*>(clientName.c_str()), nullptr};
 	
     while (true) { // mientras el cliente no haya decidido irse
-        std::cout << "Client::run 1" << std::endl;
         MenuClient menuClient(recv_queue, send_queue, receiver, sender, protocol,  w_pos_when_game_started);
 
-        std::cout << "Client::run 2" << std::endl;
         bool quit = menuClient.run();
 
         if (quit) {
