@@ -9,9 +9,7 @@ struct Position {
 };
 struct Spike {
     Position position;
-    bool isPlanted;
-    bool isDefused;
-    bool isDropped;
+    BombState state;
 };
 
 struct PlayerCellBounds {

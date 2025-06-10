@@ -6,9 +6,7 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
     teamB.setRole(Role::TERRORIST);
     spawnTeamTerrorist = map.findSpawnTeam(false); //true para terrorist
     spawnTeamCounter = map.findSpawnTeam(true);
-    spike.isPlanted = false;
-    spike.isDefused = false;
-    spike.isDropped = false;
+    spike.state= BombState::INVENTORY;
 }
 
 bool Game::addPlayer(const std::string &name) {
@@ -111,18 +109,27 @@ void Game::plantBomb(
 }
 
 void Game::plant(float x, float y) {
-  if(spike.isPlanted){
+  if(spike.state= BombState::PLANTED){
     return;
   }
   timePlanting = 0.0f;
   spike.position.x = x;
   spike.position.y = y;
-  spike.isPlanted= true;
-  spike.isDropped=false;
-  spike.isDefused=false;
+  spike.state= BombState::PLANTED;
 
   return;
 }
+
+void Game::defuse() {
+  if(spike.state==BombState::DEFUSED){
+    return;
+  }
+  timeDefusing = 0.0f;
+  spike.state= BombState::DEFUSED;
+
+  return;
+}
+
 
 void Game::addDroppedWeapon(float x, float y, WeaponName weapon) {
     for (const DroppedWeapon& dw : droppedWeapons) {
@@ -147,9 +154,7 @@ void Game::updatePlanting(const std::string &name, float deltaTime) {
   timePlanting +=deltaTime;
   Player& player= findPlayerByName(name);
   if (player.isPlanting() && timePlanting >= timeUntilPlant){
-    spike.isPlanted = true;
-    spike.isDefused = false;
-    spike.isDropped = false;
+    spike.state= BombState::PLANTED;
     player.setHasSpike(false);
   }
 }
@@ -157,9 +162,7 @@ void Game::updatePlanting(const std::string &name, float deltaTime) {
 void Game::updateDefusing(const std::string &name, float deltaTime){
   timeDefusing +=deltaTime;
   if (findPlayerByName(name).isDefusing() && timeDefusing>= timeUntilDefuse){
-    spike.isPlanted = false;
-    spike.isDefused = true;
-    spike.isDropped = false;
+    spike.state= BombState::DEFUSED;
   }
 }
 
@@ -222,7 +225,7 @@ void Game::updatePlayerHealth(const std::string &name, int health) {
   player.updateHealth(health - player.getHealth());
   if(!player.isAlive()){
     if(player.getHasTheSpike()){
-      spike.isDropped=true;
+      spike.state= BombState::DROPPED;
       spike.position.x=player.getX();
       spike.position.y=player.getY();
     }
@@ -326,8 +329,7 @@ void Game::updateGamePhase(float deltaTime) {
     case Phase::PURCHASE:
       purchaseElapsedTime +=deltaTime;
       if(purchaseElapsedTime >= purchaseDuration){
-        spike.isDefused=false;
-        spike.isPlanted=false;
+        spike.state= BombState::INVENTORY;
         purchaseElapsedTime = 0.0f;
         phase=Phase::BOMB_PLANTING;
         std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
@@ -342,7 +344,7 @@ void Game::updateGamePhase(float deltaTime) {
         phase=Phase::PURCHASE;
         updateRounds();
       }
-      if(spike.isPlanted){ 
+      if(spike.state== BombState::PLANTED){ 
         phase=Phase::BOMB_DEFUSING;
         std::cout << "[DEBUG] Bomb planted, transitioning to BOMB_DEFUSING" << std::endl;
       }
@@ -356,9 +358,10 @@ void Game::updateGamePhase(float deltaTime) {
         phase=Phase::PURCHASE;
         updateRounds();
       }
-      if(spike.isDefused){
+      if(spike.state= BombState::DEFUSED){
         phase=Phase::PURCHASE;
         std::cout << "[DEBUG] Bomb defused, transitioning to PURCHASE" << std::endl;
+        updateRounds();
       }
 
     break;
@@ -405,15 +408,7 @@ StateGame Game::getState() {
   BombData data;
 
   BombState bombState;
-  if(spike.isDefused){
-    bombState= BombState::DEFUSED;
-  }else if(spike.isDropped){
-    bombState= BombState::DROPPED;
-  }else if(spike.isPlanted){
-    bombState= BombState::PLANTED;
-  }else{
-    bombState= BombState::INVENTORY;
-  }
+  bombState= spike.state;
   data.state= bombState;
   bomb.data=data;
   bomb.x=spike.position.x;
@@ -567,9 +562,7 @@ void Game::applyDamageToPlayer(const Player& shooter, Player& target, float dist
     target.updateHealth(-finalDamageInt);
     if(!target.isAlive()){
       if(target.getHasTheSpike()){
-        spike.isDropped=true;
-        spike.isDefused=false;
-        spike.isPlanted=false;
+        spike.state= BombState::DROPPED;
         spike.position.x=target.getX();
         spike.position.y=target.getY();
       }
@@ -586,11 +579,11 @@ bool Game::rectsOverlap(float ax, float ay, float aw, float ah,
 void Game::grab(const std::string &name) {
   Player& player = findPlayerByName(name);
 
-  if (spike.isDropped) {
+  if (spike.state== BombState::DROPPED) {
     if (rectsOverlap(player.getX(), player.getY(), player.getHitbox().getWidth(), player.getHitbox().getHeight(),
                      spike.position.x, spike.position.y, BOMB_WIDTH, BOMB_HEIGHT)) {
       player.setHasSpike(true);
-      spike.isDropped = false;
+      spike.state = BombState::INVENTORY;
       return;
     }
   }
