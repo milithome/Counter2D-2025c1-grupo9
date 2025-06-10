@@ -27,7 +27,7 @@ private:
   Phase phase= Phase::PURCHASE;
   std::vector<std::tuple<int, int, bool>> spawnTeamTerrorist;
   std::vector<std::tuple<int, int, bool>> spawnTeamCounter;
-
+  bool gameStart= true;
   std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
   float time;
@@ -57,6 +57,8 @@ private:
   PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
   bool rectsOverlap(float ax, float ay, float aw, float ah,
                   float bx, float by, float bw, float bh);
+  void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
+  void stopShooting(const std::string &name);
   void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player& player);
   float randomFloatInRange(float min, float max);
@@ -80,18 +82,12 @@ private:
 public:
   Game(std::vector<std::vector<CellType>> game_map);
   
-  // son privados
-  void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
-  void updateRotation(const std::string &name, float currentRotation);
-  void stopShooting(const std::string &name);
-
-  // fin privados
   void
   updatePlayerPosition(const std::string &name, float x,
-                       float y); // público por tema de sincronizacion cliente
-  void updatePlayerHealth(const std::string &name, int health); // público por tema de sincronizacion cliente
-  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); // público por tema de sincronizacion cliente
-  
+                       float y);
+  void updatePlayerHealth(const std::string &name, int health);
+  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); 
+  void updateRotation(const std::string &name, float currentRotation);
   bool addPlayer(const std::string &name);
   StateGame getState();
   Entity getPlayerState(const std::string& name);
@@ -100,6 +96,7 @@ public:
   void execute(const std::string &name, Action action);
   bool isRunning();
   void stop();
+  void defuse();
   void updateTime(float currentTime);
   float getRotation(const std::string &name);
   float getX(const std::string &name);
@@ -109,8 +106,6 @@ public:
   Shot shotQueuePop();
   bool shotQueueIsEmpty();
   void shotQueueClear();
-  //void addBombEntity(float x, float y, BombState state);
-  //void addDroppedWeapon(float x, float y, WeaponName weapon);
 };
 
 #endif
