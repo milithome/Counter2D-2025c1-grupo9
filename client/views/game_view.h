@@ -66,8 +66,8 @@ struct DeathEffect {
 
 #define FLARE_EFFECT_DURATION 0.5
 
-struct FlareEffect {
-    float x, y;
+struct NewPhaseEffect {
+    std::string text;
     float time_left;
 };
 
@@ -107,6 +107,7 @@ public:
     SDL_Point getCenterPoint();
     void addBulletEffects(Shot shot);
     void addDeathEffect(float x, float y, float angle);
+    void addNewPhaseEffect(Phase phase);
     void switchShopVisibility();
 
     void resizeHud();
@@ -304,7 +305,9 @@ private:
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+    void showNewPhase();
     void showFov();
+
 
     void showInterface();
     void showShop();

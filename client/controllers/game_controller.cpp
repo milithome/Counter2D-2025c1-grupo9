@@ -21,6 +21,8 @@ void GameController::update(float deltaTime) {
         float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
         soundHandler.playShotSound(distance, shot.weapon);
     }
+
+
 }
 
 void GameController::onKeyPressed(const SDL_Event& event) {
@@ -376,8 +378,10 @@ void GameController::updateGameState(StateGame state) {
 
     }
     Phase phase = state.phase;
-    (void)phase;
-
+    if (previous_state.phase != state.phase) {
+        view.addNewPhaseEffect(state.phase);
+    }
+    previous_state = state;
 }
 
 

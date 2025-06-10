@@ -445,6 +445,10 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
     }
 }
 
+void GameView::showNewPhase() {
+    
+}
+
 void GameView::showInterface() {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
@@ -1018,6 +1022,10 @@ void GameView::addBulletEffects(Shot shot) {
 
 void GameView::addDeathEffect(float x, float y, float angle) {
     death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION, 255});
+}
+
+void GameView::addNewPhaseEffect(Phase phase) {
+    
 }
 
 
