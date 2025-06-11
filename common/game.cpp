@@ -446,7 +446,7 @@ bool Game::isRunning() { return running; }
 
 void Game::stop() { running = false; }
 
-void Game::makeShot(Player &shooter, const std::string &shooterName) {
+void Game::makeShot(Player &shooter) {
   int bullets = shooter.getBulletsPerShoot();
   if (shooter.getTypeEquipped()== WeaponType::PRIMARY){
     shooter.updatePrimaryBullets(-bullets);
@@ -510,8 +510,8 @@ void Game::makeShot(Player &shooter, const std::string &shooterName) {
       bullet.impact=Impact::HUMAN;
 
     } else if (wallHit) {
-      std::cout << shooterName << " disparó y la bala impactó una pared en ("
-                << wallPoint.first << ", " << wallPoint.second << ")\n";
+      // std::cout << shooterName << " disparó y la bala impactó una pared en ("
+      //          << wallPoint.first << ", " << wallPoint.second << ")\n";
       bullet.target_x=wallPoint.first;
       bullet.target_y=wallPoint.second;
       bullet.impact=Impact::BLOCK;
@@ -618,7 +618,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
             shooter.getTimeLastBullet()) { // puede disparar otra bala
       // aun quedan balas rafaga
       shooter.updateBurstFireBullets(-1);
-      makeShot(shooter, shooterName);
+      makeShot(shooter);
       shooter.resetTimeLastBullet();
       if (shooter.getBurstFireBullets() == 0) { // fin rafaga
         shooter.resetCooldown();
@@ -631,7 +631,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime) {
   } else {
     if (!shooter.getAlreadyShot()) {
       shooter.resetCooldown();
-      makeShot(shooter, shooterName);
+      makeShot(shooter);
     }
   }
 }

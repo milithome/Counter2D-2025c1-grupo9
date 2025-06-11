@@ -37,7 +37,7 @@ private:
   void dropWeapon(const Weapon& weapon, float x, float y);
 
   Player &findPlayerByName(const std::string &name);
-  void makeShot(Player &shooter, const std::string &shooterName);
+  void makeShot(Player &shooter);
   void plantBomb(const std::string &name);
   void stopPlantBomb(const std::string &name);
   void defuseBomb(const std::string &name);
