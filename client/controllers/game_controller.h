@@ -46,6 +46,10 @@ private:
     uint32_t lastMoveId = 0;
 
     bool shop_open = false;
+    bool planting = false;
+    bool defusing = false;
+
+    StateGame previous_state;
 };
 
 #endif

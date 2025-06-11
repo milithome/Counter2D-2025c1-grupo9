@@ -66,9 +66,9 @@ struct DeathEffect {
 
 #define FLARE_EFFECT_DURATION 0.5
 
-struct FlareEffect {
-    float x, y;
-    float time_left;
+struct NewPhaseEffect {
+    Phase phase;
+    float time_left = 2;
 };
 
 struct Particle {
@@ -107,8 +107,9 @@ public:
     SDL_Point getCenterPoint();
     void addBulletEffects(Shot shot);
     void addDeathEffect(float x, float y, float angle);
+    void addNewPhaseEffect(Phase phase);
     void switchShopVisibility();
-
+    void hideShop() { shopIsVisible = false; };
     void resizeHud();
 
 
@@ -287,12 +288,28 @@ private:
         }
     }
 
+
+    Surface buyPhaseLabel =  font.RenderText_Blended("Fase de compra", Color(255, 255, 255));
+    Surface roundStartLabel = font.RenderText_Blended("Inicio de ronda", Color(255, 255, 255));
+    Surface bombPlantedLabel =  font.RenderText_Blended("Bomba plantada", Color(255, 255, 255));
+    Surface roundEndLabel =  font.RenderText_Blended("Fin de ronda", Color(255, 255, 255));
+    Surface& getPhaseLabel(Phase phase) {
+        switch (phase) {
+            case PURCHASE:          return buyPhaseLabel;
+            case BOMB_PLANTING:     return roundStartLabel;
+            case BOMB_DEFUSING:     return bombPlantedLabel;
+            case END_ROUND:         return roundEndLabel;
+            default:                throw std::exception();
+        }
+    }
+
     bool shopIsVisible = false;
 
     std::vector<HitEffect> blood_effects;
     std::vector<HitEffect> sparks_effects;
     std::vector<BulletEffect> bullet_effects;
     std::vector<DeathEffect> death_effects;
+    NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -304,7 +321,9 @@ private:
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
+    void showNewPhase(float deltaTime);
     void showFov();
+
 
     void showInterface();
     void showShop();

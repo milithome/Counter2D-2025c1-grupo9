@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QScreen>
 #include <QRect>
+#include <iostream>
 
 QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width, int height) : app(app) {
     window.setFixedSize(width, height);
@@ -14,12 +15,13 @@ QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width,
 
     // Centrar ventana
     QScreen *screen = QGuiApplication::primaryScreen();
+
     QRect screenGeometry = screen->availableGeometry();
     int x = (screenGeometry.width() - window.width()) / 2;
     int y = (screenGeometry.height() - window.height()) / 2;
     window.move(x, y);
 
-    window.show();
+    //window.show();
 
 
     window.setObjectName("MainWindow");

@@ -23,7 +23,7 @@ private:
   uint32_t bulletsPrimary = 0;
   uint32_t bulletsSecondary = 0;
   float rotation;
-  int health = 100;
+  int health = MAX_HEALTH;
   float vx = 0, vy = 0;
   float aceleration = 0;
   bool hasTheSpike = true;
