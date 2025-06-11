@@ -72,7 +72,6 @@ struct BombData {
 };
 
 struct WeaponData {
-  WeaponType type;
   WeaponName weapon;
 };
 

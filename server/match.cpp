@@ -196,7 +196,7 @@ void Match::startTimeoutThread(Game& game) {
         inGame = false;
         //std::cout << "paso 1 minuto" << std::endl;
         
-        std::cout << "pasaron 10 segundos" << std::endl;
+        std::cout << "pasaron 20 segundos" << std::endl;
     });
     timeoutThread.detach();
 }

@@ -165,7 +165,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         weapon.type = WEAPON;
         weapon.x = 14.0f;
         weapon.y = 24.0f;
-        weapon.data = WeaponData{WeaponType::PRIMARY, AK47};
+        weapon.data = WeaponData{AK47};
 
         std::vector<Entity> entities = {player, bomb, weapon};
 
@@ -238,7 +238,6 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     ASSERT_FLOAT_EQ(entity.x, 14.0f);
     ASSERT_FLOAT_EQ(entity.y, 24.0f);
     auto weapon = std::get<WeaponData>(state.entities[2].data);
-    EXPECT_EQ(weapon.type, WeaponType::PRIMARY);
     EXPECT_EQ(weapon.weapon, AK47);
     
     std::queue<Shot>& shots = state.shots;

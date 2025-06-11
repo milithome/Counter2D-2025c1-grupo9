@@ -44,11 +44,11 @@ const float MAX_ACELERATION = 3.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
-const float PURCHASE_DURATION = 150.0f;
-const float BOMB_DURATION = 300.0f;
-const float TIME_TO_PLANT = 300.0f;
-const float TIME_UNTIL_PLANT = 10.0f;
-const float TIME_UNTIL_DEFUSE = 10.0f;
+const float PURCHASE_DURATION = 30.0f;
+const float BOMB_DURATION = 30.0f;
+const float TIME_TO_PLANT = 30.0f;
+const float TIME_UNTIL_PLANT = 5.0f;
+const float TIME_UNTIL_DEFUSE = 5.0f;
 
 const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 5;
 const int INITIAL_ROUNDS_UNTIL_END_GAME = 10;
