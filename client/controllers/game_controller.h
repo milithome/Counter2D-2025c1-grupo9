@@ -49,7 +49,7 @@ private:
     bool planting = false;
     bool defusing = false;
 
-    StateGame previous_state;
+    StateGame previous_state = game.getState();
 };
 
 #endif

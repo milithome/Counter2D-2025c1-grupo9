@@ -374,15 +374,12 @@ void Game::buyBullet(const std::string &name, WeaponType type)
 }
 
 int Game::checkRoundWinner(){
-  std::cout << "[DEBUG] Team A players alive: " << teamA.getPlayersAlive() << "Team B: "  << teamB.getPlayersAlive() << std::endl;
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
     teamA.incrementRoundsWon();
-    std::cout << "[DEBUG] Team A wins the round" << std::endl;
     return 1;
   }
   if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0){
     teamB.incrementRoundsWon();
-    std::cout << "[DEBUG] Team B wins the round" << std::endl;
     return 2;
   }
   return 0;

@@ -77,6 +77,9 @@ void Player::updateHealth(int value) {
   if (health <= 0){
     health = 0;
     alive=false;
+  } else {
+    alive = true; // agrego esto por un tema de q el jugador podria morir en el cliente pero seguir vivo en el server
+    // en tal caso cuando se actualice el estado del cliente se va a restaurar la vida y el jugador deberia estar vivo
   }
 }
 

@@ -66,9 +66,12 @@ void GameView::update(float deltaTime) {
     showBloodEffects(cameraX, cameraY, deltaTime);
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
-    // showDeathAnimations(cameraX, cameraY, deltaTime);
+    showDeathAnimations(cameraX, cameraY, deltaTime);
     showNewPhase(deltaTime);
-    // showFov();
+
+    if (fovIsVisible) {
+        showFov();
+    }
 
     if (!shopIsVisible) {
         showInterface();
@@ -109,25 +112,68 @@ void GameView::showFov() {
     float half_angle = FOV / 2.0f;
     float radius = 50 * BLOCK_SIZE;
 
-    SDL_Vertex verts[3];
-    verts[0].position = {cx, cy};
-    verts[0].color = {255, 255, 255, 255};
+    SDL_Color color = {255, 255, 255, 255};
 
+    std::vector<SDL_Vertex> verts_cone;
+    verts_cone.reserve(3);
 
-    verts[1].position = {
-        cx + radius * std::cos(-half_angle),
-        cy + radius * std::sin(-half_angle)
-    };
-    verts[1].color = {255, 255, 255, 255};
- 
-    verts[2].position = {
-        cx + radius * std::cos(half_angle),
-        cy + radius * std::sin(half_angle)
-    };
-    verts[2].color = {255, 255, 255, 255};
+    verts_cone.push_back({
+        .position = {cx, cy},
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    verts_cone.push_back({
+        .position = { 
+            cx + radius * std::cos(-half_angle), 
+            cy + radius * std::sin(-half_angle)
+        },
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    verts_cone.push_back({
+        .position = {
+            cx + radius * std::cos(half_angle),
+            cy + radius * std::sin(half_angle)
+        },
+        .color = color,
+        .tex_coord = {0, 0}
+    });
 
     // Usamos la API raw de SDL porque SDL2pp no tiene RenderGeometry
-    SDL_RenderGeometry(renderer.Get(), nullptr, verts, 3, nullptr, 0);
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts_cone.data(), verts_cone.size(), nullptr, 0);
+
+
+    const int NUM_SEGMENTS = 50;
+
+    float circle_radius = 3 * BLOCK_SIZE;
+
+    std::vector<SDL_Vertex> verts_circle;
+    verts_circle.reserve(NUM_SEGMENTS + 2); 
+
+
+    // Vértice central
+    verts_circle.push_back({
+        .position = {cx, cy},
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    // Perímetro del círculo
+    for (int i = 0; i <= NUM_SEGMENTS; ++i) {
+        float angle = (2.0f * M_PI * i) / NUM_SEGMENTS;
+        float x = cx + circle_radius * std::cos(angle);
+        float y = cy + circle_radius * std::sin(angle);
+        verts_circle.push_back({
+            .position = {x, y},
+            .color = color,
+            .tex_coord = {0, 0}
+        });
+    }
+
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts_circle.data(), verts_circle.size(), nullptr, 0);
+
 
     renderer.SetTarget();
 
@@ -137,7 +183,6 @@ void GameView::showFov() {
         tWidth,
         tHeight);
 
-    //renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point(tWidth / 2.0f, tHeight / 2.0f), SDL_FLIP_NONE);
     renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point{static_cast<int>(tWidth / 2.0f), static_cast<int>(tHeight / 2.0f)}, SDL_FLIP_NONE);
 }
 

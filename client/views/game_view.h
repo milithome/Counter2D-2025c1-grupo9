@@ -110,6 +110,7 @@ public:
     void addNewPhaseEffect(Phase phase);
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
+    void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
     void resizeHud();
 
 
@@ -304,6 +305,7 @@ private:
     }
 
     bool shopIsVisible = false;
+    bool fovIsVisible = true;
 
     std::vector<HitEffect> blood_effects;
     std::vector<HitEffect> sparks_effects;

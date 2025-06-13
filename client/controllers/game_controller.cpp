@@ -64,6 +64,10 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             shop_open = !shop_open;
             break;
         }
+        case SDLK_g: {
+            view.switchFovVisibility();
+            break;
+        }
         case SDLK_1: {
             Inventory inv = std::get<PlayerData>(game.getPlayerState(player_name).data).inventory;
             if (inv.primary != WeaponName::NONE) {
@@ -283,19 +287,135 @@ bool GameController::actionQueueIsEmpty() {
     return action_queue.empty();
 }
 
+// void GameController::updateGameState(StateGame state) {
+//     float client_player_x_from_server;
+//     float client_player_y_from_server;
+//     std::vector<Entity> entities = state.entities;
+//     for (size_t i = 0; i < entities.size(); i++) {
+//         Entity entity = entities[i];
+//         switch (entity.type) {
+//             case PLAYER: {
+//                 PlayerData serverData = std::get<PlayerData>(entity.data);                               // El estado del jugador que tiene el server
+//                 PlayerData clientData = std::get<PlayerData>(game.getPlayerState(serverData.name).data); // El estado del jugador que tiene el cliente
+
+//                 if (!clientData.alive) {
+//                     continue;
+//                 }
+//                 // Si el jugador es el que maneja este cliente manejar la desincronizacion del movimiento
+//                 if (serverData.name == player_name) {
+//                     client_player_x_from_server = entity.x;
+//                     client_player_y_from_server = entity.y;
+//                     if (serverData.lastMoveId != lastMoveIdFromServer) {
+//                         lastMoveIdFromServer = serverData.lastMoveId;
+//                         std::pair<float, float> position = move_actions[serverData.lastMoveId];
+//                         float position_x = position.first;
+//                         float position_y = position.second;
+                        
+//                         if (std::sqrt((entity.x - position_x) * (entity.x - position_x) + (entity.y - position_y) * (entity.y - position_y)) >= DESYNC_TOLERANCE) {
+//                             game.updatePlayerPosition(player_name, entity.x, entity.y);
+//                         }
+//                     }
+//                 // Si no, actualizar posicion y rotacion normalmente
+//                 } else {
+//                     game.updatePlayerPosition(serverData.name, entity.x, entity.y);
+//                     game.updateRotation(serverData.name, serverData.rotation);
+//                     game.updatePrimaryWeapon(serverData.name, serverData.inventory.primary);
+//                     ChangeWeaponAction changeWeaponActionData{serverData.equippedWeapon};
+//                     game.execute(serverData.name, Action{ActionType::CHANGE_WEAPON, changeWeaponActionData});
+//                 }
+//                 // Comparar estados del cliente y server para saber si el jugador acaba de morir
+//                 if (serverData.alive != clientData.alive) {
+//                     view.addDeathEffect(entity.x, entity.y, serverData.rotation);
+//                     float player_x = game.getX(player_name);
+//                     float player_y = game.getY(player_name);
+//                     float dead_player_x = entity.x;
+//                     float dead_player_y = entity.y;
+//                     float distance = std::sqrt((player_x - dead_player_x) * (player_x - dead_player_x) + (player_y - dead_player_y) * (player_y - dead_player_y));
+//                     soundHandler.playDeathSound(distance);
+//                 }
+//                 // Actualizar vida
+//                 game.updatePlayerHealth(serverData.name, serverData.health);
+
+
+//                 break;
+//             }
+//             case BOMB: {
+//                 BombData data = std::get<BombData>(entity.data);
+//                 switch (data.state) {
+//                     case BombState::INVENTORY: {
+//                         break;
+//                     }
+//                     case BombState::DROPPED: {
+//                         break;
+//                     }
+//                     case BombState::PLANTED: {
+//                         if (previous_state.phase != state.phase) {
+//                             game.plant(entity.x, entity.y);
+//                         }
+//                         break;
+//                     }
+//                     case BombState::DEFUSED: {
+//                         if (previous_state.phase != state.phase) {
+//                             game.defuse();
+//                         }
+//                         break;
+//                     }
+//                     default: {
+//                         break;
+//                     }
+//                 }
+//             }
+//             case WEAPON: {
+//                 // WeaponData data = std::get<WeaponData>(entity.data);
+//                 // game.addDroppedWeapon(entity.x, entity.y, data.weapon);
+//             }
+//             //ENTIDAD BOMBA Y ENTIDAD WEAPON EN EL PISO
+//             default: {
+//                 break;
+//             }
+//         }
+//     }
+//     std::queue<Shot> shots = state.shots;
+
+//     while (!shots.empty()) {
+//         Shot shot = shots.front();
+//         shots.pop();
+//         if (std::abs(shot.origin_y - client_player_y_from_server) <= 0.5 &&
+//             std::abs(shot.origin_x - client_player_x_from_server) <= 0.5) {
+//             continue;
+//         }
+        
+//         view.addBulletEffects(shot);
+
+//         float player_x = game.getX(player_name);
+//         float player_y = game.getY(player_name);
+//         float distance = std::sqrt((player_x - shot.origin_x) * (player_x - shot.origin_x) + (player_y - shot.origin_y) * (player_y - shot.origin_y));
+//         soundHandler.playShotSound(distance, shot.weapon);
+
+//     }
+//     if (previous_state.phase != state.phase) {
+//         if (state.phase == BOMB_PLANTING) view.hideShop();
+//         shop_open = false;
+//         view.addNewPhaseEffect(state.phase);
+//     }
+//     previous_state = state;
+// }
+
+
+// rework
 void GameController::updateGameState(StateGame state) {
     float client_player_x_from_server;
     float client_player_y_from_server;
-    int bomb_index;
-    std::vector<Entity> entities = state.entities;
-    for (size_t i = 0; i < entities.size(); i++) {
-        Entity entity = entities[i];
+
+
+    for (size_t i = 0; i < state.entities.size(); i++) {
+        Entity entity = state.entities[i];
         switch (entity.type) {
             case PLAYER: {
                 PlayerData serverData = std::get<PlayerData>(entity.data);                               // El estado del jugador que tiene el server
-                PlayerData clientData = std::get<PlayerData>(game.getPlayerState(serverData.name).data); // El estado del jugador que tiene el cliente
+                PlayerData previousData = std::get<PlayerData>(previous_state.entities[i].data);          // El estado del jugador previo (del server)
 
-                if (!clientData.alive) {
+                if (!previousData.alive) {
                     continue;
                 }
                 // Si el jugador es el que maneja este cliente manejar la desincronizacion del movimiento
@@ -312,7 +432,7 @@ void GameController::updateGameState(StateGame state) {
                             game.updatePlayerPosition(player_name, entity.x, entity.y);
                         }
                     }
-                // Si no, actualizar posicion y rotacion normalmente
+                // Si no, actualizar atributos normalmente
                 } else {
                     game.updatePlayerPosition(serverData.name, entity.x, entity.y);
                     game.updateRotation(serverData.name, serverData.rotation);
@@ -320,8 +440,8 @@ void GameController::updateGameState(StateGame state) {
                     ChangeWeaponAction changeWeaponActionData{serverData.equippedWeapon};
                     game.execute(serverData.name, Action{ActionType::CHANGE_WEAPON, changeWeaponActionData});
                 }
-                // Comparar estados del cliente y server para saber si el jugador acaba de morir
-                if (serverData.alive != clientData.alive) {
+                // Comparar estados anterior y actual para saber si el jugador acaba de morir
+                if (serverData.alive != previousData.alive) {
                     view.addDeathEffect(entity.x, entity.y, serverData.rotation);
                     float player_x = game.getX(player_name);
                     float player_y = game.getY(player_name);
@@ -338,22 +458,29 @@ void GameController::updateGameState(StateGame state) {
             }
             case BOMB: {
                 BombData data = std::get<BombData>(entity.data);
-                bomb_index = i;
-                switch (data.state)
-                {
-                case BombState::INVENTORY:
-                    break;
-                case BombState::DROPPED:
-                    break;
-                case BombState::PLANTED:
-                    break;
-                case BombState::DEFUSED:
-                    break;
-                default:
-                    break;
+                switch (data.state) {
+                    case BombState::INVENTORY: {
+                        break;
+                    }
+                    case BombState::DROPPED: {
+                        break;
+                    }
+                    case BombState::PLANTED: {
+                        if (previous_state.phase != state.phase) {
+                            game.plant(entity.x, entity.y);
+                        }
+                        break;
+                    }
+                    case BombState::DEFUSED: {
+                        if (previous_state.phase != state.phase) {
+                            game.defuse();
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
                 }
-                // BombData data = std::get<BombData>(entity.data);
-                // game.plantBomb(entity.x, entity.y);
             }
             case WEAPON: {
                 // WeaponData data = std::get<WeaponData>(entity.data);
@@ -385,13 +512,12 @@ void GameController::updateGameState(StateGame state) {
     }
     if (previous_state.phase != state.phase) {
         if (state.phase == BOMB_PLANTING) view.hideShop();
-        if (state.phase == BOMB_DEFUSING) game.plant(entities[bomb_index].x, entities[bomb_index].y);
-        if (previous_state.phase == BOMB_DEFUSING && state.phase == END_ROUND) game.defuse();
         shop_open = false;
         view.addNewPhaseEffect(state.phase);
     }
     previous_state = state;
 }
+
 
 
 bool GameController::processEvents() {
