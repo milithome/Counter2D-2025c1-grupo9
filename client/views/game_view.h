@@ -66,6 +66,15 @@ struct DeathEffect {
 
 #define FLARE_EFFECT_DURATION 0.5
 
+
+
+struct BombExplosionEffect {
+    float x, y;
+    int current_frame = 0;
+    float time_until_next_frame = 0.06;
+
+};
+
 struct NewPhaseEffect {
     Phase phase;
     float time_left = 2;
@@ -107,6 +116,7 @@ public:
     SDL_Point getCenterPoint();
     void addBulletEffects(Shot shot);
     void addDeathEffect(float x, float y, float angle);
+    void addBombExplosionEffect(float x, float y);
     void addNewPhaseEffect(Phase phase);
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
@@ -304,14 +314,18 @@ private:
         }
     }
 
+    Texture bombAnimationSprite = Texture(renderer, "../assets/gfx/explosion.png");
+
     bool shopIsVisible = false;
     bool fovIsVisible = true;
+    bool bombExplosionEffect = false;
 
     std::vector<HitEffect> blood_effects;
     std::vector<HitEffect> sparks_effects;
     std::vector<BulletEffect> bullet_effects;
     std::vector<DeathEffect> death_effects;
     NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
+    BombExplosionEffect bomb_explosion_effect;
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -324,6 +338,7 @@ private:
     void showEntities(float cameraX, float cameraY);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
     void showNewPhase(float deltaTime);
+    void showBombExplosion(float cameraX, float cameraY, float deltaTime);
     void showFov();
 
 

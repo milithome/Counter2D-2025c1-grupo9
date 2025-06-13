@@ -67,11 +67,19 @@ void GameView::update(float deltaTime) {
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
     showDeathAnimations(cameraX, cameraY, deltaTime);
-    showNewPhase(deltaTime);
+   
+    if (bombExplosionEffect) {
+        showBombExplosion(cameraX, cameraY, deltaTime);
+    }
+
 
     if (fovIsVisible) {
         showFov();
     }
+
+
+    showNewPhase(deltaTime);
+
 
     if (!shopIsVisible) {
         showInterface();
@@ -81,6 +89,20 @@ void GameView::update(float deltaTime) {
     }
 
     renderer.Present();
+}
+
+void GameView::showBombExplosion(float cameraX, float cameraY, float deltaTime) {
+    Rect src((bomb_explosion_effect.current_frame % 5) * 64, (bomb_explosion_effect.current_frame / 5) * 64, 64, 64);
+    Rect dst(cameraX + bomb_explosion_effect.x * BLOCK_SIZE - BLOCK_SIZE * 4, cameraY + bomb_explosion_effect.y * BLOCK_SIZE - BLOCK_SIZE * 4, BLOCK_SIZE * 8, BLOCK_SIZE * 8);
+    renderer.Copy(bombAnimationSprite, src, dst);
+    bomb_explosion_effect.time_until_next_frame -= deltaTime;
+    if (bomb_explosion_effect.time_until_next_frame < 0) {
+        bomb_explosion_effect.time_until_next_frame += 0.06;
+        bomb_explosion_effect.current_frame++;
+    }
+    if (bomb_explosion_effect.current_frame >= 25) {
+        bombExplosionEffect = false;
+    }
 }
 
 
@@ -172,7 +194,14 @@ void GameView::showFov() {
         });
     }
 
-    SDL_RenderGeometry(renderer.Get(), nullptr, verts_circle.data(), verts_circle.size(), nullptr, 0);
+    std::vector<int> indices;
+    for (int i = 1; i <= NUM_SEGMENTS; ++i) {
+        indices.push_back(0);        // centro
+        indices.push_back(i);
+        indices.push_back(i + 1);
+    }
+
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts_circle.data(), verts_circle.size(), indices.data(), indices.size());
 
 
     renderer.SetTarget();
@@ -1098,6 +1127,11 @@ void GameView::addDeathEffect(float x, float y, float angle) {
 void GameView::addNewPhaseEffect(Phase phase) {
     new_phase_effect = NewPhaseEffect{phase};
 }
+void GameView::addBombExplosionEffect(float x, float y) {
+    bomb_explosion_effect = BombExplosionEffect{x, y};
+    bombExplosionEffect = true;
+}
+
 
 void GameView::switchShopVisibility() {
     shopIsVisible = !shopIsVisible;
