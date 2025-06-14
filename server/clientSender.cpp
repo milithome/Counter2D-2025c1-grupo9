@@ -7,19 +7,20 @@ ClientSender::ClientSender(Protocol& protocol, const std::string& clientName, Ad
 ClientSender::~ClientSender() {}
 
 void ClientSender::run() {
-    try {
-        while (active) {
+    while (active) {
+        try
+        {
             Response response = requests->pop();
             protocol.send_response(response);
-
             if (response.type == Type::DISCONNECT) {
                 active = false;
             }
         }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in " << clientName << " ClientSender: " << e.what() << std::endl;
-    } catch (...) {
-        std::cerr << "Unknown exception in ClientSender." << std::endl;
+        catch (const std::exception& e) {
+                std::cerr << "Exception in ClientSender: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Unknown exception in ClientSender." << std::endl;
+        }
     }
 }
 

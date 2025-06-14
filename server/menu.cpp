@@ -30,8 +30,11 @@ void Menu::run()
                     admin.removeClient(client->channels.name);
                     active = false;
                     break;
+                case  Type::ACTION:
+                    // puede pasar que el clientReceiver siga pushenado acciones de la partida pasada
+                    break;
                 default:
-                    std::cerr << "Unknown message type received." << std::endl;
+                    std::cerr << "[Menu::run] Unknown message type received. " << client->channels.name << std::endl;
                     break;
             }
         }
@@ -67,10 +70,6 @@ void Menu::handle_join(const std::string& name) {
 void Menu::handle_list() {
     try {
         std::vector<std::string> lobbies = admin.listLobbies();
-        if (lobbies.empty()) {
-            send_response_successful(Type::LIST, "No lobbies available", 0);
-            return;
-        }
         Response response = {Type::LIST, 0, LobbyList{lobbies}, "Lobbies listed successfully"};
         send_response(response);
     } catch (const std::exception& e) {

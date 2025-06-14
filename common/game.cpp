@@ -558,8 +558,7 @@ bool Game::isRunning() { return running; }
 
 void Game::stop() { running = false; }
 
-void Game::makeShot(Player &shooter, const std::string &shooterName)
-{
+void Game::makeShot(Player &shooter) {
   int bullets = shooter.getBulletsPerShoot();
   if (shooter.getTypeEquipped() == WeaponType::PRIMARY)
   {
@@ -628,23 +627,18 @@ void Game::makeShot(Player &shooter, const std::string &shooterName)
     if (closestPlayer && closestPlayerDist < wallDist)
     {
       applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
-      bullet.target_x = closestHitPoint.first;
-      bullet.target_y = closestHitPoint.second;
-      bullet.impact = Impact::HUMAN;
-    }
-    else if (wallHit)
-    {
-      std::cout << shooterName << " disparó y la bala impactó una pared en ("
-                << wallPoint.first << ", " << wallPoint.second << ")\n";
-      bullet.target_x = wallPoint.first;
-      bullet.target_y = wallPoint.second;
-      bullet.impact = Impact::BLOCK;
-    }
-    else
-    {
-      bullet.target_x = targetX;
-      bullet.target_y = targetY;
-      bullet.impact = Impact::NOTHING;
+      bullet.target_x=closestHitPoint.first;
+      bullet.target_y=closestHitPoint.second;
+      bullet.impact=Impact::HUMAN;
+
+    } else if (wallHit) {
+      bullet.target_x=wallPoint.first;
+      bullet.target_y=wallPoint.second;
+      bullet.impact=Impact::BLOCK;
+    } else {
+      bullet.target_x=targetX;
+      bullet.target_y=targetY;
+      bullet.impact=Impact::NOTHING;
     }
     shot.bullets.push_back(bullet);
   }
@@ -756,7 +750,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
     { // puede disparar otra bala
       // aun quedan balas rafaga
       shooter.updateBurstFireBullets(-1);
-      makeShot(shooter, shooterName);
+      makeShot(shooter);
       shooter.resetTimeLastBullet();
       if (shooter.getBurstFireBullets() == 0)
       { // fin rafaga
@@ -775,7 +769,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
     if (!shooter.getAlreadyShot())
     {
       shooter.resetCooldown();
-      makeShot(shooter, shooterName);
+      makeShot(shooter);
     }
   }
 }
