@@ -80,10 +80,16 @@ public:
 
             } catch (...) {
                 menuController.onConnectionRequestResponseReceived("Conexión fallida", 1);
-            }});
-        
+            }
+        });
+        QObject::connect(&menuWindow, &QtWindow::windowClosed, [&]() {
+            waitForConnection.quit();
+        });
+
         waitForConnection.exec();
-        client->run(app, menuController);
+        if (client) {
+            client->run(app, menuController);
+        }
     };
 
 

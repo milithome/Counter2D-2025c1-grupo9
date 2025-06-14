@@ -9,17 +9,19 @@
 #include <iostream>
 
 QtWindow::QtWindow(const std::string& window_name, int width, int height) {
+    setFixedSize(width, height);
     window.setFixedSize(width, height);
-    window.setWindowTitle(QString::fromStdString(window_name));
+    setWindowTitle(QString::fromStdString(window_name));
 
 
     // Centrar ventana
     QScreen *screen = QGuiApplication::primaryScreen();
 
     QRect screenGeometry = screen->availableGeometry();
-    int x = (screenGeometry.width() - window.width()) / 2;
-    int y = (screenGeometry.height() - window.height()) / 2;
-    window.move(x, y);
+    int x = (screenGeometry.width() - this->width()) / 2;
+    int y = (screenGeometry.height() - this->height()) / 2;
+    // window.move(x, y);
+    move(x, y);
 
 
 
@@ -31,8 +33,8 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
         "  background-position: center;"
         "}"
     );
-    window.show();
-
+    //window.show();
+    show();
 }
 
 void QtWindow::showView(QtView& view) {
@@ -63,10 +65,10 @@ void QtWindow::clearWindow() {
 }
 
 void QtWindow::quit() {
-    window.hide();
+    hide();
 }
 
 
 QPoint QtWindow::getPosition() {
-    return window.pos();
+    return pos();
 }
