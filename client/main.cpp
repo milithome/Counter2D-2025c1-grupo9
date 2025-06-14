@@ -11,6 +11,7 @@
 #include "client/receiver&sender/clientReceiverLoop.h"
 #include "client/receiver&sender/clientSenderLoop.h"
 #include "client/client.h"
+#include "client/launcher.h"
 
 
 #include <iostream>
@@ -28,22 +29,23 @@
 #define NAME_SERVER "localhost"
 #define PORT "12345"
 
-using namespace SDL2pp;
-
 #include <variant>
 
 
 void game_run(std::string clientName);
 
 int main(int argc, char **argv) try {
-	if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <client_name>" << std::endl;
-        return 1;
-    }
+	// if (argc != 1) {
+    //     return 1;
+    // }
+	(void)argc;
+	(void)argv;
 	//game_run(argv[1]);
 
-	Client client(argv[1], NAME_SERVER, PORT);
-	client.run();
+	// Client client(argv[1], NAME_SERVER, PORT);
+	// client.run();
+	Launcher launcher;
+	launcher.run();
 
 	return 0;
 

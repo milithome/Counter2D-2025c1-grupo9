@@ -40,40 +40,40 @@ using namespace SDL2pp;
 #include <vector>
 #include <string>
 
-class MenuClient {
+class MenuClient : QObject {
 private:
-    bool partida_iniciada;
+    bool partida_iniciada = false;
     Queue<Response>& recv_queue;
     Queue<std::shared_ptr<MessageEvent>>& send_queue;
     RecvLoop& receiver;
     SendLoop& sender;
     Protocol& protocol;
-    QApplication app;
-    QApplication createApp() {
-        int argc = 0;
-        char** argv = nullptr;
-        return QApplication(argc, argv);
-    }
-    // QtWindow menuWindow;
-    // MenuController menuController;
-    //QTimer* timer;
     std::vector<std::string> players;
-    QPoint& w_pos_when_game_started;
+    QApplication& app;
+    MenuController& menuController;
 
 public:
-    MenuClient(Queue<Response>& recv_queue, 
+    MenuClient(
+         QApplication& app,
+         MenuController& menuController,
+         Queue<Response>& recv_queue, 
          Queue<std::shared_ptr<MessageEvent>>& send_queue, 
          RecvLoop& receiver, 
-         SendLoop& sender, Protocol& protocol, QPoint& w_pos_when_game_started);
+         SendLoop& sender, 
+         Protocol& protocol);
     
     bool run();
 
     bool isGameStarted() const {
-        return (true == partida_iniciada);
+        return partida_iniciada;
+    }
+    QPoint getWindowPosition() {
+        return menuController.getWindowPosition();
     }
 
     std::vector<std::string> allPlayers();
-    
+
+
 };
 
 #endif // MENUCLIENT_H

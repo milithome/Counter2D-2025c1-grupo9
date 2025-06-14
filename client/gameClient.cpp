@@ -8,11 +8,10 @@ GameClient::GameClient(
 	Queue<Response> &recv_queue,
 	Queue<std::shared_ptr<MessageEvent>> &send_queue, 
     std::string const clientName,
-	SDL &sdl,
-	bool pulse_available
-) : sdl(sdl), 
+	bool audio_available
+) :
     game(game), 
-    gameController(gameView, game, clientName, pulse_available), 
+    gameController(gameView, game, clientName, audio_available), 
     map(map), gameView(gameView), 
     players(players), 
     recv_queue(recv_queue), 

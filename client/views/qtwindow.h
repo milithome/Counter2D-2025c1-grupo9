@@ -9,7 +9,7 @@
 class QtWindow
 {
 public:
-    explicit QtWindow(QApplication& app, const std::string& windowName, int width, int height);
+    explicit QtWindow(const std::string& windowName, int width, int height);
     void showView(QtView& view);
     void clearWindow();
     void quit();
@@ -18,7 +18,6 @@ public:
     void show() { window.show(); };
 
 private:
-    QApplication& app;
     QWidget window;
     void deleteLayoutRecursively(QLayout* layout);
 };

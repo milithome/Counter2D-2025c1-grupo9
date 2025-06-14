@@ -47,14 +47,12 @@ public:
         Queue<Response>& recv_queue, 
         Queue<std::shared_ptr<MessageEvent>>& send_queue,
         std::string const clientName,
-        SDL &sdl,
-        bool pulse_available
+        bool audio_available
     );
 
     bool run();
 
 private:
-    SDL& sdl;
     Game& game;
     GameController gameController; 
     Map& map;

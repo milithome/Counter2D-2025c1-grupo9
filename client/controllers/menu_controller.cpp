@@ -9,12 +9,12 @@
 #include "create_event.h"
 #include "start_event.h"
 
-MenuController::MenuController(QtWindow& window, Protocol& protocol) : QWidget(nullptr), window(window), protocol(protocol) {
-    mainView = MainView();
+MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
+    connectToServerView = ConnectToServerView();
 
-    listenToMainView(mainView);
+    listenToConnectView(connectToServerView);
 
-    window.showView(mainView);
+    window.showView(connectToServerView);
 }
 
 void MenuController::listenToMainView(MainView& mainView) {
@@ -32,21 +32,40 @@ void MenuController::listenToMainView(MainView& mainView) {
 void MenuController::listenToCreatePartyView(CreatePartyView& createPartyView) {
     QPushButton *backButton = createPartyView.getBackButton();
     QPushButton *createButton = createPartyView.getCreateButton();
-    QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
-    QObject::connect(createButton, &QPushButton::clicked, [this, partyNameTextField]() {
-        std::string partyName = partyNameTextField->text().toStdString();
-        onCreatePartyViewCreateButtonClicked(partyName);
+    QObject::connect(createButton, &QPushButton::clicked, [this]() {
+        onCreatePartyViewCreateButtonClicked();
     });
     QObject::connect(backButton, &QPushButton::clicked, [this]() {
         onCreatePartyViewBackButtonClicked();
     });
 }
 
+void MenuController::listenToConnectView(ConnectToServerView& connectView) {
+    QPushButton *backButton = connectView.getBackButton();
+    QPushButton *connectButton = connectView.getConnectButton();
+    QObject::connect(connectButton, &QPushButton::clicked, [this]() {
+        onConnectViewConnectButtonClicked();
+    });
+    QObject::connect(backButton, &QPushButton::clicked, [this]() {
+        onConnectViewBackButtonClicked();
+    });
+}
+
+
 void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
     QPushButton *backButton = searchPartyView.getBackButton();
     QObject::connect(backButton, &QPushButton::clicked, [this]() {
         onSearchPartyViewBackButtonClicked();
     });
+
+    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView.getJoinButtons(); 
+    for (auto [partyName, button] : joinButtons) {
+
+        QObject::connect(button, &QPushButton::clicked, [this, partyName]() {
+            onSearchPartyViewJoinButtonClicked(partyName);
+            pName = partyName;
+        });
+    }
 }
 
 void MenuController::listenToPartyView(PartyView& partyView) {
@@ -62,10 +81,6 @@ void MenuController::listenToPartyView(PartyView& partyView) {
 
 void MenuController::onPartyViewLeaveButtonClicked() {
     emit nuevoEvento(std::make_shared<LeaveEvent>());
-    window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
-    window.showView(mainView);
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
@@ -86,18 +101,19 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
     emit nuevoEvento(std::make_shared<ListEvent>());
-    window.clearWindow();
-    searchPartyView = SearchPartyView();
-    listenToSearchPartyView(searchPartyView);
-    window.showView(searchPartyView);
+    // window.clearWindow();
+    // searchPartyView = SearchPartyView();
+    // listenToSearchPartyView(searchPartyView);
+    // window.showView(searchPartyView);
 }
 
-void MenuController::onCreatePartyViewCreateButtonClicked(const std::string& partyName) {
+void MenuController::onCreatePartyViewCreateButtonClicked() {
+    QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
+    std::string partyName = partyNameTextField->text().toStdString();
     emit nuevoEvento(std::make_shared<CreateEvent>(partyName));
-    window.clearWindow();
-    partyView = PartyView(partyName);
-    listenToPartyView(partyView);
-    window.showView(partyView);
+    // window.clearWindow();
+    // listenToPartyView(partyView);
+    // window.showView(partyView);
 
 }
 
@@ -108,12 +124,36 @@ void MenuController::onCreatePartyViewBackButtonClicked() {
     window.showView(mainView);
 }
 
+
+void MenuController::onConnectViewConnectButtonClicked() {
+    QLineEdit *portTextField = connectToServerView.getPortTextField();
+    QLineEdit *addressTextField = connectToServerView.getAddressTextField();
+    QLineEdit *nameTextField = connectToServerView.getNameTextField();
+    std::string port = portTextField->text().toStdString();
+    std::string address = addressTextField->text().toStdString();
+    std::string name = nameTextField->text().toStdString();
+    emit connectRequest(name, address, port);
+
+}
+
+void MenuController::onConnectionRequestResponseReceived(const std::string& message, const uint8_t result) {
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
+    }
+    window.clearWindow();
+    mainView = MainView();
+    listenToMainView(mainView);
+    window.showView(mainView);
+}
+
+void MenuController::onConnectViewBackButtonClicked() {
+    window.clearWindow();
+}
+
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
     emit nuevoEvento(std::make_shared<JoinEvent>(partyName));
-    window.clearWindow();
-    partyView = PartyView(partyName);
-    listenToPartyView(partyView);
-    window.showView(partyView);
+
 }
 
 void MenuController::onSearchPartyViewBackButtonClicked() {
@@ -126,43 +166,63 @@ void MenuController::onSearchPartyViewBackButtonClicked() {
 
 
 void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result) {
-    for (size_t i = 0; i < parties.size(); i++) {
-        searchPartyView.addParty(parties[i]);
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
     }
-    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView.getJoinButtons(); 
-    for (auto [partyName, button] : joinButtons) {
-
-        QObject::connect(button, &QPushButton::clicked, [this, partyName]() {
-            onSearchPartyViewJoinButtonClicked(partyName);
-        });
-    }
-    (void)message;
-    (void)result;
+    window.clearWindow();
+    searchPartyView = SearchPartyView(parties);
+    listenToSearchPartyView(searchPartyView);
+    window.showView(searchPartyView);
+    
 }
 
 void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result) {
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
+    }
     partyView.clearPlayers();
     for (size_t i = 0; i < players.size(); i++) {
         partyView.addPlayer(players[i]);
     }
-    (void)message;
-    (void)result;
 }
 
 
 void MenuController::onJoinPartyResponseReceived(const std::string& message, const uint8_t result) {
-    (void)message;
-    (void)result;
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
+    }
+    window.clearWindow();
+    partyView = PartyView(pName);
+    listenToPartyView(partyView);
+    window.showView(partyView);
+
 }
 
 void MenuController::onCreatePartyResponseReceived(const std::string& message, const uint8_t result) {
-    (void)message;
-    (void)result;
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
+    }
+    QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
+    std::string partyName = partyNameTextField->text().toStdString();
+    window.clearWindow();
+    partyView = PartyView(partyName);
+    listenToPartyView(partyView);
+    window.showView(partyView);
 }
 
 void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t result) {
-    (void)message;
-    (void)result;
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        return;
+    }
+    window.clearWindow();
+    mainView = MainView();
+    listenToMainView(mainView);
+    window.showView(mainView);
 }
 
 

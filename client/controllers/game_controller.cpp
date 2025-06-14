@@ -2,7 +2,7 @@
 #include <iostream>
 #include "common/structures.h"
 
-#define DESYNC_TOLERANCE 2
+#define DESYNC_TOLERANCE 0.2
 
 GameController::GameController(GameView& view, Game& game, const std::string& player_name, bool pulse_available)
     : view(view), game(game), soundHandler(pulse_available), player_name(player_name) {

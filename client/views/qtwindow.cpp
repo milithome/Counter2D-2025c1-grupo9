@@ -8,7 +8,7 @@
 #include <QRect>
 #include <iostream>
 
-QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width, int height) : app(app) {
+QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     window.setFixedSize(width, height);
     window.setWindowTitle(QString::fromStdString(window_name));
 
@@ -21,7 +21,6 @@ QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width,
     int y = (screenGeometry.height() - window.height()) / 2;
     window.move(x, y);
 
-    //window.show();
 
 
     window.setObjectName("MainWindow");
@@ -32,6 +31,7 @@ QtWindow::QtWindow(QApplication& app, const std::string& window_name, int width,
         "  background-position: center;"
         "}"
     );
+    window.show();
 
 }
 
@@ -63,7 +63,7 @@ void QtWindow::clearWindow() {
 }
 
 void QtWindow::quit() {
-    app.quit();
+    window.hide();
 }
 
 

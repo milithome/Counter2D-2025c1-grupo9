@@ -1,33 +1,25 @@
 #include "menuClient.h"
 
-MenuClient::MenuClient(Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, RecvLoop &receiver, SendLoop &sender, Protocol &protocol, QPoint& w_pos_when_game_started) :
-    partida_iniciada(false),
+#include <QScreen>
+#include <QRect>
+
+MenuClient::MenuClient(QApplication& app, MenuController& menuController, Queue<Response> &recv_queue, Queue<std::shared_ptr<MessageEvent>> &send_queue, RecvLoop &receiver, SendLoop &sender, Protocol &protocol) :
     recv_queue(recv_queue),
     send_queue(send_queue),
     receiver(receiver),
     sender(sender),
     protocol(protocol),
-    app(createApp()),
-    //menuWindow(QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT)),
-    //menuController(menuWindow, protocol),
-    players(),
-    w_pos_when_game_started(w_pos_when_game_started)
+    app(app),
+    menuController(menuController)
 {
 }
 
 
 bool MenuClient::run() {
-
-    qputenv("QT_QPA_PLATFORM", "xcb");
-
-    QtWindow menuWindow(QtWindow(app, "Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT));
-    MenuController menuController(menuWindow, protocol);
-
-
     QTimer* timer = new QTimer(nullptr);
 
     // Iniciar el bucle de eventos del menú
-    QObject::connect(timer, &QTimer::timeout, timer, [this, &menuWindow, &menuController]() {
+    QObject::connect(timer, &QTimer::timeout, timer, [this]() {
         Response msg;
         while (recv_queue.try_pop(msg)) {
             switch (msg.type) {
@@ -38,6 +30,10 @@ bool MenuClient::run() {
                 }
                 case JOIN: {
                     menuController.onJoinPartyResponseReceived(msg.message, msg.result);
+                    break;
+                }
+                case CREATE: {
+                    menuController.onCreatePartyResponseReceived(msg.message, msg.result);
                     break;
                 }
                 case LEAVE: {
@@ -56,8 +52,8 @@ bool MenuClient::run() {
                 }
                 case START: {
                     partida_iniciada = true;
-                    w_pos_when_game_started = menuWindow.getPosition();
                     menuController.onGameStarted();
+                    app.quit();
                     break;
                 }
                 default: {
@@ -72,9 +68,7 @@ bool MenuClient::run() {
     QObject::connect(&menuController, &MenuController::nuevoEvento, [this](std::shared_ptr<MessageEvent> event) {
         send_queue.try_push(event);
     });
-
-    // Ejecutar el bucle de eventos de la aplicación
-    menuWindow.show();
+    
     app.exec();
 
     return !partida_iniciada;
@@ -89,3 +83,5 @@ std::vector<std::string> MenuClient::allPlayers()
         return {};
     }
 }
+
+

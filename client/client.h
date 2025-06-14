@@ -47,14 +47,13 @@ private:
     RecvLoop receiver;
     SendLoop sender;
     std::vector<std::string> players;
-    QPoint w_pos_when_game_started;
     //Map map_selected ()  se agarraria en una ventana de los mapas en la memoria del editor
 
 public:
     // Constructor
     Client(const std::string name, const char* host, const char* port);
 
-    void run();
+    void run(QApplication& app, MenuController& menuController);
 };
 
 #endif // CLIENT_H
