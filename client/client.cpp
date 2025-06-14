@@ -14,11 +14,11 @@ Client::Client(const std::string name, const char* host, const char* port) :
 
 void Client::run(QApplication& app, MenuController& menuController) {
     protocol.send_name(clientName);
-	
+    bool looped = false;
     while (true) { // mientras el cliente no haya decidido irse
         MenuClient menuClient(app, menuController, recv_queue, send_queue, receiver, sender, protocol);
 
-        bool quit = menuClient.run();
+        bool quit = menuClient.run(looped);
         QPoint w_pos_when_game_started = menuClient.getWindowPosition();
 
         if (quit) {
@@ -49,6 +49,7 @@ void Client::run(QApplication& app, MenuController& menuController) {
         if (quit) {
             break;
         }
+        looped = true;
     }
     
     send_queue.push(std::make_shared<DisconnectEvent>());

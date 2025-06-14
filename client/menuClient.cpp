@@ -15,7 +15,7 @@ MenuClient::MenuClient(QApplication& app, MenuController& menuController, Queue<
 }
 
 
-bool MenuClient::run() {
+bool MenuClient::run(bool looped) {
     QTimer* timer = new QTimer(nullptr);
 
     // Iniciar el bucle de eventos del menú
@@ -68,6 +68,9 @@ bool MenuClient::run() {
     QObject::connect(&menuController, &MenuController::nuevoEvento, [this](std::shared_ptr<MessageEvent> event) {
         send_queue.try_push(event);
     });
+    if (looped) {
+        menuController.showStartingScreen();
+    }
     
     app.exec();
 

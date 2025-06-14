@@ -35,6 +35,13 @@ public:
 
     QPoint getWindowPosition() { return window.getPosition(); }
 
+    void showStartingScreen() { 
+        mainView = MainView();
+        listenToMainView(mainView);
+        window.showView(mainView);
+        window.show();
+    }
+
     
 
 private:

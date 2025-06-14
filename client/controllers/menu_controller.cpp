@@ -11,9 +11,7 @@
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
     connectToServerView = ConnectToServerView();
-
     listenToConnectView(connectToServerView);
-
     window.showView(connectToServerView);
 }
 
@@ -89,7 +87,7 @@ void MenuController::onPartyViewStartButtonClicked() {
 
 void MenuController::onGameStarted() {
     window.clearWindow();
-    window.quit();
+    // window.quit();
 }
 
 void MenuController::onMainViewCreatePartyButtonClicked() {

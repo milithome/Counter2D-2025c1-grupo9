@@ -62,7 +62,7 @@ public:
          SendLoop& sender, 
          Protocol& protocol);
     
-    bool run();
+    bool run(bool looped);
 
     bool isGameStarted() const {
         return partida_iniciada;
