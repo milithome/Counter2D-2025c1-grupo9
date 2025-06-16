@@ -8,12 +8,13 @@
 class Team {
 private:
   Role currentRole;
-  std::vector<Player*> players;
+  std::vector<std::shared_ptr<Player>> players;
   int roundsWon = 0;
   int playersAlive;
 
 public:
-  void addPlayer(Player &player);
+  //void addPlayer(Player &player);
+  void addPlayer(std::shared_ptr<Player> player);
 
   int getRoundsWon() const;
 

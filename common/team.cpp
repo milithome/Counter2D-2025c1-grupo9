@@ -1,7 +1,7 @@
 #include "team.h"
 
-void Team::addPlayer(Player &player) {
-  players.push_back(&player);
+void Team::addPlayer(std::shared_ptr<Player> player) {
+  players.push_back(player);
 }
 
 int Team::getPlayersAlive() const {
