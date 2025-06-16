@@ -623,7 +623,7 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target, float dist
       spike.position.y = target.getY();
     }
     dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
-    //target.replaceWeapon(WeaponName::NONE); error cuando hago esto
+    target.replaceWeapon(WeaponName::NONE); 
   }
 }
 
@@ -660,7 +660,7 @@ void Game::grab(const std::string &name)
       if (pw.name != WeaponName::NONE)
       {
         dropWeapon(pw, player.getX(), player.getY());
-        //player.replaceWeapon(WeaponName::NONE); error cuando hago esto
+        player.replaceWeapon(WeaponName::NONE);
       }
 
       player.replaceWeapon(weapon->name);
