@@ -32,6 +32,8 @@ private:
   bool running = true;
   float time;
   Spike spike;
+  Rounds rounds;
+  RoundWinner winner;
   std::queue<Shot> shot_queue;
   GameMap map;
   void dropWeapon(const Weapon& weapon, float x, float y);
@@ -77,8 +79,8 @@ private:
   float timeUntilNewRound = TIME_UNTIL_NEW_ROUND;
   float endRoundElapsedTime =0.0f;
   void updateRounds();
-  int checkRoundWinner();
-  void setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole);
+  char checkRoundWinner();
+  void handleEndRound(char winnerTeam, TypeEndRound type);
   void placeTeamsInSpawn();
   void updateRotation(const std::string &name, float currentRotation);
   Entity getPlayerState(const std::string& name);

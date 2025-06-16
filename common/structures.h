@@ -159,8 +159,21 @@ struct Action {
   ActionData data;
 };
 
+enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
+
 // Estado del juego
 enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND};
+struct RoundWinner {
+  char team;
+  TypeEndRound typeEndRound;
+};
+
+struct Rounds{
+  uint16_t roundsWonTeamA;
+  uint16_t roundsWonTeamB;
+  uint16_t currentRound;
+  RoundWinner winner;
+};
 
 enum Impact { HUMAN, BLOCK, NOTHING };
 
@@ -182,7 +195,9 @@ struct StateGame {
   Phase phase;
   std::vector<Entity> entities;
   std::queue<Shot> shots;
+  Rounds rounds;
 };
+
 
 // Datos iniciales del juego, como el mapa
 struct InitialData {
@@ -219,9 +234,6 @@ struct Message {
     Action action;
     std::string clientName;
 };
-
-
-
 
 
 

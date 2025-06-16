@@ -28,6 +28,7 @@ void Team::invertRole() {
   for (auto &player : players) {
     player->setRole(newRole);
     player->replaceWeapon(WeaponName::NONE);
+    player->changeWeapon(WeaponType::SECONDARY);
     player->setPrimaryBullets(INITIAL_PRIMARY_AMMO);
     player->setSecondaryBullets(INITIAL_SECONDARY_AMMO);
     player->setMoney(INITIAL_MONEY);

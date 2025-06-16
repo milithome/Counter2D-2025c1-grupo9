@@ -25,14 +25,15 @@ struct DroppedWeapon {
   float y;
 };
 
-#define SPEED 5.0f
-#define MAX_PLAYERS_PER_TEAM 5
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
 #define WEAPON_WIDTH 0.7f
 #define WEAPON_HEIGHT 0.7f
 #define BOMB_WIDTH 0.7f
 #define BOMB_HEIGHT 0.7f
+
+#define SPEED 5.0f
+#define MAX_PLAYERS_PER_TEAM 5
 
 #define AMMO_PRICE 40
 #define MAX_HEALTH 200
@@ -47,7 +48,7 @@ const float BOMB_DURATION = 60.0f;
 const float TIME_TO_PLANT = 130.0f;
 const float TIME_UNTIL_PLANT = 5.0f;
 const float TIME_UNTIL_DEFUSE = 5.0f;
-const float TIME_UNTIL_NEW_ROUND = 5.0f;
+const float TIME_UNTIL_NEW_ROUND = 10.0f;
 
 const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 3;
 const int INITIAL_ROUNDS_UNTIL_END_GAME = 6;

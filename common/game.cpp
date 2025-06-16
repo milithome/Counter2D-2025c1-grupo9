@@ -8,6 +8,11 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
   spawnTeamTerrorist = map.findSpawnTeam(false); // true para terrorist
   spawnTeamCounter = map.findSpawnTeam(true);
   spike.state = BombState::INVENTORY;
+  rounds.roundsWonTeamA=0;
+  rounds.roundsWonTeamB=0;
+  rounds.currentRound=0;
+  winner.team='-';
+  winner.typeEndRound=TypeEndRound::DEAD_TEAM;
 }
 
 bool Game::addPlayer(const std::string &name)
@@ -299,29 +304,16 @@ void Game::buyBullet(const std::string &name, WeaponType type)
   }
 }
 
-int Game::checkRoundWinner(){
+char Game::checkRoundWinner(){
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
     teamA.incrementRoundsWon();
-    return 1;
+    return 'a';
   }
   if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0){
     teamB.incrementRoundsWon();
-    return 2;
+    return 'b';
   }
-  return 0;
-}
-
-void Game::setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole) {
-    if (roundWinner == 1 || teamA.getRole() == winnerRole) {
-        moneyA = MONEY_WINNER;
-        moneyB = MONEY_LOSER;
-    } else if (roundWinner == 2 || teamB.getRole() == winnerRole) {
-        moneyB = MONEY_WINNER;
-        moneyA = MONEY_LOSER;
-    } else {
-        moneyA = 0;
-        moneyB = 0;
-    }
+  return '-';
 }
 
 void Game::placeTeamsInSpawn()
@@ -332,75 +324,6 @@ void Game::placeTeamsInSpawn()
   }
 }
 
-StateGame Game::getState()
-{
-  StateGame state;
-  state.phase = phase;
-
-  std::vector<Entity> entities;
-
-  for (const auto &player_ptr : players)
-  {
-    Player &player = *player_ptr;
-    entities.push_back(getPlayerState(player.getName()));
-  }
-  Entity bomb;
-  bomb.type = BOMB;
-  BombData data;
-
-  BombState bombState;
-  bombState = spike.state;
-  data.state = bombState;
-  bomb.data = data;
-  bomb.x = spike.position.x;
-  bomb.y = spike.position.y;
-  entities.push_back(bomb);
-
-  for (const DroppedWeapon &dropped : droppedWeapons)
-  {
-    Entity weaponEntity;
-    weaponEntity.type = EntityType::WEAPON;
-
-    WeaponData weaponData;
-    weaponData.weapon = dropped.name;
-
-    weaponEntity.data = weaponData;
-    weaponEntity.x = dropped.x;
-    weaponEntity.y = dropped.y;
-
-    entities.push_back(weaponEntity);
-  }
-
-  state.entities = entities;
-  state.shots = shot_queue;
-
-  return state;
-}
-
-Entity Game::getPlayerState(const std::string &name)
-{
-  Player player = findPlayerByName(name);
-  Entity entity;
-  entity.type = PLAYER;
-  entity.x = player.getX();
-  entity.y = player.getY();
-  Inventory inv;
-  inv.primary = player.getPrimaryWeaponName();
-  inv.secondary = player.getSecondaryWeaponName();
-  inv.bulletsPrimary = player.getBulletsPrimary();
-  inv.bulletsSecondary = player.getBulletsSecondary();
-  inv.has_the_bomb = player.getHasTheSpike();
-  PlayerData data;
-  data.equippedWeapon = player.getTypeEquipped();
-  data.inventory = inv;
-  data.name = player.getName();
-  data.rotation = player.getRotation();
-  data.health = player.getHealth();
-  data.money = player.getMoney();
-  data.alive = player.isAlive();
-  entity.data = data;
-  return entity;
-}
 
 bool Game::isRunning() { return running; }
 
@@ -684,83 +607,171 @@ void Game::updateRotation(const std::string &name, float currentRotation)
   findPlayerByName(name).setRotation(currentRotation);
 }
 
-void Game::updateGamePhase(float deltaTime){
-  int moneyA = 0;
-  int moneyB = 0;
-  int roundWinner;
-  switch (phase){
-  case Phase::PURCHASE:
-    
-    if(gameStart){
-      teamA.resetSpikeCarrier();
-      teamB.resetSpikeCarrier();
-      gameStart=false;
-    }
-    
-    purchaseElapsedTime += deltaTime;
-    if (purchaseElapsedTime >= purchaseDuration){
-      purchaseElapsedTime = 0.0f;
-      phase = Phase::BOMB_PLANTING;
-      std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
-    }
-    break;
 
-  case Phase::BOMB_PLANTING:
-    plantingElapsedTime += deltaTime;
-    roundWinner = checkRoundWinner();
-    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb){
-      plantingElapsedTime = 0.0f;
-      phase = Phase::END_ROUND;
-      setMoneyValues(roundWinner, moneyA, moneyB, Role::COUNTER_TERRORIST);
-      teamA.updateMoneyAfterRound(moneyA);
-      teamB.updateMoneyAfterRound(moneyB);
-    }
-    if (spike.state == BombState::PLANTED){
-      phase = Phase::BOMB_DEFUSING;
-    }
-    break;
+StateGame Game::getState()
+{
+  StateGame state;
+  state.phase = phase;
 
-  case Phase::BOMB_DEFUSING:
-    bombElapsedTime += deltaTime;
-    roundWinner = checkRoundWinner();
-    
-    if ((roundWinner == 1 && teamA.getRole() == Role::TERRORIST) || 
-    (roundWinner == 2 && teamB.getRole() == Role::TERRORIST) || 
-    bombElapsedTime >= timeUntilBombExplode){
-      setMoneyValues(roundWinner, moneyA, moneyB, Role::TERRORIST);
-      teamA.updateMoneyAfterRound(moneyA);
-      teamB.updateMoneyAfterRound(moneyB);
-      bombElapsedTime = 0.0f;
-      phase = Phase::END_ROUND;
-    }else if (spike.state == BombState::DEFUSED){
-      setMoneyValues(0, moneyA, moneyB, Role::COUNTER_TERRORIST);
-      teamA.updateMoneyAfterRound(moneyA);
-      teamB.updateMoneyAfterRound(moneyB);
-      phase = Phase::END_ROUND;
-    }
+  std::vector<Entity> entities;
 
-    break;
-  
-  case Phase::END_ROUND:
-    endRoundElapsedTime += deltaTime;
-    
-    if (endRoundElapsedTime >= timeUntilNewRound){
-      endRoundElapsedTime=0.0f;
-      phase = Phase::PURCHASE;
-      updateRounds();
-    }
-
-    break;
-
-
-  default:
-    break;
+  for (const auto &player_ptr : players)
+  {
+    Player &player = *player_ptr;
+    entities.push_back(getPlayerState(player.getName()));
   }
+  Entity bomb;
+  bomb.type = BOMB;
+  BombData data;
+
+  BombState bombState;
+  bombState = spike.state;
+  data.state = bombState;
+  bomb.data = data;
+  bomb.x = spike.position.x;
+  bomb.y = spike.position.y;
+  entities.push_back(bomb);
+
+  for (const DroppedWeapon &dropped : droppedWeapons)
+  {
+    Entity weaponEntity;
+    weaponEntity.type = EntityType::WEAPON;
+
+    WeaponData weaponData;
+    weaponData.weapon = dropped.name;
+
+    weaponEntity.data = weaponData;
+    weaponEntity.x = dropped.x;
+    weaponEntity.y = dropped.y;
+
+    entities.push_back(weaponEntity);
+  }
+
+  state.entities = entities;
+  state.shots = shot_queue;
+  state.rounds=rounds;
+
+  return state;
 }
+
+Entity Game::getPlayerState(const std::string &name)
+{
+  Player player = findPlayerByName(name);
+  Entity entity;
+  entity.type = PLAYER;
+  entity.x = player.getX();
+  entity.y = player.getY();
+  Inventory inv;
+  inv.primary = player.getPrimaryWeaponName();
+  inv.secondary = player.getSecondaryWeaponName();
+  inv.bulletsPrimary = player.getBulletsPrimary();
+  inv.bulletsSecondary = player.getBulletsSecondary();
+  inv.has_the_bomb = player.getHasTheSpike();
+  PlayerData data;
+  data.equippedWeapon = player.getTypeEquipped();
+  data.inventory = inv;
+  data.name = player.getName();
+  data.rotation = player.getRotation();
+  data.health = player.getHealth();
+  data.money = player.getMoney();
+  data.alive = player.isAlive();
+  entity.data = data;
+  return entity;
+}
+
+void Game::handleEndRound(char winnerTeam, TypeEndRound type) {
+    winner.team = winnerTeam;
+    winner.typeEndRound = type;
+    rounds.winner = winner;
+
+    if (winnerTeam == 'a') {
+        teamA.updateMoneyAfterRound(MONEY_WINNER);
+        teamB.updateMoneyAfterRound(MONEY_LOSER);
+        rounds.roundsWonTeamA++;
+    } else {
+        teamA.updateMoneyAfterRound(MONEY_LOSER);
+        teamB.updateMoneyAfterRound(MONEY_WINNER);
+        rounds.roundsWonTeamB++;
+    }
+
+    rounds.currentRound++;
+    phase = Phase::END_ROUND;
+}
+
+
+void Game::updateGamePhase(float deltaTime) {
+    char roundWinner = '-';
+
+    switch (phase) {
+    case Phase::PURCHASE:
+        if (gameStart) {
+            teamA.resetSpikeCarrier();
+            teamB.resetSpikeCarrier();
+            gameStart = false;
+        }
+
+        purchaseElapsedTime += deltaTime;
+        if (purchaseElapsedTime >= purchaseDuration) {
+            phase = Phase::BOMB_PLANTING;
+        }
+        break;
+
+    case Phase::BOMB_PLANTING:
+        plantingElapsedTime += deltaTime;
+        roundWinner = checkRoundWinner();
+
+        if (roundWinner != '-') {
+            handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
+        } else if (plantingElapsedTime >= timeToPlantBomb) {
+            char winningTeam = (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
+            handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
+        } else if (spike.state == BombState::PLANTED) {
+            phase = Phase::BOMB_DEFUSING;
+        }
+        break;
+
+    case Phase::BOMB_DEFUSING:
+        bombElapsedTime += deltaTime;
+        roundWinner = checkRoundWinner();
+
+        if (roundWinner != '-') {
+            Role roleA = teamA.getRole();
+            Role roleB = teamB.getRole();
+
+            if ((roundWinner == 'a' && roleA == Role::TERRORIST) ||
+                (roundWinner == 'b' && roleB == Role::TERRORIST)) {
+                handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
+            }
+
+        } else if (bombElapsedTime >= timeUntilBombExplode) {
+            char winningTeam = (teamA.getRole() == Role::TERRORIST) ? 'a' : 'b';
+            handleEndRound(winningTeam, TypeEndRound::BOMB_EXPLODED);
+
+        } else if (spike.state == BombState::DEFUSED) {
+            char winningTeam = (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
+            handleEndRound(winningTeam, TypeEndRound::BOMB_DEFUSED);
+        }
+        break;
+
+    case Phase::END_ROUND:
+        endRoundElapsedTime += deltaTime;
+        if (endRoundElapsedTime >= timeUntilNewRound) {
+
+            phase = Phase::PURCHASE;
+            updateRounds();
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 
 void Game::updateRounds(){
   teamA.restartPlayersAlive();
   teamB.restartPlayersAlive();
+  purchaseElapsedTime=0.0f;
   endRoundElapsedTime=0.0f;
   plantingElapsedTime = 0.0f;
   bombElapsedTime = 0.0f;
