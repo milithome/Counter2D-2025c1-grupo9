@@ -259,8 +259,8 @@ void GameController::updateGameState(StateGame new_state) {
     }
     Entity newClientPlayer;
     PlayerData newClientPlayerData;
-    for (size_t i = 0; i < state.entities.size(); i++) {
-        Entity entity = state.entities[i];
+    for (size_t i = 0; i < new_state.entities.size(); i++) {
+        Entity entity = new_state.entities[i];
         if (entity.type == PLAYER) {
             PlayerData data = std::get<PlayerData>(entity.data);
             if (data.name == player_name) {
@@ -271,12 +271,12 @@ void GameController::updateGameState(StateGame new_state) {
         }
     }
     int bomb_index = 0;
-    for (size_t i = 0; i < state.entities.size(); i++) {
-        Entity entity = state.entities[i];
+    for (size_t i = 0; i < new_state.entities.size(); i++) {
+        Entity entity = new_state.entities[i];
         switch (entity.type) {
             case PLAYER: {
-                PlayerData currentData = std::get<PlayerData>(new_state.entities[i].data);
-                PlayerData previousData = clientPlayerData;
+                PlayerData currentData = std::get<PlayerData>(entity.data);
+                PlayerData previousData = std::get<PlayerData>(state.entities[i].data);
 
                 if (!previousData.alive) {
                     continue;
@@ -301,7 +301,7 @@ void GameController::updateGameState(StateGame new_state) {
             }
         }
     }
-    std::queue<Shot> shots = state.shots;
+    std::queue<Shot> shots = new_state.shots;
 
     while (!shots.empty()) {
         Shot shot = shots.front();
@@ -320,13 +320,17 @@ void GameController::updateGameState(StateGame new_state) {
         view.addNewPhaseEffect(new_state.phase);
 
         BombData data = std::get<BombData>(state.entities[bomb_index].data);
-        if (state.phase == END_ROUND && data.state == PLANTED) {
+        if (new_state.phase == END_ROUND && data.state == PLANTED) {
             view.addBombExplosionEffect(state.entities[bomb_index].x, state.entities[bomb_index].y);
 
             float player_x = newClientPlayer.x;
             float player_y = newClientPlayer.y;
             float distance = std::sqrt((player_x - state.entities[bomb_index].x) * (player_x - state.entities[bomb_index].x) + (player_y - state.entities[bomb_index].y) * (player_y - state.entities[bomb_index].y));
             soundHandler.playBombSound(distance);
+        }
+        if (new_state.phase == PURCHASE) {
+            Action action{ActionType::MOVE, MoveAction{++lastMoveId, 0, 0}};
+            action_queue.push(action);
         }
 
     }
