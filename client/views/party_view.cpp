@@ -12,6 +12,14 @@
 #include "components/menu_button.h"
 #include "components/menu_label.h"
 #include "components/translucent_container.h"
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QPixmap>
+#include <QPushButton>
 
 
 
@@ -31,8 +39,13 @@ void PartyView::addPlayer(const std::string& player) {
 }
 
 
+void PartyView::buildSettingsButton() {
+    settingsButton = new MenuButton("Settings");
+}
+
 void PartyView::buildLayout() {
     buildPartyNameLabel();
+    buildSettingsButton();
     buildPlayerList();
     buildStartButton();
     buildLeaveButton();
@@ -53,8 +66,12 @@ void PartyView::buildLayout() {
 
     
     QVBoxLayout *subLayout = new QVBoxLayout();
-    
-    subLayout->addWidget(partyNameLabel);
+
+    QHBoxLayout *subsubLayout = new QHBoxLayout();
+    subsubLayout->addWidget(partyNameLabel);
+    subsubLayout->addWidget(settingsButton);
+
+    subLayout->addLayout(subsubLayout);
     subLayout->addWidget(createSeparator());
     subLayout->addWidget(playerList);
     subLayout->addWidget(createSeparator());
@@ -150,4 +167,140 @@ void PartyView::addPlayerToList(const std::string& playerName) {
 void PartyView::clearPlayers() {
     players.clear();
     playerList->clear();
+}
+
+
+
+
+
+
+QPushButton* PartyView::createSkinButton(const QString& imagePath) {
+    QPushButton* button = new QPushButton;
+    QPixmap pixmap(":/images/skin1.png");
+    button->setIcon(QIcon(pixmap));
+    button->setIconSize(QSize(64, 64));
+    button->setFixedSize(70, 70);
+    button->setFlat(true);
+    return button;
+}
+
+QWidget* PartyView::createCtSkinsColumn(const std::unordered_map<ctSkin, QString>& imagePaths) {
+    QVBoxLayout* vbox = new QVBoxLayout;
+
+    QLabel* label = new QLabel("CT Skins");
+    vbox->addWidget(label);
+
+    QGridLayout* grid = new QGridLayout;
+    int row = 0, col = 0;
+    for (auto [skin, imagePath] : imagePaths) {
+        QPushButton* skinLabel = createSkinButton(imagePath);
+        ctSkins[skin] = skinLabel;
+
+
+        grid->addWidget(skinLabel, row, col);
+        if (++col >= 2) { 
+            col = 0;
+            ++row;
+        }
+    }
+
+    QWidget* gridWidget = new QWidget;
+    gridWidget->setLayout(grid);
+    vbox->addWidget(gridWidget);
+
+    QWidget* container = new QWidget;
+    container->setLayout(vbox);
+
+    return container;
+}
+
+QWidget* PartyView::createTSkinsColumn(const std::unordered_map<tSkin, QString>& imagePaths) {
+    QVBoxLayout* vbox = new QVBoxLayout;
+
+    QLabel* label = new QLabel("T Skins");
+    vbox->addWidget(label);
+
+    QGridLayout* grid = new QGridLayout;
+    int row = 0, col = 0;
+    for (auto [skin, imagePath] : imagePaths) {
+        QPushButton* skinLabel = createSkinButton(imagePath);
+        tSkins[skin] = skinLabel;
+
+        grid->addWidget(skinLabel, row, col);
+        if (++col >= 2) { 
+            col = 0;
+            ++row;
+        }
+    }
+
+    QWidget* gridWidget = new QWidget;
+    gridWidget->setLayout(grid);
+    vbox->addWidget(gridWidget);
+
+    QWidget* container = new QWidget;
+    container->setLayout(vbox);
+
+    return container;
+}
+
+
+void PartyView::buildModal() {
+    QDialog* dialog = new QDialog();
+    dialog->setWindowTitle("Settings");
+
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+
+    // Parte superior con dos columnas
+    QHBoxLayout* topLayout = new QHBoxLayout;
+    std::unordered_map<ctSkin, QString> ctSkinPaths = {
+        {
+            ctSkin::FRENCH_GIGN, ":/assets/gfx/player/ct1.bmp"
+        }, 
+        {
+            ctSkin::GERMAN_GSG9, ":/assets/gfx/player/ct2.bmp"
+        }, 
+        {
+            ctSkin::SEAL_FORCE, ":/assets/gfx/player/ct3.bmp"
+        },
+        {
+            ctSkin::UKSAS, ":/assets/gfx/player/ct4.bmp"
+        }
+    };
+    std::unordered_map<tSkin, QString> tSkinPaths = {
+        {
+            tSkin::ARCTIC_AVENGER, ":/assets/gfx/player/t1.bmp"
+        }, 
+        {
+            tSkin::GUERRILLA, ":/assets/gfx/player/t2.bmp"
+        }, 
+        {
+            tSkin::L337_KREW, ":/assets/gfx/player/t3.bmp"
+        },
+        {
+            tSkin::PHOENIX, ":/assets/gfx/player/t4.bmp"
+        }
+    };
+    
+    topLayout->addWidget(createTSkinsColumn(tSkinPaths));
+    topLayout->addWidget(createCtSkinsColumn(ctSkinPaths));
+
+    mainLayout->addLayout(topLayout);
+
+    // Parte inferior con dificultad
+    QVBoxLayout* bottomLayout = new QVBoxLayout;
+    bottomLayout->addWidget(new QLabel("Seleccionar mapa"));
+
+    QComboBox* mapBox = new QComboBox;
+    mapBox->addItems({"default", "grande"});
+    bottomLayout->addWidget(mapBox);
+
+    mainLayout->addLayout(bottomLayout);
+
+    // Botón cerrar (opcional)
+    QPushButton* closeBtn = new QPushButton("Cerrar");
+    QObject::connect(closeBtn, &QPushButton::clicked, dialog, &QDialog::accept);
+    mainLayout->addWidget(closeBtn);
+
+    dialog->setLayout(mainLayout);
+    settingsModal = dialog;
 }

@@ -69,11 +69,21 @@ void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
 void MenuController::listenToPartyView(PartyView& partyView) {
     QPushButton *leaveButton = partyView.getLeaveButton();
     QPushButton *startButton = partyView.getStartButton();
+    QPushButton *settingsButton = partyView.getSettingsButton();
     QObject::connect(leaveButton, &QPushButton::clicked, [this]() {
         onPartyViewLeaveButtonClicked();
     });
     QObject::connect(startButton, &QPushButton::clicked, [this]() {
         onPartyViewStartButtonClicked();
+    });
+    std::unordered_map<tSkin, QLabel*> tSkins = partyView.getTSkinButtons();
+    std::unordered_map<tSkin, QLabel*> tSkins = partyView.getCtSkinButtons();
+    QObject::connect(settingsButton, &QPushButton::clicked, [this, &partyView]() {
+        partyView.showModal();
+    });
+
+    QObject::connect(settingsButton, &QPushButton::clicked, [this]() {
+        partyView.showModal();
     });
 }
 
