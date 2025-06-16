@@ -53,5 +53,8 @@ const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 3;
 const int INITIAL_ROUNDS_UNTIL_END_GAME = 6;
 const int MONEY_WINNER = 150;
 const int MONEY_LOSER = 100;
+const int INITIAL_MONEY = 1000;
+const int INITIAL_PRIMARY_AMMO = 0;
+const int INITIAL_SECONDARY_AMMO = 0;
 
 #endif

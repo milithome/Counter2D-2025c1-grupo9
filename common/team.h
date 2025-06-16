@@ -35,6 +35,7 @@ public:
   void resetSpikeCarrier();
 
   void updateMoneyAfterRound(int money);
+
 };
 
 #endif

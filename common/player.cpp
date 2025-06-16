@@ -204,7 +204,18 @@ int Player::getBulletsPrimary() const { return bulletsPrimary; }
 
 int Player::getBulletsSecondary() const { return bulletsSecondary; }
 
+void Player::setPrimaryBullets(int bullets){
+  bulletsPrimary=bullets;
+}
+void Player::setSecondaryBullets(int bullets){
+  bulletsSecondary=bullets;
+}
+
 int Player::getMoney() const { return this->money; }
+
+void Player::setMoney(int money){
+  this->money=money;
+}
 
 void Player::updateMoney(int value) { money += value; }
 

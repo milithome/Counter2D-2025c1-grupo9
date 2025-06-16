@@ -19,8 +19,6 @@ int Team::getRoundsWon() const { return roundsWon; }
 void Team::incrementRoundsWon() { roundsWon++; }
 
 void Team::invertRole() {
-  // cambia el rol de todos los jugadores del equipo al opuesto
-  // llamar al cambiar de ronda
   Role newRole;
   if (currentRole == Role::TERRORIST) {
     newRole = Role::COUNTER_TERRORIST;
@@ -29,6 +27,10 @@ void Team::invertRole() {
   }
   for (auto &player : players) {
     player->setRole(newRole);
+    player->replaceWeapon(WeaponName::NONE);
+    player->setPrimaryBullets(INITIAL_PRIMARY_AMMO);
+    player->setSecondaryBullets(INITIAL_SECONDARY_AMMO);
+    player->setMoney(INITIAL_MONEY);
   }
 }
 
