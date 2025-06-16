@@ -346,7 +346,7 @@ private:
 
 
     void showInterface(Inventory inventory, WeaponType equippedWeapon, int health);
-    void showShop();
+    void showShop(Inventory inventory, int money);
 
     float randomFloat(float min, float max) {
         static std::random_device rd;

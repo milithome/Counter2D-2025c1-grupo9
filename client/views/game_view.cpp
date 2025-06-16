@@ -100,7 +100,7 @@ void GameView::update(float deltaTime) {
         showInterface(playerData.inventory, playerData.equippedWeapon, playerData.health);
     }
     if (shopIsVisible) {
-        showShop();
+        showShop(playerData.inventory, playerData.money);
     }
 
     renderer.Present();
@@ -788,8 +788,7 @@ void GameView::resizeHud() {
 // se vuelvan a crear los Rects. Por otro lado va a ver un metodo que grafique los sprites, los textos,
 // y los contenedores de la interfaz dentro de esos rects.
 
-void GameView::showShop() {
-    /*
+void GameView::showShop(Inventory inv, int money) {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 40;
@@ -818,7 +817,8 @@ void GameView::showShop() {
     int item_container_hbox_width = container.GetW() - CONTAINER_MARGIN * 2;
 
 
-    auto shop = game.getStore();
+
+    auto shop = Store::getStore();
 
 
     
@@ -844,9 +844,9 @@ void GameView::showShop() {
     Texture BoughtLabelTexture(renderer, BoughtLabel);
 
 
-    PlayerData player = std::get<PlayerData>(game.getPlayerState(playerName).data);
-    uint32_t money = player.money;
-    Inventory inv = player.inventory;
+    // PlayerData player = std::get<PlayerData>(game.getPlayerState(playerName).data);
+    // uint32_t money = player.money;
+    // Inventory inv = player.inventory;
     
     
     int itemContainerX = container.GetX() + CONTAINER_MARGIN;
@@ -1115,7 +1115,7 @@ void GameView::showShop() {
 
     Texture moneyLabelTexture(renderer, moneyLabel);
     renderer.Copy(moneyLabelTexture, NullOpt, moneyLabelRect);
-    */
+
 }
 
 
