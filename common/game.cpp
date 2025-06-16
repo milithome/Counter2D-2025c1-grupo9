@@ -90,10 +90,9 @@ void Game::stopShooting(const std::string &name)
   player.stopShooting();
 }
 
-void Game::movePlayer(const std::string &name, float vx, float vy, uint32_t id)
+void Game::movePlayer(const std::string &name, float vx, float vy)
 {
   Player &player = findPlayerByName(name);
-  player.setLastMoveId(id);
   player.updateVelocity(vx, vy);
 }
 
@@ -130,43 +129,6 @@ void Game::plantBomb(
   return;
 }
 
-void Game::plant(float x, float y)
-{
-  if (spike.state == BombState::PLANTED)
-  {
-    return;
-  }
-  timePlanting = 0.0f;
-  spike.position.x = x;
-  spike.position.y = y;
-  spike.state = BombState::PLANTED;
-
-  return;
-}
-
-void Game::defuse()
-{
-  if (spike.state == BombState::DEFUSED)
-  {
-    return;
-  }
-  timeDefusing = 0.0f;
-  spike.state = BombState::DEFUSED;
-
-  return;
-}
-
-void Game::addDroppedWeapon(float x, float y, WeaponName weapon)
-{
-  for (const DroppedWeapon &dw : droppedWeapons)
-  {
-    if (dw.x == x && dw.y == y && dw.name == weapon)
-    {
-      return;
-    }
-  }
-  droppedWeapons.emplace_back(DroppedWeapon{weapon, x, y});
-}
 
 void Game::stopPlantBomb(const std::string &name)
 {
@@ -256,40 +218,6 @@ void Game::defuseBomb(const std::string &name)
   return;
 }
 
-void Game::updatePlayerPosition(const std::string &name, float x, float y)
-{
-  findPlayerByName(name).setPosition(x, y);
-}
-
-void Game::updatePlayerHealth(const std::string &name, int health)
-{
-  Player &player = findPlayerByName(name);
-  player.updateHealth(health - player.getHealth());
-  if (!player.isAlive())
-  {
-    if (player.getHasTheSpike())
-    {
-      spike.state = BombState::DROPPED;
-      spike.position.x = player.getX();
-      spike.position.y = player.getY();
-    }
-
-    Weapon pw = player.getPrimaryWeapon();
-    if (pw.name != WeaponName::NONE)
-    {
-      dropWeapon(pw, player.getX(), player.getY());
-    }
-    player.replaceWeapon(WeaponName::NONE);
-    player.changeWeapon(WeaponType::SECONDARY);
-  }
-}
-
-// Manuel: metodo creado para sincronizar el cliente
-void Game::updatePrimaryWeapon(const std::string &name, WeaponName weapon)
-{
-  findPlayerByName(name).replaceWeapon(weapon);
-}
-
 void Game::updatePlayerMovement(Player &player, float deltaTime)
 {
   Hitbox hb = player.getHitbox();
@@ -353,10 +281,6 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName)
   }
 }
 
-std::vector<std::pair<WeaponName, int>> Game::getStore()
-{
-  return Store::getStore();
-}
 
 void Game::buyBullet(const std::string &name, WeaponType type)
 {
@@ -387,8 +311,23 @@ int Game::checkRoundWinner(){
   return 0;
 }
 
-void Game::updateGamePhase(float deltaTime){
+void Game::setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole) {
+    if (roundWinner == 1 || teamA.getRole() == winnerRole) {
+        moneyA = MONEY_WINNER;
+        moneyB = MONEY_LOSER;
+    } else if (roundWinner == 2 || teamB.getRole() == winnerRole) {
+        moneyB = MONEY_WINNER;
+        moneyA = MONEY_LOSER;
+    } else {
+        moneyA = 0;
+        moneyB = 0;
+    }
+}
 
+void Game::updateGamePhase(float deltaTime){
+  int moneyA = 0;
+  int moneyB = 0;
+  int roundWinner;
   switch (phase){
   case Phase::PURCHASE:
     
@@ -408,37 +347,44 @@ void Game::updateGamePhase(float deltaTime){
 
   case Phase::BOMB_PLANTING:
     plantingElapsedTime += deltaTime;
-    if (checkRoundWinner() != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
-      std::cout << "[DEBUG] Ending BOMB_PLANTING, transitioning to END_ROUND" << std::endl;
+    roundWinner = checkRoundWinner();
+    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
       plantingElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
+      setMoneyValues(roundWinner, moneyA, moneyB, Role::COUNTER_TERRORIST);
+      teamA.updateMoneyAfterRound(moneyA);
+      teamB.updateMoneyAfterRound(moneyB);
     }
     if (spike.state == BombState::PLANTED){
       phase = Phase::BOMB_DEFUSING;
-      std::cout << "[DEBUG] Bomb planted, transitioning to BOMB_DEFUSING" << std::endl;
     }
     break;
 
   case Phase::BOMB_DEFUSING:
     bombElapsedTime += deltaTime;
-    if (checkRoundWinner() != 0 || bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
-      std::cout << "[DEBUG] Ending BOMB_DEFUSING, transitioning to END_ROUND" << std::endl;
+    roundWinner = checkRoundWinner();
+    
+    if ((roundWinner == 1 && teamA.getRole() == Role::TERRORIST) || 
+    (roundWinner == 2 && teamB.getRole() == Role::TERRORIST) || 
+    bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
+      setMoneyValues(roundWinner, moneyA, moneyB, Role::TERRORIST);
+      teamA.updateMoneyAfterRound(moneyA);
+      teamB.updateMoneyAfterRound(moneyB);
       bombElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
     }
     if (spike.state == BombState::DEFUSED){
       phase = Phase::END_ROUND;
-      std::cout << "[DEBUG] Bomb defused, transitioning to END_ROUND" << std::endl;
     }
 
     break;
+  
   case Phase::END_ROUND:
     endRoundElapsedTime += deltaTime;
     
     if (endRoundElapsedTime >= timeUntilNewRound){
       endRoundElapsedTime=0.0f;
       phase = Phase::PURCHASE;
-      std::cout << "[DEBUG] Ending round, transitioning to PURCHASE" << std::endl;
       updateRounds();
     }
 
@@ -550,7 +496,6 @@ Entity Game::getPlayerState(const std::string &name)
   data.inventory = inv;
   data.name = player.getName();
   data.rotation = player.getRotation();
-  data.lastMoveId = player.getLastMoveId();
   data.health = player.getHealth();
   data.money = player.getMoney();
   data.alive = player.isAlive();
@@ -673,10 +618,12 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target, float dist
     if (target.getHasTheSpike())
     {
       spike.state = BombState::DROPPED;
+      target.setHasSpike(false);
       spike.position.x = target.getX();
       spike.position.y = target.getY();
     }
     dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
+    //target.replaceWeapon(WeaponName::NONE); error cuando hago esto
   }
 }
 
@@ -713,6 +660,7 @@ void Game::grab(const std::string &name)
       if (pw.name != WeaponName::NONE)
       {
         dropWeapon(pw, player.getX(), player.getY());
+        //player.replaceWeapon(WeaponName::NONE); error cuando hago esto
       }
 
       player.replaceWeapon(weapon->name);
@@ -815,17 +763,26 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const
   return std::nullopt;
 }
 
-void Game::updateTime(float currentTime) { time = currentTime; }
+Shot Game::shotQueuePop()
+{
+  Shot top = shot_queue.front();
+  shot_queue.pop();
+  return top;
+}
+
+bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
+
+void Game::shotQueueClear()
+{
+  std::queue<Shot> empty;
+  std::swap(shot_queue, empty);
+}
 
 void Game::updateRotation(const std::string &name, float currentRotation)
 {
   findPlayerByName(name).setRotation(currentRotation);
 }
 
-float Game::getRotation(const std::string &name)
-{
-  return findPlayerByName(name).getRotation();
-}
 
 void Game::update(float deltaTime)
 {
@@ -850,7 +807,7 @@ void Game::execute(const std::string &name, Action action)
   case ActionType::MOVE:
   {
     const MoveAction *data = std::get_if<MoveAction>(&action.data);
-    movePlayer(name, data->vx, data->vy, data->id);
+    movePlayer(name, data->vx, data->vy);
     break;
   }
   case ActionType::POINT_TO:
@@ -923,27 +880,3 @@ void Game::execute(const std::string &name, Action action)
   }
 }
 
-Shot Game::shotQueuePop()
-{
-  Shot top = shot_queue.front();
-  shot_queue.pop();
-  return top;
-}
-
-bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
-
-void Game::shotQueueClear()
-{
-  std::queue<Shot> empty;
-  std::swap(shot_queue, empty);
-}
-
-float Game::getX(const std::string &name)
-{
-  return findPlayerByName(name).getX();
-}
-
-float Game::getY(const std::string &name)
-{
-  return findPlayerByName(name).getY();
-}

@@ -32,6 +32,12 @@ void Team::invertRole() {
   }
 }
 
+void Team::updateMoneyAfterRound(int money){
+  for (auto &player : players) {
+    player->updateMoney(money);
+  }
+}
+
 void Team::resetSpikeCarrier(){
   for (auto &player : players){
     player->setHasSpike(false);

@@ -190,7 +190,7 @@ void Match::setupGame(Game& game) {
 
 void Match::startTimeoutThread(Game& game) {
     std::thread timeoutThread([this, &game]() {
-        std::this_thread::sleep_for(std::chrono::minutes(3));
+        std::this_thread::sleep_for(std::chrono::minutes(10));
         //std::this_thread::sleep_for(std::chrono::seconds(180));
         game.stop();
         inGame = false;

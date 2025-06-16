@@ -81,7 +81,6 @@ public:
   void resetTimeLastBullet();
   void setAlreadyShot(bool value);
   void restoreHealth();
-  void setLastMoveId(uint32_t id);
   void setPosition(float x, float y);
   void setRotation(float currentRotation);
   void startShooting();
