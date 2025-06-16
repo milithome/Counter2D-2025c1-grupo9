@@ -105,7 +105,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
     if (state.phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {
         
-        Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
+        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
         action_queue.push(action);
         actions.push_back(action);
     }
@@ -146,7 +146,7 @@ void GameController::onKeyReleased(const SDL_Event& event) {
     if (defusing || planting) return;
     if (state.phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {
-        Action action{ActionType::MOVE, MoveAction{++lastMoveId, movement_keys_vector[0], movement_keys_vector[1]}};
+        Action action{ActionType::MOVE, MoveAction{movement_keys_vector[0], movement_keys_vector[1]}};
         action_queue.push(action);
         actions.push_back(action);
     }
@@ -329,7 +329,7 @@ void GameController::updateGameState(StateGame new_state) {
             soundHandler.playBombSound(distance);
         }
         if (new_state.phase == PURCHASE) {
-            Action action{ActionType::MOVE, MoveAction{++lastMoveId, 0, 0}};
+            Action action{ActionType::MOVE, MoveAction{0, 0}};
             action_queue.push(action);
         }
 

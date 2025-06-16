@@ -52,7 +52,6 @@ struct Inventory {
 struct PlayerData {
     std::string name;
     float rotation;
-    uint32_t lastMoveId;
     int money;
     int health; // de float a int
     Inventory inventory;
@@ -104,7 +103,6 @@ enum class ActionType {
 };
 
 struct MoveAction {
-  uint32_t id;
   int vx;
   int vy;
 };

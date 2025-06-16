@@ -64,7 +64,6 @@ void Protocol::send_list() {
 void Protocol::serialize_action_move(const Action& action, std::vector<uint8_t>& buffer) {
     const MoveAction& move = std::get<MoveAction>(action.data);
 
-    Utilities::serialize_int(buffer, move.id);
     Utilities::serialize_int(buffer, move.vx);
     Utilities::serialize_int(buffer, move.vy);
 }
@@ -190,8 +189,6 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
     Utilities::serialize_string(buf, pdata.name);
 
     Utilities::serialize_float(buf, pdata.rotation);
-
-    Utilities::serialize_uint32(buf, pdata.lastMoveId);
 
     Utilities::serialize_int(buf, pdata.money);
 
@@ -565,7 +562,6 @@ PlayerData Protocol::recv_player_data() {
 
     p.name = Utilities::deserialize_string(skt);
     p.rotation = Utilities::deserialize_float(skt);
-    p.lastMoveId = Utilities::deserialize_uint32(skt);
     p.money = Utilities::deserialize_int(skt);
     p.health = Utilities::deserialize_int(skt);
 
@@ -746,7 +742,6 @@ Message Protocol::deserialize_message_with_name(Type type) {
 
 MoveAction Protocol::recv_move_action() {
     MoveAction move;
-    move.id = Utilities::deserialize_uint32(skt);
     move.vx = Utilities::deserialize_int(skt);
     move.vy = Utilities::deserialize_int(skt);
     return move;

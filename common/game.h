@@ -57,7 +57,7 @@ private:
   PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
   bool rectsOverlap(float ax, float ay, float aw, float ah,
                   float bx, float by, float bw, float bh);
-  void movePlayer(const std::string &name, float vx, float vy, uint32_t id);
+  void movePlayer(const std::string &name, float vx, float vy);
   void stopShooting(const std::string &name);
   void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player& player);
@@ -78,33 +78,19 @@ private:
   float endRoundElapsedTime =0.0f;
   void updateRounds();
   int checkRoundWinner();
-  
+  void setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole);
   void placeTeamsInSpawn();
+  void updateRotation(const std::string &name, float currentRotation);
+  Entity getPlayerState(const std::string& name);
 
 public:
   Game(std::vector<std::vector<CellType>> game_map);
-  
-  void
-  updatePlayerPosition(const std::string &name, float x,
-                       float y);
-  void updatePlayerHealth(const std::string &name, int health);
-  void updatePrimaryWeapon(const std::string &name, WeaponName weapon); 
-  void updateRotation(const std::string &name, float currentRotation);
   bool addPlayer(const std::string &name);
   StateGame getState();
-  Entity getPlayerState(const std::string& name);
-  std::vector<std::pair<WeaponName, int>> getStore();
   void update(float deltaTime);
   void execute(const std::string &name, Action action);
   bool isRunning();
   void stop();
-  void defuse();
-  void updateTime(float currentTime);
-  float getRotation(const std::string &name);
-  float getX(const std::string &name);
-  float getY(const std::string &name);
-  void plant(float x, float y);
-  void addDroppedWeapon(float x, float y, WeaponName weapon);
   Shot shotQueuePop();
   bool shotQueueIsEmpty();
   void shotQueueClear();

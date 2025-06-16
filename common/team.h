@@ -33,6 +33,9 @@ public:
   int getPlayersAlive() const;
 
   void resetSpikeCarrier();
+
+  void updateMoneyAfterRound(int money);
+
 };
 
 #endif

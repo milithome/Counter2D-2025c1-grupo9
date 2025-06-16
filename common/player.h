@@ -14,14 +14,14 @@ private:
   Hitbox hitbox;
   Role role;
   bool team= false; //true es A, false es B
-  int money = 1000;
+  int money = INITIAL_MONEY;
   Weapon equipped = Weapons::Glock;
   WeaponType typeEquipped = WeaponType::SECONDARY;
   Weapon knife = Weapons::Knife;
   Weapon primaryWeapon = Weapons::None;
   Weapon secondaryWeapon = Weapons::Glock;
-  uint32_t bulletsPrimary = 0;
-  uint32_t bulletsSecondary = 0;
+  uint32_t bulletsPrimary = INITIAL_PRIMARY_AMMO;
+  uint32_t bulletsSecondary = INITIAL_SECONDARY_AMMO;
   float rotation;
   int health = MAX_HEALTH;
   float vx = 0, vy = 0;
@@ -54,6 +54,9 @@ public:
   int getBulletsPrimary() const;
   int getBulletsSecondary() const;
   int getBurstFireBullets();
+  void setPrimaryBullets(int bullets);
+  void setSecondaryBullets(int bullets);
+  void setMoney(int money);
   std::pair<float, float> getDamageRange() const;
   bool getHasTheSpike();
   int getHealth() const;
@@ -81,7 +84,6 @@ public:
   void resetTimeLastBullet();
   void setAlreadyShot(bool value);
   void restoreHealth();
-  void setLastMoveId(uint32_t id);
   void setPosition(float x, float y);
   void setRotation(float currentRotation);
   void startShooting();
