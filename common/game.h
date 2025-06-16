@@ -18,7 +18,7 @@
 
 class Game {
 private:
-  std::vector<Player> players;
+  std::vector<std::shared_ptr<Player>> players;
   Team teamA;
   Team teamB;
   int roundNumber = 1;

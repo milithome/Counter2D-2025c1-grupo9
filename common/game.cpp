@@ -12,20 +12,21 @@ Game::Game(std::vector<std::vector<CellType>> game_map)
 
 bool Game::addPlayer(const std::string &name)
 {
-  players.emplace_back(name);
-  Player &player = findPlayerByName(name);
+  std::shared_ptr<Player> player = std::make_shared<Player>(name);
+  players.emplace_back(player);
+  //Player &player = findPlayerByName(name);
   if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM)
   {
     teamA.addPlayer(player);
-    player.setRole(teamA.getRole());
-    placePlayerInSpawnTeam(player);
+    player->setRole(teamA.getRole());
+    placePlayerInSpawnTeam(*player);
     return true;
   }
   if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM)
   {
     teamB.addPlayer(player);
-    player.setRole(teamB.getRole());
-    placePlayerInSpawnTeam(player);
+    player->setRole(teamB.getRole());
+    placePlayerInSpawnTeam(*player);
     return true;
   }
   return false;
@@ -76,8 +77,8 @@ Player &Game::findPlayerByName(const std::string &name)
 {
   for (auto &player : players)
   {
-    if (player.getName() == name)
-      return player;
+    if (player->getName() == name)
+      return *player;
   }
   throw std::runtime_error("Player not found");
 }
@@ -301,8 +302,9 @@ void Game::updatePlayerMovement(Player &player, float deltaTime)
   float originalX = player.getX();
   float originalY = player.getY();
   PlayerCellBounds bounds = getCellBounds(newX, newY, width, height);
-  for (const auto &other : players)
+  for (const auto &other_ptr : players)
   {
+    Player &other = *other_ptr;
     if (&other == &player)
       continue;
     if (!other.isAlive())
@@ -483,7 +485,8 @@ void Game::updateRounds(){
 
 void Game::placeTeamsInSpawn()
 {
-  for (auto &player : players){
+  for (auto &player_ptr : players){
+    Player &player = *player_ptr;
     placePlayerInSpawnTeam(player);
   }
 }
@@ -495,8 +498,9 @@ StateGame Game::getState()
 
   std::vector<Entity> entities;
 
-  for (const auto &player : players)
+  for (const auto &player_ptr : players)
   {
+    Player &player = *player_ptr;
     entities.push_back(getPlayerState(player.getName()));
   }
   Entity bomb;
@@ -587,8 +591,9 @@ void Game::makeShot(Player &shooter, const std::string &shooterName)
     float closestPlayerDist = maxDistance + 1.0f;
     std::pair<float, float> closestHitPoint;
 
-    for (auto &player : players)
+    for (auto &player_ptr : players)
     {
+      Player &player = *player_ptr;
       if (&player == &shooter)
         continue;
       if (player.getRole() == shooter.getRole())
@@ -834,8 +839,9 @@ float Game::getRotation(const std::string &name)
 
 void Game::update(float deltaTime)
 {
-  for (auto &player : players)
+  for (auto &player_ptr : players)
   {
+    Player &player = *player_ptr;
     updateGamePhase(deltaTime);
     updatePlayerMovement(player, deltaTime);
     player.updateCooldown(deltaTime);
