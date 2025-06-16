@@ -324,107 +324,6 @@ void Game::setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winner
     }
 }
 
-void Game::updateGamePhase(float deltaTime){
-  int moneyA = 0;
-  int moneyB = 0;
-  int roundWinner;
-  switch (phase){
-  case Phase::PURCHASE:
-    
-    if(gameStart){
-      teamA.resetSpikeCarrier();
-      teamB.resetSpikeCarrier();
-      gameStart=false;
-    }
-    
-    purchaseElapsedTime += deltaTime;
-    if (purchaseElapsedTime >= purchaseDuration){
-      purchaseElapsedTime = 0.0f;
-      phase = Phase::BOMB_PLANTING;
-      std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
-    }
-    break;
-
-  case Phase::BOMB_PLANTING:
-    plantingElapsedTime += deltaTime;
-    roundWinner = checkRoundWinner();
-    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb){ // pierden atacantes
-      plantingElapsedTime = 0.0f;
-      phase = Phase::END_ROUND;
-      setMoneyValues(roundWinner, moneyA, moneyB, Role::COUNTER_TERRORIST);
-      teamA.updateMoneyAfterRound(moneyA);
-      teamB.updateMoneyAfterRound(moneyB);
-    }
-    if (spike.state == BombState::PLANTED){
-      phase = Phase::BOMB_DEFUSING;
-    }
-    break;
-
-  case Phase::BOMB_DEFUSING:
-    bombElapsedTime += deltaTime;
-    roundWinner = checkRoundWinner();
-    
-    if ((roundWinner == 1 && teamA.getRole() == Role::TERRORIST) || 
-    (roundWinner == 2 && teamB.getRole() == Role::TERRORIST) || 
-    bombElapsedTime >= timeUntilBombExplode){ // pierden defensores
-      setMoneyValues(roundWinner, moneyA, moneyB, Role::TERRORIST);
-      teamA.updateMoneyAfterRound(moneyA);
-      teamB.updateMoneyAfterRound(moneyB);
-      bombElapsedTime = 0.0f;
-      phase = Phase::END_ROUND;
-    }
-    if (spike.state == BombState::DEFUSED){
-      phase = Phase::END_ROUND;
-    }
-
-    break;
-  
-  case Phase::END_ROUND:
-    endRoundElapsedTime += deltaTime;
-    
-    if (endRoundElapsedTime >= timeUntilNewRound){
-      endRoundElapsedTime=0.0f;
-      phase = Phase::PURCHASE;
-      updateRounds();
-    }
-
-    break;
-
-
-  default:
-    break;
-  }
-}
-
-void Game::updateRounds(){
-  teamA.restartPlayersAlive(); // contador en team y vida de c/u
-  teamB.restartPlayersAlive();
-  endRoundElapsedTime=0.0f;
-  plantingElapsedTime = 0.0f;
-  bombElapsedTime = 0.0f;
-  
-  roundNumber += 1;
-  roundsUntilRoleChange -= 1;
-  roundsUntilEndGame -= 1;
-  if (roundsUntilRoleChange == 0)
-  {
-    teamA.invertRole();
-    teamB.invertRole();
-  }
-  if (roundsUntilEndGame == 0)
-  {
-    running = false;
-  }
-  resetSpawn();
-  placeTeamsInSpawn();
-
-  teamA.resetSpikeCarrier();
-  teamB.resetSpikeCarrier();
-  
-  spike.state = BombState::INVENTORY;
-  droppedWeapons.clear();
-}
-
 void Game::placeTeamsInSpawn()
 {
   for (auto &player_ptr : players){
@@ -537,11 +436,11 @@ void Game::makeShot(Player &shooter) {
       if (&player == &shooter)
         continue;
       if (player.getRole() == shooter.getRole())
-      { // no permito q dañe a los de su equipo
+      {
         continue;
       }
       if (!player.isAlive())
-      { // no permito q dispare a muertos
+      {
         continue;
       }
 
@@ -696,17 +595,16 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
   const Weapon &equipped = shooter.getEquipped();
 
   if (equipped.burstFire)
-  { // es arma con rafaga
+  {
     if (!shooter.getAlreadyShot() ||
         equipped.burstDelay <=
             shooter.getTimeLastBullet())
-    { // puede disparar otra bala
-      // aun quedan balas rafaga
+    { 
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter);
       shooter.resetTimeLastBullet();
       if (shooter.getBurstFireBullets() == 0)
-      { // fin rafaga
+      {
         shooter.resetCooldown();
         shooter.updateBurstFireBullets(equipped.bulletsPerBurst);
         shooter.updateTimeLastBullet(deltaTime);
@@ -752,7 +650,7 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const
     }
 
     if (map.isBlocked(row, col))
-    { // colisión con la pared
+    {
       return std::make_pair(x, y);
     }
 
@@ -783,6 +681,108 @@ void Game::updateRotation(const std::string &name, float currentRotation)
   findPlayerByName(name).setRotation(currentRotation);
 }
 
+void Game::updateGamePhase(float deltaTime){
+  int moneyA = 0;
+  int moneyB = 0;
+  int roundWinner;
+  switch (phase){
+  case Phase::PURCHASE:
+    
+    if(gameStart){
+      teamA.resetSpikeCarrier();
+      teamB.resetSpikeCarrier();
+      gameStart=false;
+    }
+    
+    purchaseElapsedTime += deltaTime;
+    if (purchaseElapsedTime >= purchaseDuration){
+      purchaseElapsedTime = 0.0f;
+      phase = Phase::BOMB_PLANTING;
+      std::cout << "[DEBUG] Transition to BOMB_PLANTING phase" << std::endl;
+    }
+    break;
+
+  case Phase::BOMB_PLANTING:
+    plantingElapsedTime += deltaTime;
+    roundWinner = checkRoundWinner();
+    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb){
+      plantingElapsedTime = 0.0f;
+      phase = Phase::END_ROUND;
+      setMoneyValues(roundWinner, moneyA, moneyB, Role::COUNTER_TERRORIST);
+      teamA.updateMoneyAfterRound(moneyA);
+      teamB.updateMoneyAfterRound(moneyB);
+    }
+    if (spike.state == BombState::PLANTED){
+      phase = Phase::BOMB_DEFUSING;
+    }
+    break;
+
+  case Phase::BOMB_DEFUSING:
+    bombElapsedTime += deltaTime;
+    roundWinner = checkRoundWinner();
+    
+    if ((roundWinner == 1 && teamA.getRole() == Role::TERRORIST) || 
+    (roundWinner == 2 && teamB.getRole() == Role::TERRORIST) || 
+    bombElapsedTime >= timeUntilBombExplode){
+      setMoneyValues(roundWinner, moneyA, moneyB, Role::TERRORIST);
+      teamA.updateMoneyAfterRound(moneyA);
+      teamB.updateMoneyAfterRound(moneyB);
+      bombElapsedTime = 0.0f;
+      phase = Phase::END_ROUND;
+    }else if (spike.state == BombState::DEFUSED){
+      setMoneyValues(0, moneyA, moneyB, Role::COUNTER_TERRORIST);
+      teamA.updateMoneyAfterRound(moneyA);
+      teamB.updateMoneyAfterRound(moneyB);
+      phase = Phase::END_ROUND;
+    }
+
+    break;
+  
+  case Phase::END_ROUND:
+    endRoundElapsedTime += deltaTime;
+    
+    if (endRoundElapsedTime >= timeUntilNewRound){
+      endRoundElapsedTime=0.0f;
+      phase = Phase::PURCHASE;
+      updateRounds();
+    }
+
+    break;
+
+
+  default:
+    break;
+  }
+}
+
+void Game::updateRounds(){
+  teamA.restartPlayersAlive();
+  teamB.restartPlayersAlive();
+  endRoundElapsedTime=0.0f;
+  plantingElapsedTime = 0.0f;
+  bombElapsedTime = 0.0f;
+  
+  roundNumber += 1;
+  roundsUntilRoleChange -= 1;
+  roundsUntilEndGame -= 1;
+  if (roundsUntilRoleChange == 0)
+  {
+    teamA.invertRole();
+    teamB.invertRole();
+  }
+  if (roundsUntilEndGame == 0)
+  {
+    running = false;
+  }
+  resetSpawn();
+  placeTeamsInSpawn();
+
+  teamA.resetSpikeCarrier();
+  teamB.resetSpikeCarrier();
+  
+  spike.state = BombState::INVENTORY;
+  droppedWeapons.clear();
+}
 
 void Game::update(float deltaTime)
 {
@@ -823,7 +823,7 @@ void Game::execute(const std::string &name, Action action)
     break;
   }
   case ActionType::STOP_SHOOTING:
-  { // en la de rafaga reiniciar rafaga
+  {
     stopShooting(name);
     break;
   }
@@ -874,7 +874,6 @@ void Game::execute(const std::string &name, Action action)
   }
   default:
   {
-
     break;
   }
   }
