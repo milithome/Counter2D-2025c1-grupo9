@@ -1,7 +1,6 @@
 #include "gameClient.h"
 
 GameClient::GameClient(
-	Game &game,
 	Map &map,
 	GameView &gameView,
 	std::vector<std::string> players,
@@ -10,8 +9,7 @@ GameClient::GameClient(
     std::string const clientName,
 	bool audio_available
 ) :
-    game(game), 
-    gameController(gameView, game, clientName, audio_available), 
+    gameController(gameView, clientName, audio_available), 
     map(map), gameView(gameView), 
     players(players), 
     recv_queue(recv_queue), 
@@ -22,7 +20,8 @@ bool GameClient::run() {
 	const std::chrono::milliseconds TICK_DURATION(16);
 
     auto lastTime = std::chrono::steady_clock::now();
-	while (game.isRunning()) {
+	bool state_available = false;
+	while (true) {
         auto currentTime = std::chrono::steady_clock::now();
         float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
         lastTime = currentTime;
@@ -32,11 +31,12 @@ bool GameClient::run() {
 			switch (msg.type) {
 				case STATE: {
 					StateGame data = std::get<StateGame>(msg.data);
+					gameView.updateState(data);
 					gameController.updateGameState(data);
+					state_available = true;
 					break;
 				}
 				case FINISH: {
-					game.stop();
 					return false;
 				}
 				default: {
@@ -44,12 +44,11 @@ bool GameClient::run() {
 				}
 			}
 		}
-
+		if (!state_available) continue;
 		bool quit = gameController.processEvents();
 		if (quit) {
 			return true;
 		}
-		gameController.update(deltaTime);
 		gameView.update(deltaTime);
 
 		while (!gameController.actionQueueIsEmpty()) {

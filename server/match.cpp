@@ -190,13 +190,13 @@ void Match::setupGame(Game& game) {
 
 void Match::startTimeoutThread(Game& game) {
     std::thread timeoutThread([this, &game]() {
-        //std::this_thread::sleep_for(std::chrono::minutes(1));
-        std::this_thread::sleep_for(std::chrono::seconds(20));
+        std::this_thread::sleep_for(std::chrono::minutes(3));
+        //std::this_thread::sleep_for(std::chrono::seconds(180));
         game.stop();
         inGame = false;
-        //std::cout << "paso 1 minuto" << std::endl;
+        std::cout << "paso 3 minuto" << std::endl;
         
-        std::cout << "pasaron 20 segundos" << std::endl;
+        //std::cout << "pasaron 20 segundos" << std::endl;
     });
     timeoutThread.detach();
 }

@@ -40,7 +40,6 @@ using namespace SDL2pp;
 class GameClient {
 public:
     GameClient(
-        Game& game,
         Map& map,
         GameView& gameView,
         std::vector<std::string> players,
@@ -53,7 +52,6 @@ public:
     bool run();
 
 private:
-    Game& game;
     GameController gameController; 
     Map& map;
     GameView& gameView;

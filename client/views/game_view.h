@@ -109,7 +109,7 @@ enum Skin {
 
 class GameView {
 public:
-    GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map);
+    GameView(const std::string& playerName, SDL_Point window_pos, Map& map);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
@@ -122,7 +122,9 @@ public:
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
     void resizeHud();
-
+    void updateState(StateGame& new_state) {
+        state = new_state;
+    }
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
@@ -131,7 +133,8 @@ public:
 private:
     Window window;
     Renderer renderer;
-    Game& game;
+    //Game& game;
+    StateGame state;
     std::string playerName;
     Map& map;
 
@@ -339,10 +342,10 @@ private:
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
     void showNewPhase(float deltaTime);
     void showBombExplosion(float cameraX, float cameraY, float deltaTime);
-    void showFov();
+    void showFov(float angle);
 
 
-    void showInterface();
+    void showInterface(Inventory inventory, WeaponType equippedWeapon, int health);
     void showShop();
 
     float randomFloat(float min, float max) {

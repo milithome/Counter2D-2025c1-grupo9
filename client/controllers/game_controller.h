@@ -16,17 +16,19 @@
 
 class GameController {
 public:
-    GameController(GameView& view, Game& game, const std::string& player_name, bool pulse_available);
+    GameController(GameView& view, const std::string& player_name, bool pulse_available);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);
     bool processEvents();
-    void update(float deltaTime);
 
 
 private:
     GameView& view;    
-    Game& game;
+    //Game& game;
+    StateGame state;
+    bool state_available = false;
+    PlayerData clientPlayerData;
     GameSoundHandler soundHandler;
     std::string player_name;
     void onKeyPressed(const SDL_Event& event);
@@ -49,7 +51,6 @@ private:
     bool planting = false;
     bool defusing = false;
 
-    StateGame previous_state = game.getState();
 };
 
 #endif

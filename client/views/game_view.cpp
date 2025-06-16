@@ -14,10 +14,10 @@ namespace fs = std::filesystem;
 
 
 
-GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
+GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map)
     : 
     window(createWindow(window_pos)), 
-    renderer(createRenderer(window)), game(game), 
+    renderer(createRenderer(window)),
     playerName(playerName), map(map), 
     mapTiles(Texture(renderer, map.get_sprite_path())), 
     backgroundTexture(renderer, map.get_background_path()), 
@@ -53,11 +53,26 @@ Renderer GameView::createRenderer(Window& window) {
 void GameView::update(float deltaTime) {
     renderer.Clear();
 
+    Entity playerEntity;
+    PlayerData playerData;
+    for (size_t i = 0; i < state.entities.size(); i++) {
+        Entity entity = state.entities[i];
+        if (entity.type == PLAYER) {
+            PlayerData data = std::get<PlayerData>(entity.data);
+            if (data.name == playerName) {
+                playerData = data;
+                playerEntity = entity;
+                break;
+            }
+        }
+    }
+
     // TODO: cambiar el tamaño de las cosas cuando se cambia el tamaño de la ventana
     // int block_size = renderer.GetOutputHeight() / 24;
     SDL_Point center = getCenterPoint();
-    float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
-    float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
+
+    float cameraX = center.x - playerEntity.x * BLOCK_SIZE - BLOCK_SIZE / 2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
+    float cameraY = center.y - playerEntity.y * BLOCK_SIZE - BLOCK_SIZE / 2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
 
 
     showBackground();
@@ -74,7 +89,7 @@ void GameView::update(float deltaTime) {
 
 
     if (fovIsVisible) {
-        showFov();
+        showFov(playerData.rotation);
     }
 
 
@@ -82,7 +97,7 @@ void GameView::update(float deltaTime) {
 
 
     if (!shopIsVisible) {
-        showInterface();
+        showInterface(playerData.inventory, playerData.equippedWeapon, playerData.health);
     }
     if (shopIsVisible) {
         showShop();
@@ -106,8 +121,7 @@ void GameView::showBombExplosion(float cameraX, float cameraY, float deltaTime) 
 }
 
 
-void GameView::showFov() {
-    float angle = game.getRotation(playerName);
+void GameView::showFov(float angle) {
     int width = renderer.GetOutputWidth() ;
     int height = renderer.GetOutputHeight();
     int tWidth = width * 3;
@@ -433,14 +447,14 @@ void GameView::showSparksEffects(float cameraX, float cameraY, float deltaTime) 
 
 void GameView::showEntities(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
-    std::vector<Entity> gameState = game.getState().entities;
+    std::vector<Entity> entities = state.entities;
     Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
-    for (size_t i = 0; i < gameState.size(); i++) {
-        switch (gameState[i].type) {
+    for (size_t i = 0; i < entities.size(); i++) {
+        switch (entities[i].type) {
             case PLAYER: {
-                PlayerData data = std::get<PlayerData>(gameState[i].data);
-                float playerX = gameState[i].x;
-                float playerY = gameState[i].y;
+                PlayerData data = std::get<PlayerData>(entities[i].data);
+                float playerX = entities[i].x;
+                float playerY = entities[i].y;
                 if (!data.alive) {
                     continue;
                 }
@@ -470,9 +484,9 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 break;
             }
             case WEAPON: {  
-                WeaponData data = std::get<WeaponData>(gameState[i].data);
-                float weaponX = gameState[i].x;
-                float weaponY = gameState[i].y;
+                WeaponData data = std::get<WeaponData>(entities[i].data);
+                float weaponX = entities[i].x;
+                float weaponY = entities[i].y;
                 Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, 0, 0);
                 if (data.weapon == NONE) {
                     break;
@@ -484,9 +498,9 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 break;
             }
             case BOMB: {
-                BombData data = std::get<BombData>(gameState[i].data);
-                float bombX = gameState[i].x;
-                float bombY = gameState[i].y;
+                BombData data = std::get<BombData>(entities[i].data);
+                float bombX = entities[i].x;
+                float bombY = entities[i].y;
                 Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 if (data.state == BombState::PLANTED) {
                     renderer.Copy(bombInGameSprite, src, dst);
@@ -548,7 +562,7 @@ void GameView::showNewPhase(float deltaTime) {
         phaseLabelRect);
 }
 
-void GameView::showInterface() {
+void GameView::showInterface(Inventory inventory, WeaponType equippedWeapon, int health) {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 15;
@@ -569,8 +583,8 @@ void GameView::showInterface() {
 
     renderer.SetDrawColor(255, 255, 255, 0);
     renderer.FillRect(container);
-    Entity player = game.getPlayerState(playerName);
-    PlayerData playerData = std::get<PlayerData>(player.data);
+    // Entity player = game.getPlayerState(playerName);
+    // PlayerData playerData = std::get<PlayerData>(player.data);
 
 
 
@@ -587,7 +601,7 @@ void GameView::showInterface() {
             label.GetHeight() * text_scale 
         );
     };
-    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(playerData.health), Color(255, 255, 255));
+    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(health), Color(255, 255, 255));
     Rect healthLabelRect = layoutLeftVBox(container, healthLabel, {});
 
     Texture healthLabelTexture(renderer, healthLabel);
@@ -598,9 +612,9 @@ void GameView::showInterface() {
 
 
         
-    switch (playerData.equippedWeapon) {
+    switch (equippedWeapon) {
         case WeaponType::PRIMARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsPrimary), Color(255, 255, 255));
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(inventory.bulletsPrimary), Color(255, 255, 255));
             Texture ammoLabelTexture(renderer, ammoLabel);
             renderer.Copy(
                 ammoLabelTexture,  
@@ -609,7 +623,7 @@ void GameView::showInterface() {
             break;
         }
         case WeaponType::SECONDARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsSecondary), Color(255, 255, 255));
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(inventory.bulletsSecondary), Color(255, 255, 255));
             Texture ammoLabelTexture(renderer, ammoLabel);
             renderer.Copy(
                 ammoLabelTexture,  
@@ -704,19 +718,19 @@ void GameView::showInterface() {
 
 
 
-    if (playerData.inventory.primary != WeaponName::NONE) { // tiene la primaria
+    if (inventory.primary != WeaponName::NONE) { // tiene la primaria
 
         Rect primaryWeaponContainer = layoutRightVBox(container, equipamiento);
         equipamiento.push_back(primaryWeaponContainer);
     
-        if (playerData.equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
+        if (equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
             renderer.SetDrawColor(255, 255, 255, 64);
         } else {
             renderer.SetDrawColor(0, 0, 0, 64);
         }
         renderer.FillRect(primaryWeaponContainer);
 
-        Texture& primaryWeaponSprite = getWeaponInvSprite(playerData.inventory.primary);
+        Texture& primaryWeaponSprite = getWeaponInvSprite(inventory.primary);
         Rect primaryWeaponSpriteRect = createWeaponSprite(primaryWeaponContainer, primaryWeaponSprite);
         renderer.Copy(
             primaryWeaponSprite,
@@ -727,7 +741,7 @@ void GameView::showInterface() {
     Rect secondaryWeaponContainer = layoutRightVBox(container, equipamiento);
     Rect secondaryWeaponSprite = createWeaponSprite(secondaryWeaponContainer, glockInvSprite);
     equipamiento.push_back(secondaryWeaponContainer);
-    if (playerData.equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
+    if (equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(0, 0, 0, 64);
@@ -741,7 +755,7 @@ void GameView::showInterface() {
     Rect knifeSprite = createWeaponSprite(knifeContainer, knifeInvSprite);
 
     equipamiento.push_back(knifeContainer);
-    if (playerData.equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
+    if (equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(0, 0, 0, 64);
@@ -752,7 +766,7 @@ void GameView::showInterface() {
         NullOpt,
         knifeSprite);
         
-    if (playerData.inventory.has_the_bomb) {  // tiene la bomba
+    if (inventory.has_the_bomb) {  // tiene la bomba
         Rect bombContainer = layoutRightVBox(container, equipamiento);
         Rect bombSprite = createWeaponSprite(bombContainer, bombInvSprite);
         equipamiento.push_back(bombContainer);
@@ -775,6 +789,7 @@ void GameView::resizeHud() {
 // y los contenedores de la interfaz dentro de esos rects.
 
 void GameView::showShop() {
+    /*
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 40;
@@ -1100,6 +1115,7 @@ void GameView::showShop() {
 
     Texture moneyLabelTexture(renderer, moneyLabel);
     renderer.Copy(moneyLabelTexture, NullOpt, moneyLabelRect);
+    */
 }
 
 

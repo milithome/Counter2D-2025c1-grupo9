@@ -28,21 +28,21 @@ void Client::run(QApplication& app, MenuController& menuController) {
         Map map = Map("../assets/maps/big.yaml");  // modificar cuando este el editor (aca tendria que elegir el cliente que mapa usar)
         
         
-        std::vector<std::string> players = menuClient.allPlayers();
+        // std::vector<std::string> players = menuClient.allPlayers();
         
-        if (players.empty()) {
-            std::cerr << "No players in the lobby." << std::endl;
-            break;
-        }
+        // if (players.empty()) {
+        //     std::cerr << "No players in the lobby." << std::endl;
+        //     break;
+        // }
 
-        Game game(map.getMapData().game_map);
-        for (size_t i = 0; i < players.size(); i++) {
-            game.addPlayer(players[i]);
-        }
+        // Game game(map.getMapData().game_map);
+        // for (size_t i = 0; i < players.size(); i++) {
+        //     game.addPlayer(players[i]);
+        // }
 
 
-        GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
-        GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, true);
+        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
+        GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, true);
 
         quit = gameClient.run();
 

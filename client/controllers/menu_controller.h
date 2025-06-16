@@ -45,6 +45,8 @@ public:
     
 
 private:
+
+    
     QtWindow& window;
     MainView mainView;
     SearchPartyView searchPartyView;
