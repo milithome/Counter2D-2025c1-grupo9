@@ -151,7 +151,7 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
         player.x = 10.0f;
         player.y = 20.0f;
         player.data = PlayerData{
-            "Carlos", 45.0f, 3, 1500, 10,
+            "Carlos", 45.0f, 1500, 10,
             {M3, GLOCK, 10, 20, true}, WeaponType::PRIMARY, true
         };
 
@@ -215,7 +215,6 @@ TEST(ProtocolServerSender, SendAndReceiveStateGameResponse) {
     auto player = std::get<PlayerData>(state.entities[0].data);
     EXPECT_EQ(player.name, "Carlos");
     EXPECT_FLOAT_EQ(player.rotation, 45.0f);
-    EXPECT_EQ(player.lastMoveId, 3);
     EXPECT_EQ(player.money, 1500);
     EXPECT_EQ(player.health, 10);
     EXPECT_EQ(player.inventory.primary, M3);

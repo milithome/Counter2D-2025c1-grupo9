@@ -52,7 +52,6 @@ struct Inventory {
 struct PlayerData {
     std::string name;
     float rotation;
-    uint32_t lastMoveId;
     int money;
     int health; // de float a int
     Inventory inventory;

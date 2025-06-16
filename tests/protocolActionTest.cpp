@@ -21,7 +21,6 @@ TEST(ProtocolClientSender, SendAndReceiveMoveAction) {
         ASSERT_EQ(msg.action.type, ActionType::MOVE);
 
         const MoveAction& move = std::get<MoveAction>(msg.action.data);
-        EXPECT_EQ(move.id, 2u);
         EXPECT_EQ(move.vx, 1);
         EXPECT_EQ(move.vy, -1);
     });
@@ -30,7 +29,7 @@ TEST(ProtocolClientSender, SendAndReceiveMoveAction) {
     Socket client_socket("localhost", "12353");
     Protocol client_protocol(std::move(client_socket));
 
-    MoveAction actionData {2,1,-1};
+    MoveAction actionData {1,-1};
     Action action {ActionType::MOVE, actionData};
     client_protocol.send_action(action);
 
