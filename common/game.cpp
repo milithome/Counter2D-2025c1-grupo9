@@ -523,6 +523,7 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target, float dist
     }
     dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
     target.replaceWeapon(WeaponName::NONE); 
+    target.changeWeapon(WeaponType::SECONDARY);
   }
 }
 
@@ -560,9 +561,11 @@ void Game::grab(const std::string &name)
       {
         dropWeapon(pw, player.getX(), player.getY());
         player.replaceWeapon(WeaponName::NONE);
+        player.changeWeapon(WeaponType::SECONDARY);
       }
 
       player.replaceWeapon(weapon->name);
+      player.changeWeapon(WeaponType::PRIMARY);
       return;
     }
   }
