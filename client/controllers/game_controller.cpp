@@ -23,7 +23,6 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
     }
-    if (!clientPlayerData.alive) return;
     switch (event.key.keysym.sym) {
         case SDLK_w: {
             movement_keys_vector[1] -= 1;
@@ -48,6 +47,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_f: {
+            if (!clientPlayerData.alive) return;
             Action action{ActionType::GRAB, {}};
             action_queue.push(action);
             break;
@@ -57,6 +57,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_1: {
+            if (!clientPlayerData.alive) return;
             Inventory inv = clientPlayerData.inventory;
             if (inv.primary != WeaponName::NONE) {
                 Action action;
@@ -67,6 +68,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_2: {
+            if (!clientPlayerData.alive) return;
             Action action;
             action.type = ActionType::CHANGE_WEAPON;
             action.data = ChangeWeaponAction{WeaponType::SECONDARY};
@@ -74,6 +76,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_3: {
+            if (!clientPlayerData.alive) return;
             Action action;
             action.type = ActionType::CHANGE_WEAPON;
             action.data = ChangeWeaponAction{WeaponType::KNIFE};
@@ -81,6 +84,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
+            if (!clientPlayerData.alive) return;
             planting = true;
             Inventory inv = clientPlayerData.inventory;
             if (inv.has_the_bomb) {
@@ -91,6 +95,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             break;  
         }
         case SDLK_e: {
+            if (!clientPlayerData.alive) return;
             defusing = true;
             Action action{ActionType::DEFUSE, {}};
             action_queue.push(action);
@@ -101,6 +106,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         
     }
+    if (!clientPlayerData.alive) return;
     if (defusing || planting) return;
     if (state.phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {
@@ -112,7 +118,6 @@ void GameController::onKeyPressed(const SDL_Event& event) {
 }
 
 void GameController::onKeyReleased(const SDL_Event& event) {
-    if (!clientPlayerData.alive) return;
     switch (event.key.keysym.sym) {
         case SDLK_w: {
             movement_keys_vector[1] += 1;
@@ -131,18 +136,21 @@ void GameController::onKeyReleased(const SDL_Event& event) {
             break;
         }
         case SDLK_4: {
+            if (!clientPlayerData.alive) return;
             planting = false;
             Action action{ActionType::STOP_PLANTING, {}};
             action_queue.push(action);
             break;
         }
         case SDLK_e: {
+            if (!clientPlayerData.alive) return;
             defusing = false;
             Action action{ActionType::STOP_DEFUSING, {}};
             action_queue.push(action);
             break;
         }
     }
+    if (!clientPlayerData.alive) return;
     if (defusing || planting) return;
     if (state.phase == PURCHASE) return;
     if (movement_keys.contains(event.key.keysym.sym)) {

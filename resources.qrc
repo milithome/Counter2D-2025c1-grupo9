@@ -3,5 +3,13 @@
         <file>assets/gfx/cs2d.png</file>
         <file>assets/gfx/gametitle.png</file>
         <file>assets/gfx/fonts/sourcesans.ttf</file>
+        <file>assets/gfx/player/ct1.bmp</file>
+        <file>assets/gfx/player/ct2.bmp</file>
+        <file>assets/gfx/player/ct3.bmp</file>
+        <file>assets/gfx/player/ct4.bmp</file>
+        <file>assets/gfx/player/t1.bmp</file>
+        <file>assets/gfx/player/t2.bmp</file>
+        <file>assets/gfx/player/t3.bmp</file>
+        <file>assets/gfx/player/t4.bmp</file>
     </qresource>
 </RCC>

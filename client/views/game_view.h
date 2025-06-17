@@ -91,17 +91,29 @@ struct HitEffect {
     std::vector<Particle> particles;
 };
 
-enum Skin {
+// enum Skin {
+//     PHOENIX,
+//     L337_KREW, 
+//     ARCTIC_AVENGER,
+//     GUERRILLA,
+//     SEAL_FORCE,
+//     GERMAN_GSG9,
+//     UKSAS,
+//     FRENCH_GIGN
+// };
+
+enum tSkin {
     PHOENIX,
     L337_KREW, 
     ARCTIC_AVENGER,
     GUERRILLA,
+};
+enum ctSkin {
     SEAL_FORCE,
     GERMAN_GSG9,
     UKSAS,
     FRENCH_GIGN
 };
-
 
 // d inventory, dropped
 // m shop
@@ -154,12 +166,17 @@ private:
     Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
     Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
     Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
-    Surface& getSkinSpriteSurface(Skin skin) {
+    Surface& getTSkinSpriteSurface(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenixS;
             case L337_KREW:         return l337KrewS;
             case ARCTIC_AVENGER:    return arcticAvengerS;
             case GUERRILLA:         return guerrillaS;
+            default:                throw std::exception();
+        }
+    }
+    Surface& getCtSkinSpriteSurface(ctSkin skin) {
+        switch (skin) {
             case SEAL_FORCE:        return sealForceS;
             case GERMAN_GSG9:       return germanGsg9S;
             case UKSAS:             return uksasS;
@@ -179,12 +196,17 @@ private:
     Texture germanGsg9 = Texture(renderer, germanGsg9S);
     Texture uksas = Texture(renderer, uksasS);
     Texture frenchGign = Texture(renderer, frenchGignS);
-    Texture& getSkinSprite(Skin skin) {
+    Texture& getTSkinSprite(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenix;
             case L337_KREW:         return l337Krew;
             case ARCTIC_AVENGER:    return arcticAvenger;
             case GUERRILLA:         return guerrilla;
+            default:                throw std::exception();
+        }
+    }
+    Texture& getCtSkinSprite(ctSkin skin) {
+        switch (skin) {
             case SEAL_FORCE:        return sealForce;
             case GERMAN_GSG9:       return germanGsg9;
             case UKSAS:             return uksas;
