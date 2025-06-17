@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/">
+    <qresource prefix="/editor/">
         <file>fondoFinal.jpg</file>
     </qresource>
 </RCC>
