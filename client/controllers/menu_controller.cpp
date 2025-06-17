@@ -8,6 +8,8 @@
 #include "list_event.h"
 #include "create_event.h"
 #include "start_event.h"
+#include "t_skin_picked_event.h"
+#include "ct_skin_picked_event.h"
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
     connectToServerView = ConnectToServerView();
@@ -76,15 +78,22 @@ void MenuController::listenToPartyView(PartyView& partyView) {
     QObject::connect(startButton, &QPushButton::clicked, [this]() {
         onPartyViewStartButtonClicked();
     });
-    std::unordered_map<tSkin, QLabel*> tSkins = partyView.getTSkinButtons();
-    std::unordered_map<tSkin, QLabel*> tSkins = partyView.getCtSkinButtons();
     QObject::connect(settingsButton, &QPushButton::clicked, [this, &partyView]() {
         partyView.showModal();
     });
+    std::unordered_map<tSkin, QPushButton*> tSkins = partyView.getTSkinButtons();
+    std::unordered_map<ctSkin, QPushButton*> ctSkins = partyView.getCtSkinButtons();
 
-    QObject::connect(settingsButton, &QPushButton::clicked, [this]() {
-        partyView.showModal();
-    });
+    for (auto [skin, button] : tSkins) {
+        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+            emit nuevoEvento(std::make_shared<TSkinPickedEvent>(skin));
+        });
+    }
+    for (auto [skin, button] : ctSkins) {
+        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+            emit nuevoEvento(std::make_shared<CtSkinPickedEvent>(skin));
+        });
+    }
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {

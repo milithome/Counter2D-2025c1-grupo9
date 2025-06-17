@@ -5,9 +5,11 @@
 #include "game_view.h"
 #include "qtview.h"
 #include <QLabel>
+#include <QComboBox>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QListWidget>
+#include <QDialog>
 
 class PartyView : public QtView {
 public:
