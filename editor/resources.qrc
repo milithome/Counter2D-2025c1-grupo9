@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>fondoFinal.jpg</file>
+    </qresource>
+</RCC>

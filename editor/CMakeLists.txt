@@ -1,9 +1,9 @@
 target_sources(taller_editor
     PRIVATE
-    editor.cpp
-    editorMenuWindow.cpp
+    mainwindow.cpp
+    editorWindow.cpp
     main.cpp
     PUBLIC
-    editor.h
-    editorMenuWindow.h
+    editorWindow.h
+    mainwindow.h
     )
