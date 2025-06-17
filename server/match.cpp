@@ -64,6 +64,9 @@ void Match::handleLobbyMessage(const Message& message) {
         case Type::LEAVE:
             handleLeave(message.clientName);
             break;
+        case Type::ACTION:
+            handleAction(message.action);
+            break;
         case Type::START:
             handleStart();
             break;
@@ -100,6 +103,29 @@ void Match::handleLeave(const std::string& clientName) {
 
     if (clients.size() == 0) {
         inLobby = false;
+    }
+}
+
+void Match::handleAction(const Action& action) {
+    switch (action.type)
+    {
+    case ActionType::SELECT_T_SKIN: {
+        const SelectTSkin& tSkinData = std::get<SelectTSkin>(action.data);
+        std::cout << tSkinData.terroristSkin << std::endl;
+        break;
+    }
+    case ActionType::SELECT_CT_SKIN: {
+        const SelectCTSkin& ctSkinData = std::get<SelectCTSkin>(action.data);
+        std::cout << ctSkinData.counterTerroristSkin << std::endl;
+        break;
+    }
+    case ActionType::SELECT_MAP: {
+        const SelectMap& mapData = std::get<SelectMap>(action.data);
+        std::cout << mapData.name << std::endl;
+        break;
+    }
+    default:
+        break;
     }
 }
 
@@ -161,10 +187,11 @@ void Match::gameLoop() {
     try {
         waitForPlayers();
         Map map("../assets/maps/big.yaml");
-        Game game(map.getMapData().game_map);
+        GameRules gameRules = load_game_rules("../config_server.yaml");
+        Game game(map.getMapData().game_map, gameRules);
 
         setupGame(game);
-        broadcastInitialData(map.getMapData());
+        broadcastInitialData(map.getMapData(), gameRules);
         startTimeoutThread(game);
 
         runGameLoop(game);
@@ -190,11 +217,11 @@ void Match::setupGame(Game& game) {
 
 void Match::startTimeoutThread(Game& game) {
     std::thread timeoutThread([this, &game]() {
-        std::this_thread::sleep_for(std::chrono::minutes(10));
+        std::this_thread::sleep_for(std::chrono::minutes(2));
         //std::this_thread::sleep_for(std::chrono::seconds(180));
         game.stop();
         inGame = false;
-        std::cout << "paso 3 minuto" << std::endl;
+        std::cout << "paso 2 minuto" << std::endl;
         
         //std::cout << "pasaron 20 segundos" << std::endl;
     });
@@ -202,8 +229,9 @@ void Match::startTimeoutThread(Game& game) {
 }
 
 void Match::runGameLoop(Game& game) {
-    const std::chrono::milliseconds TICK_DURATION(16);
-    const uint MAX_EVENTS_PER_CLICK = 32;
+    auto& ServerConfig = admin.getServerConfig();
+    const std::chrono::milliseconds TICK_DURATION(1000/ServerConfig.tick_rate);
+    const uint MAX_EVENTS_PER_CLICK = ServerConfig.max_events_per_tick;
 
     auto lastTime = std::chrono::steady_clock::now();
     inGame = true;
@@ -218,7 +246,7 @@ void Match::runGameLoop(Game& game) {
 
         game.update(deltaTime);
         broadcastGameState(game.getState());
-        game.shotQueueClear(); // se tiene q vaciar la cola si los disparos ya fueron procesados
+        game.shotQueueClear();
 
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time
@@ -261,15 +289,30 @@ void Match::endGame() {
     }
 }
 
-void Match::broadcastInitialData(const MapData& mapData) {
-    std::vector<std::string> playerNames;
+void Match::broadcastInitialData(const MapData& mapData, GameRules& gameRules) {
+    std::vector<PlayerInfo> players;
     for (const auto& client : clients) {
-        playerNames.push_back(client->channels.name);
+        players.push_back({
+            client->channels.name,
+            PHOENIX,
+            SEAL_FORCE
+        });
+    }
+
+    auto weapons = gameRules.weapons;
+    std::vector<Item> shop;
+    for (const auto& [name, weapon] : weapons) {
+        shop.push_back({
+            name,
+            weapon.price,
+            weapon.maxAmmo
+        });
     }
 
     InitialData initialData = {
         mapData,
-        playerNames
+        shop,
+        players
     };
 
     for (const auto& client : clients) {

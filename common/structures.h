@@ -7,6 +7,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <map>
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
@@ -34,6 +35,20 @@ enum class WeaponType {
 
 enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE};
 
+enum tSkin {
+    PHOENIX,
+    L337_KREW, 
+    ARCTIC_AVENGER,
+    GUERRILLA,
+};
+
+enum ctSkin {
+    SEAL_FORCE,
+    GERMAN_GSG9,
+    UKSAS,
+    FRENCH_GIGN
+};
+
 // Tipos de entidades del juego
 enum EntityType {
   PLAYER,
@@ -46,14 +61,14 @@ struct Inventory {
     WeaponName secondary;
     uint32_t bulletsPrimary;
     uint32_t bulletsSecondary;
-    bool has_the_bomb; // add
+    bool has_the_bomb;
 };
 
 struct PlayerData {
     std::string name;
     float rotation;
     int money;
-    int health; // de float a int
+    int health;
     Inventory inventory;
     WeaponType equippedWeapon;
     bool alive;
@@ -87,6 +102,9 @@ struct Entity {
 
 // Acciones posibles del jugador
 enum class ActionType {
+  SELECT_T_SKIN,
+  SELECT_CT_SKIN,
+  SELECT_MAP,
   MOVE,
   POINT_TO,
   SHOOT,
@@ -100,6 +118,18 @@ enum class ActionType {
   GRAB,
   CHANGE_WEAPON,
   FINISH
+};
+
+struct SelectTSkin {
+  tSkin terroristSkin;
+};
+
+struct SelectCTSkin {
+  ctSkin counterTerroristSkin;
+};
+
+struct SelectMap {
+  std::string name; // por ahora solo podra elegir mapas que el server tenga (?)
 };
 
 struct MoveAction {
@@ -123,36 +153,7 @@ struct ChangeWeaponAction {
   WeaponType type;
 };
 
-enum class LobbyEventType { LEAVE, JOIN, START };
-
-struct LobbyEvent {
-  LobbyEventType type;
-  std::string playerName;
-};
-
-/*
-Accion sin parametros de momento:
-struct ShootAction {};
-
-struct StopShootingAction {};
-
-struct PlantAction {};
-
-struct StopPlantingAction {};
-
-struct DefuseAction {};
-
-struct StopDefusingAction {};
-
-struct GrabAction {};
-*/
-
-
-
-
-using ActionData =
-    std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction,
-                 BuyWeaponAction, ChangeWeaponAction>;
+using ActionData = std::variant<std::monostate, SelectTSkin, SelectCTSkin, SelectMap, MoveAction, PointToAction, BuyBulletAction, BuyWeaponAction, ChangeWeaponAction>;
 
 struct Action {
   ActionType type;
@@ -162,16 +163,30 @@ struct Action {
 // Estado del juego
 enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND};
 
+enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
+
+struct RoundWinner {
+  char team;
+  TypeEndRound typeEndRound;
+};
+
+struct Rounds{
+  uint16_t roundsWonTeamA;
+  uint16_t roundsWonTeamB;
+  uint16_t currentRound;
+  RoundWinner winner;
+};
+
 enum Impact { HUMAN, BLOCK, NOTHING };
 
 struct Bullet {
   float target_x;
   float target_y;
   float angle;
-  Impact impact; // add
+  Impact impact;
 };
 
-struct Shot { //add
+struct Shot {
   float origin_x;
   float origin_y;
   std::vector<Bullet> bullets;
@@ -182,12 +197,27 @@ struct StateGame {
   Phase phase;
   std::vector<Entity> entities;
   std::queue<Shot> shots;
+  Rounds rounds;
+};
+
+
+struct PlayerInfo {
+  std::string name;
+  tSkin terroristSkin;
+  ctSkin counterTerroristSkin;
+};
+
+struct Item {
+  WeaponName name;
+  int price;
+  uint32_t maxAmmo;
 };
 
 // Datos iniciales del juego, como el mapa
 struct InitialData {
   MapData data;
-  std::vector<std::string> players;
+  std::vector<Item> shop;
+  std::vector<PlayerInfo> players;
 };
 
 // Lista de lobbies disponibles
@@ -200,8 +230,7 @@ struct StateLobby {
   std::vector<std::string> players;
 };
 
-using ResponseData =
-    std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
+using ResponseData = std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
 
 // Respuesta enviada por el servidor al cliente
 struct Response {
@@ -218,6 +247,75 @@ struct Message {
     std::string name;
     Action action;
     std::string clientName;
+};
+
+
+/* Estructuras de configuracion */
+struct ServerConfig {
+    std::string port;
+    int tick_rate;
+    uint32_t max_events_per_tick;
+};
+
+struct Weapon {
+  WeaponName name;
+  int price;
+  int minDamage;
+  int maxDamage;
+  bool burstFire;
+  int bulletsPerBurst;
+  float burstDelay;
+  float spreadAngle;
+  int bulletsPerShoot;
+  float maxRange;
+  uint32_t maxAmmo;
+  float cooldown;
+};
+
+struct GameRules {
+    int max_players_per_team;
+    int min_players_per_team;
+    int rounds_until_role_change;
+    int rounds_until_end_game;
+
+    int max_health;
+    int max_bullets;
+
+    float speed;
+
+    float purchase_duration;
+    float bomb_duration;
+    float time_to_plant;
+    float time_until_plant;
+    float time_until_defuse;
+    float time_until_new_round;
+
+    int ammo_price;
+    
+    int money_winner;
+    int money_loser;
+    
+    int initial_money;
+    int initial_primary_ammo;
+    int initial_secondary_ammo;
+
+    std::map<WeaponName, Weapon> weapons;
+};
+
+struct WindowConfig {
+    bool fullscreen;
+    int width;
+    int height;
+};
+
+struct FOVConfig {
+    float angle_deg;
+    float opacity;
+};
+
+struct ClientConfig {
+    WindowConfig windowConfig;
+    FOVConfig fovConfig;
 };
 
 

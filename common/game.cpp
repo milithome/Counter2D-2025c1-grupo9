@@ -1,28 +1,37 @@
 #include "game.h"
 
-Game::Game(std::vector<std::vector<CellType>> game_map)
-    : map(std::move(game_map))
+Game::Game(std::vector<std::vector<CellType>> game_map, GameRules& gameRules)
+    : gameRules(gameRules), teamA(gameRules), teamB(gameRules), map(std::move(game_map))
 {
   teamA.setRole(Role::COUNTER_TERRORIST);
   teamB.setRole(Role::TERRORIST);
   spawnTeamTerrorist = map.findSpawnTeam(false); // true para terrorist
   spawnTeamCounter = map.findSpawnTeam(true);
   spike.state = BombState::INVENTORY;
+
+  roundsUntilRoleChange = gameRules.rounds_until_role_change;
+  roundsUntilEndGame = gameRules.rounds_until_end_game;
+  timeUntilPlant = gameRules.time_until_plant;
+  timeUntilDefuse = gameRules.time_until_defuse;
+  timeUntilBombExplode = gameRules.bomb_duration;
+  purchaseDuration= gameRules.purchase_duration;
+  timeToPlantBomb= gameRules.time_to_plant;
+  timeUntilNewRound = gameRules.time_until_new_round;
 }
 
 bool Game::addPlayer(const std::string &name)
 {
-  std::shared_ptr<Player> player = std::make_shared<Player>(name);
+  std::shared_ptr<Player> player = std::make_shared<Player>(name, gameRules);
   players.emplace_back(player);
   //Player &player = findPlayerByName(name);
-  if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM)
+  if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < gameRules.max_players_per_team)
   {
     teamA.addPlayer(player);
     player->setRole(teamA.getRole());
     placePlayerInSpawnTeam(*player);
     return true;
   }
-  if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM)
+  if (teamB.getTeamSize() < gameRules.max_players_per_team)
   {
     teamB.addPlayer(player);
     player->setRole(teamB.getRole());
@@ -285,7 +294,7 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName)
 void Game::buyBullet(const std::string &name, WeaponType type)
 {
   Player &player = findPlayerByName(name);
-  if (player.getMoney() >= AMMO_PRICE)
+  if (player.getMoney() >= gameRules.ammo_price) 
   {
     if (type == WeaponType::PRIMARY)
     {
@@ -295,7 +304,7 @@ void Game::buyBullet(const std::string &name, WeaponType type)
     {
       player.resetSecondaryBullets();
     }
-    player.updateMoney(-AMMO_PRICE);
+    player.updateMoney(-gameRules.ammo_price);
   }
 }
 
@@ -313,11 +322,11 @@ int Game::checkRoundWinner(){
 
 void Game::setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole) {
     if (roundWinner == 1 || teamA.getRole() == winnerRole) {
-        moneyA = MONEY_WINNER;
-        moneyB = MONEY_LOSER;
+        moneyA = gameRules.money_winner; 
+        moneyB = gameRules.money_loser;
     } else if (roundWinner == 2 || teamB.getRole() == winnerRole) {
-        moneyB = MONEY_WINNER;
-        moneyA = MONEY_LOSER;
+        moneyB = gameRules.money_winner;
+        moneyA = gameRules.money_loser;
     } else {
         moneyA = 0;
         moneyB = 0;
@@ -708,7 +717,7 @@ void Game::updateGamePhase(float deltaTime){
   case Phase::BOMB_PLANTING:
     plantingElapsedTime += deltaTime;
     roundWinner = checkRoundWinner();
-    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb){
+    if (roundWinner != 0 || plantingElapsedTime >= timeToPlantBomb) {
       plantingElapsedTime = 0.0f;
       phase = Phase::END_ROUND;
       setMoneyValues(roundWinner, moneyA, moneyB, Role::COUNTER_TERRORIST);
@@ -807,78 +816,76 @@ void Game::execute(const std::string &name, Action action)
 
   switch (action.type)
   {
-  case ActionType::MOVE:
-  {
-    const MoveAction *data = std::get_if<MoveAction>(&action.data);
-    movePlayer(name, data->vx, data->vy);
-    break;
-  }
-  case ActionType::POINT_TO:
-  {
-    const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
-    updateRotation(name, pointToData->value);
-    break;
-  }
-
-  case ActionType::SHOOT:
-  {
-    findPlayerByName(name).startShooting();
-    break;
-  }
-  case ActionType::STOP_SHOOTING:
-  {
-    stopShooting(name);
-    break;
-  }
-  case ActionType::BUY_BULLET:
-  {
-    const BuyBulletAction *data = std::get_if<BuyBulletAction>(&action.data);
-    buyBullet(name, data->type);
-    break;
-  }
-  case ActionType::BUY_WEAPON:
-  {
-    const BuyWeaponAction *data = std::get_if<BuyWeaponAction>(&action.data);
-    buyWeapon(name, data->weapon);
-    break;
-  }
-  case ActionType::CHANGE_WEAPON:
-  {
-    const ChangeWeaponAction *data =
-        std::get_if<ChangeWeaponAction>(&action.data);
-    changeWeapon(name, data->type);
-    break;
-  }
-  case ActionType::PLANT:
-  {
-    plantBomb(name);
-    break;
-  }
-  case ActionType::STOP_PLANTING:
-  {
-    stopPlantBomb(name);
-    break;
-  }
-
-  case ActionType::DEFUSE:
-  {
-    defuseBomb(name);
-    break;
-  }
-  case ActionType::STOP_DEFUSING:
-  {
-    stopDefuse(name);
-    break;
-  }
-  case ActionType::GRAB:
-  {
-    grab(name);
-    break;
-  }
-  default:
-  {
-    break;
-  }
+    case ActionType::MOVE:
+    {
+      const MoveAction *data = std::get_if<MoveAction>(&action.data);
+      movePlayer(name, data->vx, data->vy);
+      break;
+    }
+    case ActionType::POINT_TO:
+    {
+      const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
+      updateRotation(name, pointToData->value);
+      break;
+    }
+    case ActionType::SHOOT:
+    {
+      findPlayerByName(name).startShooting();
+      break;
+    }
+    case ActionType::STOP_SHOOTING:
+    {
+      stopShooting(name);
+      break;
+    }
+    case ActionType::BUY_BULLET:
+    {
+      const BuyBulletAction *data = std::get_if<BuyBulletAction>(&action.data);
+      buyBullet(name, data->type);
+      break;
+    }
+    case ActionType::BUY_WEAPON:
+    {
+      const BuyWeaponAction *data = std::get_if<BuyWeaponAction>(&action.data);
+      buyWeapon(name, data->weapon);
+      break;
+    }
+    case ActionType::CHANGE_WEAPON:
+    {
+      const ChangeWeaponAction *data =
+          std::get_if<ChangeWeaponAction>(&action.data);
+      changeWeapon(name, data->type);
+      break;
+    }
+    case ActionType::PLANT:
+    {
+      plantBomb(name);
+      break;
+    }
+    case ActionType::STOP_PLANTING:
+    {
+      stopPlantBomb(name);
+      break;
+    }
+    case ActionType::DEFUSE:
+    {
+      defuseBomb(name);
+      break;
+    }
+    case ActionType::STOP_DEFUSING:
+    {
+      stopDefuse(name);
+      break;
+    }
+    case ActionType::GRAB:
+    {
+      grab(name);
+      break;
+    }
+    default:
+    {
+      break;
+    }
   }
 }
 

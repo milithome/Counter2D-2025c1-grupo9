@@ -2,7 +2,7 @@
 #include "match.h"
 #include "menu.h"
 
-Admin::Admin() : clients(10) {}
+Admin::Admin(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 
 Admin::~Admin(){}
 
@@ -42,6 +42,10 @@ void Admin::stop() {
     clients.clear();
     matches.clear();
     unnamedClients.clear();
+}
+
+ServerConfig& Admin::getServerConfig() {
+    return serverConfig;
 }
 
 std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {

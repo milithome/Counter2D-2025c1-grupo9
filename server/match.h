@@ -35,6 +35,7 @@ private:
     void lobbyLoop();
     void handleLobbyMessage(const Message& message);
     void handleLeave(const std::string& clientName);
+    void handleAction(const Action& action);
     void handleStart();
     void handleDisconnect(const std::string& clientName);
     void broadcastLobbyState();
@@ -45,7 +46,7 @@ private:
     void runGameLoop(Game& game);
     void processMessages(Game& game, uint maxEvents);
     void endGame();
-    void broadcastInitialData(const MapData& mapData);
+    void broadcastInitialData(const MapData& mapData, GameRules& gameRules);
     void broadcastGameState(const StateGame& state);
     void handleGameMessage(const Message& message);
 };

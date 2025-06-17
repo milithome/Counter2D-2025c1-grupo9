@@ -4,15 +4,9 @@
 #include "acceptor.h"
 #include "admin.h"
 
-#define DEFAULT_PORT "12345"
-
-
-
-
 class Server {
 public:
-    Server();
-    Server(std::string& port);
+    explicit Server(ServerConfig config);
     ~Server();
 
     void start(std::istream& input = std::cin);

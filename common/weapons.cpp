@@ -1,6 +1,13 @@
 #include "weapons.h"
 
 namespace Weapons {
+  const Weapon Knife = {};
+  const Weapon Glock = {};
+  const Weapon AK47 = {};
+  const Weapon M3 = {};
+  const Weapon AWP = {};
+  const Weapon None = {};
+  /*
   const Weapon Knife = {
       WeaponName::KNIFE, 20, 40, false, 0, 0.0f, 0.0f, 1, 1.0f, 0, 0.5f};
   const Weapon Glock = {
@@ -13,7 +20,7 @@ namespace Weapons {
                       100.0f,          10, 2.0f};
   const Weapon None = {WeaponName::NONE, 0, 0, false, 0, 0.0f, 0.0f, 0,
                       0.0f,          0, 0.0f};
-
+  */
   const Weapon &getWeapon(WeaponName name) {
     switch (name) {
     case WeaponName::KNIFE:

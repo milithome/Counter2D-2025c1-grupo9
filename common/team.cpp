@@ -1,5 +1,7 @@
 #include "team.h"
 
+Team::Team(GameRules& gameRules) : gameRules(gameRules) {}
+
 void Team::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);
 }
@@ -28,9 +30,9 @@ void Team::invertRole() {
   for (auto &player : players) {
     player->setRole(newRole);
     player->replaceWeapon(WeaponName::NONE);
-    player->setPrimaryBullets(INITIAL_PRIMARY_AMMO);
-    player->setSecondaryBullets(INITIAL_SECONDARY_AMMO);
-    player->setMoney(INITIAL_MONEY);
+    player->setPrimaryBullets(gameRules.initial_primary_ammo); 
+    player->setSecondaryBullets(gameRules.initial_secondary_ammo);
+    player->setMoney(gameRules.initial_money); 
   }
 }
 

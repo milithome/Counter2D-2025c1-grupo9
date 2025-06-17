@@ -2,9 +2,11 @@
 #include <thread>
 #include <sys/syscall.h>
 
+
 int main() {
     try {
-        Server server;
+        auto a = load_server_config("../config_server.yaml");
+        Server server{a};
         server.start();
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

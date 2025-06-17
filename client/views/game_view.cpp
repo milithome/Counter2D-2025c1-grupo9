@@ -836,7 +836,8 @@ void GameView::showShop(Inventory inv, int money) {
     renderer.Copy(
         primaryWeaponSectionLabelTexture, 
         NullOpt, 
-        primaryWeaponSectionLabelRect);
+        primaryWeaponSectionLabelRect
+    );
 
 
 
@@ -996,11 +997,14 @@ void GameView::showShop(Inventory inv, int money) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     buyPrimaryAmmoButton = {{primaryAmmoContainer.GetX(), primaryAmmoContainer.GetY()}, {primaryAmmoContainer.GetW(), primaryAmmoContainer.GetH()}};
 
+    /*
+    Manux, aca usas una funcion q volo
     if (inv.bulletsPrimary >= Weapons::getWeapon(inv.primary).maxAmmo && inv.primary != WeaponName::NONE) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
     }
+    */
     renderer.FillRect(primaryAmmoContainer);
 
     ///////////////////////////////////////////////////////////////
@@ -1012,12 +1016,16 @@ void GameView::showShop(Inventory inv, int money) {
     //////////////////////////////////////////////////////////////////
     buySecondaryAmmoButton = {{secondaryAmmoContainer.GetX(), secondaryAmmoContainer.GetY()}, {secondaryAmmoContainer.GetW(), secondaryAmmoContainer.GetH()}};
 
+    /*
+    Manux, aca usas una funcion q volo
+    
     if (inv.bulletsSecondary >= Weapons::getWeapon(inv.secondary).maxAmmo) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
     }
     renderer.FillRect(secondaryAmmoContainer);
+    */
 
     Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
     Rect primaryAmmoLabelRect(
@@ -1030,8 +1038,8 @@ void GameView::showShop(Inventory inv, int money) {
     Texture primaryAmmoLabelTexture(renderer, primaryAmmoLabel);
     renderer.Copy(primaryAmmoLabelTexture, NullOpt, primaryAmmoLabelRect);
 
-
-    Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    std::string ammo_price = "estaba hardcodeado manux->game_view.cpp:1033";
+    Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect primaryAmmoPriceLabelRect(
         primaryAmmoContainer.GetX() + primaryAmmoContainer.GetW() - primaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         primaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
@@ -1042,12 +1050,15 @@ void GameView::showShop(Inventory inv, int money) {
     renderer.Copy(primaryAmmoPriceLabelTexture, NullOpt, primaryAmmoPriceLabelRect);
 
     ///////////////////////////////////////////////////////////
-    std::string ammoBoughtText;
+    std::string ammoBoughtText = "";
+    /*
+    Aca tambien manux usas funciones q no tendras
     if (inv.primary != WeaponName::NONE) {
         ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(Weapons::getWeapon(inv.primary).maxAmmo);
     } else {
         ammoBoughtText = "No disponible";
     }
+    */
     Surface primaryAmmoBoughtLabel = font.RenderText_Blended(ammoBoughtText, Color(255, 255, 255));
     Rect primaryAmmoBoughtLabelRect(
             primaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((primaryAmmoContainer.GetW() - primaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
@@ -1079,7 +1090,8 @@ void GameView::showShop(Inventory inv, int money) {
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    ammo_price = "estaba hardcodeado manux->game_view.cpp:1082";
+    Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect secondaryAmmoPriceLabelRect(
         secondaryAmmoContainer.GetX() + secondaryAmmoContainer.GetW() - secondaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         secondaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
@@ -1091,8 +1103,11 @@ void GameView::showShop(Inventory inv, int money) {
     renderer.Copy(secondaryAmmoPriceLabelTexture, NullOpt, secondaryAmmoPriceLabelRect); 
 
     ///////////////////////////////////////////////////////////
-
+    
+    /* Aca tambien manux
     Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo), Color(255, 255, 255));
+    */
+   Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + "999", Color(255, 255, 255));
     Rect secondaryAmmoBoughtLabelRect(
             secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((secondaryAmmoContainer.GetW() - secondaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
             secondaryAmmoContainer.GetY() + secondaryAmmoContainer.GetH() - secondaryAmmoBoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 

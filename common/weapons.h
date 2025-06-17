@@ -5,6 +5,7 @@
 
 enum class EquippedWeapon { KNIFE, PRIMARY, SECONDARY };
 
+/*
 struct Weapon {
   WeaponName name;
   int minDamage;
@@ -19,6 +20,7 @@ struct Weapon {
   float cooldown;
 };
 
+
 namespace Weapons {
   extern const Weapon Knife;
   extern const Weapon Glock;
@@ -29,5 +31,5 @@ namespace Weapons {
 
   const Weapon &getWeapon(WeaponName name);
 }
-
+*/
 #endif
