@@ -69,16 +69,13 @@ void PartyView::buildLayout() {
     
     QVBoxLayout *subLayout = new QVBoxLayout();
 
-    QHBoxLayout *subsubLayout = new QHBoxLayout();
-    subsubLayout->addWidget(partyNameLabel);
-    subsubLayout->addWidget(settingsButton);
-
-    subLayout->addLayout(subsubLayout);
+    subLayout->addWidget(partyNameLabel);
     subLayout->addWidget(createSeparator());
     subLayout->addWidget(playerList);
     subLayout->addWidget(createSeparator());
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->addWidget(leaveButton);
+    buttonsLayout->addWidget(settingsButton);
     buttonsLayout->addWidget(startButton);
     subLayout->addLayout(buttonsLayout);
 
