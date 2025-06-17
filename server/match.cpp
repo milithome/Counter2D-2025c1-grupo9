@@ -1,7 +1,10 @@
 #include "match.h"
 #include "admin.h"
 
-Match::Match(std::string& name, Admin& admin) : name(name), admin(admin), inLobby(true), inGame(false), toMatch(std::make_shared<Queue<Message>>(100)) {}
+Match::Match(std::string& name, Admin& admin) : name(name), admin(admin), inLobby(true), inGame(false), toMatch(std::make_shared<Queue<Message>>(100)) {
+    minPlayers = gameRules.min_players_per_team*2;
+    maxPlayers = gameRules.max_players_per_team*2;
+}
 
 Match::~Match() {}
 
@@ -28,44 +31,36 @@ void Match::run() {
 }
 
 void Match::lobbyLoop() {
+    bool lobbyReadySent = false;
+
     while (inLobby) {
         try {
             Message message = toMatch->pop();
             handleLobbyMessage(message);
-            if (!inLobby) {
-                return;
-            }
-            broadcastLobbyState();
 
-            if (clients.size() == maxPlayers) {
-                for (const auto& client : clients) {
-                    Response response = {
-                        Type::LOBBY_READY,
-                        0,
-                        {},
-                        "Lobby is ready"
-                    };
-                    client->channels.responses->push(response);
-                }
-            }
+            if (!inLobby) return;
+
+            broadcastLobbyState();
+            updateLobbyReadyStatus(lobbyReadySent);
+
         } catch (const ClosedQueue&) {
             break;
         } catch (const std::exception& e) {
             std::cerr << "Exception in lobby loop: " << e.what() << std::endl;
         }
-        
     }
 }
 
 void Match::handleLobbyMessage(const Message& message) {
     switch (message.type) {
         case Type::JOIN:
+            handleJoin(message.clientName);
             break;
         case Type::LEAVE:
             handleLeave(message.clientName);
             break;
         case Type::ACTION:
-            handleAction(message.action);
+            handleAction(message.action, message.clientName);
             break;
         case Type::START:
             handleStart();
@@ -78,11 +73,24 @@ void Match::handleLobbyMessage(const Message& message) {
     }
 }
 
-void Match::handleLeave(const std::string& clientName) {
-    auto it = std::find_if(clients.begin(), clients.end(), [&clientName](const std::shared_ptr<Client>& client) {
-        return client->channels.name == clientName;
+void Match::handleJoin(const std::string& clientName) {
+    playersInfo.push_back(PlayerInfo{
+        clientName,
+        tSkin::PHOENIX,
+        ctSkin::SEAL_FORCE
     });
-    
+
+}
+
+void Match::handleLeave(const std::string& clientName) {
+    auto it = std::find_if(
+        clients.begin(), 
+        clients.end(),
+        [&clientName](const std::shared_ptr<Client>& client) {
+            return client->channels.name == clientName;
+        }
+    );
+
     if (it != clients.end()) {
         auto client = *it;
 
@@ -96,6 +104,17 @@ void Match::handleLeave(const std::string& clientName) {
 
         clients.erase(it);
 
+        playersInfo.erase(
+            std::remove_if(
+                playersInfo.begin(), 
+                playersInfo.end(),
+                [&clientName](const PlayerInfo& info) {
+                    return info.name == clientName;
+                }
+            ),
+            playersInfo.end()
+        );
+
         admin.createMenu(client, true);
     } else {
         std::cerr << "Client " << clientName << " not found in the lobby." << std::endl;
@@ -106,21 +125,38 @@ void Match::handleLeave(const std::string& clientName) {
     }
 }
 
-void Match::handleAction(const Action& action) {
+void Match::handleAction(const Action& action, const std::string& clientName) {
+    auto it = std::find_if(
+        playersInfo.begin(), 
+        playersInfo.end(),
+        [&clientName](const PlayerInfo& info) {
+            return info.name == clientName;
+        }
+    );
+
+    if (it == playersInfo.end()) {
+        std::cerr << "PlayerInfo not found for client: " << clientName << std::endl;
+        return;
+    }
+    
     switch (action.type)
     {
     case ActionType::SELECT_T_SKIN: {
         const SelectTSkin& tSkinData = std::get<SelectTSkin>(action.data);
+        it->terroristSkin = tSkinData.terroristSkin;
         std::cout << tSkinData.terroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_CT_SKIN: {
         const SelectCTSkin& ctSkinData = std::get<SelectCTSkin>(action.data);
+        it->counterTerroristSkin = ctSkinData.counterTerroristSkin;
         std::cout << ctSkinData.counterTerroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_MAP: {
         const SelectMap& mapData = std::get<SelectMap>(action.data);
+        // haria falta una verificacion de que sea un mapa que exista -> ver mejor cuando haya un editor
+        mapName = mapData.name;
         std::cout << mapData.name << std::endl;
         break;
     }
@@ -130,8 +166,8 @@ void Match::handleAction(const Action& action) {
 }
 
 void Match::handleStart() {
-    if (clients.size() < maxPlayers) {
-        std::cerr << "Not enough players to start the game." << std::endl;
+    if (clients.size() < minPlayers || clients.size() > maxPlayers) {
+        std::cerr << "Incorrect number of players to start the game." << std::endl;
         return;
     }
     
@@ -183,10 +219,45 @@ void Match::broadcastLobbyState() {
     }
 }
 
+void Match::updateLobbyReadyStatus(bool& lobbyReadySent) {
+    if (clients.size() >= minPlayers && clients.size() <= maxPlayers) {
+        if (!lobbyReadySent) {
+            sendLobbyReadyToAll();
+            lobbyReadySent = true;
+        }
+    } else if (lobbyReadySent) {
+        sendNotLobbyReadyToAll();
+        lobbyReadySent = false;
+    }
+}
+
+void Match::sendLobbyReadyToAll() {
+    for (const auto& client : clients) {
+        Response response = {
+            Type::LOBBY_READY,
+            0,
+            {},
+            "Lobby is ready"
+        };
+        client->channels.responses->push(response);
+    }
+}
+
+void Match::sendNotLobbyReadyToAll() {
+    for (const auto& client : clients) {
+        Response response = {
+            Type::NOT_LOBBY_READY,
+            0,
+            {},
+            "Lobby isn't ready"
+        };
+        client->channels.responses->push(response);
+    }
+}
+
 void Match::gameLoop() {
     try {
-        waitForPlayers();
-        Map map("../assets/maps/big.yaml");
+        Map map("../assets/maps/" + mapName + ".yaml");
         GameRules gameRules = load_game_rules("../config_server.yaml");
         Game game(map.getMapData().game_map, gameRules);
 
@@ -200,12 +271,6 @@ void Match::gameLoop() {
         std::cerr << "Exception in gameLoop: " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in gameLoop." << std::endl;
-    }
-}
-
-void Match::waitForPlayers() {
-    while (clients.size() < maxPlayers) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
@@ -290,15 +355,6 @@ void Match::endGame() {
 }
 
 void Match::broadcastInitialData(const MapData& mapData, GameRules& gameRules) {
-    std::vector<PlayerInfo> players;
-    for (const auto& client : clients) {
-        players.push_back({
-            client->channels.name,
-            PHOENIX,
-            SEAL_FORCE
-        });
-    }
-
     auto weapons = gameRules.weapons;
     std::vector<Item> shop;
     for (const auto& [name, weapon] : weapons) {
@@ -312,7 +368,7 @@ void Match::broadcastInitialData(const MapData& mapData, GameRules& gameRules) {
     InitialData initialData = {
         mapData,
         shop,
-        players
+        playersInfo
     };
 
     for (const auto& client : clients) {

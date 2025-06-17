@@ -17,7 +17,8 @@ enum Type {
   JOIN,         // unirse a un lobby y recibir confirmacion
   LEAVE,        // salir de un lobby y recibir confirmacion
   STATE_LOBBY,  // recibir estado del lobby
-  LOBBY_READY,  // recibir que el lobby se lleno
+  LOBBY_READY,  // recibir que el lobby esta en condiciones
+  NOT_LOBBY_READY, // recibir que el lobby estaba en condiciones y ya no 
   START,        // mandar iniciar partida
   INITIAL_DATA, // recibir datos inicales
   ACTION,       // mandar accion

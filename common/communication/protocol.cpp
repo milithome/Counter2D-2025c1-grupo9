@@ -450,6 +450,7 @@ void Protocol::send_response(const Response& r) {
         case Type::FINISH:
         case Type::DISCONNECT:
         case Type::NAME:
+        case Type::NOT_LOBBY_READY:
             buffer = serialize_simple(r);
             break;
 
@@ -815,6 +816,7 @@ Response Protocol::recv_response() {
         case Type::LOBBY_READY:
         case Type::DISCONNECT:
         case Type::NAME:
+        case Type::NOT_LOBBY_READY:
             return deserialize_simple(type);
         case Type::LIST:
             return deserialize_list();

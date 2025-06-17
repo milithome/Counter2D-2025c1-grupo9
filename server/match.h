@@ -26,19 +26,26 @@ private:
     Admin& admin;
     bool inLobby;
     bool inGame;
-    size_t maxPlayers = 1;
+    size_t minPlayers;
+    size_t maxPlayers;
+    std::string mapName = "big";
+    std::vector<PlayerInfo> playersInfo;
     std::shared_ptr<Queue<Message>> toMatch;
+    GameRules gameRules = load_game_rules("../config_server.yaml");
     std::unordered_set<std::shared_ptr<Client>> clients;
-
     size_t disconnectedClients;
     
     void lobbyLoop();
     void handleLobbyMessage(const Message& message);
     void handleLeave(const std::string& clientName);
-    void handleAction(const Action& action);
+    void handleJoin(const std::string& clientName);
+    void handleAction(const Action& action, const std::string& clientName);
     void handleStart();
     void handleDisconnect(const std::string& clientName);
     void broadcastLobbyState();
+    void updateLobbyReadyStatus(bool& lobbyReadySent);
+    void sendLobbyReadyToAll();
+    void sendNotLobbyReadyToAll();
     void gameLoop();
     void waitForPlayers();
     void setupGame(Game& game);
