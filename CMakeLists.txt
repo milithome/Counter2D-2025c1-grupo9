@@ -202,7 +202,7 @@ if(TALLER_EDITOR)
     find_package(yaml-cpp REQUIRED)
 
     # Link the taller_common lib target
-    qt_add_resources(SOURCES resources.qrc)
+    qt_add_resources(RESOURCES resources.qrc)
     target_link_libraries(taller_editor taller_common
     SDL2pp::SDL2pp
     Qt6::Core

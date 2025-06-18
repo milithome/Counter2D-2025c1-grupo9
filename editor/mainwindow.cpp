@@ -13,9 +13,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    /* , ui(new Ui::MainWindow) */
 {
-    /* ui->setupUi(this); */
 
     // Configurar UI personalizada con layouts responsivos
     setupCustomUI();
@@ -148,7 +146,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::actualizarFondo()
 {
-    QPixmap fondo("fondoFinal.jpg");
+    QPixmap fondo(":/fondos/fondoFinal.jpg");
     if (!fondo.isNull()) {
         fondo = fondo.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QPalette palette;
@@ -163,14 +161,12 @@ void MainWindow::onCrearMapaClicked()
 {
     EditorWindow* editor = new EditorWindow(CrearNuevoMapa);
     editor->show();
-    this->close();
 }
 
 void MainWindow::onEditarMapaClicked()
 {
     EditorWindow* editor = new EditorWindow(EditarMapaExistente);
     editor->show();
-    this->close();
 }
 
 void MainWindow::onSalirClicked()
