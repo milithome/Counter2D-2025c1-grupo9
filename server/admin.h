@@ -9,7 +9,6 @@
 #include <unordered_set>
 #include "../common/communication/protocol.h"
 #include "serverStructures.h"
-#include "../common/utilities/config.h"
 
 
 class Match;

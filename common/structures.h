@@ -177,19 +177,7 @@ struct Rounds{
   RoundWinner winner;
 };
 
-enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
 
-struct RoundWinner {
-  char team;
-  TypeEndRound typeEndRound;
-};
-
-struct Rounds{
-  uint16_t roundsWonTeamA;
-  uint16_t roundsWonTeamB;
-  uint16_t currentRound;
-  RoundWinner winner;
-};
 
 enum Impact { HUMAN, BLOCK, NOTHING };
 

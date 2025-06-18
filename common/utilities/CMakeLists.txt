@@ -3,11 +3,11 @@ target_sources(taller_common
     # .cpp files
     map.cpp
     serializer_utils.cpp
-    config.cpp
+    # config.cpp
     
     PUBLIC
     # .h files
-    config.h
+    # config.h
     map.h
     serializer_utils.h
     queue.h

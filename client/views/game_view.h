@@ -92,18 +92,6 @@ struct HitEffect {
 };
 
 
-enum tSkin {
-    PHOENIX,
-    L337_KREW, 
-    ARCTIC_AVENGER,
-    GUERRILLA,
-};
-enum ctSkin {
-    SEAL_FORCE,
-    GERMAN_GSG9,
-    UKSAS,
-    FRENCH_GIGN
-};
 
 // d inventory, dropped
 // m shop
