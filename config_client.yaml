@@ -1,0 +1,9 @@
+client:
+  fullscreen: false
+  resolution:
+    width: 640
+    height: 400
+
+fov:
+  angle_deg: 90
+  opacity: 0.75

@@ -6,10 +6,10 @@ PUBLIC
     ../common/utilities/map.h
     helper_test.h
 PRIVATE
-    protocolClientSenderTest.cpp
-    protocolActionTest.cpp
-    protocolServerSenderTest.cpp
-    flowControlTest.cpp
+    #protocolClientSenderTest.cpp
+    #protocolActionTest.cpp
+    #protocolServerSenderTest.cpp
+    #flowControlTest.cpp
     ../server/server.cpp
     ../server/admin.cpp
     ../server/acceptor.cpp

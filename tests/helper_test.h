@@ -7,6 +7,8 @@
 #include <chrono>
 #include <ext/stdio_filebuf.h>
 
+#define TEST_PORT "12346"
+
 std::unique_ptr<std::istream> make_pipe_istream(int read_fd) {
     int dup_fd = dup(read_fd);
     auto* filebuf = new __gnu_cxx::stdio_filebuf<char>(dup_fd, std::ios::in);
@@ -17,14 +19,20 @@ std::thread start_server(int fds[2], std::unique_ptr<std::istream>& input) {
     pipe(fds);
     input = make_pipe_istream(fds[0]);
 
+    ServerConfig config{
+        TEST_PORT,
+        60,
+        30
+    };
+
     return std::thread([&]() {
-        Server server;
+        Server server{config};
         server.start(*input);
     });
 }
 
 Protocol connect_client(const std::string& name) {
-    Socket socket("localhost", DEFAULT_PORT);
+    Socket socket("localhost", TEST_PORT);
     Protocol protocol(std::move(socket));
     protocol.send_name(name);
     return protocol;
@@ -147,8 +155,14 @@ void expect_game_state(Protocol& protocol) {
 }
 
 std::thread start_server(std::istream& input) {
+    ServerConfig config{
+        TEST_PORT,
+        60,
+        30
+    };
+
     return std::thread([&]() {
-        Server server;
+        Server server{config};
         server.start(input);
     });
 }
@@ -156,7 +170,7 @@ std::thread start_server(std::istream& input) {
 std::vector<std::unique_ptr<Protocol>> create_and_connect_clients(const std::vector<std::string>& names) {
     std::vector<std::unique_ptr<Protocol>> clients;
     for (const auto& name : names) {
-        auto protocol = std::make_unique<Protocol>(Socket("localhost", DEFAULT_PORT));
+        auto protocol = std::make_unique<Protocol>(Socket("localhost", TEST_PORT));
         connect_and_send_name(*protocol, name);
         clients.push_back(std::move(protocol));
     }

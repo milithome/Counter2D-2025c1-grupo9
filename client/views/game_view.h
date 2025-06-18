@@ -91,16 +91,6 @@ struct HitEffect {
     std::vector<Particle> particles;
 };
 
-// enum Skin {
-//     PHOENIX,
-//     L337_KREW, 
-//     ARCTIC_AVENGER,
-//     GUERRILLA,
-//     SEAL_FORCE,
-//     GERMAN_GSG9,
-//     UKSAS,
-//     FRENCH_GIGN
-// };
 
 enum tSkin {
     PHOENIX,
@@ -381,4 +371,3 @@ private:
 };
 
 #endif
-
