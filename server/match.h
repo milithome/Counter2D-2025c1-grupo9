@@ -6,6 +6,7 @@
 #include "../common/utilities/thread.h"
 #include "admin.h"
 #include "common/utilities/queue.h"
+#include "common/utilities/config.h"
 #include "common/structures.h"
 #include "../common/game.h"
 
