@@ -14,6 +14,8 @@
 #include <QScreen>
 #include <QGraphicsDropShadowEffect>
 #include <QLineEdit>
+#include <QStackedWidget>
+#include <QComboBox>
 
 enum ModoEditor {
     CrearNuevoMapa,
@@ -34,6 +36,11 @@ private slots:
     void onSalirClicked();
 
 private:
+    QStackedWidget* stackedWidget;
+
+    QWidget *menuInicialWidget;   // vista 1
+    QWidget *editorMapaWidget;    // vista 2
+
     ModoEditor modo;
     QWidget *centralWidget;
     QLineEdit *nombre_mapa;
@@ -45,6 +52,7 @@ private:
     void setupCustomUIEleccionMapa();
     void actualizarFondo();
     void aplicarEstilosResponsivos();
+    void inicializarEditorMapa();
 protected:
     void resizeEvent(QResizeEvent *event) override;
 };

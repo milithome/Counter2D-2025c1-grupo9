@@ -4,7 +4,18 @@ EditorWindow::EditorWindow(ModoEditor modo, QWidget *parent)
     : QMainWindow(parent), modo(modo)
 {
     this->setWindowTitle("Editor de Mapas");
+    // Crear stackedWidget y vistas
+    stackedWidget = new QStackedWidget(this);
+    menuInicialWidget = new QWidget(this);
+    editorMapaWidget = new QWidget(this);
 
+    // Agregar las vistas al stackedWidget
+    stackedWidget->addWidget(menuInicialWidget);  // índice 0
+    stackedWidget->addWidget(editorMapaWidget);   // índice 1
+    setCentralWidget(stackedWidget);
+
+    // Configurar la vista inicial según el modo
+    stackedWidget->setCurrentIndex(0);
     configurarVistaSegunModo(modo);
 
 }
@@ -43,11 +54,11 @@ void EditorWindow::configurarVistaSegunModo(ModoEditor modo) {
 void EditorWindow::setupCustomUIConfiguracionMapa()
 {
     // Crear widget central
-    centralWidget = new QWidget(this);
-    setCentralWidget(centralWidget);
+    //centralWidget = new QWidget(this);
+    //setCentralWidget(centralWidget);
 
     // Layout principal vertical
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    QVBoxLayout *mainLayout = new QVBoxLayout(menuInicialWidget); // usar directamente menuInicialWidget
     mainLayout->setContentsMargins(50, 50, 50, 50);
     mainLayout->setSpacing(30);
 
@@ -70,8 +81,8 @@ void EditorWindow::setupCustomUIConfiguracionMapa()
     cant_jugadores->setSizePolicy(linePolicy);
 
     // Crear botones con tamaño fijo mínimo pero escalable
-    editar_mapa_btn = new QPushButton("Crear mapa", centralWidget);
-    volver_menu_btn = new QPushButton("Volver al menu", centralWidget);
+    editar_mapa_btn = new QPushButton("Crear mapa", menuInicialWidget);
+    volver_menu_btn = new QPushButton("Volver al menu", menuInicialWidget);
 
     // Configurar política de tamaño para los botones
     QSizePolicy buttonPolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -94,11 +105,11 @@ void EditorWindow::setupCustomUIConfiguracionMapa()
 void EditorWindow::setupCustomUIEleccionMapa()
 {
     // Crear widget central
-    centralWidget = new QWidget(this);
-    setCentralWidget(centralWidget);
+    //centralWidget = new QWidget(this);
+    //setCentralWidget(centralWidget);
 
     // Layout principal vertical
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    QVBoxLayout *mainLayout = new QVBoxLayout(menuInicialWidget); // usar directamente menuInicialWidget
     mainLayout->setContentsMargins(50, 50, 50, 50);
     mainLayout->setSpacing(30);
 
@@ -119,8 +130,8 @@ void EditorWindow::setupCustomUIEleccionMapa()
     nombre_mapa->setSizePolicy(linePolicy);
 
     // Crear botones con tamaño fijo mínimo pero escalable
-    editar_mapa_btn = new QPushButton("Editar mapa", centralWidget);
-    volver_menu_btn = new QPushButton("Volver al menu", centralWidget);
+    editar_mapa_btn = new QPushButton("Editar mapa", menuInicialWidget);
+    volver_menu_btn = new QPushButton("Volver al menu", menuInicialWidget);
 
     // Configurar política de tamaño para los botones
     QSizePolicy buttonPolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -225,13 +236,64 @@ void EditorWindow::actualizarFondo()
     }
 }
 
-void EditorWindow::onCrearMapaClicked()
-{
+void EditorWindow::inicializarEditorMapa() {
+    QVBoxLayout* mainLayout = new QVBoxLayout();
 
+    // Parte superior: herramientas
+    QHBoxLayout* toolbarLayout = new QHBoxLayout();
+
+    QComboBox* categoriaCombo = new QComboBox();
+    categoriaCombo->addItem("Pisos");
+    categoriaCombo->addItem("Muros");
+    categoriaCombo->addItem("Decoracion");
+    toolbarLayout->addWidget(categoriaCombo);
+
+    // Aquí irían los botones/iconos para elegir bloque
+    QLabel* icono1 = new QLabel();
+    icono1->setPixmap(QPixmap("assets/gfx/backgrounds/aztec.png").scaled(32, 32));
+    toolbarLayout->addWidget(icono1);
+
+    QLabel* icono2 = new QLabel();
+    icono2->setPixmap(QPixmap("assets/gfx/backgrounds/dust.png").scaled(32, 32));
+    toolbarLayout->addWidget(icono2);
+
+    mainLayout->addLayout(toolbarLayout);
+
+    // Grilla central (ejemplo 10x10)
+    QGridLayout* gridLayout = new QGridLayout();
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            QLabel* celda = new QLabel();
+            celda->setFixedSize(40, 40);
+            celda->setStyleSheet("background-color: lightgray; border: 1px solid white;");
+            gridLayout->addWidget(celda, i, j);
+        }
+    }
+    mainLayout->addLayout(gridLayout);
+
+    // Parte inferior: botones de acción
+    QHBoxLayout* accionesLayout = new QHBoxLayout();
+    QPushButton* guardarBtn = new QPushButton("Guardar");
+    QPushButton* borrarBtn = new QPushButton("Borrar");
+    QPushButton* borrarTodoBtn = new QPushButton("Borrar Todo");
+    accionesLayout->addWidget(guardarBtn);
+    accionesLayout->addWidget(borrarBtn);
+    accionesLayout->addWidget(borrarTodoBtn);
+
+    mainLayout->addLayout(accionesLayout);
+
+    editorMapaWidget->setLayout(mainLayout);
 }
-void EditorWindow::onEditarMapaClicked()
-{
 
+
+void EditorWindow::onCrearMapaClicked() {
+    inicializarEditorMapa();
+    stackedWidget->setCurrentIndex(1);
+}
+
+void EditorWindow::onEditarMapaClicked() {
+    inicializarEditorMapa();
+    stackedWidget->setCurrentIndex(1);
 }
 
 void EditorWindow::onSalirClicked()
