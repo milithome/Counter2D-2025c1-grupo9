@@ -52,6 +52,7 @@ void PartyView::buildLayout() {
     buildStartButton();
     buildLeaveButton();
 
+
     auto createSeparator = []() {
         QFrame *separator = new QFrame();
         separator->setFrameShape(QFrame::HLine);
@@ -201,6 +202,7 @@ QWidget* PartyView::createCtSkinsColumn(const std::unordered_map<ctSkin, QString
     grid->setContentsMargins(0,0,0,0);
     int row = 0, col = 0;
     for (auto [skin, imagePath] : imagePaths) {
+
         QPushButton* skinLabel = createSkinButton(imagePath);
         ctSkins[skin] = skinLabel;
 
@@ -233,6 +235,7 @@ QWidget* PartyView::createTSkinsColumn(const std::unordered_map<tSkin, QString>&
     grid->setContentsMargins(0,0,0,0);
     int row = 0, col = 0;
     for (auto [skin, imagePath] : imagePaths) {
+
         QPushButton* skinLabel = createSkinButton(imagePath);
         tSkins[skin] = skinLabel;
 
@@ -266,30 +269,30 @@ void PartyView::buildModal() {
     topLayout->setSpacing(32);
     std::unordered_map<ctSkin, QString> ctSkinPaths = {
         {
-            ctSkin::FRENCH_GIGN, ":/assets/gfx/player/ct1.bmp"
+            ctSkin::SEAL_FORCE, ":/assets/gfx/player/ct1.bmp"
         }, 
         {
             ctSkin::GERMAN_GSG9, ":/assets/gfx/player/ct2.bmp"
         }, 
         {
-            ctSkin::SEAL_FORCE, ":/assets/gfx/player/ct3.bmp"
+            ctSkin::UKSAS, ":/assets/gfx/player/ct3.bmp"
         },
         {
-            ctSkin::UKSAS, ":/assets/gfx/player/ct4.bmp"
+            ctSkin::FRENCH_GIGN, ":/assets/gfx/player/ct4.bmp"
         }
     };
     std::unordered_map<tSkin, QString> tSkinPaths = {
         {
-            tSkin::ARCTIC_AVENGER, ":/assets/gfx/player/t1.bmp"
+            tSkin::PHOENIX, ":/assets/gfx/player/t1.bmp"
         }, 
         {
-            tSkin::GUERRILLA, ":/assets/gfx/player/t2.bmp"
+            tSkin::L337_KREW, ":/assets/gfx/player/t2.bmp"
         }, 
         {
-            tSkin::L337_KREW, ":/assets/gfx/player/t3.bmp"
+            tSkin::ARCTIC_AVENGER, ":/assets/gfx/player/t3.bmp"
         },
         {
-            tSkin::PHOENIX, ":/assets/gfx/player/t4.bmp"
+            tSkin::GUERRILLA, ":/assets/gfx/player/t4.bmp"
         }
     };
     

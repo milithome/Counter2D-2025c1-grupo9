@@ -12,7 +12,7 @@ public:
     explicit CtSkinPickedEvent(ctSkin skin) : skin(skin) {};
 
     void send(Protocol& protocol) const override {
-        protocol.send_action(Action{ActionType::SELECT_T_SKIN, SelectCTSkin{skin}});
+        protocol.send_action(Action{ActionType::SELECT_CT_SKIN, SelectCTSkin{skin}});
     };
 
     Type getType() const override { return ACTION; };
