@@ -89,6 +89,21 @@ void Protocol::serialize_action_change_weapon(const Action& action, std::vector<
     buffer.push_back(static_cast<uint8_t>(change.type));
 }
 
+void  Protocol::serialize_action_select_tskin(const Action& action, std::vector<uint8_t>& buffer) {
+    const SelectTSkin& tskin = std::get<SelectTSkin>(action.data);
+    buffer.push_back(static_cast<uint8_t>(tskin.terroristSkin));
+}
+
+void  Protocol::serialize_action_select_ctskin(const Action& action, std::vector<uint8_t>& buffer) {
+    const SelectCTSkin& ctskin = std::get<SelectCTSkin>(action.data);
+    buffer.push_back(static_cast<uint8_t>(ctskin.counterTerroristSkin));
+}
+
+void  Protocol::serialize_action_select_map(const Action& action, std::vector<uint8_t>& buffer) {
+    const SelectMap& map = std::get<SelectMap>(action.data);
+    Utilities::serialize_string(buffer, map.name);
+}
+
 void Protocol::send_action(const Action& action) {
     std::vector<uint8_t> buffer;
 
@@ -96,6 +111,15 @@ void Protocol::send_action(const Action& action) {
     buffer.push_back(static_cast<uint8_t>(action.type));
 
     switch (action.type) {
+        case ActionType::SELECT_T_SKIN:
+            serialize_action_select_tskin(action, buffer);    
+            break;
+        case ActionType::SELECT_CT_SKIN:
+            serialize_action_select_ctskin(action, buffer);    
+            break;
+        case ActionType::SELECT_MAP:
+            serialize_action_select_map(action, buffer);
+            break;
         case ActionType::MOVE:
             serialize_action_move(action, buffer);
             break;
@@ -204,6 +228,7 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
 
     buf.push_back(static_cast<uint8_t>(pdata.equippedWeapon));
     buf.push_back(static_cast<uint8_t>(pdata.alive));
+    buf.push_back(static_cast<uint8_t>(pdata.terrorist));
 }
 
 void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bdata) {
@@ -258,6 +283,16 @@ void Protocol::serialize_shot(std::vector<uint8_t>& buf, const Shot& s) {
     buf.push_back(static_cast<uint8_t>(s.weapon));
 }
 
+void Protocol::serialize_rounds(std::vector<uint8_t>& buf, const Rounds& r) {
+    Utilities::serialize_uint16(buf, r.roundsWonTeamA);
+    Utilities::serialize_uint16(buf, r.roundsWonTeamB);
+    Utilities::serialize_uint16(buf, r.currentRound);
+
+    buf.push_back(static_cast<uint8_t>(r.winner.team));
+    buf.push_back(static_cast<uint8_t>(r.winner.typeEndRound));
+
+}
+
 std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     const StateGame& game = std::get<StateGame>(r.data);
     std::vector<uint8_t> buf = {
@@ -267,7 +302,6 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     };
 
     Utilities::serialize_uint16(buf, game.entities.size());
-
     for (const Entity& entity : game.entities) {
         serialize_entity(buf, entity);
     }
@@ -279,6 +313,8 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
         serialize_shot(buf, copy.front());
         copy.pop();
     }
+
+    serialize_rounds(buf, game.rounds);
 
     Utilities::serialize_string(buf,r.message);
     
@@ -303,6 +339,7 @@ std::vector<uint8_t> Protocol::serialize_state_lobby(const Response& r) {
     return buf;
 }
 
+/*
 void Protocol::serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf) {
     Utilities::serialize_uint16(buf, vec.size());
 
@@ -310,6 +347,7 @@ void Protocol::serialize_string_vector(const std::vector<std::string>& vec, std:
         Utilities::serialize_string(buf, str);
     }
 }
+*/
 
 void Protocol::serialize_2d_vector(const std::vector<std::vector<CellType>>& matrix, std::vector<uint8_t>& buf) {
     uint16_t rows = matrix.size();
@@ -363,6 +401,44 @@ void Protocol::serialize_map_data(const MapData& map, std::vector<uint8_t>& buf)
     serialize_legend(map.legend_tiles, buf);
 }
 
+void Protocol::serialize_playersInfo(const std::vector<PlayerInfo>& players, std::vector<uint8_t>& buf) {
+    Utilities::serialize_uint16(buf, players.size());
+
+    for (const auto& playerInfo : players) {
+        Utilities::serialize_string(buf, playerInfo.name);
+        buf.push_back(static_cast<tSkin>(playerInfo.terroristSkin));
+        buf.push_back(static_cast<ctSkin>(playerInfo.counterTerroristSkin));
+    }
+}
+
+void Protocol::serialize_weaponsInfo(const std::vector<WeaponInfo>& weaponsInfo, std::vector<uint8_t>& buf) {
+    Utilities::serialize_uint16(buf, weaponsInfo.size());
+
+    for (const auto& weapon : weaponsInfo) {
+        buf.push_back(static_cast<uint8_t>(weapon.name));
+        Utilities::serialize_int(buf, weapon.price);
+        Utilities::serialize_uint32(buf, weapon.maxAmmo);
+    }
+}
+
+void Protocol::serialize_shop(const Shop& shop, std::vector<uint8_t>& buf) {
+    Utilities::serialize_uint16(buf, shop.weapons.size());
+
+    for (const auto& weapon : shop.weapons) {
+        buf.push_back(static_cast<uint8_t>(weapon));
+    }
+
+    Utilities::serialize_int(buf, shop.primaryAmmoPrice);
+    Utilities::serialize_int(buf, shop.secondaryAmmoPrice);
+}
+
+void Protocol::serialize_times(const Times& times, std::vector<uint8_t>& buf) {
+    Utilities::serialize_float(buf, times.purchase_duration);
+    Utilities::serialize_float(buf, times.bomb_duration);
+    Utilities::serialize_float(buf, times.time_to_plant);
+    Utilities::serialize_float(buf, times.time_until_new_round);
+}
+
 std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     const InitialData& init = std::get<InitialData>(r.data);
 
@@ -372,7 +448,11 @@ std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     };
 
     serialize_map_data(init.data, buf);
-    serialize_string_vector(init.players, buf);
+    serialize_playersInfo(init.players, buf);
+    serialize_weaponsInfo(init.weaponsInfo, buf);
+    serialize_shop(init.shop, buf);
+    serialize_times(init.times, buf);
+    
 
     Utilities::serialize_string(buf, r.message);
 
@@ -390,6 +470,8 @@ void Protocol::send_response(const Response& r) {
         case Type::LOBBY_READY:
         case Type::FINISH:
         case Type::DISCONNECT:
+        case Type::NAME:
+        case Type::NOT_LOBBY_READY:
             buffer = serialize_simple(r);
             break;
 
@@ -464,6 +546,7 @@ Response Protocol::deserialize_list() {
     return r;
 }
 
+/*
 std::vector<std::string> Protocol::deserialize_string_vector() {
     uint16_t count = Utilities::deserialize_uint16(skt);
     std::vector<std::string> result;
@@ -474,6 +557,7 @@ std::vector<std::string> Protocol::deserialize_string_vector() {
 
     return result;
 }
+*/
 
 std::vector<std::vector<CellType>> Protocol::deserialize_celltype_2d_vector() {
     uint16_t rows = Utilities::deserialize_uint16(skt);
@@ -538,20 +622,65 @@ MapData Protocol::deserialize_map_data() {
     return map;
 }
 
+std::vector<PlayerInfo> Protocol::deserialize_playersInfo() {
+    uint16_t size = Utilities::deserialize_uint16(skt);
+     std::vector<PlayerInfo> result;
+    for (uint16_t i = 0; i < size; ++i) {
+        std::string name = Utilities::deserialize_string(skt);
+        tSkin terroristSkin = static_cast<tSkin>(Utilities::deserialize_uint8(skt));
+        ctSkin counterTerroristSkin = static_cast<ctSkin>(Utilities::deserialize_uint8(skt));
+        PlayerInfo playerInfo{name,terroristSkin,counterTerroristSkin};
+        result.push_back(playerInfo);
+    }
+    return result;
+}
+
+std::vector<WeaponInfo> Protocol::deserialize_weaponsInfo() {
+    uint16_t size = Utilities::deserialize_uint16(skt);
+    std::vector<WeaponInfo> result;
+    for (uint16_t i = 0; i < size; ++i) {
+        WeaponName name = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
+        int price = Utilities::deserialize_int(skt);
+        uint32_t maxAmmo = Utilities::deserialize_uint32(skt);
+        result.emplace_back(WeaponInfo{name, price, maxAmmo});
+    }
+    return result;
+}
+
+Shop Protocol::deserialize_shop() {
+    uint16_t size = Utilities::deserialize_uint16(skt);
+    std::vector<WeaponName> weapons;
+    for (uint16_t i = 0; i < size; ++i) {
+        WeaponName name = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
+        weapons.push_back(name);
+    }
+    int primaryAmmoPrice = Utilities::deserialize_int(skt);
+    int secondaryAmmoPrice = Utilities::deserialize_int(skt);
+    return Shop{weapons, primaryAmmoPrice, secondaryAmmoPrice};
+}
+
+Times Protocol::deserialize_times() {
+    Times times;
+    times.purchase_duration = Utilities::deserialize_float(skt);
+    times.bomb_duration = Utilities::deserialize_float(skt);
+    times.time_to_plant = Utilities::deserialize_float(skt);
+    times.time_until_new_round = Utilities::deserialize_float(skt);
+    return times;
+}
+
 Response Protocol::deserialize_initial_data() {
     Response r;
     r.type = Type::INITIAL_DATA;
-
-    uint8_t result;
-    if (skt.recvall(&result, sizeof(result)) == 0)
-        throw std::runtime_error("Error receiving initial data result");
-    r.result = result;
+    r.result = Utilities::deserialize_uint8(skt);
 
     InitialData init;
     init.data = deserialize_map_data();
-    init.players = deserialize_string_vector();
+    init.players = deserialize_playersInfo();
+    init.weaponsInfo = deserialize_weaponsInfo();
+    init.shop = deserialize_shop();
+    init.times = deserialize_times();
+    
     r.data = std::move(init);
-
     r.message = Utilities::deserialize_string(skt);
     return r;
 }
@@ -572,6 +701,7 @@ PlayerData Protocol::recv_player_data() {
 
     p.equippedWeapon = static_cast<WeaponType>(Utilities::deserialize_uint8(skt));
     p.alive = static_cast<bool>(Utilities::deserialize_uint8(skt));
+    p.terrorist = static_cast<bool>(Utilities::deserialize_uint8(skt));
 
     return p;
 }
@@ -657,13 +787,26 @@ Entity Protocol::deserialize_entity() {
     }
 }
 
+Rounds Protocol::deserialize_rounds() {
+    Rounds rounds;
+    rounds.roundsWonTeamA = Utilities::deserialize_uint16(skt);
+    rounds.roundsWonTeamB = Utilities::deserialize_uint16(skt);
+    rounds.currentRound = Utilities::deserialize_uint16(skt);
+    rounds.winner.team = static_cast<char>(Utilities::deserialize_uint8(skt));
+    rounds.winner.typeEndRound = static_cast<TypeEndRound>(Utilities::deserialize_uint8(skt));
+    return rounds;
+}
+
 Response Protocol::deserialize_state() {
     Response r;
     r.type = Type::STATE;
     r.result = Utilities::deserialize_uint8(skt);
+
     StateGame state;
+    
     uint8_t phase_val = Utilities::deserialize_uint8(skt);
     state.phase = static_cast<Phase>(phase_val);
+
     uint16_t entity_count = Utilities::deserialize_uint16(skt);
     for (uint16_t i = 0; i < entity_count; ++i) {
         state.entities.push_back(deserialize_entity());
@@ -672,6 +815,9 @@ Response Protocol::deserialize_state() {
     for (uint16_t i = 0; i < shot_count; ++i) {
         state.shots.push(deserialize_shot());
     }
+
+    state.rounds = deserialize_rounds();
+
     r.data = std::move(state);
     r.message = Utilities::deserialize_string(skt); 
     return r;
@@ -716,6 +862,8 @@ Response Protocol::recv_response() {
         case Type::FINISH:
         case Type::LOBBY_READY:
         case Type::DISCONNECT:
+        case Type::NAME:
+        case Type::NOT_LOBBY_READY:
             return deserialize_simple(type);
         case Type::LIST:
             return deserialize_list();
@@ -765,6 +913,21 @@ ChangeWeaponAction Protocol::recv_change_weapon_action() {
     return ChangeWeaponAction{static_cast<WeaponType>(type)};
 }
 
+SelectTSkin Protocol::recv_select_tskin_action() {
+    tSkin tskin = static_cast<tSkin>(Utilities::deserialize_uint8(skt));
+    return SelectTSkin{tskin};
+}
+
+SelectCTSkin Protocol::recv_select_ctskin_action() {
+    ctSkin ctskin = static_cast<ctSkin>(Utilities::deserialize_uint8(skt));
+    return SelectCTSkin{ctskin};
+}
+
+SelectMap Protocol::recv_select_map_action() {
+    std::string name = Utilities::deserialize_string(skt);
+    return SelectMap{name};
+}
+
 Message Protocol::deserialize_message_action() { 
     Message msg;
     msg.type = Type::ACTION;
@@ -773,6 +936,15 @@ Message Protocol::deserialize_message_action() {
     action.type = static_cast<ActionType>(Utilities::deserialize_uint8(skt));
 
     switch (action.type) {
+        case ActionType::SELECT_T_SKIN:
+            action.data = recv_select_tskin_action();
+            break;
+        case ActionType::SELECT_CT_SKIN:
+            action.data = recv_select_ctskin_action();
+            break;
+        case ActionType::SELECT_MAP:
+            action.data = recv_select_map_action();
+            break;
         case ActionType::MOVE:
             action.data = recv_move_action();
             break;

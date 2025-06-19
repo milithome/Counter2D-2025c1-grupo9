@@ -30,7 +30,6 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 #define NAME_SERVER "localhost"
-#define PORT "12345"
 
 using namespace SDL2pp;
 
@@ -40,7 +39,8 @@ using namespace SDL2pp;
 #include <vector>
 #include <string>
 
-class MenuClient : QObject {
+class MenuClient : public QObject {
+    Q_OBJECT
 private:
     bool partida_iniciada = false;
     Queue<Response>& recv_queue;
@@ -73,7 +73,8 @@ public:
 
     std::vector<std::string> allPlayers();
 
-
+signals:
+    void initialDataReceived(InitialData data);
 };
 
 #endif // MENUCLIENT_H

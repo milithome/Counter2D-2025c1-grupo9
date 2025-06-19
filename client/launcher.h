@@ -42,7 +42,6 @@ private:
     SDL sdl;
 
 public:
-    // Constructor
     SDL initSDL() {
         int num_audio_drivers = SDL_GetNumAudioDrivers();
 

@@ -1,8 +1,6 @@
 #include "server.h"
 
-Server::Server() : admin(), acceptor(DEFAULT_PORT, admin) {} 
-
-Server::Server(std::string& port) : admin(), acceptor(port, admin) {} 
+Server::Server(ServerConfig config) : admin(config), acceptor(config.port, admin) {} 
 
 Server::~Server() {}
 

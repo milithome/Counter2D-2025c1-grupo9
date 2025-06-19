@@ -17,6 +17,11 @@ void Client::run(QApplication& app, MenuController& menuController) {
     bool looped = false;
     while (true) { // mientras el cliente no haya decidido irse
         MenuClient menuClient(app, menuController, recv_queue, send_queue, receiver, sender, protocol);
+        InitialData initialData;
+        QObject::connect(&menuClient, &MenuClient::initialDataReceived, &menuClient, [this, &initialData, &app](InitialData data) {
+            initialData = data;
+            app.quit();
+        });
 
         bool quit = menuClient.run(looped);
         QPoint w_pos_when_game_started = menuClient.getWindowPosition();
@@ -25,23 +30,10 @@ void Client::run(QApplication& app, MenuController& menuController) {
             break;
         }
 
-        Map map = Map("../assets/maps/big.yaml");  // modificar cuando este el editor (aca tendria que elegir el cliente que mapa usar)
-        
-        
-        // std::vector<std::string> players = menuClient.allPlayers();
-        
-        // if (players.empty()) {
-        //     std::cerr << "No players in the lobby." << std::endl;
-        //     break;
-        // }
-
-        // Game game(map.getMapData().game_map);
-        // for (size_t i = 0; i < players.size(); i++) {
-        //     game.addPlayer(players[i]);
-        // }
+        Map map = Map(initialData.data);
 
 
-        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
+        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map, initialData.weaponsInfo, initialData.shop, initialData.players);
         GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, true);
 
         quit = gameClient.run();

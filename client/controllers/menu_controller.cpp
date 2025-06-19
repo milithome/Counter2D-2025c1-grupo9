@@ -8,6 +8,8 @@
 #include "list_event.h"
 #include "create_event.h"
 #include "start_event.h"
+#include "t_skin_picked_event.h"
+#include "ct_skin_picked_event.h"
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
     connectToServerView = ConnectToServerView();
@@ -69,12 +71,29 @@ void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
 void MenuController::listenToPartyView(PartyView& partyView) {
     QPushButton *leaveButton = partyView.getLeaveButton();
     QPushButton *startButton = partyView.getStartButton();
+    QPushButton *settingsButton = partyView.getSettingsButton();
     QObject::connect(leaveButton, &QPushButton::clicked, [this]() {
         onPartyViewLeaveButtonClicked();
     });
     QObject::connect(startButton, &QPushButton::clicked, [this]() {
         onPartyViewStartButtonClicked();
     });
+    QObject::connect(settingsButton, &QPushButton::clicked, [this, &partyView]() {
+        partyView.showModal();
+    });
+    std::unordered_map<tSkin, QPushButton*> tSkins = partyView.getTSkinButtons();
+    std::unordered_map<ctSkin, QPushButton*> ctSkins = partyView.getCtSkinButtons();
+
+    for (auto [skin, button] : tSkins) {
+        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+            emit nuevoEvento(std::make_shared<TSkinPickedEvent>(skin));
+        });
+    }
+    for (auto [skin, button] : ctSkins) {
+        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+            emit nuevoEvento(std::make_shared<CtSkinPickedEvent>(skin));
+        });
+    }
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
@@ -227,4 +246,8 @@ void MenuController::onLeavePartyResponseReceived(const std::string& message, co
 void MenuController::onLobbyReady() {
     QPushButton *startButton = partyView.getStartButton();
     startButton->setEnabled(true);
+}
+void MenuController::onLobbyNotReady() {
+    QPushButton *startButton = partyView.getStartButton();
+    startButton->setEnabled(false);
 }

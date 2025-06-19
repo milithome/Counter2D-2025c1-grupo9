@@ -8,25 +8,26 @@
 #include <random>
 #include <string>
 class Player {
+private:
+  GameRules& gameRules;
 
 public:
-  Player(const std::string &name)
-      : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
-        role(Role::COUNTER_TERRORIST), rotation(0) {}
+
+  explicit Player(const std::string &name, GameRules& gameRules);
   std::string name;
   float x, y;
   Hitbox hitbox;
   Role role;
-  int money = INITIAL_MONEY;
-  Weapon equipped = Weapons::Glock;
-  WeaponType typeEquipped = WeaponType::SECONDARY;
-  Weapon knife = Weapons::Knife;
-  Weapon primaryWeapon = Weapons::None;
-  Weapon secondaryWeapon = Weapons::Glock;
-  uint32_t bulletsPrimary = INITIAL_PRIMARY_AMMO;
-  uint32_t bulletsSecondary = INITIAL_SECONDARY_AMMO;
+  int money;
+  Weapon equipped;
+  WeaponType typeEquipped;
+  Weapon knife;
+  Weapon primaryWeapon;
+  Weapon secondaryWeapon;
+  uint32_t bulletsPrimary;
+  uint32_t bulletsSecondary;
   float rotation;
-  int health = MAX_HEALTH;
+  int health;
   float vx = 0, vy = 0;
   float aceleration = 0;
   bool hasTheSpike = true;

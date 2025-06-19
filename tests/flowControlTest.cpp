@@ -26,24 +26,6 @@ TEST(FlowControlTest, TestCreateAndCloseServer) {
     serverThread.join();
 }
 
-TEST(FlowControlTest, TestServerWithCustomPort) {
-    std::string customPort = "12346";
-    int fds[2];
-    pipe(fds);
-
-    std::unique_ptr<std::istream> input = make_pipe_istream(fds[0]);
-
-    std::thread serverThread([&]() {
-        Server server(customPort);
-        server.start(*input);
-    });
-
-    write(fds[1], "q\n", 2);
-    close(fds[1]);
-
-    serverThread.join();
-}
-
 TEST(FlowControlTest, TestClientConnectionAndDisconnection) {
     int fds[2];
     pipe(fds);

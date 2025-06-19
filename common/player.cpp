@@ -1,8 +1,23 @@
 #include "player.h"
 #include <iostream>
 
+Player::Player(const std::string &name, GameRules& gameRules) : gameRules(gameRules), name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT}, role(Role::COUNTER_TERRORIST), rotation(0) {
+  money = gameRules.initial_money;
+  bulletsPrimary = gameRules.initial_primary_ammo;
+  bulletsSecondary = gameRules.initial_secondary_ammo;
+  health = gameRules.max_health;
+
+  
+  knife = gameRules.weapons[WeaponName::KNIFE];
+  primaryWeapon = gameRules.weapons[WeaponName::NONE];
+  secondaryWeapon = gameRules.weapons[WeaponName::GLOCK];
+
+  typeEquipped = WeaponType::SECONDARY;
+  equipped = secondaryWeapon;
+}
+
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
-  float totalSpeed = SPEED + aceleration;
+  float totalSpeed = gameRules.speed + aceleration;
   float dx = 0.0f;
   float dy = 0.0f;
 
@@ -43,7 +58,7 @@ std::pair<float, float> Player::tryMove(float deltaTime) {
   dirY /= magnitude;
 
   float boost = 0.1f;
-  float baseSpeed = SPEED + boost;
+  float baseSpeed = gameRules.speed + boost;
   float totalSpeed = baseSpeed + aceleration;
 
   float newX = x + dirX * deltaTime * totalSpeed;
@@ -69,7 +84,12 @@ void Player::updateHealth(int value) {
   }
 }
 
-void Player::restoreHealth() { health = MAX_HEALTH; }
+
+
+void Player::restoreHealth(){
+  health = gameRules.max_health;
+}
+
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
@@ -152,7 +172,7 @@ void Player::changeWeapon(WeaponType newEquippedWeapon) {
 }
 
 void Player::replaceWeapon(WeaponName weapon) {
-  primaryWeapon = Weapons::getWeapon(weapon);
+  primaryWeapon = gameRules.weapons[weapon];
 }
 
 void Player::updateMoney(int value) { money += value; }

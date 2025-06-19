@@ -32,6 +32,8 @@ public:
     void onGameStarted();
 
     void onLobbyReady();
+    
+    void onLobbyNotReady();
 
     QPoint getWindowPosition() { return window.getPosition(); }
 

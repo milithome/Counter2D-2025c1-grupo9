@@ -39,7 +39,7 @@ struct DeathEffect {
     float dead_body_x;
     float dead_body_y;
     float dead_body_rotation;
-    //Surface dead_body_skin;
+    std::reference_wrapper<Surface> dead_body_skin;
     float time_left;
     int alpha;
 };
@@ -80,6 +80,11 @@ struct NewPhaseEffect {
     float time_left = 2;
 };
 
+struct OnScreenMessageEffect {
+    std::string text;
+    float time_left = 2;
+};
+
 struct Particle {
     float x, y;
     float speed;
@@ -91,16 +96,6 @@ struct HitEffect {
     std::vector<Particle> particles;
 };
 
-enum Skin {
-    PHOENIX,
-    L337_KREW, 
-    ARCTIC_AVENGER,
-    GUERRILLA,
-    SEAL_FORCE,
-    GERMAN_GSG9,
-    UKSAS,
-    FRENCH_GIGN
-};
 
 
 // d inventory, dropped
@@ -109,15 +104,16 @@ enum Skin {
 
 class GameView {
 public:
-    GameView(const std::string& playerName, SDL_Point window_pos, Map& map);
+    GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
     SDL_Point getCenterPoint();
     void addBulletEffects(Shot shot);
-    void addDeathEffect(float x, float y, float angle);
+    void addDeathEffect(float x, float y, PlayerData& data);
     void addBombExplosionEffect(float x, float y);
     void addNewPhaseEffect(Phase phase);
+    void setEndRoundMessageEffect(RoundWinner winner);
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
@@ -125,6 +121,9 @@ public:
     void updateState(StateGame& new_state) {
         state = new_state;
     }
+    void setPhaseTimer(float time) {
+        phaseTimer = time;
+    };
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
@@ -133,10 +132,12 @@ public:
 private:
     Window window;
     Renderer renderer;
-    //Game& game;
     StateGame state;
     std::string playerName;
     Map& map;
+    std::vector<WeaponInfo>& weapons;
+    Shop& shop;
+    std::vector<PlayerInfo>& players;
 
 
 
@@ -154,12 +155,17 @@ private:
     Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
     Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
     Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
-    Surface& getSkinSpriteSurface(Skin skin) {
+    Surface& getTSkinSpriteSurface(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenixS;
             case L337_KREW:         return l337KrewS;
             case ARCTIC_AVENGER:    return arcticAvengerS;
             case GUERRILLA:         return guerrillaS;
+            default:                throw std::exception();
+        }
+    }
+    Surface& getCtSkinSpriteSurface(ctSkin skin) {
+        switch (skin) {
             case SEAL_FORCE:        return sealForceS;
             case GERMAN_GSG9:       return germanGsg9S;
             case UKSAS:             return uksasS;
@@ -179,12 +185,17 @@ private:
     Texture germanGsg9 = Texture(renderer, germanGsg9S);
     Texture uksas = Texture(renderer, uksasS);
     Texture frenchGign = Texture(renderer, frenchGignS);
-    Texture& getSkinSprite(Skin skin) {
+    Texture& getTSkinSprite(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenix;
             case L337_KREW:         return l337Krew;
             case ARCTIC_AVENGER:    return arcticAvenger;
             case GUERRILLA:         return guerrilla;
+            default:                throw std::exception();
+        }
+    }
+    Texture& getCtSkinSprite(ctSkin skin) {
+        switch (skin) {
             case SEAL_FORCE:        return sealForce;
             case GERMAN_GSG9:       return germanGsg9;
             case UKSAS:             return uksas;
@@ -303,19 +314,19 @@ private:
     }
 
 
-    Surface buyPhaseLabel =  font.RenderText_Blended("Fase de compra", Color(255, 255, 255));
-    Surface roundStartLabel = font.RenderText_Blended("Inicio de ronda", Color(255, 255, 255));
-    Surface bombPlantedLabel =  font.RenderText_Blended("Bomba plantada", Color(255, 255, 255));
-    Surface roundEndLabel =  font.RenderText_Blended("Fin de ronda", Color(255, 255, 255));
-    Surface& getPhaseLabel(Phase phase) {
-        switch (phase) {
-            case PURCHASE:          return buyPhaseLabel;
-            case BOMB_PLANTING:     return roundStartLabel;
-            case BOMB_DEFUSING:     return bombPlantedLabel;
-            case END_ROUND:         return roundEndLabel;
-            default:                throw std::exception();
-        }
-    }
+    // Surface buyPhaseLabel =  font.RenderText_Blended("Fase de compra", Color(255, 255, 255));
+    // Surface roundStartLabel = font.RenderText_Blended("Inicio de ronda", Color(255, 255, 255));
+    // Surface bombPlantedLabel =  font.RenderText_Blended("Bomba plantada", Color(255, 255, 255));
+    // Surface roundEndLabel =  font.RenderText_Blended("Fin de ronda", Color(255, 255, 255));
+    // Surface& getPhaseLabel(Phase phase) {
+    //     switch (phase) {
+    //         case PURCHASE:          return buyPhaseLabel;
+    //         case BOMB_PLANTING:     return roundStartLabel;
+    //         case BOMB_DEFUSING:     return bombPlantedLabel;
+    //         case END_ROUND:         return roundEndLabel;
+    //         default:                throw std::exception();
+    //     }
+    // }
 
     Texture bombAnimationSprite = Texture(renderer, "../assets/gfx/explosion.png");
 
@@ -327,8 +338,11 @@ private:
     std::vector<HitEffect> sparks_effects;
     std::vector<BulletEffect> bullet_effects;
     std::vector<DeathEffect> death_effects;
-    NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
+    // NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
+    OnScreenMessageEffect end_round_effect = OnScreenMessageEffect{"Fase de compra"};
     BombExplosionEffect bomb_explosion_effect;
+    float phaseTimer = 0;
+
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> weaponShopButtons;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buySecondaryAmmoButton;
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> buyPrimaryAmmoButton;
@@ -355,8 +369,23 @@ private:
         return dis(gen);
     }
 
+    PlayerInfo findPlayerInfo(const std::string& name) {
+        for (size_t i = 0; i < players.size(); i++) {
+            if (players[i].name == name) {
+                return players[i];
+            }
+        }
+        return {};
+    };
+    WeaponInfo findWeaponInfo(WeaponName weapon) {
+        for (size_t i = 0; i < weapons.size(); i++) {
+            if (weapons[i].name == weapon) {
+                return weapons[i];
+            }
+        }
+        return {};
+    };
 
 };
 
 #endif
-

@@ -1,0 +1,108 @@
+server:
+  port: "1234"
+  tick_rate: 60           # ticks por segundo → 1 tick cada 1000/60 ms
+  max_events_per_tick: 32
+
+game:
+  max_players_per_team: 5
+  min_players_per_team: 1
+  rounds_until_role_change: 3
+  rounds_until_end_game: 6
+
+  max_health: 200
+  max_bullets: 30
+
+  speed: 5.0
+  purchase_duration: 20.0
+  bomb_duration: 60.0
+  time_to_plant: 90.0
+  time_until_plant: 3.0
+  time_until_defuse: 3.0
+  time_until_new_round: 7.0
+
+  ammo_price: 40
+
+  money_winner: 150
+  money_loser: 100
+  initial_money: 1000
+  initial_primary_ammo: 0
+  initial_secondary_ammo: 0
+
+  weapons:
+    AK47:
+      price: 100
+      min_damage: 15
+      max_damage: 25
+      burst_fire: true
+      bullets_per_burst: 3
+      burst_delay: 0.05
+      spread_angle: 0.0
+      bullets_per_shoot: 1
+      max_range: 40.0
+      max_ammo: 30
+      cooldown: 0.4
+
+    AWP:
+      price: 240
+      min_damage: 80
+      max_damage: 100
+      burst_fire: false
+      bullets_per_burst: 0
+      burst_delay: 0.0
+      spread_angle: 0.0
+      bullets_per_shoot: 1
+      max_range: 100.0
+      max_ammo: 10
+      cooldown: 2.0
+
+    M3:
+      price: 150
+      min_damage: 10
+      max_damage: 50
+      burst_fire: false
+      bullets_per_burst: 0
+      burst_delay: 0.0
+      spread_angle: 10.0
+      bullets_per_shoot: 5
+      max_range: 40.0
+      max_ammo: 50
+      cooldown: 1.0
+
+    GLOCK:
+      price: 0
+      min_damage: 25
+      max_damage: 35
+      burst_fire: false
+      bullets_per_burst: 0
+      burst_delay: 0.0
+      spread_angle: 0.0
+      bullets_per_shoot: 1
+      max_range: 30.0
+      max_ammo: 15
+      cooldown: 0.4
+
+    KNIFE:
+      price: 0
+      min_damage: 20
+      max_damage: 40
+      burst_fire: false
+      bullets_per_burst: 0
+      burst_delay: 0.0
+      spread_angle: 0.0
+      bullets_per_shoot: 1
+      max_range: 1.0
+      max_ammo: 0
+      cooldown: 0.5
+    
+    NONE:
+      price: 0
+      min_damage: 0
+      max_damage: 0
+      burst_fire: false
+      bullets_per_burst: 0
+      burst_delay: 0.0
+      spread_angle: 0.0
+      bullets_per_shoot: 0
+      max_range: 0.0
+      max_ammo: 0
+      cooldown: 0.0

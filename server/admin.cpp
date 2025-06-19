@@ -2,7 +2,7 @@
 #include "match.h"
 #include "menu.h"
 
-Admin::Admin() : clients(10) {}
+Admin::Admin(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 
 Admin::~Admin(){}
 
@@ -44,6 +44,10 @@ void Admin::stop() {
     unnamedClients.clear();
 }
 
+ServerConfig& Admin::getServerConfig() {
+    return serverConfig;
+}
+
 std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     std::lock_guard<std::mutex> lock(mtx);
     
@@ -62,6 +66,9 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
         *this,
         client->channels.requests,
         [this, client](const std::string& name) {
+            if (name == "") {
+                throw std::runtime_error("You can't not have a name");
+            }
             {
                 std::lock_guard<std::mutex> lock(this->mtx);
                 client->channels.name = name;
@@ -69,6 +76,7 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
                 this->unnamedClients.erase(client);
                 this->clients.insert(client);
             }
+            client->sender->start();
             this->createMenu(client);
         }
     );
@@ -81,21 +89,23 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     );
 
     client->receiver->start();
-    client->sender->start();
+    //client->sender->start();
 
     return client;
 }
 
-void Admin::removeClient(const std::string& name) {
+void Admin::removeClient(const std::string& name, bool fromReceiver) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = std::find_if(clients.begin(), clients.end(), [&name](const std::shared_ptr<Client>& client) {
         return client->channels.name == name;
     });
 
     if (it != clients.end()) {
-        (*it)->receiver->stop();
+        if (!fromReceiver) {
+            (*it)->receiver->stop();
+            (*it)->receiver->join();
+        }
         (*it)->sender->stop();
-        (*it)->receiver->join();
         (*it)->sender->join();
         clients.erase(it);
     } else {
@@ -135,6 +145,10 @@ void Admin::createMatch(std::string& name) {
     removeFinishedClients();
     removeFinishedMenus();
     removeFinishedMatches();
+
+    if (name == "") {
+        throw std::runtime_error("A game can't be created with a blank name.");
+    }
 
     if (matches.find(name) != matches.end()) {
         throw std::runtime_error("Match already exists with this name");

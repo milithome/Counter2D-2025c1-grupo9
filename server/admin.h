@@ -10,18 +10,21 @@
 #include "../common/communication/protocol.h"
 #include "serverStructures.h"
 
+
 class Match;
 class Menu;
 
 class Admin {
 public:
-    Admin();
+    explicit Admin(ServerConfig config);
     ~Admin();
  
     void stop();
 
+    ServerConfig& getServerConfig();
+
     std::shared_ptr<Client> createClient(Protocol&& protocol);
-    void removeClient(const std::string& name);
+    void removeClient(const std::string& name, bool fromReceiver = false);
 
     void createMenu(std::shared_ptr<Client> client, bool createNewRequests = false);
     void removeMenu(const std::string& clientName);
@@ -33,6 +36,8 @@ public:
     
 private:
     std::mutex mtx;
+    ServerConfig serverConfig;
+
     std::map<std::string, std::shared_ptr<Match>> matches;
     std::map<std::string, std::shared_ptr<Menu>> menus;
     std::unordered_set<std::shared_ptr<Client>> clients;
