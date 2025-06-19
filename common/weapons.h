@@ -28,6 +28,6 @@ extern const Weapon AWP;
 extern const Weapon None;
 
 const Weapon &getWeapon(WeaponName name);
-}
+} // namespace Weapons
 
 #endif

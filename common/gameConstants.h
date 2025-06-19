@@ -4,19 +4,19 @@
 enum class Role { TERRORIST, COUNTER_TERRORIST };
 
 struct Position {
-    float x;
-    float y;
+  float x;
+  float y;
 };
 struct Spike {
-    Position position;
-    BombState state;
+  Position position;
+  BombState state;
 };
 
 struct PlayerCellBounds {
-    int leftCell;
-    int rightCell;
-    int topCell;
-    int bottomCell;
+  int leftCell;
+  int rightCell;
+  int topCell;
+  int bottomCell;
 };
 
 struct DroppedWeapon {

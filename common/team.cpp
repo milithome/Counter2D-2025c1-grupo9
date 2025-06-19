@@ -5,13 +5,13 @@ void Team::addPlayer(std::shared_ptr<Player> player) {
 }
 
 int Team::getPlayersAlive() const {
-    int aliveCount = 0;
-    for (const auto& player : players) {
-        if (player->alive) {
-            aliveCount++;
-        }
+  int aliveCount = 0;
+  for (const auto &player : players) {
+    if (player->alive) {
+      aliveCount++;
     }
-    return aliveCount;
+  }
+  return aliveCount;
 }
 
 int Team::getRoundsWon() const { return roundsWon; }
@@ -26,47 +26,45 @@ void Team::invertRole() {
     newRole = Role::TERRORIST;
   }
   for (auto &player : players) {
-    player->role=newRole;
+    player->role = newRole;
     player->replaceWeapon(WeaponName::NONE);
     player->changeWeapon(WeaponType::SECONDARY);
-    player->bulletsPrimary=INITIAL_PRIMARY_AMMO;
-    player->bulletsSecondary=INITIAL_SECONDARY_AMMO;
-    player->money=INITIAL_MONEY;
+    player->bulletsPrimary = INITIAL_PRIMARY_AMMO;
+    player->bulletsSecondary = INITIAL_SECONDARY_AMMO;
+    player->money = INITIAL_MONEY;
   }
 }
 
-void Team::updateMoneyAfterRound(int money){
+void Team::updateMoneyAfterRound(int money) {
   for (auto &player : players) {
     player->updateMoney(money);
   }
 }
 
-void Team::resetSpikeCarrier(){
-  for (auto &player : players){
-    player->hasTheSpike=false;
+void Team::resetSpikeCarrier() {
+  for (auto &player : players) {
+    player->hasTheSpike = false;
   }
   if (currentRole == Role::TERRORIST && !players.empty()) {
     int carrier = rand() % players.size();
-    players[carrier]->hasTheSpike=true;
+    players[carrier]->hasTheSpike = true;
   }
 }
 
 void Team::setRole(Role role) {
   currentRole = role;
-  for (auto &player : players){
-    player->role=role;
+  for (auto &player : players) {
+    player->role = role;
   }
 }
 
-Role Team::getRole(){
-  return currentRole;
-}
+Role Team::getRole() { return currentRole; }
 
-void Team::restartPlayersAlive() { 
-  playersAlive = players.size(); 
-  for (auto &player : players){
+void Team::restartPlayersAlive() {
+  playersAlive = players.size();
+  for (auto &player : players) {
     player->restoreHealth();
-    player->alive=true;
+    player->alive = true;
   }
 }
 

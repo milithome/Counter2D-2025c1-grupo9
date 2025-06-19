@@ -61,18 +61,15 @@ void Player::setPosition(float x, float y) {
 
 void Player::updateHealth(int value) {
   health += value;
-  if (health <= 0){
+  if (health <= 0) {
     health = 0;
-    alive=false;
+    alive = false;
   } else {
-    alive = true; 
+    alive = true;
   }
 }
 
-void Player::restoreHealth(){
-  health = MAX_HEALTH;
-}
-
+void Player::restoreHealth() { health = MAX_HEALTH; }
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
@@ -106,17 +103,14 @@ void Player::updateAceleration(float deltaTime) {
     aceleration = MAX_ACELERATION;
 }
 
-
 void Player::updateCooldown(float deltaTime) {
   if (shootCooldown > 0.0f) {
     shootCooldown -= deltaTime;
   }
 }
 
-void Player::resetCooldown() { 
-  shootCooldown = equipped.cooldown;
-}
-std::pair<float, float> Player::getDamageRange() const{
+void Player::resetCooldown() { shootCooldown = equipped.cooldown; }
+std::pair<float, float> Player::getDamageRange() const {
   return std::make_pair(equipped.minDamage, equipped.maxDamage);
 }
 
@@ -154,7 +148,7 @@ void Player::changeWeapon(WeaponType newEquippedWeapon) {
   } else {
     equipped = knife;
   }
-  typeEquipped=newEquippedWeapon; 
+  typeEquipped = newEquippedWeapon;
 }
 
 void Player::replaceWeapon(WeaponName weapon) {
@@ -163,12 +157,8 @@ void Player::replaceWeapon(WeaponName weapon) {
 
 void Player::updateMoney(int value) { money += value; }
 
-void Player::updatePrimaryBullets(int value) {
-  bulletsPrimary += value;
-}
-void Player::updateSecondaryBullets(int value) {
-  bulletsSecondary += value;
-}
+void Player::updatePrimaryBullets(int value) { bulletsPrimary += value; }
+void Player::updateSecondaryBullets(int value) { bulletsSecondary += value; }
 
 void Player::resetPrimaryBullets() { // llenar cargador
   bulletsPrimary = primaryWeapon.maxAmmo;
@@ -185,8 +175,8 @@ void Player::resetTimeLastBullet() { timeLastBullet = 0; }
 
 void Player::updateBurstFireBullets(int value) { burstFireBullets += value; }
 
-int Player::getBullets(){
-  if (typeEquipped== WeaponType::PRIMARY) {
+int Player::getBullets() {
+  if (typeEquipped == WeaponType::PRIMARY) {
     return bulletsPrimary;
   } else if (typeEquipped == WeaponType::SECONDARY) {
     return bulletsSecondary;

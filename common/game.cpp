@@ -1,60 +1,55 @@
 #include "game.h"
 
 Game::Game(std::vector<std::vector<CellType>> game_map)
-    : map(std::move(game_map))
-{
+    : map(std::move(game_map)) {
   teamA.setRole(Role::COUNTER_TERRORIST);
   teamB.setRole(Role::TERRORIST);
   spawnTeamTerrorist = map.findSpawnTeam(false); // true para terrorist
   spawnTeamCounter = map.findSpawnTeam(true);
   spike.state = BombState::INVENTORY;
-  rounds.roundsWonTeamA=0;
-  rounds.roundsWonTeamB=0;
-  rounds.currentRound=0;
-  winner.team='-';
-  winner.typeEndRound=TypeEndRound::DEAD_TEAM;
+  rounds.roundsWonTeamA = 0;
+  rounds.roundsWonTeamB = 0;
+  rounds.currentRound = 0;
+  winner.team = '-';
+  winner.typeEndRound = TypeEndRound::DEAD_TEAM;
 }
 
-bool Game::addPlayer(const std::string &name)
-{
+bool Game::addPlayer(const std::string &name) {
   std::shared_ptr<Player> player = std::make_shared<Player>(name);
   players.emplace_back(player);
-  //Player &player = findPlayerByName(name);
-  if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM)
-  {
+  // Player &player = findPlayerByName(name);
+  if (teamA.getTeamSize() < teamB.getTeamSize() &&
+      teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     teamA.addPlayer(player);
-    player->role=teamA.getRole();
+    player->role = teamA.getRole();
     placePlayerInSpawnTeam(*player);
     return true;
   }
-  if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM)
-  {
+  if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM) {
     teamB.addPlayer(player);
-    player->role=teamB.getRole();
+    player->role = teamB.getRole();
     placePlayerInSpawnTeam(*player);
     return true;
   }
   return false;
 }
 
-float Game::randomFloatInRange(float min, float max)
-{
-  return min + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX) + 1) * (max - min);
+float Game::randomFloatInRange(float min, float max) {
+  return min + static_cast<float>(std::rand()) /
+                   (static_cast<float>(RAND_MAX) + 1) * (max - min);
 }
 
-void Game::placePlayerInSpawnTeam(Player &player)
-{
+void Game::placePlayerInSpawnTeam(Player &player) {
   std::vector<std::tuple<int, int, bool>> &spawn =
-      (player.role == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
+      (player.role == Role::COUNTER_TERRORIST) ? spawnTeamCounter
+                                               : spawnTeamTerrorist;
 
-  for (auto &pos : spawn)
-  {
+  for (auto &pos : spawn) {
     int row = std::get<0>(pos);
     int col = std::get<1>(pos);
     bool used = std::get<2>(pos);
 
-    if (!used)
-    {
+    if (!used) {
       float x = static_cast<float>(col) + 0.1f;
       float y = static_cast<float>(row) + 0.1f;
 
@@ -65,66 +60,52 @@ void Game::placePlayerInSpawnTeam(Player &player)
     }
   }
 }
-void Game::resetSpawn()
-{
+void Game::resetSpawn() {
 
-  for (auto &pos : spawnTeamCounter)
-  {
+  for (auto &pos : spawnTeamCounter) {
     std::get<2>(pos) = false;
   }
-  for (auto &pos : spawnTeamTerrorist)
-  {
+  for (auto &pos : spawnTeamTerrorist) {
     std::get<2>(pos) = false;
   }
 }
 
-Player &Game::findPlayerByName(const std::string &name)
-{
-  for (auto &player : players)
-  {
+Player &Game::findPlayerByName(const std::string &name) {
+  for (auto &player : players) {
     if (player->name == name)
       return *player;
   }
   throw std::runtime_error("Player not found");
 }
 
-void Game::stopShooting(const std::string &name)
-{
+void Game::stopShooting(const std::string &name) {
   Player &player = findPlayerByName(name);
-  player.alreadyShot=false;
-  player.shooting=false;
+  player.alreadyShot = false;
+  player.shooting = false;
 }
 
-void Game::movePlayer(const std::string &name, float vx, float vy)
-{
+void Game::movePlayer(const std::string &name, float vx, float vy) {
   Player &player = findPlayerByName(name);
   player.updateVelocity(vx, vy);
 }
 
-void Game::plantBomb(
-    const std::string &name)
-{
+void Game::plantBomb(const std::string &name) {
   timePlanting = 0.0f;
   Player &player = findPlayerByName(name);
-  if (!player.hasTheSpike)
-  {
+  if (!player.hasTheSpike) {
     return;
   }
 
   auto [x, y, width, height] = getPlayerHitbox(player);
   PlayerCellBounds bounds = getCellBounds(x, y, width, height);
 
-  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row)
-  {
-    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col)
-    {
-      if (!map.isValidCell(row, col))
-      {
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
+      if (!map.isValidCell(row, col)) {
         continue;
       }
-      if (map.isSpikeSite(row, col))
-      {
-        findPlayerByName(name).planting=true;
+      if (map.isSpikeSite(row, col)) {
+        findPlayerByName(name).planting = true;
         spike.position.x = col;
         spike.position.y = row;
       }
@@ -134,41 +115,34 @@ void Game::plantBomb(
   return;
 }
 
-
-void Game::stopPlantBomb(const std::string &name)
-{
-  findPlayerByName(name).planting=false;
+void Game::stopPlantBomb(const std::string &name) {
+  findPlayerByName(name).planting = false;
   timePlanting = 0.0f;
 }
 
-void Game::stopDefuse(const std::string &name)
-{
-  findPlayerByName(name).defusing=false;
+void Game::stopDefuse(const std::string &name) {
+  findPlayerByName(name).defusing = false;
   timeDefusing = 0.0f;
 }
 
-void Game::updatePlanting(const std::string &name, float deltaTime)
-{
+void Game::updatePlanting(const std::string &name, float deltaTime) {
   timePlanting += deltaTime;
   Player &player = findPlayerByName(name);
-  if (player.planting && timePlanting >= timeUntilPlant)
-  {
+  if (player.planting && timePlanting >= timeUntilPlant) {
     spike.state = BombState::PLANTED;
-    player.hasTheSpike=false;
+    player.hasTheSpike = false;
   }
 }
 
-void Game::updateDefusing(const std::string &name, float deltaTime)
-{
+void Game::updateDefusing(const std::string &name, float deltaTime) {
   timeDefusing += deltaTime;
-  if (findPlayerByName(name).defusing && timeDefusing >= timeUntilDefuse)
-  {
+  if (findPlayerByName(name).defusing && timeDefusing >= timeUntilDefuse) {
     spike.state = BombState::DEFUSED;
   }
 }
 
-std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player &player) const
-{
+std::tuple<float, float, float, float>
+Game::getPlayerHitbox(const Player &player) const {
   Hitbox hb = player.hitbox;
   float x = player.x;
   float y = player.y;
@@ -177,8 +151,8 @@ std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player &playe
   return {x, y, width, height};
 }
 
-PlayerCellBounds Game::getCellBounds(float x, float y, float width, float height) const
-{
+PlayerCellBounds Game::getCellBounds(float x, float y, float width,
+                                     float height) const {
 
   float left = x;
   float right = x + width;
@@ -194,28 +168,22 @@ PlayerCellBounds Game::getCellBounds(float x, float y, float width, float height
   return bounds;
 }
 
-void Game::defuseBomb(const std::string &name)
-{
+void Game::defuseBomb(const std::string &name) {
   timeDefusing = 0.0f;
   Player &player = findPlayerByName(name);
-  if (player.role == Role::TERRORIST)
-  { // solo puede defusear si es defensor
+  if (player.role == Role::TERRORIST) { // solo puede defusear si es defensor
     return;
   }
   auto [x, y, width, height] = getPlayerHitbox(player);
   PlayerCellBounds bounds = getCellBounds(x, y, width, height);
 
-  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row)
-  {
-    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col)
-    {
-      if (!map.isValidCell(row, col))
-      {
+  for (int row = bounds.topCell; row <= bounds.bottomCell; ++row) {
+    for (int col = bounds.leftCell; col <= bounds.rightCell; ++col) {
+      if (!map.isValidCell(row, col)) {
         continue;
       }
-      if (map.isSpikeSite(row, col))
-      {
-        player.defusing=true;
+      if (map.isSpikeSite(row, col)) {
+        player.defusing = true;
         return;
       }
     }
@@ -223,8 +191,7 @@ void Game::defuseBomb(const std::string &name)
   return;
 }
 
-void Game::updatePlayerMovement(Player &player, float deltaTime)
-{
+void Game::updatePlayerMovement(Player &player, float deltaTime) {
   Hitbox hb = player.hitbox;
 
   std::pair<float, float> newPos = player.tryMove(deltaTime);
@@ -235,50 +202,43 @@ void Game::updatePlayerMovement(Player &player, float deltaTime)
   float originalX = player.x;
   float originalY = player.y;
   PlayerCellBounds bounds = getCellBounds(newX, newY, width, height);
-  for (const auto &other_ptr : players)
-  {
+  for (const auto &other_ptr : players) {
     Player &other = *other_ptr;
     if (&other == &player)
       continue;
     if (!other.alive)
       continue;
     Hitbox otherHB = other.hitbox;
-    if (rectsOverlap(newX, newY, width, height, otherHB.x, otherHB.y, otherHB.width, otherHB.height))
-    {
+    if (rectsOverlap(newX, newY, width, height, otherHB.x, otherHB.y,
+                     otherHB.width, otherHB.height)) {
       return;
     }
   }
 
-  if (!map.isColliding(bounds))
-  {
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, false);
     return;
   }
   bounds = getCellBounds(newX, originalY, width, height);
-  if (!map.isColliding(bounds))
-  {
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, true, false);
     return;
   }
   bounds = getCellBounds(originalX, newY, width, height);
-  if (!map.isColliding(bounds))
-  {
+  if (!map.isColliding(bounds)) {
     player.updateMovement(deltaTime, false, true);
     return;
   }
 }
 
-void Game::changeWeapon(const std::string &name, WeaponType type)
-{
+void Game::changeWeapon(const std::string &name, WeaponType type) {
   findPlayerByName(name).changeWeapon(type);
 }
 
-void Game::buyWeapon(const std::string &name, WeaponName weaponName)
-{
+void Game::buyWeapon(const std::string &name, WeaponName weaponName) {
   Player &player = findPlayerByName(name);
   int price = Store::getWeaponPrice(weaponName);
-  if (player.money >= price)
-  {
+  if (player.money >= price) {
     player.updateMoney(-price);
     player.replaceWeapon(weaponName);
     player.changeWeapon(WeaponType::PRIMARY);
@@ -286,44 +246,36 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName)
   }
 }
 
-
-void Game::buyBullet(const std::string &name, WeaponType type)
-{
+void Game::buyBullet(const std::string &name, WeaponType type) {
   Player &player = findPlayerByName(name);
-  if (player.money >= AMMO_PRICE)
-  {
-    if (type == WeaponType::PRIMARY)
-    {
+  if (player.money >= AMMO_PRICE) {
+    if (type == WeaponType::PRIMARY) {
       player.resetPrimaryBullets();
-    }
-    else
-    {
+    } else {
       player.resetSecondaryBullets();
     }
     player.updateMoney(-AMMO_PRICE);
   }
 }
 
-char Game::checkRoundWinner(){
-  if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0){
+char Game::checkRoundWinner() {
+  if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0) {
     teamA.incrementRoundsWon();
     return 'a';
   }
-  if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0){
+  if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0) {
     teamB.incrementRoundsWon();
     return 'b';
   }
   return '-';
 }
 
-void Game::placeTeamsInSpawn()
-{
-  for (auto &player_ptr : players){
+void Game::placeTeamsInSpawn() {
+  for (auto &player_ptr : players) {
     Player &player = *player_ptr;
     placePlayerInSpawnTeam(player);
   }
 }
-
 
 bool Game::isRunning() { return running; }
 
@@ -331,17 +283,14 @@ void Game::stop() { running = false; }
 
 void Game::makeShot(Player &shooter) {
   int bullets = shooter.getBulletsPerShoot();
-  if (shooter.typeEquipped == WeaponType::PRIMARY)
-  {
+  if (shooter.typeEquipped == WeaponType::PRIMARY) {
     shooter.updatePrimaryBullets(-bullets);
-  }else if (shooter.typeEquipped == WeaponType::SECONDARY)
-  {
+  } else if (shooter.typeEquipped == WeaponType::SECONDARY) {
     shooter.updateSecondaryBullets(-bullets);
   }
   Shot shot;
 
-  for (int i = 0; i < bullets; i++)
-  {
+  for (int i = 0; i < bullets; i++) {
     auto [maxDistance, originX, originY, targetX, targetY, angle] =
         shooter.shoot();
     shot.origin_x = originX;
@@ -352,29 +301,24 @@ void Game::makeShot(Player &shooter) {
     float closestPlayerDist = maxDistance + 1.0f;
     std::pair<float, float> closestHitPoint;
 
-    for (auto &player_ptr : players)
-    {
+    for (auto &player_ptr : players) {
       Player &player = *player_ptr;
       if (&player == &shooter)
         continue;
-      if (player.role == shooter.role)
-      {
+      if (player.role == shooter.role) {
         continue;
       }
-      if (!player.alive)
-      {
+      if (!player.alive) {
         continue;
       }
 
       Hitbox hb = player.hitbox;
       auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
-      if (hit_point)
-      {
+      if (hit_point) {
         float dx = hit_point->first - originX;
         float dy = hit_point->second - originY;
         float dist = std::sqrt(dx * dx + dy * dy);
-        if (dist < closestPlayerDist)
-        {
+        if (dist < closestPlayerDist) {
           closestPlayerDist = dist;
           closestPlayer = &player;
           closestHitPoint = *hit_point;
@@ -387,43 +331,42 @@ void Game::makeShot(Player &shooter) {
     float wallDist = maxDistance + 1.0f;
     std::pair<float, float> wallPoint;
 
-    if (wallHit)
-    {
+    if (wallHit) {
       wallPoint = *wallHit;
       float dx = wallPoint.first - originX;
       float dy = wallPoint.second - originY;
       wallDist = std::sqrt(dx * dx + dy * dy);
     }
     bullet.angle = angle;
-    if (closestPlayer && closestPlayerDist < wallDist)
-    {
+    if (closestPlayer && closestPlayerDist < wallDist) {
       applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
-      bullet.target_x=closestHitPoint.first;
-      bullet.target_y=closestHitPoint.second;
-      bullet.impact=Impact::HUMAN;
+      bullet.target_x = closestHitPoint.first;
+      bullet.target_y = closestHitPoint.second;
+      bullet.impact = Impact::HUMAN;
 
     } else if (wallHit) {
-      bullet.target_x=wallPoint.first;
-      bullet.target_y=wallPoint.second;
-      bullet.impact=Impact::BLOCK;
+      bullet.target_x = wallPoint.first;
+      bullet.target_y = wallPoint.second;
+      bullet.impact = Impact::BLOCK;
     } else {
-      bullet.target_x=targetX;
-      bullet.target_y=targetY;
-      bullet.impact=Impact::NOTHING;
+      bullet.target_x = targetX;
+      bullet.target_y = targetY;
+      bullet.impact = Impact::NOTHING;
     }
     shot.bullets.push_back(bullet);
   }
   shot.weapon = shooter.equipped.name;
   shot_queue.push(shot);
-  shooter.alreadyShot=true;
+  shooter.alreadyShot = true;
 }
 
-void Game::applyDamageToPlayer(const Player &shooter, Player &target, float distance)
-{
+void Game::applyDamageToPlayer(const Player &shooter, Player &target,
+                               float distance) {
   std::pair<float, float> damageRange = shooter.getDamageRange();
 
   float baseDamage = 1000.0f / (distance + 1.0f);
-  float clampedDamage = std::clamp(baseDamage, damageRange.first, damageRange.second);
+  float clampedDamage =
+      std::clamp(baseDamage, damageRange.first, damageRange.second);
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -434,53 +377,46 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target, float dist
   int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
   target.updateHealth(-finalDamageInt);
-  if (!target.alive)
-  {
-    if (target.hasTheSpike)
-    {
+  if (!target.alive) {
+    if (target.hasTheSpike) {
       spike.state = BombState::DROPPED;
-      target.hasTheSpike=false;
+      target.hasTheSpike = false;
       spike.position.x = target.x;
       spike.position.y = target.y;
     }
     dropWeapon(target.primaryWeapon, target.x, target.y);
-    target.replaceWeapon(WeaponName::NONE); 
+    target.replaceWeapon(WeaponName::NONE);
     target.changeWeapon(WeaponType::SECONDARY);
   }
 }
 
-bool Game::rectsOverlap(float ax, float ay, float aw, float ah,
-                        float bx, float by, float bw, float bh)
-{
-  return (ax < bx + bw) && (ax + aw > bx) &&
-         (ay < by + bh) && (ay + ah > by);
+bool Game::rectsOverlap(float ax, float ay, float aw, float ah, float bx,
+                        float by, float bw, float bh) {
+  return (ax < bx + bw) && (ax + aw > bx) && (ay < by + bh) && (ay + ah > by);
 }
 
-void Game::grab(const std::string &name)
-{
+void Game::grab(const std::string &name) {
   Player &player = findPlayerByName(name);
 
-  if (spike.state == BombState::DROPPED)
-  {
-    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(), player.hitbox.getHeight(),
-                     spike.position.x, spike.position.y, BOMB_WIDTH, BOMB_HEIGHT))
-    {
-      player.hasTheSpike=true;
+  if (spike.state == BombState::DROPPED) {
+    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
+                     player.hitbox.getHeight(), spike.position.x,
+                     spike.position.y, BOMB_WIDTH, BOMB_HEIGHT)) {
+      player.hasTheSpike = true;
       spike.state = BombState::INVENTORY;
       return;
     }
   }
 
-  for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end(); ++weapon)
-  {
-    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(), player.hitbox.getHeight(),
-                     weapon->x, weapon->y, WEAPON_WIDTH, WEAPON_HEIGHT))
-    {
+  for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end();
+       ++weapon) {
+    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
+                     player.hitbox.getHeight(), weapon->x, weapon->y,
+                     WEAPON_WIDTH, WEAPON_HEIGHT)) {
 
       droppedWeapons.erase(weapon);
       Weapon pw = player.primaryWeapon;
-      if (pw.name != WeaponName::NONE)
-      {
+      if (pw.name != WeaponName::NONE) {
         dropWeapon(pw, player.x, player.y);
         player.replaceWeapon(WeaponName::NONE);
         player.changeWeapon(WeaponType::SECONDARY);
@@ -493,57 +429,42 @@ void Game::grab(const std::string &name)
   }
 }
 
-void Game::dropWeapon(const Weapon &weapon, float x, float y)
-{
+void Game::dropWeapon(const Weapon &weapon, float x, float y) {
   droppedWeapons.push_back({weapon.name, x, y});
 }
 
-void Game::shoot(const std::string &shooterName, float deltaTime)
-{
+void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
 
-  if (!shooter.shooting)
-  {
+  if (!shooter.shooting) {
     return;
   }
 
-  if (shooter.shootCooldown > 0)
-  {
+  if (shooter.shootCooldown > 0) {
     return;
   }
 
-  if (shooter.getBullets() < shooter.getBulletsPerShoot())
-  {
+  if (shooter.getBullets() < shooter.getBulletsPerShoot()) {
     return;
   }
 
   const Weapon &equipped = shooter.equipped;
 
-  if (equipped.burstFire)
-  {
-    if (!shooter.alreadyShot ||
-        equipped.burstDelay <=
-            shooter.timeLastBullet)
-    { 
+  if (equipped.burstFire) {
+    if (!shooter.alreadyShot || equipped.burstDelay <= shooter.timeLastBullet) {
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter);
       shooter.resetTimeLastBullet();
-      if (shooter.burstFireBullets == 0)
-      {
+      if (shooter.burstFireBullets == 0) {
         shooter.resetCooldown();
         shooter.updateBurstFireBullets(equipped.bulletsPerBurst);
         shooter.updateTimeLastBullet(deltaTime);
       }
-    }
-    else
-    {
+    } else {
       shooter.updateTimeLastBullet(deltaTime);
     }
-  }
-  else
-  {
-    if (!shooter.alreadyShot)
-    {
+  } else {
+    if (!shooter.alreadyShot) {
       shooter.resetCooldown();
       makeShot(shooter);
     }
@@ -551,8 +472,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
 }
 
 std::optional<std::pair<float, float>>
-Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const
-{
+Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const {
   float dx = x1 - x0;
   float dy = y1 - y0;
   float length = std::sqrt(dx * dx + dy * dy);
@@ -564,18 +484,15 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const
   float x = x0;
   float y = y0;
 
-  for (int i = 0; i <= steps && i * std::hypot(stepX, stepY) <= maxDist; ++i)
-  {
+  for (int i = 0; i <= steps && i * std::hypot(stepX, stepY) <= maxDist; ++i) {
     int row = static_cast<int>(std::floor(y));
     int col = static_cast<int>(std::floor(x));
 
-    if (!map.isValidCell(row, col))
-    {
+    if (!map.isValidCell(row, col)) {
       break;
     }
 
-    if (map.isBlocked(row, col))
-    {
+    if (map.isBlocked(row, col)) {
       return std::make_pair(x, y);
     }
 
@@ -586,8 +503,7 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const
   return std::nullopt;
 }
 
-Shot Game::shotQueuePop()
-{
+Shot Game::shotQueuePop() {
   Shot top = shot_queue.front();
   shot_queue.pop();
   return top;
@@ -595,27 +511,22 @@ Shot Game::shotQueuePop()
 
 bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
 
-void Game::shotQueueClear()
-{
+void Game::shotQueueClear() {
   std::queue<Shot> empty;
   std::swap(shot_queue, empty);
 }
 
-void Game::updateRotation(const std::string &name, float currentRotation)
-{
-  findPlayerByName(name).rotation= currentRotation;
+void Game::updateRotation(const std::string &name, float currentRotation) {
+  findPlayerByName(name).rotation = currentRotation;
 }
 
-
-StateGame Game::getState()
-{
+StateGame Game::getState() {
   StateGame state;
   state.phase = phase;
 
   std::vector<Entity> entities;
 
-  for (const auto &player_ptr : players)
-  {
+  for (const auto &player_ptr : players) {
     Player &player = *player_ptr;
     entities.push_back(getPlayerState(player.name));
   }
@@ -631,8 +542,7 @@ StateGame Game::getState()
   bomb.y = spike.position.y;
   entities.push_back(bomb);
 
-  for (const DroppedWeapon &dropped : droppedWeapons)
-  {
+  for (const DroppedWeapon &dropped : droppedWeapons) {
     Entity weaponEntity;
     weaponEntity.type = EntityType::WEAPON;
 
@@ -648,13 +558,12 @@ StateGame Game::getState()
 
   state.entities = entities;
   state.shots = shot_queue;
-  state.rounds=rounds;
+  state.rounds = rounds;
 
   return state;
 }
 
-Entity Game::getPlayerState(const std::string &name)
-{
+Entity Game::getPlayerState(const std::string &name) {
   Player player = findPlayerByName(name);
   Entity entity;
   entity.type = PLAYER;
@@ -680,112 +589,110 @@ Entity Game::getPlayerState(const std::string &name)
 }
 
 void Game::handleEndRound(char winnerTeam, TypeEndRound type) {
-    winner.team = winnerTeam;
-    winner.typeEndRound = type;
-    rounds.winner = winner;
+  winner.team = winnerTeam;
+  winner.typeEndRound = type;
+  rounds.winner = winner;
 
-    if (winnerTeam == 'a') {
-        teamA.updateMoneyAfterRound(MONEY_WINNER);
-        teamB.updateMoneyAfterRound(MONEY_LOSER);
-        rounds.roundsWonTeamA++;
-    } else {
-        teamA.updateMoneyAfterRound(MONEY_LOSER);
-        teamB.updateMoneyAfterRound(MONEY_WINNER);
-        rounds.roundsWonTeamB++;
-    }
+  if (winnerTeam == 'a') {
+    teamA.updateMoneyAfterRound(MONEY_WINNER);
+    teamB.updateMoneyAfterRound(MONEY_LOSER);
+    rounds.roundsWonTeamA++;
+  } else {
+    teamA.updateMoneyAfterRound(MONEY_LOSER);
+    teamB.updateMoneyAfterRound(MONEY_WINNER);
+    rounds.roundsWonTeamB++;
+  }
 
-    rounds.currentRound++;
-    phase = Phase::END_ROUND;
+  rounds.currentRound++;
+  phase = Phase::END_ROUND;
 }
-
 
 void Game::updateGamePhase(float deltaTime) {
-    char roundWinner = '-';
+  char roundWinner = '-';
 
-    switch (phase) {
-    case Phase::PURCHASE:
-        if (gameStart) {
-            teamA.resetSpikeCarrier();
-            teamB.resetSpikeCarrier();
-            gameStart = false;
-        }
-
-        purchaseElapsedTime += deltaTime;
-        if (purchaseElapsedTime >= purchaseDuration) {
-            phase = Phase::BOMB_PLANTING;
-        }
-        break;
-
-    case Phase::BOMB_PLANTING:
-        plantingElapsedTime += deltaTime;
-        roundWinner = checkRoundWinner();
-
-        if (roundWinner != '-') {
-            handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
-        } else if (plantingElapsedTime >= timeToPlantBomb) {
-            char winningTeam = (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
-            handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
-        } else if (spike.state == BombState::PLANTED) {
-            phase = Phase::BOMB_DEFUSING;
-        }
-        break;
-
-    case Phase::BOMB_DEFUSING:
-        bombElapsedTime += deltaTime;
-        roundWinner = checkRoundWinner();
-
-        if (roundWinner != '-') {
-            Role roleA = teamA.getRole();
-            Role roleB = teamB.getRole();
-
-            if ((roundWinner == 'a' && roleA == Role::TERRORIST) ||
-                (roundWinner == 'b' && roleB == Role::TERRORIST)) {
-                handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
-            }
-
-        } else if (bombElapsedTime >= timeUntilBombExplode) {
-            char winningTeam = (teamA.getRole() == Role::TERRORIST) ? 'a' : 'b';
-            handleEndRound(winningTeam, TypeEndRound::BOMB_EXPLODED);
-
-        } else if (spike.state == BombState::DEFUSED) {
-            char winningTeam = (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
-            handleEndRound(winningTeam, TypeEndRound::BOMB_DEFUSED);
-        }
-        break;
-
-    case Phase::END_ROUND:
-        endRoundElapsedTime += deltaTime;
-        if (endRoundElapsedTime >= timeUntilNewRound) {
-
-            phase = Phase::PURCHASE;
-            updateRounds();
-        }
-        break;
-
-    default:
-        break;
+  switch (phase) {
+  case Phase::PURCHASE:
+    if (gameStart) {
+      teamA.resetSpikeCarrier();
+      teamB.resetSpikeCarrier();
+      gameStart = false;
     }
+
+    purchaseElapsedTime += deltaTime;
+    if (purchaseElapsedTime >= purchaseDuration) {
+      phase = Phase::BOMB_PLANTING;
+    }
+    break;
+
+  case Phase::BOMB_PLANTING:
+    plantingElapsedTime += deltaTime;
+    roundWinner = checkRoundWinner();
+
+    if (roundWinner != '-') {
+      handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
+    } else if (plantingElapsedTime >= timeToPlantBomb) {
+      char winningTeam =
+          (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
+      handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
+    } else if (spike.state == BombState::PLANTED) {
+      phase = Phase::BOMB_DEFUSING;
+    }
+    break;
+
+  case Phase::BOMB_DEFUSING:
+    bombElapsedTime += deltaTime;
+    roundWinner = checkRoundWinner();
+
+    if (roundWinner != '-') {
+      Role roleA = teamA.getRole();
+      Role roleB = teamB.getRole();
+
+      if ((roundWinner == 'a' && roleA == Role::TERRORIST) ||
+          (roundWinner == 'b' && roleB == Role::TERRORIST)) {
+        handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
+      }
+
+    } else if (bombElapsedTime >= timeUntilBombExplode) {
+      char winningTeam = (teamA.getRole() == Role::TERRORIST) ? 'a' : 'b';
+      handleEndRound(winningTeam, TypeEndRound::BOMB_EXPLODED);
+
+    } else if (spike.state == BombState::DEFUSED) {
+      char winningTeam =
+          (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
+      handleEndRound(winningTeam, TypeEndRound::BOMB_DEFUSED);
+    }
+    break;
+
+  case Phase::END_ROUND:
+    endRoundElapsedTime += deltaTime;
+    if (endRoundElapsedTime >= timeUntilNewRound) {
+
+      phase = Phase::PURCHASE;
+      updateRounds();
+    }
+    break;
+
+  default:
+    break;
+  }
 }
 
-
-void Game::updateRounds(){
+void Game::updateRounds() {
   teamA.restartPlayersAlive();
   teamB.restartPlayersAlive();
-  purchaseElapsedTime=0.0f;
-  endRoundElapsedTime=0.0f;
+  purchaseElapsedTime = 0.0f;
+  endRoundElapsedTime = 0.0f;
   plantingElapsedTime = 0.0f;
   bombElapsedTime = 0.0f;
-  
+
   roundNumber += 1;
   roundsUntilRoleChange -= 1;
   roundsUntilEndGame -= 1;
-  if (roundsUntilRoleChange == 0)
-  {
+  if (roundsUntilRoleChange == 0) {
     teamA.invertRole();
     teamB.invertRole();
   }
-  if (roundsUntilEndGame == 0)
-  {
+  if (roundsUntilEndGame == 0) {
     running = false;
   }
   resetSpawn();
@@ -793,15 +700,13 @@ void Game::updateRounds(){
 
   teamA.resetSpikeCarrier();
   teamB.resetSpikeCarrier();
-  
+
   spike.state = BombState::INVENTORY;
   droppedWeapons.clear();
 }
 
-void Game::update(float deltaTime)
-{
-  for (auto &player_ptr : players)
-  {
+void Game::update(float deltaTime) {
+  for (auto &player_ptr : players) {
     Player &player = *player_ptr;
     updateGamePhase(deltaTime);
     updatePlayerMovement(player, deltaTime);
@@ -813,83 +718,67 @@ void Game::update(float deltaTime)
   }
 }
 
-void Game::execute(const std::string &name, Action action)
-{
+void Game::execute(const std::string &name, Action action) {
 
-  switch (action.type)
-  {
-  case ActionType::MOVE:
-  {
+  switch (action.type) {
+  case ActionType::MOVE: {
     const MoveAction *data = std::get_if<MoveAction>(&action.data);
     movePlayer(name, data->vx, data->vy);
     break;
   }
-  case ActionType::POINT_TO:
-  {
+  case ActionType::POINT_TO: {
     const PointToAction *pointToData = std::get_if<PointToAction>(&action.data);
     updateRotation(name, pointToData->value);
     break;
   }
 
-  case ActionType::SHOOT:
-  {
-    findPlayerByName(name).shooting=true;
+  case ActionType::SHOOT: {
+    findPlayerByName(name).shooting = true;
     break;
   }
-  case ActionType::STOP_SHOOTING:
-  {
+  case ActionType::STOP_SHOOTING: {
     stopShooting(name);
     break;
   }
-  case ActionType::BUY_BULLET:
-  {
+  case ActionType::BUY_BULLET: {
     const BuyBulletAction *data = std::get_if<BuyBulletAction>(&action.data);
     buyBullet(name, data->type);
     break;
   }
-  case ActionType::BUY_WEAPON:
-  {
+  case ActionType::BUY_WEAPON: {
     const BuyWeaponAction *data = std::get_if<BuyWeaponAction>(&action.data);
     buyWeapon(name, data->weapon);
     break;
   }
-  case ActionType::CHANGE_WEAPON:
-  {
+  case ActionType::CHANGE_WEAPON: {
     const ChangeWeaponAction *data =
         std::get_if<ChangeWeaponAction>(&action.data);
     changeWeapon(name, data->type);
     break;
   }
-  case ActionType::PLANT:
-  {
+  case ActionType::PLANT: {
     plantBomb(name);
     break;
   }
-  case ActionType::STOP_PLANTING:
-  {
+  case ActionType::STOP_PLANTING: {
     stopPlantBomb(name);
     break;
   }
 
-  case ActionType::DEFUSE:
-  {
+  case ActionType::DEFUSE: {
     defuseBomb(name);
     break;
   }
-  case ActionType::STOP_DEFUSING:
-  {
+  case ActionType::STOP_DEFUSING: {
     stopDefuse(name);
     break;
   }
-  case ActionType::GRAB:
-  {
+  case ActionType::GRAB: {
     grab(name);
     break;
   }
-  default:
-  {
+  default: {
     break;
   }
   }
 }
-

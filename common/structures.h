@@ -32,7 +32,7 @@ enum class WeaponType {
   KNIFE,
 };
 
-enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE};
+enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE };
 
 // Tipos de entidades del juego
 enum EntityType {
@@ -42,22 +42,22 @@ enum EntityType {
 };
 
 struct Inventory {
-    WeaponName primary;
-    WeaponName secondary;
-    uint32_t bulletsPrimary;
-    uint32_t bulletsSecondary;
-    bool has_the_bomb; // add
+  WeaponName primary;
+  WeaponName secondary;
+  uint32_t bulletsPrimary;
+  uint32_t bulletsSecondary;
+  bool has_the_bomb; // add
 };
 
 struct PlayerData {
-    std::string name;
-    float rotation;
-    int money;
-    int health;
-    Inventory inventory;
-    WeaponType equippedWeapon;
-    bool alive;
-    bool terrorist;
+  std::string name;
+  float rotation;
+  int money;
+  int health;
+  Inventory inventory;
+  WeaponType equippedWeapon;
+  bool alive;
+  bool terrorist;
 };
 
 enum BombState {
@@ -148,9 +148,6 @@ struct StopDefusingAction {};
 struct GrabAction {};
 */
 
-
-
-
 using ActionData =
     std::variant<std::monostate, MoveAction, PointToAction, BuyBulletAction,
                  BuyWeaponAction, ChangeWeaponAction>;
@@ -163,13 +160,13 @@ struct Action {
 enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
 
 // Estado del juego
-enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND};
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND };
 struct RoundWinner {
   char team;
   TypeEndRound typeEndRound;
 };
 
-struct Rounds{
+struct Rounds {
   uint16_t roundsWonTeamA;
   uint16_t roundsWonTeamB;
   uint16_t currentRound;
@@ -185,7 +182,7 @@ struct Bullet {
   Impact impact; // add
 };
 
-struct Shot { //add
+struct Shot { // add
   float origin_x;
   float origin_y;
   std::vector<Bullet> bullets;
@@ -198,7 +195,6 @@ struct StateGame {
   std::queue<Shot> shots;
   Rounds rounds;
 };
-
 
 // Datos iniciales del juego, como el mapa
 struct InitialData {
@@ -229,14 +225,12 @@ struct Response {
 
 // Mensaje enviado por el cliente al servidor
 struct Message {
-    Type type;
-    uint16_t size;
-    std::string name;
-    Action action;
-    std::string clientName;
+  Type type;
+  uint16_t size;
+  std::string name;
+  Action action;
+  std::string clientName;
 };
-
-
 
 // Estructuras del servidor
 enum LobbyRequestType { LEAVE_LOBBY, JOIN_LOBBY, START_LOBBY, READY_LOBBY };
@@ -252,14 +246,13 @@ struct ActionRequest {
 };
 
 struct LobbyChannels {
-    std::shared_ptr<Queue<LobbyRequest>> toLobby;
-    std::shared_ptr<Queue<Response>> fromLobby;
+  std::shared_ptr<Queue<LobbyRequest>> toLobby;
+  std::shared_ptr<Queue<Response>> fromLobby;
 };
 
 struct GameChannels {
-    std::shared_ptr<Queue<ActionRequest>> toGame;
-    std::shared_ptr<Queue<Response>> fromGame;
+  std::shared_ptr<Queue<ActionRequest>> toGame;
+  std::shared_ptr<Queue<Response>> fromGame;
 };
-
 
 #endif

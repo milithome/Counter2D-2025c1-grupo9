@@ -37,7 +37,7 @@ public:
   float lastVx = 0.0f;
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
-  bool alive= true;
+  bool alive = true;
   Player(const std::string &name)
       : name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
         role(Role::COUNTER_TERRORIST), rotation(0) {}

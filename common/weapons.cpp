@@ -11,8 +11,8 @@ const Weapon M3 = {WeaponName::M3, 10, 50,    false, 0,   0.0f,
                    10.0f,          5,  40.0f, 50,    1.0f};
 const Weapon AWP = {WeaponName::AWP, 80, 100, false, 0, 0.0f, 0.0f, 1,
                     100.0f,          10, 2.0f};
-const Weapon None = {WeaponName::NONE, 0, 0, false, 0, 0.0f, 0.0f, 0,
-                    0.0f,          0, 0.0f};
+const Weapon None = {
+    WeaponName::NONE, 0, 0, false, 0, 0.0f, 0.0f, 0, 0.0f, 0, 0.0f};
 
 const Weapon &getWeapon(WeaponName name) {
   switch (name) {
