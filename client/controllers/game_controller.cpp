@@ -291,7 +291,7 @@ void GameController::updateGameState(StateGame new_state) {
                 }
                 // Si el jugador acaba de morir
                 if (!currentData.alive) {
-                    view.addDeathEffect(entity.x, entity.y, currentData.rotation);
+                    view.addDeathEffect(entity.x, entity.y, currentData);
                     float player_x = newClientPlayer.x;
                     float player_y = newClientPlayer.y;
                     float dead_player_x = entity.x;
@@ -325,7 +325,11 @@ void GameController::updateGameState(StateGame new_state) {
     if (state.phase != new_state.phase) {
         if (new_state.phase == BOMB_PLANTING) view.hideShop();
         shop_open = false;
-        view.addNewPhaseEffect(new_state.phase);
+        if (new_state.phase == END_ROUND) {
+            view.setEndRoundMessageEffect(new_state.rounds.winner);
+        } else {
+            view.addNewPhaseEffect(new_state.phase);
+        }
 
         BombData data = std::get<BombData>(state.entities[bomb_index].data);
         if (new_state.phase == END_ROUND && data.state == PLANTED) {
@@ -342,6 +346,7 @@ void GameController::updateGameState(StateGame new_state) {
         }
 
     }
+
 
     state = new_state;
     clientPlayerData = newClientPlayerData;

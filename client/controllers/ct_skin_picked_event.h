@@ -12,10 +12,10 @@ public:
     explicit CtSkinPickedEvent(ctSkin skin) : skin(skin) {};
 
     void send(Protocol& protocol) const override {
-        (void)protocol;
+        protocol.send_action(Action{ActionType::SELECT_T_SKIN, SelectCTSkin{skin}});
     };
 
-    Type getType() const override { return JOIN; };
+    Type getType() const override { return ACTION; };
 private:
     ctSkin skin;
 };

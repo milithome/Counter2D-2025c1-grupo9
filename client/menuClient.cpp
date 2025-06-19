@@ -50,12 +50,19 @@ bool MenuClient::run(bool looped) {
                     menuController.onLobbyReady();
                     break;
                 }
+                case NOT_LOBBY_READY: {
+                    //menuController.onLobbyNotReady();
+                    break;
+                }
                 case START: {
                     partida_iniciada = true;
                     menuController.onGameStarted();
-                    app.quit();
                     break;
                 }
+                case INITIAL_DATA: {
+					InitialData data = std::get<InitialData>(msg.data);
+                    emit initialDataReceived(data);
+				}
                 default: {
                     break;
                 }
