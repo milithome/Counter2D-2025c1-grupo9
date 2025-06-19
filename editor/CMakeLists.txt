@@ -2,6 +2,7 @@ target_sources(taller_editor
     PRIVATE
     mainwindow.cpp
     editorWindow.cpp
+    ClickableLabel.h
     main.cpp
     PUBLIC
     editorWindow.h
