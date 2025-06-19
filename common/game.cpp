@@ -1,8 +1,8 @@
 #include "game.h"
 
-Game::Game(std::vector<std::vector<CellType>> game_map, GameRules& gameRules)
-    : gameRules(gameRules), teamA(gameRules), teamB(gameRules), map(std::move(game_map))
-{
+Game::Game(std::vector<std::vector<CellType>> game_map, GameRules &gameRules)
+    : gameRules(gameRules), teamA(gameRules), teamB(gameRules),
+      map(std::move(game_map)) {
   teamA.setRole(Role::COUNTER_TERRORIST);
   teamB.setRole(Role::TERRORIST);
   spawnTeamTerrorist = map.findSpawnTeam(false); // true para terrorist
@@ -13,31 +13,29 @@ Game::Game(std::vector<std::vector<CellType>> game_map, GameRules& gameRules)
   rounds.currentRound = 0;
   winner.team = '-';
   winner.typeEndRound = TypeEndRound::DEAD_TEAM;
-  
+
   roundsUntilRoleChange = gameRules.rounds_until_role_change;
   roundsUntilEndGame = gameRules.rounds_until_end_game;
   timeUntilPlant = gameRules.time_until_plant;
   timeUntilDefuse = gameRules.time_until_defuse;
   timeUntilBombExplode = gameRules.bomb_duration;
-  purchaseDuration= gameRules.purchase_duration;
-  timeToPlantBomb= gameRules.time_to_plant;
+  purchaseDuration = gameRules.purchase_duration;
+  timeToPlantBomb = gameRules.time_to_plant;
   timeUntilNewRound = gameRules.time_until_new_round;
 }
 
-bool Game::addPlayer(const std::string &name)
-{
+bool Game::addPlayer(const std::string &name) {
   std::shared_ptr<Player> player = std::make_shared<Player>(name, gameRules);
   players.emplace_back(player);
-  //Player &player = findPlayerByName(name);
-  if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < gameRules.max_players_per_team)
-    {
+  // Player &player = findPlayerByName(name);
+  if (teamA.getTeamSize() < teamB.getTeamSize() &&
+      teamA.getTeamSize() < gameRules.max_players_per_team) {
     teamA.addPlayer(player);
     player->role = teamA.getRole();
     placePlayerInSpawnTeam(*player);
     return true;
   }
-  if (teamB.getTeamSize() < gameRules.max_players_per_team)
-  {
+  if (teamB.getTeamSize() < gameRules.max_players_per_team) {
     teamB.addPlayer(player);
     player->role = teamB.getRole();
     placePlayerInSpawnTeam(*player);
@@ -260,10 +258,8 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName) {
 
 void Game::buyBullet(const std::string &name, WeaponType type) {
   Player &player = findPlayerByName(name);
-  if (player.money >= gameRules.ammo_price) 
-  {
-    if (type == WeaponType::PRIMARY)
-    {
+  if (player.money >= gameRules.ammo_price) {
+    if (type == WeaponType::PRIMARY) {
       player.resetPrimaryBullets();
     } else {
       player.resetSecondaryBullets();
@@ -607,15 +603,15 @@ void Game::handleEndRound(char winnerTeam, TypeEndRound type) {
   winner.typeEndRound = type;
   rounds.winner = winner;
 
-    if (winnerTeam == 'a') {
-        teamA.updateMoneyAfterRound(gameRules.money_winner);
-        teamB.updateMoneyAfterRound(gameRules.money_loser);
-        rounds.roundsWonTeamA++;
-    } else {
-        teamA.updateMoneyAfterRound(gameRules.money_loser);
-        teamB.updateMoneyAfterRound(gameRules.money_winner);
-        rounds.roundsWonTeamB++;
-    }
+  if (winnerTeam == 'a') {
+    teamA.updateMoneyAfterRound(gameRules.money_winner);
+    teamB.updateMoneyAfterRound(gameRules.money_loser);
+    rounds.roundsWonTeamA++;
+  } else {
+    teamA.updateMoneyAfterRound(gameRules.money_loser);
+    teamB.updateMoneyAfterRound(gameRules.money_winner);
+    rounds.roundsWonTeamB++;
+  }
 
   rounds.currentRound++;
   phase = Phase::END_ROUND;

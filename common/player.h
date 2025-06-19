@@ -9,11 +9,10 @@
 #include <string>
 class Player {
 private:
-  GameRules& gameRules;
+  GameRules &gameRules;
 
 public:
-
-  explicit Player(const std::string &name, GameRules& gameRules);
+  explicit Player(const std::string &name, GameRules &gameRules);
   std::string name;
   float x, y;
   Hitbox hitbox;

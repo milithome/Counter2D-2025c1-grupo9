@@ -43,8 +43,6 @@ const float MAX_ACELERATION = 3.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
-
-
 /* Configurables */
 /*
 #define MAX_PLAYERS_PER_TEAM 5
