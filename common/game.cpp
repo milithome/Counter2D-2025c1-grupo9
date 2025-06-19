@@ -92,7 +92,7 @@ void Game::stopShooting(const std::string &name)
 {
   Player &player = findPlayerByName(name);
   player.alreadyShot=false;
-  player.stopShooting();
+  player.shooting=false;
 }
 
 void Game::movePlayer(const std::string &name, float vx, float vy)
@@ -833,7 +833,7 @@ void Game::execute(const std::string &name, Action action)
 
   case ActionType::SHOOT:
   {
-    findPlayerByName(name).startShooting();
+    findPlayerByName(name).shooting=true;
     break;
   }
   case ActionType::STOP_SHOOTING:

@@ -50,8 +50,6 @@ public:
   void resetSecondaryBullets();
   void resetTimeLastBullet();
   void restoreHealth();
-  void startShooting();
-  void stopShooting();
   std::tuple<float, float, float, float, float, float> shoot();
   std::pair<float, float> tryMove(float deltaTime);
   void updateAceleration(float deltaTime);

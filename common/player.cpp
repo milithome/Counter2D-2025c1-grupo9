@@ -53,7 +53,6 @@ std::pair<float, float> Player::tryMove(float deltaTime) {
 }
 
 void Player::setPosition(float x, float y) {
-  // coordenadas literales en las que quiero que se encuentre
   this->x = x;
   this->y = y;
   hitbox.x = x;
@@ -66,8 +65,7 @@ void Player::updateHealth(int value) {
     health = 0;
     alive=false;
   } else {
-    alive = true; // agrego esto por un tema de q el jugador podria morir en el cliente pero seguir vivo en el server
-    // en tal caso cuando se actualice el estado del cliente se va a restaurar la vida y el jugador deberia estar vivo
+    alive = true; 
   }
 }
 
@@ -108,9 +106,6 @@ void Player::updateAceleration(float deltaTime) {
     aceleration = MAX_ACELERATION;
 }
 
-void Player::stopShooting() { shooting = false; }
-
-void Player::startShooting() { shooting = true; }
 
 void Player::updateCooldown(float deltaTime) {
   if (shootCooldown > 0.0f) {
@@ -118,7 +113,7 @@ void Player::updateCooldown(float deltaTime) {
   }
 }
 
-void Player::resetCooldown() { // cuando acaba de salir una bala
+void Player::resetCooldown() { 
   shootCooldown = equipped.cooldown;
 }
 std::pair<float, float> Player::getDamageRange() const{
@@ -165,7 +160,6 @@ void Player::changeWeapon(WeaponType newEquippedWeapon) {
 void Player::replaceWeapon(WeaponName weapon) {
   primaryWeapon = Weapons::getWeapon(weapon);
 }
-
 
 void Player::updateMoney(int value) { money += value; }
 
