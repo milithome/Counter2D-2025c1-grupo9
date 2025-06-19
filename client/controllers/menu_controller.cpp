@@ -11,6 +11,7 @@
 #include "start_event.h"
 #include "t_skin_picked_event.h"
 #include "ct_skin_picked_event.h"
+#include "map_picked_event.h"
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
     connectToServerView = ConnectToServerView();
@@ -95,6 +96,10 @@ void MenuController::listenToPartyView(PartyView& partyView) {
             emit nuevoEvento(std::make_shared<CtSkinPickedEvent>(skin));
         });
     }
+    QComboBox *mapBox = partyView.getMapCombo();
+    QObject::connect(mapBox, &QComboBox::currentTextChanged, [this](const QString& text) {
+        emit nuevoEvento(std::make_shared<MapPickedEvent>(text.toStdString()));
+    });
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
