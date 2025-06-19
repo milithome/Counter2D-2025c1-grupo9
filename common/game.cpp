@@ -706,6 +706,8 @@ void Game::updateGamePhase(float deltaTime){
       gameStart=false;
     }
     
+    std::cout << purchaseElapsedTime << std::endl;
+
     purchaseElapsedTime += deltaTime;
     if (purchaseElapsedTime >= purchaseDuration){
       purchaseElapsedTime = 0.0f;

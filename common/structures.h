@@ -73,6 +73,7 @@ struct PlayerData {
     Inventory inventory;
     WeaponType equippedWeapon;
     bool alive;
+    bool terrorist;
 };
 
 enum BombState {
@@ -208,18 +209,34 @@ struct PlayerInfo {
   ctSkin counterTerroristSkin;
 };
 
-struct Item {
+struct WeaponInfo {
   WeaponName name;
   int price;
   uint32_t maxAmmo;
 };
 
+struct Shop {
+  std::vector<WeaponName> weapons;
+  int primaryAmmoPrice;
+  int secondaryAmmoPrice;
+};
+
+struct Times {
+  float purchase_duration;
+  float bomb_duration;
+  float time_to_plant;
+  float time_until_new_round;
+};
+
 // Datos iniciales del juego, como el mapa
 struct InitialData {
   MapData data;
-  std::vector<Item> shop;
   std::vector<PlayerInfo> players;
+  std::vector<WeaponInfo> weaponsInfo;
+  Shop shop;
+  Times times;
 };
+
 
 // Lista de lobbies disponibles
 struct LobbyList {
@@ -261,6 +278,7 @@ struct ServerConfig {
 struct Weapon {
   WeaponName name;
   int price;
+  bool purchasable;
   int minDamage;
   int maxDamage;
   bool burstFire;

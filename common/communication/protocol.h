@@ -73,9 +73,12 @@ private:
     void serialize_legend(const std::unordered_map<uint16_t, MapLegendEntry>& legend, std::vector<uint8_t>& buf);
     //void serialize_string(const std::string& str, std::vector<uint8_t>& buf); // esta y la de abajo de podrian reutilizar en otros lugares
     //void serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf);
-    void serialize_shop(std::vector<Item> shop, std::vector<uint8_t>& buf);
-    void serialize_playersInfo(std::vector<PlayerInfo> players, std::vector<uint8_t>& buf);
+    void serialize_shop(const Shop& shop, std::vector<uint8_t>& buf);
+    void serialize_playersInfo(const std::vector<PlayerInfo>& players, std::vector<uint8_t>& buf);
     void serialize_map_data(const MapData& map, std::vector<uint8_t>& buf);
+    void serialize_weaponsInfo(const std::vector<WeaponInfo>& weaponsInfo, std::vector<uint8_t>& buf);
+    void serialize_times(const Times& times, std::vector<uint8_t>& buf);
+
     std::vector<uint8_t> serialize_initial_data(const Response& r);
 
     Response deserialize_simple(Type type);
@@ -87,8 +90,12 @@ private:
     std::vector<std::vector<uint16_t>> deserialize_2d_vector();
     //std::string deserialize_string();
     //std::vector<std::string> deserialize_string_vector();
-    std::vector<Item> deserialize_shop();
+
+    Shop deserialize_shop();
     std::vector<PlayerInfo> deserialize_playersInfo();
+    std::vector<WeaponInfo> deserialize_weaponsInfo();
+    Times deserialize_times();
+    
     Response deserialize_initial_data();
     PlayerData recv_player_data();
     BombData recv_bomb_data();

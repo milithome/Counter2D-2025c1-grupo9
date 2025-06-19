@@ -316,6 +316,7 @@ void Match::runGameLoop(Game& game) {
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time
         );
+        
         if (elapsed < TICK_DURATION) {
             std::this_thread::sleep_for(TICK_DURATION - elapsed);
         }
@@ -355,20 +356,41 @@ void Match::endGame() {
 }
 
 void Match::broadcastInitialData(const MapData& mapData, GameRules& gameRules) {
-    auto weapons = gameRules.weapons;
-    std::vector<Item> shop;
-    for (const auto& [name, weapon] : weapons) {
-        shop.push_back({
+    std::vector<WeaponInfo> weaponsInfo;
+    std::vector<WeaponName> shopWeapons;
+
+    for (const auto& [name, weapon] : gameRules.weapons) {
+        weaponsInfo.push_back({
             name,
             weapon.price,
             weapon.maxAmmo
         });
+
+        if (weapon.purchasable) {
+            shopWeapons.push_back(name);
+        }
+        
     }
+
+    Shop shop = {
+        shopWeapons,
+        gameRules.ammo_price,
+        gameRules.ammo_price
+    };
+
+    Times times = {
+        gameRules.purchase_duration,
+        gameRules.bomb_duration,
+        gameRules.time_to_plant,
+        gameRules.time_until_new_round
+    };
 
     InitialData initialData = {
         mapData,
+        playersInfo,
+        weaponsInfo,
         shop,
-        playersInfo
+        times
     };
 
     for (const auto& client : clients) {

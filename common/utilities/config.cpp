@@ -57,9 +57,12 @@ GameRules load_game_rules(const std::string& filename) {
 
         YAML::Node w = it->second;
 
+        int price = w["price"].as<int>();
+        
         Weapon weapon {
             name,
-            w["price"].as<int>(),
+            price,
+            price > 0,
             w["min_damage"].as<int>(),
             w["max_damage"].as<int>(),
             w["burst_fire"].as<bool>(),
