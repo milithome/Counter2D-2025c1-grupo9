@@ -1,6 +1,7 @@
 #include "menu_controller.h"
 #include <QLayout>
 #include <QPushButton>
+#include <QMessageBox>
 #include <QString>
 #include <iostream>
 #include "join_event.h"
@@ -106,7 +107,6 @@ void MenuController::onPartyViewStartButtonClicked() {
 
 void MenuController::onGameStarted() {
     window.clearWindow();
-    // window.quit();
 }
 
 void MenuController::onMainViewCreatePartyButtonClicked() {
@@ -118,20 +118,12 @@ void MenuController::onMainViewCreatePartyButtonClicked() {
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
     emit nuevoEvento(std::make_shared<ListEvent>());
-    // window.clearWindow();
-    // searchPartyView = SearchPartyView();
-    // listenToSearchPartyView(searchPartyView);
-    // window.showView(searchPartyView);
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked() {
     QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
     std::string partyName = partyNameTextField->text().toStdString();
     emit nuevoEvento(std::make_shared<CreateEvent>(partyName));
-    // window.clearWindow();
-    // listenToPartyView(partyView);
-    // window.showView(partyView);
-
 }
 
 void MenuController::onCreatePartyViewBackButtonClicked() {
@@ -153,17 +145,6 @@ void MenuController::onConnectViewConnectButtonClicked() {
 
 }
 
-void MenuController::onConnectionRequestResponseReceived(const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        return;
-    }
-    window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
-    window.showView(mainView);
-}
-
 void MenuController::onConnectViewBackButtonClicked() {
     window.clearWindow();
 }
@@ -180,11 +161,23 @@ void MenuController::onSearchPartyViewBackButtonClicked() {
     window.showView(mainView);
 }
 
+void MenuController::onConnectionRequestResponseReceived(const std::string& message, const uint8_t result) {
+    if (result) { // caso error
+        std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
+        return;
+    }
+    window.clearWindow();
+    mainView = MainView();
+    listenToMainView(mainView);
+    window.showView(mainView);
+}
 
 
 void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result) {
     if (result) { // caso error
         std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
         return;
     }
     window.clearWindow();
@@ -197,6 +190,7 @@ void MenuController::onPartyListReceived(const std::vector<std::string>& parties
 void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result) {
     if (result) { // caso error
         std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
         return;
     }
     partyView.clearPlayers();
@@ -209,6 +203,7 @@ void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& play
 void MenuController::onJoinPartyResponseReceived(const std::string& message, const uint8_t result) {
     if (result) { // caso error
         std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
         return;
     }
     window.clearWindow();
@@ -221,6 +216,7 @@ void MenuController::onJoinPartyResponseReceived(const std::string& message, con
 void MenuController::onCreatePartyResponseReceived(const std::string& message, const uint8_t result) {
     if (result) { // caso error
         std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
         return;
     }
     QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
@@ -234,6 +230,7 @@ void MenuController::onCreatePartyResponseReceived(const std::string& message, c
 void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t result) {
     if (result) { // caso error
         std::cout << message << std::endl;
+        QMessageBox::critical(nullptr, "Error", message.c_str());
         return;
     }
     window.clearWindow();
