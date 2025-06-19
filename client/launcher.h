@@ -76,7 +76,8 @@ public:
                 client = std::make_unique<Client>(name, addr.c_str(), port.c_str());
                 menuController.onConnectionRequestResponseReceived("Exito", 0);
                 waitForConnection.quit();
-
+            // } catch (const std::runtime_error& e) {
+            //     menuController.onConnectionRequestResponseReceived(e.what(), 1);
             } catch (...) {
                 menuController.onConnectionRequestResponseReceived("Conexión fallida", 1);
             }

@@ -16,7 +16,7 @@
 
 class GameController {
 public:
-    GameController(GameView& view, const std::string& player_name, bool pulse_available);
+    GameController(GameView& view, const std::string& player_name, Times times, bool pulse_available);
     Action actionQueuePop();
     bool actionQueueIsEmpty();
     void updateGameState(StateGame entities);
@@ -25,12 +25,12 @@ public:
 
 private:
     GameView& view;    
-    //Game& game;
     StateGame state;
     bool state_available = false;
     PlayerData clientPlayerData;
     GameSoundHandler soundHandler;
     std::string player_name;
+    Times times;
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
     void onWindowEvent(const SDL_Event& event);

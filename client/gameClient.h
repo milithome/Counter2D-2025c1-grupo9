@@ -46,6 +46,7 @@ public:
         Queue<Response>& recv_queue, 
         Queue<std::shared_ptr<MessageEvent>>& send_queue,
         std::string const clientName,
+        InitialData data,
         bool audio_available
     );
 

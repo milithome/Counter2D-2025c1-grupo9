@@ -4,8 +4,8 @@
 
 #define DESYNC_TOLERANCE 0.2
 
-GameController::GameController(GameView& view, const std::string& player_name, bool pulse_available)
-    : view(view), soundHandler(pulse_available), player_name(player_name) {
+GameController::GameController(GameView& view, const std::string& player_name, Times times, bool pulse_available)
+    : view(view), soundHandler(pulse_available), player_name(player_name), times(times) {
 }
 
 
@@ -264,6 +264,7 @@ void GameController::updateGameState(StateGame new_state) {
     if (!state_available) {
         state_available = true;
         state = new_state;
+        view.setPhaseTimer(times.purchase_duration);
     }
     Entity newClientPlayer;
     PlayerData newClientPlayerData;
@@ -323,6 +324,30 @@ void GameController::updateGameState(StateGame new_state) {
     }
 
     if (state.phase != new_state.phase) {
+        switch (new_state.phase) {
+            case PURCHASE: {
+                view.setPhaseTimer(times.purchase_duration);
+                break;
+            }
+            case BOMB_PLANTING: {
+                view.setPhaseTimer(times.time_to_plant);
+                break;
+            }
+            case BOMB_DEFUSING: {
+                view.setPhaseTimer(times.bomb_duration);
+                break;
+            }
+            case END_ROUND: {
+                view.setPhaseTimer(times.time_until_new_round);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
+
+
         if (new_state.phase == BOMB_PLANTING) view.hideShop();
         shop_open = false;
         if (new_state.phase == END_ROUND) {

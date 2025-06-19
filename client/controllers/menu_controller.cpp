@@ -85,12 +85,12 @@ void MenuController::listenToPartyView(PartyView& partyView) {
     std::unordered_map<ctSkin, QPushButton*> ctSkins = partyView.getCtSkinButtons();
 
     for (auto [skin, button] : tSkins) {
-        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+        QObject::connect(button, &QPushButton::clicked, [this, skin]() {
             emit nuevoEvento(std::make_shared<TSkinPickedEvent>(skin));
         });
     }
     for (auto [skin, button] : ctSkins) {
-        QObject::connect(button, &QPushButton::clicked, [this, &skin]() {
+        QObject::connect(button, &QPushButton::clicked, [this, skin]() {
             emit nuevoEvento(std::make_shared<CtSkinPickedEvent>(skin));
         });
     }

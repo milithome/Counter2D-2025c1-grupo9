@@ -7,11 +7,12 @@ GameClient::GameClient(
 	Queue<Response> &recv_queue,
 	Queue<std::shared_ptr<MessageEvent>> &send_queue, 
     std::string const clientName,
+	InitialData data,
 	bool audio_available
 ) :
-    gameController(gameView, clientName, audio_available), 
+    gameController(gameView, clientName, data.times, audio_available), 
     map(map), gameView(gameView), 
-    players(players), 
+    players(players),
     recv_queue(recv_queue), 
     send_queue(send_queue) {}
 
