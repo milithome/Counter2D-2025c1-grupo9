@@ -717,9 +717,9 @@ void Game::updateRounds() {
 }
 
 void Game::update(float deltaTime) {
+  updateGamePhase(deltaTime);
   for (auto &player_ptr : players) {
     Player &player = *player_ptr;
-    updateGamePhase(deltaTime);
     updatePlayerMovement(player, deltaTime);
     player.updateCooldown(deltaTime);
     shoot(player.name, deltaTime);
