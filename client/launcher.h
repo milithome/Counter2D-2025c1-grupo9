@@ -61,7 +61,7 @@ public:
     };
 
     void run() {
-        // Nota: qt esta atado con un alambre
+        // Nota: qt esta atado con alambre
         int argc = 0;
         char** argv = nullptr;
         QApplication app(argc, argv);
@@ -81,16 +81,11 @@ public:
 
         std::unique_ptr<Client> client = nullptr;
         QObject::connect(&menuController, &MenuController::connectRequest, [&](const std::string& name, const std::string& addr, const std::string& port) {
-            std::cout << "connect attempt" << std::endl;
             try {
-                if (!client) {
-                    client = std::make_unique<Client>(name, addr.c_str(), port.c_str());
-                } else {
-                    client->setName(name);
-                }
+                client = std::make_unique<Client>(name, addr.c_str(), port.c_str());
                 waitForConnection.quit();
             } catch (...) {
-                menuController.onConnectionRequestResponseReceived("Conexión fallida: no se encontro un servidor que esa ip y puerto", 1);
+                menuController.onConnectionRequestResponseReceived("Conexión fallida: no se encontro un servidor con esa dirección y puerto", 1);
             }
         });
 
@@ -104,15 +99,14 @@ public:
                     try {
                         bool received = client->receiveConnectionResponse();
                         if (received) {
-                            std::cout << "connect success" << std::endl;
                             menuController.onConnectionRequestResponseReceived("Exito", 0);
                             connected = true;
                             waitForServerResponse.quit();
                         }
                     } catch (const std::runtime_error& e) {
-                        std::cout << "connect fail" << std::endl;
                         menuController.onConnectionRequestResponseReceived(e.what(), 1);
                         waitForServerResponse.quit();
+                        client = nullptr;
                     }
                 });
                 timer->start(16);
