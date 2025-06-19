@@ -17,6 +17,16 @@
 #include <vector>
 
 class Game {
+public:
+  Game(std::vector<std::vector<CellType>> game_map, GameRules &gameRules);
+  bool addPlayer(const std::string &name);
+  StateGame getState();
+  void update(float deltaTime);
+  void shotQueueClear();
+  void execute(const std::string &name, Action action);
+  bool isRunning();
+  void stop();
+
 private:
   GameRules gameRules;
   std::vector<std::shared_ptr<Player>> players;
@@ -37,8 +47,19 @@ private:
   RoundWinner winner;
   std::queue<Shot> shot_queue;
   GameMap map;
+  float elapsedTime= 0.0f;
+  bool isBombPlanted = false;
+  float timeUntilPlant;
+  float timeUntilDefuse;
+  float timePlanting = 0.0f;
+  float timeDefusing = 0.0f;
+  float timeUntilBombExplode;
+  float purchaseDuration;
+  float timeToPlantBomb;
+  float timeUntilNewRound;
+  float timeUntilEndRunning;
+  bool endGame= false;
   void dropWeapon(const Weapon &weapon, float x, float y);
-
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter);
   void plantBomb(const std::string &name);
@@ -69,36 +90,17 @@ private:
   void placePlayerInSpawnTeam(Player &player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
-  float elapsedTime= 0.0f;
-  bool isBombPlanted = false;
-  float timeUntilPlant;
-  float timeUntilDefuse;
-  float timePlanting = 0.0f;
-  float timeDefusing = 0.0f;
-  float timeUntilBombExplode;
-  float purchaseDuration;
-  float timeToPlantBomb;
-  float timeUntilNewRound;
-  float timeUntilEndRunning;
-  bool endGame= false;
+  void updatePlayers(float deltaTime);
   void updateRounds();
   char checkRoundWinner();
   void handleEndRound(char winnerTeam, TypeEndRound type);
+  void handlePlayerDeath(Player &target); 
   void placeTeamsInSpawn();
+  void subtractAmmo(Player &shooter, int bullets);
+  Bullet simulateBullet(Player &shooter);
   void updateRotation(const std::string &name, float currentRotation);
   Entity getPlayerState(const std::string &name);
-
-public:
-  Game(std::vector<std::vector<CellType>> game_map, GameRules &gameRules);
-  bool addPlayer(const std::string &name);
-  StateGame getState();
-  void update(float deltaTime);
-  void execute(const std::string &name, Action action);
-  bool isRunning();
-  void stop();
-  Shot shotQueuePop();
-  bool shotQueueIsEmpty();
-  void shotQueueClear();
+  Entity getBombState();
+  Entity getDroppedWeaponState(const DroppedWeapon &dw);
 };
-
 #endif

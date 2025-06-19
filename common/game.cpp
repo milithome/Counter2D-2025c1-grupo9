@@ -291,82 +291,75 @@ void Game::stop() { running = false; }
 
 void Game::makeShot(Player &shooter) {
   int bullets = shooter.getBulletsPerShoot();
-  if (shooter.typeEquipped == WeaponType::PRIMARY) {
-    shooter.updatePrimaryBullets(-bullets);
-  } else if (shooter.typeEquipped == WeaponType::SECONDARY) {
-    shooter.updateSecondaryBullets(-bullets);
-  }
+  subtractAmmo(shooter, bullets);
   Shot shot;
-
+  
   for (int i = 0; i < bullets; i++) {
-    auto [maxDistance, originX, originY, targetX, targetY, angle] =
-        shooter.shoot();
-    shot.origin_x = originX;
-    shot.origin_y = originY;
-    Bullet bullet;
-
-    Player *closestPlayer = nullptr;
-    float closestPlayerDist = maxDistance + 1.0f;
-    std::pair<float, float> closestHitPoint;
-
-    for (auto &player_ptr : players) {
-      Player &player = *player_ptr;
-      if (&player == &shooter)
-        continue;
-      if (player.role == shooter.role) {
-        continue;
-      }
-      if (!player.alive) {
-        continue;
-      }
-
-      Hitbox hb = player.hitbox;
-      auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
-      if (hit_point) {
-        float dx = hit_point->first - originX;
-        float dy = hit_point->second - originY;
-        float dist = std::sqrt(dx * dx + dy * dy);
-        if (dist < closestPlayerDist) {
-          closestPlayerDist = dist;
-          closestPlayer = &player;
-          closestHitPoint = *hit_point;
-        }
-      }
-    }
-
-    auto wallHit = rayHitsWall(originX, originY, targetX, targetY, maxDistance);
-
-    float wallDist = maxDistance + 1.0f;
-    std::pair<float, float> wallPoint;
-
-    if (wallHit) {
-      wallPoint = *wallHit;
-      float dx = wallPoint.first - originX;
-      float dy = wallPoint.second - originY;
-      wallDist = std::sqrt(dx * dx + dy * dy);
-    }
-    bullet.angle = angle;
-    if (closestPlayer && closestPlayerDist < wallDist) {
-      applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
-      bullet.target_x = closestHitPoint.first;
-      bullet.target_y = closestHitPoint.second;
-      bullet.impact = Impact::HUMAN;
-
-    } else if (wallHit) {
-      bullet.target_x = wallPoint.first;
-      bullet.target_y = wallPoint.second;
-      bullet.impact = Impact::BLOCK;
-    } else {
-      bullet.target_x = targetX;
-      bullet.target_y = targetY;
-      bullet.impact = Impact::NOTHING;
-    }
-    shot.bullets.push_back(bullet);
+    shot.origin_x = shooter.hitbox.x + shooter.hitbox.width / 2.0f;;
+    shot.origin_y = shooter.hitbox.y + shooter.hitbox.height / 2.0f;;
+    shot.bullets.push_back(simulateBullet(shooter));
   }
   shot.weapon = shooter.equipped.name;
   shot_queue.push(shot);
   shooter.alreadyShot = true;
 }
+
+Bullet Game::simulateBullet(Player &shooter) {
+  auto [maxDistance, originX, originY, targetX, targetY, angle] = shooter.shoot();
+
+  Bullet bullet;
+  bullet.angle = angle;
+
+  Player *closestPlayer = nullptr;
+  float closestPlayerDist = maxDistance + 1.0f;
+  std::pair<float, float> closestHitPoint;
+
+  for (auto &player_ptr : players) {
+    Player &player = *player_ptr;
+    if (&player == &shooter || player.role == shooter.role || !player.alive)
+      continue;
+
+    if (auto hit_point = player.hitbox.intersectsRay(originX, originY, targetX, targetY)) {
+      float dx = hit_point->first - originX;
+      float dy = hit_point->second - originY;
+      float dist = std::sqrt(dx * dx + dy * dy);
+      if (dist < closestPlayerDist) {
+        closestPlayerDist = dist;
+        closestPlayer = &player;
+        closestHitPoint = *hit_point;
+      }
+    }
+  }
+
+  auto wallHit = rayHitsWall(originX, originY, targetX, targetY, maxDistance);
+  float wallDist = maxDistance + 1.0f;
+  std::pair<float, float> wallPoint;
+
+  if (wallHit) {
+    wallPoint = *wallHit;
+    float dx = wallPoint.first - originX;
+    float dy = wallPoint.second - originY;
+    wallDist = std::sqrt(dx * dx + dy * dy);
+  }
+
+  if (closestPlayer && closestPlayerDist < wallDist) {
+    applyDamageToPlayer(shooter, *closestPlayer, closestPlayerDist);
+    bullet.target_x = closestHitPoint.first;
+    bullet.target_y = closestHitPoint.second;
+    bullet.impact = Impact::HUMAN;
+  } else if (wallHit) {
+    bullet.target_x = wallPoint.first;
+    bullet.target_y = wallPoint.second;
+    bullet.impact = Impact::BLOCK;
+  } else {
+    bullet.target_x = targetX;
+    bullet.target_y = targetY;
+    bullet.impact = Impact::NOTHING;
+  }
+
+  return bullet;
+}
+
 
 void Game::applyDamageToPlayer(const Player &shooter, Player &target,
                                float distance) {
@@ -382,20 +375,37 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target,
   float randomDamage = dis(gen);
 
   float finalDamage = std::min(clampedDamage, randomDamage);
-  int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
+  int damageToApply  = static_cast<int>(std::ceil(finalDamage));
 
-  target.updateHealth(-finalDamageInt);
+  target.updateHealth(-damageToApply);
   if (!target.alive) {
-    if (target.hasTheSpike) {
-      spike.state = BombState::DROPPED;
-      target.hasTheSpike = false;
-      spike.position.x = target.x;
-      spike.position.y = target.y;
-    }
-    dropWeapon(target.primaryWeapon, target.x, target.y);
-    target.replaceWeapon(WeaponName::NONE);
-    target.changeWeapon(WeaponType::SECONDARY);
+    handlePlayerDeath(target);
   }
+}
+
+void Game::subtractAmmo(Player &shooter, int bullets) {
+  switch (shooter.typeEquipped) {
+    case WeaponType::PRIMARY:
+      shooter.updatePrimaryBullets(-bullets);
+      break;
+    case WeaponType::SECONDARY:
+      shooter.updateSecondaryBullets(-bullets);
+      break;
+    default:
+      break;
+  }
+}
+
+void Game::handlePlayerDeath(Player &target) {
+  if (target.hasTheSpike) {
+    spike.state = BombState::DROPPED;
+    target.hasTheSpike = false;
+    spike.position = {target.x, target.y};
+  }
+
+  dropWeapon(target.primaryWeapon, target.x, target.y);
+  target.replaceWeapon(WeaponName::NONE);
+  target.changeWeapon(WeaponType::SECONDARY);
 }
 
 bool Game::rectsOverlap(float ax, float ay, float aw, float ah, float bx,
@@ -420,20 +430,15 @@ void Game::grab(const std::string &name) {
   if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
                    player.hitbox.getHeight(), weapon->x, weapon->y,
                    WEAPON_WIDTH, WEAPON_HEIGHT)) {
-    std::cout << "[INFO] Player tocó un arma dropeada: " << weapon->name << "\n";
     WeaponName newWeaponName = weapon->name;
     droppedWeapons.erase(weapon);
 
     if (player.primaryWeapon.name != WeaponName::NONE) {
       dropWeapon(player.primaryWeapon, player.x, player.y);
-      std::cout << "[INFO] Dropeando arma actual: " << player.primaryWeapon.name << "\n";
-    } else{
-      std::cout << "[INFO] El jugador no tenía arma previa.\n";
     }
 
     player.replaceWeapon(newWeaponName);
     player.changeWeapon(WeaponType::PRIMARY);
-    std::cout << "[INFO] Nuevo arma equipada: " << player.primaryWeapon.name << "\n";
     return;
   }
 }
@@ -447,17 +452,11 @@ void Game::dropWeapon(const Weapon &weapon, float x, float y) {
 void Game::shoot(const std::string &shooterName, float deltaTime) {
   Player &shooter = findPlayerByName(shooterName);
 
-  if (!shooter.shooting) {
-    return;
-  }
+  if (!shooter.shooting) return;
 
-  if (shooter.shootCooldown > 0) {
-    return;
-  }
+  if (shooter.shootCooldown > 0) return;
 
-  if (shooter.getBullets() < shooter.getBulletsPerShoot()) {
-    return;
-  }
+  if (shooter.getBullets() < shooter.getBulletsPerShoot()) return;
 
   const Weapon &equipped = shooter.equipped;
 
@@ -514,19 +513,6 @@ Game::rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const {
   return std::nullopt;
 }
 
-Shot Game::shotQueuePop() {
-  Shot top = shot_queue.front();
-  shot_queue.pop();
-  return top;
-}
-
-bool Game::shotQueueIsEmpty() { return shot_queue.empty(); }
-
-void Game::shotQueueClear() {
-  std::queue<Shot> empty;
-  std::swap(shot_queue, empty);
-}
-
 void Game::updateRotation(const std::string &name, float currentRotation) {
   findPlayerByName(name).rotation = currentRotation;
 }
@@ -541,6 +527,21 @@ StateGame Game::getState() {
     Player &player = *player_ptr;
     entities.push_back(getPlayerState(player.name));
   }
+
+  entities.push_back(getBombState());
+
+  for (const DroppedWeapon &dropped : droppedWeapons) {
+    entities.push_back(getDroppedWeaponState(dropped));
+  }
+
+  state.entities = entities;
+  state.shots = shot_queue;
+  state.rounds = rounds;
+
+  return state;
+}
+
+Entity Game::getBombState(){
   Entity bomb;
   bomb.type = BOMB;
   BombData data;
@@ -551,28 +552,22 @@ StateGame Game::getState() {
   bomb.data = data;
   bomb.x = spike.position.x;
   bomb.y = spike.position.y;
-  entities.push_back(bomb);
-
-  for (const DroppedWeapon &dropped : droppedWeapons) {
-    Entity weaponEntity;
-    weaponEntity.type = EntityType::WEAPON;
-
-    WeaponData weaponData;
-    weaponData.weapon = dropped.name;
-
-    weaponEntity.data = weaponData;
-    weaponEntity.x = dropped.x;
-    weaponEntity.y = dropped.y;
-
-    entities.push_back(weaponEntity);
-  }
-
-  state.entities = entities;
-  state.shots = shot_queue;
-  state.rounds = rounds;
-
-  return state;
+  return bomb;
 }
+
+Entity Game::getDroppedWeaponState(const DroppedWeapon &dw){
+  Entity weaponEntity;
+  weaponEntity.type = EntityType::WEAPON;
+
+  WeaponData weaponData;
+  weaponData.weapon = dw.name;
+
+  weaponEntity.data = weaponData;
+  weaponEntity.x = dw.x;
+  weaponEntity.y = dw.y;
+  return weaponEntity;
+}
+
 
 Entity Game::getPlayerState(const std::string &name) {
   Player player = findPlayerByName(name);
@@ -697,20 +692,23 @@ void Game::updateGamePhase(float deltaTime) {
 }
 
 void Game::updateRounds() {
-  teamA.restartPlayersAlive();
-  teamB.restartPlayersAlive();
   elapsedTime = 0.0f;
-
   roundNumber += 1;
   roundsUntilRoleChange -= 1;
   roundsUntilEndGame -= 1;
+  if (roundsUntilEndGame == 0) {
+    endGame=true;
+    return;
+  }
+
+  teamA.restartPlayersAlive();
+  teamB.restartPlayersAlive();
+  
   if (roundsUntilRoleChange == 0) {
     teamA.invertRole();
     teamB.invertRole();
   }
-  if (roundsUntilEndGame == 0) {
-    endGame=true;
-  }
+  
   resetSpawn();
   placeTeamsInSpawn();
 
@@ -723,6 +721,10 @@ void Game::updateRounds() {
 
 void Game::update(float deltaTime) {
   updateGamePhase(deltaTime);
+  updatePlayers(deltaTime);
+}
+
+void Game::updatePlayers(float deltaTime){
   for (auto &player_ptr : players) {
     Player &player = *player_ptr;
     updatePlayerMovement(player, deltaTime);
@@ -798,3 +800,10 @@ void Game::execute(const std::string &name, Action action) {
   }
   }
 }
+
+void Game::shotQueueClear()
+{
+  std::queue<Shot> empty;
+  std::swap(shot_queue, empty);
+}
+
