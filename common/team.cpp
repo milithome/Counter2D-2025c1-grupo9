@@ -7,7 +7,7 @@ void Team::addPlayer(std::shared_ptr<Player> player) {
 int Team::getPlayersAlive() const {
     int aliveCount = 0;
     for (const auto& player : players) {
-        if (player->isAlive()) {
+        if (player->alive) {
             aliveCount++;
         }
     }
@@ -26,12 +26,12 @@ void Team::invertRole() {
     newRole = Role::TERRORIST;
   }
   for (auto &player : players) {
-    player->setRole(newRole);
+    player->role=newRole;
     player->replaceWeapon(WeaponName::NONE);
     player->changeWeapon(WeaponType::SECONDARY);
-    player->setPrimaryBullets(INITIAL_PRIMARY_AMMO);
-    player->setSecondaryBullets(INITIAL_SECONDARY_AMMO);
-    player->setMoney(INITIAL_MONEY);
+    player->bulletsPrimary=INITIAL_PRIMARY_AMMO;
+    player->bulletsSecondary=INITIAL_SECONDARY_AMMO;
+    player->money=INITIAL_MONEY;
   }
 }
 
@@ -43,18 +43,18 @@ void Team::updateMoneyAfterRound(int money){
 
 void Team::resetSpikeCarrier(){
   for (auto &player : players){
-    player->setHasSpike(false);
+    player->hasTheSpike=false;
   }
   if (currentRole == Role::TERRORIST && !players.empty()) {
     int carrier = rand() % players.size();
-    players[carrier]->setHasSpike(true);
+    players[carrier]->hasTheSpike=true;
   }
 }
 
 void Team::setRole(Role role) {
   currentRole = role;
   for (auto &player : players){
-    player->setRole(role);
+    player->role=role;
   }
 }
 
@@ -66,7 +66,7 @@ void Team::restartPlayersAlive() {
   playersAlive = players.size(); 
   for (auto &player : players){
     player->restoreHealth();
-    player->setIsAlive(true);
+    player->alive=true;
   }
 }
 

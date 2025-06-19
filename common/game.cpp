@@ -23,14 +23,14 @@ bool Game::addPlayer(const std::string &name)
   if (teamA.getTeamSize() < teamB.getTeamSize() && teamA.getTeamSize() < MAX_PLAYERS_PER_TEAM)
   {
     teamA.addPlayer(player);
-    player->setRole(teamA.getRole());
+    player->role=teamA.getRole();
     placePlayerInSpawnTeam(*player);
     return true;
   }
   if (teamB.getTeamSize() < MAX_PLAYERS_PER_TEAM)
   {
     teamB.addPlayer(player);
-    player->setRole(teamB.getRole());
+    player->role=teamB.getRole();
     placePlayerInSpawnTeam(*player);
     return true;
   }
@@ -45,7 +45,7 @@ float Game::randomFloatInRange(float min, float max)
 void Game::placePlayerInSpawnTeam(Player &player)
 {
   std::vector<std::tuple<int, int, bool>> &spawn =
-      (player.getRole() == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
+      (player.role == Role::COUNTER_TERRORIST) ? spawnTeamCounter : spawnTeamTerrorist;
 
   for (auto &pos : spawn)
   {
@@ -82,7 +82,7 @@ Player &Game::findPlayerByName(const std::string &name)
 {
   for (auto &player : players)
   {
-    if (player->getName() == name)
+    if (player->name == name)
       return *player;
   }
   throw std::runtime_error("Player not found");
@@ -91,7 +91,7 @@ Player &Game::findPlayerByName(const std::string &name)
 void Game::stopShooting(const std::string &name)
 {
   Player &player = findPlayerByName(name);
-  player.setAlreadyShot(false);
+  player.alreadyShot=false;
   player.stopShooting();
 }
 
@@ -106,7 +106,7 @@ void Game::plantBomb(
 {
   timePlanting = 0.0f;
   Player &player = findPlayerByName(name);
-  if (!player.getHasTheSpike())
+  if (!player.hasTheSpike)
   {
     return;
   }
@@ -124,7 +124,7 @@ void Game::plantBomb(
       }
       if (map.isSpikeSite(row, col))
       {
-        findPlayerByName(name).updateIsPlanting(true);
+        findPlayerByName(name).planting=true;
         spike.position.x = col;
         spike.position.y = row;
       }
@@ -137,13 +137,13 @@ void Game::plantBomb(
 
 void Game::stopPlantBomb(const std::string &name)
 {
-  findPlayerByName(name).updateIsPlanting(false);
+  findPlayerByName(name).planting=false;
   timePlanting = 0.0f;
 }
 
 void Game::stopDefuse(const std::string &name)
 {
-  findPlayerByName(name).updateIsDefusing(false);
+  findPlayerByName(name).defusing=false;
   timeDefusing = 0.0f;
 }
 
@@ -151,17 +151,17 @@ void Game::updatePlanting(const std::string &name, float deltaTime)
 {
   timePlanting += deltaTime;
   Player &player = findPlayerByName(name);
-  if (player.isPlanting() && timePlanting >= timeUntilPlant)
+  if (player.planting && timePlanting >= timeUntilPlant)
   {
     spike.state = BombState::PLANTED;
-    player.setHasSpike(false);
+    player.hasTheSpike=false;
   }
 }
 
 void Game::updateDefusing(const std::string &name, float deltaTime)
 {
   timeDefusing += deltaTime;
-  if (findPlayerByName(name).isDefusing() && timeDefusing >= timeUntilDefuse)
+  if (findPlayerByName(name).defusing && timeDefusing >= timeUntilDefuse)
   {
     spike.state = BombState::DEFUSED;
   }
@@ -169,9 +169,9 @@ void Game::updateDefusing(const std::string &name, float deltaTime)
 
 std::tuple<float, float, float, float> Game::getPlayerHitbox(const Player &player) const
 {
-  Hitbox hb = player.getHitbox();
-  float x = player.getX();
-  float y = player.getY();
+  Hitbox hb = player.hitbox;
+  float x = player.x;
+  float y = player.y;
   float width = hb.getWidth();
   float height = hb.getHeight();
   return {x, y, width, height};
@@ -198,7 +198,7 @@ void Game::defuseBomb(const std::string &name)
 {
   timeDefusing = 0.0f;
   Player &player = findPlayerByName(name);
-  if (player.getRole() == Role::TERRORIST)
+  if (player.role == Role::TERRORIST)
   { // solo puede defusear si es defensor
     return;
   }
@@ -215,7 +215,7 @@ void Game::defuseBomb(const std::string &name)
       }
       if (map.isSpikeSite(row, col))
       {
-        player.updateIsDefusing(true);
+        player.defusing=true;
         return;
       }
     }
@@ -225,24 +225,24 @@ void Game::defuseBomb(const std::string &name)
 
 void Game::updatePlayerMovement(Player &player, float deltaTime)
 {
-  Hitbox hb = player.getHitbox();
+  Hitbox hb = player.hitbox;
 
   std::pair<float, float> newPos = player.tryMove(deltaTime);
   float newX = newPos.first;
   float newY = newPos.second;
   float width = hb.getWidth();
   float height = hb.getHeight();
-  float originalX = player.getX();
-  float originalY = player.getY();
+  float originalX = player.x;
+  float originalY = player.y;
   PlayerCellBounds bounds = getCellBounds(newX, newY, width, height);
   for (const auto &other_ptr : players)
   {
     Player &other = *other_ptr;
     if (&other == &player)
       continue;
-    if (!other.isAlive())
+    if (!other.alive)
       continue;
-    Hitbox otherHB = other.getHitbox();
+    Hitbox otherHB = other.hitbox;
     if (rectsOverlap(newX, newY, width, height, otherHB.x, otherHB.y, otherHB.width, otherHB.height))
     {
       return;
@@ -277,7 +277,7 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName)
 {
   Player &player = findPlayerByName(name);
   int price = Store::getWeaponPrice(weaponName);
-  if (player.getMoney() >= price)
+  if (player.money >= price)
   {
     player.updateMoney(-price);
     player.replaceWeapon(weaponName);
@@ -290,7 +290,7 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName)
 void Game::buyBullet(const std::string &name, WeaponType type)
 {
   Player &player = findPlayerByName(name);
-  if (player.getMoney() >= AMMO_PRICE)
+  if (player.money >= AMMO_PRICE)
   {
     if (type == WeaponType::PRIMARY)
     {
@@ -331,11 +331,10 @@ void Game::stop() { running = false; }
 
 void Game::makeShot(Player &shooter) {
   int bullets = shooter.getBulletsPerShoot();
-  if (shooter.getTypeEquipped() == WeaponType::PRIMARY)
+  if (shooter.typeEquipped == WeaponType::PRIMARY)
   {
     shooter.updatePrimaryBullets(-bullets);
-  }
-  if (shooter.getTypeEquipped() == WeaponType::SECONDARY)
+  }else if (shooter.typeEquipped == WeaponType::SECONDARY)
   {
     shooter.updateSecondaryBullets(-bullets);
   }
@@ -358,16 +357,16 @@ void Game::makeShot(Player &shooter) {
       Player &player = *player_ptr;
       if (&player == &shooter)
         continue;
-      if (player.getRole() == shooter.getRole())
+      if (player.role == shooter.role)
       {
         continue;
       }
-      if (!player.isAlive())
+      if (!player.alive)
       {
         continue;
       }
 
-      Hitbox hb = player.getHitbox();
+      Hitbox hb = player.hitbox;
       auto hit_point = hb.intersectsRay(originX, originY, targetX, targetY);
       if (hit_point)
       {
@@ -414,9 +413,9 @@ void Game::makeShot(Player &shooter) {
     }
     shot.bullets.push_back(bullet);
   }
-  shot.weapon = shooter.getEquipped().name;
+  shot.weapon = shooter.equipped.name;
   shot_queue.push(shot);
-  shooter.setAlreadyShot(true);
+  shooter.alreadyShot=true;
 }
 
 void Game::applyDamageToPlayer(const Player &shooter, Player &target, float distance)
@@ -435,16 +434,16 @@ void Game::applyDamageToPlayer(const Player &shooter, Player &target, float dist
   int finalDamageInt = static_cast<int>(std::ceil(finalDamage));
 
   target.updateHealth(-finalDamageInt);
-  if (!target.isAlive())
+  if (!target.alive)
   {
-    if (target.getHasTheSpike())
+    if (target.hasTheSpike)
     {
       spike.state = BombState::DROPPED;
-      target.setHasSpike(false);
-      spike.position.x = target.getX();
-      spike.position.y = target.getY();
+      target.hasTheSpike=false;
+      spike.position.x = target.x;
+      spike.position.y = target.y;
     }
-    dropWeapon(target.getPrimaryWeapon(), target.getX(), target.getY());
+    dropWeapon(target.primaryWeapon, target.x, target.y);
     target.replaceWeapon(WeaponName::NONE); 
     target.changeWeapon(WeaponType::SECONDARY);
   }
@@ -463,10 +462,10 @@ void Game::grab(const std::string &name)
 
   if (spike.state == BombState::DROPPED)
   {
-    if (rectsOverlap(player.getX(), player.getY(), player.getHitbox().getWidth(), player.getHitbox().getHeight(),
+    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(), player.hitbox.getHeight(),
                      spike.position.x, spike.position.y, BOMB_WIDTH, BOMB_HEIGHT))
     {
-      player.setHasSpike(true);
+      player.hasTheSpike=true;
       spike.state = BombState::INVENTORY;
       return;
     }
@@ -474,15 +473,15 @@ void Game::grab(const std::string &name)
 
   for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end(); ++weapon)
   {
-    if (rectsOverlap(player.getX(), player.getY(), player.getHitbox().getWidth(), player.getHitbox().getHeight(),
+    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(), player.hitbox.getHeight(),
                      weapon->x, weapon->y, WEAPON_WIDTH, WEAPON_HEIGHT))
     {
 
       droppedWeapons.erase(weapon);
-      Weapon pw = player.getPrimaryWeapon();
+      Weapon pw = player.primaryWeapon;
       if (pw.name != WeaponName::NONE)
       {
-        dropWeapon(pw, player.getX(), player.getY());
+        dropWeapon(pw, player.x, player.y);
         player.replaceWeapon(WeaponName::NONE);
         player.changeWeapon(WeaponType::SECONDARY);
       }
@@ -503,12 +502,12 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
 {
   Player &shooter = findPlayerByName(shooterName);
 
-  if (!shooter.isShooting())
+  if (!shooter.shooting)
   {
     return;
   }
 
-  if (shooter.getShootCooldown() > 0)
+  if (shooter.shootCooldown > 0)
   {
     return;
   }
@@ -518,18 +517,18 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
     return;
   }
 
-  const Weapon &equipped = shooter.getEquipped();
+  const Weapon &equipped = shooter.equipped;
 
   if (equipped.burstFire)
   {
-    if (!shooter.getAlreadyShot() ||
+    if (!shooter.alreadyShot ||
         equipped.burstDelay <=
-            shooter.getTimeLastBullet())
+            shooter.timeLastBullet)
     { 
       shooter.updateBurstFireBullets(-1);
       makeShot(shooter);
       shooter.resetTimeLastBullet();
-      if (shooter.getBurstFireBullets() == 0)
+      if (shooter.burstFireBullets == 0)
       {
         shooter.resetCooldown();
         shooter.updateBurstFireBullets(equipped.bulletsPerBurst);
@@ -543,7 +542,7 @@ void Game::shoot(const std::string &shooterName, float deltaTime)
   }
   else
   {
-    if (!shooter.getAlreadyShot())
+    if (!shooter.alreadyShot)
     {
       shooter.resetCooldown();
       makeShot(shooter);
@@ -604,7 +603,7 @@ void Game::shotQueueClear()
 
 void Game::updateRotation(const std::string &name, float currentRotation)
 {
-  findPlayerByName(name).setRotation(currentRotation);
+  findPlayerByName(name).rotation= currentRotation;
 }
 
 
@@ -618,7 +617,7 @@ StateGame Game::getState()
   for (const auto &player_ptr : players)
   {
     Player &player = *player_ptr;
-    entities.push_back(getPlayerState(player.getName()));
+    entities.push_back(getPlayerState(player.name));
   }
   Entity bomb;
   bomb.type = BOMB;
@@ -659,23 +658,23 @@ Entity Game::getPlayerState(const std::string &name)
   Player player = findPlayerByName(name);
   Entity entity;
   entity.type = PLAYER;
-  entity.x = player.getX();
-  entity.y = player.getY();
+  entity.x = player.x;
+  entity.y = player.y;
   Inventory inv;
-  inv.primary = player.getPrimaryWeaponName();
-  inv.secondary = player.getSecondaryWeaponName();
-  inv.bulletsPrimary = player.getBulletsPrimary();
-  inv.bulletsSecondary = player.getBulletsSecondary();
-  inv.has_the_bomb = player.getHasTheSpike();
+  inv.primary = player.primaryWeapon.name;
+  inv.secondary = player.secondaryWeapon.name;
+  inv.bulletsPrimary = player.bulletsPrimary;
+  inv.bulletsSecondary = player.bulletsSecondary;
+  inv.has_the_bomb = player.hasTheSpike;
   PlayerData data;
-  data.equippedWeapon = player.getTypeEquipped();
+  data.equippedWeapon = player.typeEquipped;
   data.inventory = inv;
-  data.name = player.getName();
-  data.rotation = player.getRotation();
-  data.health = player.getHealth();
-  data.money = player.getMoney();
-  data.alive = player.isAlive();
-  data.terrorist = (player.getRole() == Role::TERRORIST);
+  data.name = player.name;
+  data.rotation = player.rotation;
+  data.health = player.health;
+  data.money = player.money;
+  data.alive = player.alive;
+  data.terrorist = (player.role == Role::TERRORIST);
   entity.data = data;
   return entity;
 }
@@ -807,10 +806,10 @@ void Game::update(float deltaTime)
     updateGamePhase(deltaTime);
     updatePlayerMovement(player, deltaTime);
     player.updateCooldown(deltaTime);
-    shoot(player.getName(), deltaTime);
+    shoot(player.name, deltaTime);
     player.updateAceleration(deltaTime);
-    updatePlanting(player.getName(), deltaTime);
-    updateDefusing(player.getName(), deltaTime);
+    updatePlanting(player.name, deltaTime);
+    updateDefusing(player.name, deltaTime);
   }
 }
 

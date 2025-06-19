@@ -1,12 +1,6 @@
 #include "player.h"
 #include <iostream>
 
-std::string Player::getName() const { return name; }
-
-float Player::getX() const { return x; }
-
-float Player::getY() const { return y; }
-
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
   float totalSpeed = SPEED + aceleration;
   float dx = 0.0f;
@@ -66,12 +60,6 @@ void Player::setPosition(float x, float y) {
   hitbox.y = y;
 }
 
-float Player::getRotation() const { return rotation; }
-
-void Player::setRotation(float currentRotation) { rotation = currentRotation; }
-
-const Hitbox &Player::getHitbox() const { return hitbox; }
-
 void Player::updateHealth(int value) {
   health += value;
   if (health <= 0){
@@ -83,25 +71,14 @@ void Player::updateHealth(int value) {
   }
 }
 
-void Player::setHasSpike(bool hasSpike){
-  hasTheSpike=hasSpike;
-}
-
 void Player::restoreHealth(){
   health = MAX_HEALTH;
 }
 
-void Player::setIsAlive(bool isAlive){
-  alive=isAlive;
-}
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
 }
-
-int Player::getHealth() const { return health; }
-
-bool Player::isAlive() const { return alive; }
 
 void Player::updateVelocity(float newVx, float newVy) {
   if (newVx != 0.0f || newVy != 0.0f) {
@@ -141,25 +118,23 @@ void Player::updateCooldown(float deltaTime) {
   }
 }
 
-float Player::getShootCooldown() { return shootCooldown; }
-
 void Player::resetCooldown() { // cuando acaba de salir una bala
   shootCooldown = equipped.cooldown;
 }
-
-bool Player::isShooting() { return shooting; }
+std::pair<float, float> Player::getDamageRange() const{
+  return std::make_pair(equipped.minDamage, equipped.maxDamage);
+}
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
   timeLastBullet = 0.0f;
-  Hitbox hb = getHitbox();
 
-  float origin_x = hb.x + hb.width / 2.0f;
-  float origin_y = hb.y + hb.height / 2.0f;
+  float origin_x = hitbox.x + hitbox.width / 2.0f;
+  float origin_y = hitbox.y + hitbox.height / 2.0f;
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<float> dist(getRotation() - getSpreadAngle(),
-                                             getRotation() + getSpreadAngle());
+  std::uniform_real_distribution<float> dist(rotation - getSpreadAngle(),
+                                             rotation + getSpreadAngle());
   float angle = dist(gen);
   float angle_rad = angle * M_PI / 180.0f;
   float max_distance;
@@ -176,10 +151,6 @@ int Player::getBulletsPerShoot() { return equipped.bulletsPerShoot; }
 
 float Player::getSpreadAngle() { return equipped.spreadAngle; }
 
-std::pair<float, float> Player::getDamageRange() const{
-  return std::make_pair(equipped.minDamage, equipped.maxDamage);
-}
-
 void Player::changeWeapon(WeaponType newEquippedWeapon) {
   if (newEquippedWeapon == WeaponType::PRIMARY) {
     equipped = primaryWeapon;
@@ -195,27 +166,6 @@ void Player::replaceWeapon(WeaponName weapon) {
   primaryWeapon = Weapons::getWeapon(weapon);
 }
 
-WeaponName Player::getPrimaryWeaponName() const { return primaryWeapon.name; }
-WeaponName Player::getSecondaryWeaponName() const {
-  return secondaryWeapon.name;
-}
-
-int Player::getBulletsPrimary() const { return bulletsPrimary; }
-
-int Player::getBulletsSecondary() const { return bulletsSecondary; }
-
-void Player::setPrimaryBullets(int bullets){
-  bulletsPrimary=bullets;
-}
-void Player::setSecondaryBullets(int bullets){
-  bulletsSecondary=bullets;
-}
-
-int Player::getMoney() const { return this->money; }
-
-void Player::setMoney(int money){
-  this->money=money;
-}
 
 void Player::updateMoney(int value) { money += value; }
 
@@ -233,28 +183,13 @@ void Player::resetSecondaryBullets() { // llenar cargador
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
 
-WeaponType Player::getTypeEquipped() const { return typeEquipped; }
-
-float Player::getTimeLastBullet() { return timeLastBullet; }
-
 void Player::updateTimeLastBullet(float deltaTime) {
   timeLastBullet += deltaTime;
 }
 
 void Player::resetTimeLastBullet() { timeLastBullet = 0; }
 
-Weapon Player::getEquipped() { return equipped; }
-
-int Player::getBurstFireBullets() { return burstFireBullets; }
 void Player::updateBurstFireBullets(int value) { burstFireBullets += value; }
-bool Player::getHasTheSpike() { return hasTheSpike; }
-
-void Player::updateIsPlanting(bool isPlanting) { planting = isPlanting; }
-void Player::updateIsDefusing(bool isDefusing){ defusing = isDefusing; }
-
-bool Player::getAlreadyShot() { return alreadyShot; }
-
-void Player::setAlreadyShot(bool value) { alreadyShot = value; }
 
 int Player::getBullets(){
   if (typeEquipped== WeaponType::PRIMARY) {
@@ -264,26 +199,4 @@ int Player::getBullets(){
   } else {
     return 1;
   }
-}
-
-void Player::setTeam(bool terrorist){
-  team=terrorist;
-}
-
-Role Player::getRole(){
-  return role;
-}
-void Player::setRole(Role newRole){
-  role=newRole;
-}
-
-bool Player::isPlanting(){
-  return planting;
-}
-bool Player::isDefusing(){
-  return defusing;
-}
-
-Weapon Player::getPrimaryWeapon(){
-  return primaryWeapon;
 }
