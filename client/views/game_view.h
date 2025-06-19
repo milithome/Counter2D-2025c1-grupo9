@@ -122,7 +122,6 @@ public:
         state = new_state;
     }
     void setPhaseTimer(float time) {
-        std::cout << time << std::endl;
         phaseTimer = time;
     };
 

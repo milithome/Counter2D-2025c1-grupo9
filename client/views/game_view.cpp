@@ -1255,7 +1255,7 @@ void GameView::setEndRoundMessageEffect(RoundWinner winner) {
         }
     }
     end_round_effect = OnScreenMessageEffect{text};
-};
+}
 
 void GameView::addBombExplosionEffect(float x, float y) {
     bomb_explosion_effect = BombExplosionEffect{x, y};

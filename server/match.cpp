@@ -144,20 +144,17 @@ void Match::handleAction(const Action& action, const std::string& clientName) {
     case ActionType::SELECT_T_SKIN: {
         const SelectTSkin& tSkinData = std::get<SelectTSkin>(action.data);
         it->terroristSkin = tSkinData.terroristSkin;
-        std::cout << tSkinData.terroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_CT_SKIN: {
         const SelectCTSkin& ctSkinData = std::get<SelectCTSkin>(action.data);
         it->counterTerroristSkin = ctSkinData.counterTerroristSkin;
-        std::cout << ctSkinData.counterTerroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_MAP: {
         const SelectMap& mapData = std::get<SelectMap>(action.data);
         // haria falta una verificacion de que sea un mapa que exista -> ver mejor cuando haya un editor
         mapName = mapData.name;
-        std::cout << mapData.name << std::endl;
         break;
     }
     default:
@@ -257,14 +254,11 @@ void Match::sendNotLobbyReadyToAll() {
 
 void Match::gameLoop() {
     try {
-        Map map("../assets/maps/" + mapName + ".yaml");
-        GameRules gameRules = load_game_rules("../config_server.yaml");
+        Map map("/var/taller/maps/" + mapName + ".yaml");
         Game game(map.getMapData().game_map, gameRules);
 
         setupGame(game);
         broadcastInitialData(map.getMapData(), gameRules);
-        startTimeoutThread(game);
-
         runGameLoop(game);
 
     } catch (const std::exception& e) {
@@ -278,19 +272,6 @@ void Match::setupGame(Game& game) {
     for (const auto& client : clients) {
         game.addPlayer(client->channels.name);
     }
-}
-
-void Match::startTimeoutThread(Game& game) {
-    std::thread timeoutThread([this, &game]() {
-        std::this_thread::sleep_for(std::chrono::minutes(2));
-        //std::this_thread::sleep_for(std::chrono::seconds(180));
-        game.stop();
-        inGame = false;
-        std::cout << "paso 2 minuto" << std::endl;
-        
-        //std::cout << "pasaron 20 segundos" << std::endl;
-    });
-    timeoutThread.detach();
 }
 
 void Match::runGameLoop(Game& game) {

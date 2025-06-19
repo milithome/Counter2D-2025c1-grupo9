@@ -6,8 +6,8 @@ server:
 game:
   max_players_per_team: 5
   min_players_per_team: 0
-  rounds_until_role_change: 3
-  rounds_until_end_game: 6
+  rounds_until_role_change: 1 # cambiar a 3
+  rounds_until_end_game: 2 # cambiar a 6
 
   max_health: 200
   max_bullets: 30
