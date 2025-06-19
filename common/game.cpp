@@ -260,7 +260,7 @@ void Game::buyWeapon(const std::string &name, WeaponName weaponName) {
 
 void Game::buyBullet(const std::string &name, WeaponType type) {
   Player &player = findPlayerByName(name);
-  if (player.getMoney() >= gameRules.ammo_price) 
+  if (player.money >= gameRules.ammo_price) 
   {
     if (type == WeaponType::PRIMARY)
     {

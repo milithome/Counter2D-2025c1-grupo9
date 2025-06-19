@@ -10,6 +10,10 @@
 class Player {
 private:
   GameRules& gameRules;
+
+public:
+  explicit Player(const std::string &name, GameRules& gameRules);
+
   std::string name;
   float x, y;
   Hitbox hitbox;
@@ -38,9 +42,6 @@ private:
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
   bool alive= true;
-
-public:
-  explicit Player(const std::string &name, GameRules& gameRules);
 
   void changeWeapon(WeaponType newEquippedWeapon);
   void move(float deltaTime, bool onlyX, bool onlyY);
