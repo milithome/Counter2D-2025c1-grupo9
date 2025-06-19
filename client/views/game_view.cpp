@@ -20,11 +20,11 @@ namespace fs = std::filesystem;
 
 
 
-GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<Item>& shop, std::vector<PlayerInfo> players)
+GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players)
     : 
     window(createWindow(window_pos)), 
     renderer(createRenderer(window)),
-    playerName(playerName), map(map), shop(shop), players(players),
+    playerName(playerName), map(map), weapons(weapons), shop(shop), players(players),
     mapTiles(Texture(renderer, map.get_sprite_path())), 
     backgroundTexture(renderer, map.get_background_path()), 
     bloodTexture(createBloodTexture()), 
@@ -468,7 +468,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
                 }
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
                 
-                if (true) { // TODO: reemplazar por data.terrorist
+                if (data.terrorist) { 
                     renderer.Copy(getTSkinSprite(info.terroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 } else {
                     renderer.Copy(getCtSkinSprite(info.counterTerroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
@@ -872,29 +872,25 @@ void GameView::showShop(Inventory inv, int money) {
     Surface BoughtLabel = font.RenderText_Blended("Comprada", Color(255, 255, 255));
     Texture BoughtLabelTexture(renderer, BoughtLabel);
 
-
-    // PlayerData player = std::get<PlayerData>(game.getPlayerState(playerName).data);
-    // uint32_t money = player.money;
-    // Inventory inv = player.inventory;
     
     
     int itemContainerX = container.GetX() + CONTAINER_MARGIN;
-    for (size_t i = 0; i < shop.size(); i++) {
-        WeaponName weapon = shop[i].name;
-        int price = shop[i].price;
-        std::string weaponLabelText = weaponTexts[weapon];
+    for (size_t i = 0; i < shop.weapons.size(); i++) {
+        WeaponInfo weaponInfo = findWeaponInfo(shop.weapons[i]);
+        int price = weaponInfo.price;
+        std::string weaponLabelText = weaponTexts[weaponInfo.name];
 
         ////////////////////////////////////////////////////
         Rect itemContainer(
             itemContainerX, 
             container.GetY() + CONTAINER_MARGIN + primaryWeaponSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
-            (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/shop.size(), 
+            (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.weapons.size() - 1))/shop.weapons.size(), 
             container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
         //////////////////////////////////////////////////
-        weaponShopButtons[weapon] = {{itemContainer.GetX(), itemContainer.GetY()}, {itemContainer.GetW(), itemContainer.GetH()}};
+        weaponShopButtons[weaponInfo.name] = {{itemContainer.GetX(), itemContainer.GetY()}, {itemContainer.GetW(), itemContainer.GetH()}};
 
 
-        if (inv.primary == weapon) {
+        if (inv.primary == weaponInfo.name) {
             renderer.SetDrawColor(255, 255, 255, 64);
         } else {
             renderer.SetDrawColor(255, 255, 255, 32);
@@ -937,7 +933,7 @@ void GameView::showShop(Inventory inv, int money) {
 
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        Texture& weaponSprite = getWeaponShopSprite(weapon);
+        Texture& weaponSprite = getWeaponShopSprite(weaponInfo.name);
 
 
         uint32_t weapon_image_container_x = itemContainer.GetX() + ITEM_CONTAINER_MARGIN;
@@ -993,7 +989,7 @@ void GameView::showShop(Inventory inv, int money) {
             BoughtLabel.GetWidth() * text_scale, 
             BoughtLabel.GetHeight() * text_scale);
         ///////////////////////////////////////////////////////////////////////////////////
-        if (inv.primary == weapon) {
+        if (inv.primary == weaponInfo.name) {
             renderer.Copy(
                 BoughtLabelTexture, 
                 NullOpt, 
@@ -1002,6 +998,7 @@ void GameView::showShop(Inventory inv, int money) {
 
         itemContainerX = itemContainer.GetX() + itemContainer.GetW() + SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING;
     }
+    WeaponInfo primaryWeaponInfo = findWeaponInfo(inv.primary);
 
     ///////////////////////////////////////////////////////////////////////////////
     Surface ammoSectionLabel = font.RenderText_Blended("AMMO", Color(255, 255, 255));
@@ -1020,19 +1017,18 @@ void GameView::showShop(Inventory inv, int money) {
     Rect primaryAmmoContainer(
         container.GetX() + CONTAINER_MARGIN, 
         container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2 + ammoSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
-        (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/3, 
+        (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.weapons.size() - 1))/3, 
         container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     buyPrimaryAmmoButton = {{primaryAmmoContainer.GetX(), primaryAmmoContainer.GetY()}, {primaryAmmoContainer.GetW(), primaryAmmoContainer.GetH()}};
 
-    /*
-    Manux, aca usas una funcion q volo
-    if (inv.bulletsPrimary >= Weapons::getWeapon(inv.primary).maxAmmo && inv.primary != WeaponName::NONE) {
+
+
+    if (inv.bulletsPrimary >= primaryWeaponInfo.maxAmmo && inv.primary != WeaponName::NONE) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
     }
-    */
     renderer.FillRect(primaryAmmoContainer);
 
     ///////////////////////////////////////////////////////////////
@@ -1044,16 +1040,14 @@ void GameView::showShop(Inventory inv, int money) {
     //////////////////////////////////////////////////////////////////
     buySecondaryAmmoButton = {{secondaryAmmoContainer.GetX(), secondaryAmmoContainer.GetY()}, {secondaryAmmoContainer.GetW(), secondaryAmmoContainer.GetH()}};
 
-    /*
-    Manux, aca usas una funcion q volo
-    
-    if (inv.bulletsSecondary >= Weapons::getWeapon(inv.secondary).maxAmmo) {
+ 
+    if (inv.bulletsSecondary >= findWeaponInfo(inv.secondary).maxAmmo) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
     }
     renderer.FillRect(secondaryAmmoContainer);
-    */
+
 
     Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
     Rect primaryAmmoLabelRect(
@@ -1066,7 +1060,7 @@ void GameView::showShop(Inventory inv, int money) {
     Texture primaryAmmoLabelTexture(renderer, primaryAmmoLabel);
     renderer.Copy(primaryAmmoLabelTexture, NullOpt, primaryAmmoLabelRect);
 
-    std::string ammo_price = "estaba hardcodeado manux->game_view.cpp:1033";
+    std::string ammo_price = std::to_string(shop.primaryAmmoPrice);
     Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect primaryAmmoPriceLabelRect(
         primaryAmmoContainer.GetX() + primaryAmmoContainer.GetW() - primaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
@@ -1078,18 +1072,9 @@ void GameView::showShop(Inventory inv, int money) {
     renderer.Copy(primaryAmmoPriceLabelTexture, NullOpt, primaryAmmoPriceLabelRect);
 
     ///////////////////////////////////////////////////////////
-    auto findWeaponInShop = [this](WeaponName weapon) {
-        for (size_t i = 0; i < shop.size(); i++) {
-            if (shop[i].name == weapon) {
-                return shop[i];
-            }
-        }
-        return Item{};
-    };
-
     std::string ammoBoughtText = "";
     if (inv.primary != WeaponName::NONE) {
-        ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(findWeaponInShop(inv.primary).maxAmmo);
+        ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(primaryWeaponInfo.maxAmmo);
     } else {
         ammoBoughtText = "No disponible";
     }
@@ -1124,7 +1109,7 @@ void GameView::showShop(Inventory inv, int money) {
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ammo_price = "estaba hardcodeado manux->game_view.cpp:1082";
+    ammo_price = std::to_string(shop.secondaryAmmoPrice);
     Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect secondaryAmmoPriceLabelRect(
         secondaryAmmoContainer.GetX() + secondaryAmmoContainer.GetW() - secondaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
@@ -1138,10 +1123,7 @@ void GameView::showShop(Inventory inv, int money) {
 
     ///////////////////////////////////////////////////////////
     
-    /* Aca tambien manux
-    Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo), Color(255, 255, 255));
-    */
-   Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + "999", Color(255, 255, 255));
+    Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(findWeaponInfo(inv.secondary).maxAmmo), Color(255, 255, 255));
     Rect secondaryAmmoBoughtLabelRect(
             secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((secondaryAmmoContainer.GetW() - secondaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
             secondaryAmmoContainer.GetY() + secondaryAmmoContainer.GetH() - secondaryAmmoBoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 
@@ -1187,7 +1169,7 @@ void GameView::addBulletEffects(Shot shot) {
 
 void GameView::addDeathEffect(float x, float y, PlayerData& data) {
     PlayerInfo info = findPlayerInfo(data.name);
-    if (true) { // TODO: reemplazar por data.terrorist
+    if (data.terrorist) {
         Surface& s = getTSkinSpriteSurface(info.terroristSkin);
         death_effects.push_back(DeathEffect{x, y, data.rotation, s, DEATH_DURATION, 255});
     } else {

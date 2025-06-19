@@ -33,7 +33,7 @@ void Client::run(QApplication& app, MenuController& menuController) {
         Map map = Map(initialData.data);
 
 
-        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map, initialData.shop, initialData.players);
+        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map, initialData.weaponsInfo, initialData.shop, initialData.players);
         GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, true);
 
         quit = gameClient.run();

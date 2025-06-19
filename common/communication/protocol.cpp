@@ -228,6 +228,7 @@ void Protocol::serialize_player_data(std::vector<uint8_t>& buf, const PlayerData
 
     buf.push_back(static_cast<uint8_t>(pdata.equippedWeapon));
     buf.push_back(static_cast<uint8_t>(pdata.alive));
+    buf.push_back(static_cast<uint8_t>(pdata.terrorist));
 }
 
 void Protocol::serialize_bomb_data(std::vector<uint8_t>& buf, const BombData& bdata) {
@@ -401,17 +402,7 @@ void Protocol::serialize_map_data(const MapData& map, std::vector<uint8_t>& buf)
     serialize_legend(map.legend_tiles, buf);
 }
 
-void Protocol::serialize_shop(std::vector<Item> shop, std::vector<uint8_t>& buf) {
-    Utilities::serialize_uint16(buf, shop.size());
-
-    for (const auto& item : shop) {
-        buf.push_back(static_cast<uint8_t>(item.name));
-        Utilities::serialize_int(buf, item.price);
-        Utilities::serialize_uint32(buf, item.maxAmmo);
-    }
-}
-
-void Protocol::serialize_playersInfo(std::vector<PlayerInfo> players, std::vector<uint8_t>& buf) {
+void Protocol::serialize_playersInfo(const std::vector<PlayerInfo>& players, std::vector<uint8_t>& buf) {
     Utilities::serialize_uint16(buf, players.size());
 
     for (const auto& playerInfo : players) {
@@ -419,6 +410,34 @@ void Protocol::serialize_playersInfo(std::vector<PlayerInfo> players, std::vecto
         buf.push_back(static_cast<tSkin>(playerInfo.terroristSkin));
         buf.push_back(static_cast<ctSkin>(playerInfo.counterTerroristSkin));
     }
+}
+
+void Protocol::serialize_weaponsInfo(const std::vector<WeaponInfo>& weaponsInfo, std::vector<uint8_t>& buf) {
+    Utilities::serialize_uint16(buf, weaponsInfo.size());
+
+    for (const auto& weapon : weaponsInfo) {
+        buf.push_back(static_cast<uint8_t>(weapon.name));
+        Utilities::serialize_int(buf, weapon.price);
+        Utilities::serialize_uint32(buf, weapon.maxAmmo);
+    }
+}
+
+void Protocol::serialize_shop(const Shop& shop, std::vector<uint8_t>& buf) {
+    Utilities::serialize_uint16(buf, shop.weapons.size());
+
+    for (const auto& weapon : shop.weapons) {
+        buf.push_back(static_cast<uint8_t>(weapon));
+    }
+
+    Utilities::serialize_int(buf, shop.primaryAmmoPrice);
+    Utilities::serialize_int(buf, shop.secondaryAmmoPrice);
+}
+
+void Protocol::serialize_times(const Times& times, std::vector<uint8_t>& buf) {
+    Utilities::serialize_float(buf, times.purchase_duration);
+    Utilities::serialize_float(buf, times.bomb_duration);
+    Utilities::serialize_float(buf, times.time_to_plant);
+    Utilities::serialize_float(buf, times.time_until_new_round);
 }
 
 std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
@@ -430,8 +449,11 @@ std::vector<uint8_t> Protocol::serialize_initial_data(const Response& r) {
     };
 
     serialize_map_data(init.data, buf);
-    serialize_shop(init.shop, buf);
     serialize_playersInfo(init.players, buf);
+    serialize_weaponsInfo(init.weaponsInfo, buf);
+    serialize_shop(init.shop, buf);
+    serialize_times(init.times, buf);
+    
 
     Utilities::serialize_string(buf, r.message);
 
@@ -601,19 +623,6 @@ MapData Protocol::deserialize_map_data() {
     return map;
 }
 
-std::vector<Item> Protocol::deserialize_shop() {
-    uint16_t size = Utilities::deserialize_uint16(skt);
-     std::vector<Item> result;
-    for (uint16_t i = 0; i < size; ++i) {
-        WeaponName name = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
-        int price = Utilities::deserialize_int(skt);
-        uint32_t maxAmmo = Utilities::deserialize_uint32(skt);
-        Item item{name,price,maxAmmo};
-        result.push_back(item);
-    }
-    return result;
-}
-
 std::vector<PlayerInfo> Protocol::deserialize_playersInfo() {
     uint16_t size = Utilities::deserialize_uint16(skt);
      std::vector<PlayerInfo> result;
@@ -627,6 +636,39 @@ std::vector<PlayerInfo> Protocol::deserialize_playersInfo() {
     return result;
 }
 
+std::vector<WeaponInfo> Protocol::deserialize_weaponsInfo() {
+    uint16_t size = Utilities::deserialize_uint16(skt);
+    std::vector<WeaponInfo> result;
+    for (uint16_t i = 0; i < size; ++i) {
+        WeaponName name = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
+        int price = Utilities::deserialize_int(skt);
+        uint32_t maxAmmo = Utilities::deserialize_uint32(skt);
+        result.emplace_back(WeaponInfo{name, price, maxAmmo});
+    }
+    return result;
+}
+
+Shop Protocol::deserialize_shop() {
+    uint16_t size = Utilities::deserialize_uint16(skt);
+    std::vector<WeaponName> weapons;
+    for (uint16_t i = 0; i < size; ++i) {
+        WeaponName name = static_cast<WeaponName>(Utilities::deserialize_uint8(skt));
+        weapons.push_back(name);
+    }
+    int primaryAmmoPrice = Utilities::deserialize_int(skt);
+    int secondaryAmmoPrice = Utilities::deserialize_int(skt);
+    return Shop{weapons, primaryAmmoPrice, secondaryAmmoPrice};
+}
+
+Times Protocol::deserialize_times() {
+    Times times;
+    times.purchase_duration = Utilities::deserialize_float(skt);
+    times.bomb_duration = Utilities::deserialize_float(skt);
+    times.time_to_plant = Utilities::deserialize_float(skt);
+    times.time_until_new_round = Utilities::deserialize_float(skt);
+    return times;
+}
+
 Response Protocol::deserialize_initial_data() {
     Response r;
     r.type = Type::INITIAL_DATA;
@@ -634,8 +676,10 @@ Response Protocol::deserialize_initial_data() {
 
     InitialData init;
     init.data = deserialize_map_data();
-    init.shop = deserialize_shop();
     init.players = deserialize_playersInfo();
+    init.weaponsInfo = deserialize_weaponsInfo();
+    init.shop = deserialize_shop();
+    init.times = deserialize_times();
     
     r.data = std::move(init);
     r.message = Utilities::deserialize_string(skt);
@@ -658,6 +702,7 @@ PlayerData Protocol::recv_player_data() {
 
     p.equippedWeapon = static_cast<WeaponType>(Utilities::deserialize_uint8(skt));
     p.alive = static_cast<bool>(Utilities::deserialize_uint8(skt));
+    p.terrorist = static_cast<bool>(Utilities::deserialize_uint8(skt));
 
     return p;
 }

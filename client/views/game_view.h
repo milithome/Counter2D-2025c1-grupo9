@@ -104,7 +104,7 @@ struct HitEffect {
 
 class GameView {
 public:
-    GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<Item>& shop, std::vector<PlayerInfo> players);
+    GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players);
     Window createWindow(SDL_Point window_pos);
     Renderer createRenderer(Window& window);
     void update(float deltaTime);
@@ -136,7 +136,8 @@ private:
     StateGame state;
     std::string playerName;
     Map& map;
-    std::vector<Item>& shop;
+    std::vector<WeaponInfo>& weapons;
+    Shop& shop;
     std::vector<PlayerInfo>& players;
 
 
@@ -377,7 +378,14 @@ private:
         }
         return {};
     };
-
+    WeaponInfo findWeaponInfo(WeaponName weapon) {
+        for (size_t i = 0; i < weapons.size(); i++) {
+            if (weapons[i].name == weapon) {
+                return weapons[i];
+            }
+        }
+        return {};
+    };
 
 };
 
