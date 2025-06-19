@@ -270,11 +270,9 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
 
 char Game::checkRoundWinner() {
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0) {
-    teamA.incrementRoundsWon();
     return 'a';
   }
   if (teamB.getPlayersAlive() > 0 && teamA.getPlayersAlive() == 0) {
-    teamB.incrementRoundsWon();
     return 'b';
   }
   return '-';
@@ -408,7 +406,7 @@ bool Game::rectsOverlap(float ax, float ay, float aw, float ah, float bx,
 void Game::grab(const std::string &name) {
   Player &player = findPlayerByName(name);
 
-  if (spike.state == BombState::DROPPED) {
+  if (spike.state == BombState::DROPPED && player.role==Role::COUNTER_TERRORIST) {
     if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
                      player.hitbox.getHeight(), spike.position.x,
                      spike.position.y, BOMB_WIDTH, BOMB_HEIGHT)) {
@@ -418,25 +416,28 @@ void Game::grab(const std::string &name) {
     }
   }
 
-  for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end();
-       ++weapon) {
-    if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
-                     player.hitbox.getHeight(), weapon->x, weapon->y,
-                     WEAPON_WIDTH, WEAPON_HEIGHT)) {
+  for (auto weapon = droppedWeapons.begin(); weapon != droppedWeapons.end(); ++weapon) {
+  if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
+                   player.hitbox.getHeight(), weapon->x, weapon->y,
+                   WEAPON_WIDTH, WEAPON_HEIGHT)) {
+    std::cout << "[INFO] Player tocó un arma dropeada: " << weapon->name << "\n";
+    WeaponName newWeaponName = weapon->name;
+    droppedWeapons.erase(weapon);
 
-      droppedWeapons.erase(weapon);
-      Weapon pw = player.primaryWeapon;
-      if (pw.name != WeaponName::NONE) {
-        dropWeapon(pw, player.x, player.y);
-        player.replaceWeapon(WeaponName::NONE);
-        player.changeWeapon(WeaponType::SECONDARY);
-      }
-
-      player.replaceWeapon(weapon->name);
-      player.changeWeapon(WeaponType::PRIMARY);
-      return;
+    if (player.primaryWeapon.name != WeaponName::NONE) {
+      dropWeapon(player.primaryWeapon, player.x, player.y);
+      std::cout << "[INFO] Dropeando arma actual: " << player.primaryWeapon.name << "\n";
+    } else{
+      std::cout << "[INFO] El jugador no tenía arma previa.\n";
     }
+
+    player.replaceWeapon(newWeaponName);
+    player.changeWeapon(WeaponType::PRIMARY);
+    std::cout << "[INFO] Nuevo arma equipada: " << player.primaryWeapon.name << "\n";
+    return;
   }
+}
+
 }
 
 void Game::dropWeapon(const Weapon &weapon, float x, float y) {

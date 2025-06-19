@@ -13,7 +13,7 @@ game:
   max_bullets: 30
 
   speed: 5.0
-  purchase_duration: 20.0
+  purchase_duration: 40.0
   bomb_duration: 60.0
   time_to_plant: 90.0
   time_until_plant: 3.0
