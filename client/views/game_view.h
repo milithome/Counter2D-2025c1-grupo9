@@ -132,7 +132,6 @@ public:
 private:
     Window window;
     Renderer renderer;
-    //Game& game;
     StateGame state;
     std::string playerName;
     Map& map;

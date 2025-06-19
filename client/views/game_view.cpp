@@ -1187,11 +1187,11 @@ void GameView::addNewPhaseEffect(Phase phase) {
             break;
         }
         case BOMB_PLANTING: {
-            text = "Bomba plantada";
+            text = "Inicio de ronda";
             break;
         }
         case BOMB_DEFUSING: {
-            text = "Bomba desactivada";
+            text = "Bomba plantada";
             break;
         }
         default: {
@@ -1199,7 +1199,6 @@ void GameView::addNewPhaseEffect(Phase phase) {
         }
     }
     end_round_effect = OnScreenMessageEffect{text};
-    //new_phase_effect = NewPhaseEffect{phase};
 }
 void GameView::setEndRoundMessageEffect(RoundWinner winner) {
     std::string text;
