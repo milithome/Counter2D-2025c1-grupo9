@@ -9,13 +9,10 @@ class Team {
 private:
   Role currentRole;
   std::vector<std::shared_ptr<Player>> players;
-  int roundsWon = 0;
   int playersAlive;
 
 public:
   void addPlayer(std::shared_ptr<Player> player);
-  int getRoundsWon() const;
-  void incrementRoundsWon();
   void setRole(Role rol);
   void invertRole();
   Role getRole();

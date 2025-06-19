@@ -14,10 +14,6 @@ int Team::getPlayersAlive() const {
   return aliveCount;
 }
 
-int Team::getRoundsWon() const { return roundsWon; }
-
-void Team::incrementRoundsWon() { roundsWon++; }
-
 void Team::invertRole() {
   Role newRole;
   if (currentRole == Role::TERRORIST) {

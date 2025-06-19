@@ -160,10 +160,10 @@ void Player::updateMoney(int value) { money += value; }
 void Player::updatePrimaryBullets(int value) { bulletsPrimary += value; }
 void Player::updateSecondaryBullets(int value) { bulletsSecondary += value; }
 
-void Player::resetPrimaryBullets() { // llenar cargador
+void Player::resetPrimaryBullets() {
   bulletsPrimary = primaryWeapon.maxAmmo;
 }
-void Player::resetSecondaryBullets() { // llenar cargador
+void Player::resetSecondaryBullets() {
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
 
