@@ -675,6 +675,7 @@ Entity Game::getPlayerState(const std::string &name)
   data.health = player.getHealth();
   data.money = player.getMoney();
   data.alive = player.isAlive();
+  data.terrorist = (player.getRole() == Role::TERRORIST);
   entity.data = data;
   return entity;
 }

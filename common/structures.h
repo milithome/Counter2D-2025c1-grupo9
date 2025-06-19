@@ -53,10 +53,11 @@ struct PlayerData {
     std::string name;
     float rotation;
     int money;
-    int health; // de float a int
+    int health;
     Inventory inventory;
     WeaponType equippedWeapon;
     bool alive;
+    bool terrorist;
 };
 
 enum BombState {
