@@ -12,6 +12,7 @@ void RecvLoop::run() {
     try {
         while (active) {
             Response msg = protocol.recv_response();
+
             queue.push(msg);
 
             if (msg.type == Type::DISCONNECT) {

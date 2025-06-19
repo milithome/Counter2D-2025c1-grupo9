@@ -247,3 +247,7 @@ void MenuController::onLobbyReady() {
     QPushButton *startButton = partyView.getStartButton();
     startButton->setEnabled(true);
 }
+void MenuController::onLobbyNotReady() {
+    QPushButton *startButton = partyView.getStartButton();
+    startButton->setEnabled(false);
+}

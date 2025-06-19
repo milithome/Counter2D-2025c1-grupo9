@@ -51,7 +51,7 @@ bool MenuClient::run(bool looped) {
                     break;
                 }
                 case NOT_LOBBY_READY: {
-                    //menuController.onLobbyNotReady();
+                    menuController.onLobbyNotReady();
                     break;
                 }
                 case START: {
@@ -80,6 +80,7 @@ bool MenuClient::run(bool looped) {
     }
     
     app.exec();
+    delete timer;
 
     return !partida_iniciada;
 }
