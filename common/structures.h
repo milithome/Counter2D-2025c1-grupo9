@@ -34,7 +34,7 @@ enum class WeaponType {
   KNIFE,
 };
 
-enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE};
+enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE };
 
 enum tSkin {
     PHOENIX,
@@ -165,13 +165,13 @@ struct Action {
 enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
 
 // Estado del juego
-enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND};
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND };
 struct RoundWinner {
   char team;
   TypeEndRound typeEndRound;
 };
 
-struct Rounds{
+struct Rounds {
   uint16_t roundsWonTeamA;
   uint16_t roundsWonTeamB;
   uint16_t currentRound;
@@ -261,11 +261,11 @@ struct Response {
 
 // Mensaje enviado por el cliente al servidor
 struct Message {
-    Type type;
-    uint16_t size;
-    std::string name;
-    Action action;
-    std::string clientName;
+  Type type;
+  uint16_t size;
+  std::string name;
+  Action action;
+  std::string clientName;
 };
 
 
@@ -337,6 +337,5 @@ struct ClientConfig {
     WindowConfig windowConfig;
     FOVConfig fovConfig;
 };
-
 
 #endif

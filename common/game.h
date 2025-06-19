@@ -1,10 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
+#include "gameConstants.h"
+#include "gameMap.h"
 #include "player.h"
 #include "store.h"
-#include "gameMap.h"
 #include "structures.h"
-#include "gameConstants.h"
 #include "team.h"
 #include <algorithm>
 #include <cmath>
@@ -28,7 +28,7 @@ private:
   Phase phase= Phase::PURCHASE;
   std::vector<std::tuple<int, int, bool>> spawnTeamTerrorist;
   std::vector<std::tuple<int, int, bool>> spawnTeamCounter;
-  bool gameStart= true;
+  bool gameStart = true;
   std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
   float time;
@@ -37,7 +37,7 @@ private:
   RoundWinner winner;
   std::queue<Shot> shot_queue;
   GameMap map;
-  void dropWeapon(const Weapon& weapon, float x, float y);
+  void dropWeapon(const Weapon &weapon, float x, float y);
 
   Player &findPlayerByName(const std::string &name);
   void makeShot(Player &shooter);
@@ -55,15 +55,18 @@ private:
   void updateDefusing(const std::string &name, float deltaTime);
   void updatePlanting(const std::string &name, float deltaTime);
   void shoot(const std::string &shooterName, float deltaTime);
-  void applyDamageToPlayer(const Player& shooter, Player& target, float distance);
-  std::tuple<float, float, float, float> getPlayerHitbox(const Player& player) const;
-  PlayerCellBounds getCellBounds(float x,float y, float width, float height) const;
-  bool rectsOverlap(float ax, float ay, float aw, float ah,
-                  float bx, float by, float bw, float bh);
+  void applyDamageToPlayer(const Player &shooter, Player &target,
+                           float distance);
+  std::tuple<float, float, float, float>
+  getPlayerHitbox(const Player &player) const;
+  PlayerCellBounds getCellBounds(float x, float y, float width,
+                                 float height) const;
+  bool rectsOverlap(float ax, float ay, float aw, float ah, float bx, float by,
+                    float bw, float bh);
   void movePlayer(const std::string &name, float vx, float vy);
   void stopShooting(const std::string &name);
   void grab(const std::string &name);
-  void placePlayerInSpawnTeam(Player& player);
+  void placePlayerInSpawnTeam(Player &player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
   float bombElapsedTime = 0.0f;
@@ -84,8 +87,7 @@ private:
   void handleEndRound(char winnerTeam, TypeEndRound type);
   void placeTeamsInSpawn();
   void updateRotation(const std::string &name, float currentRotation);
-  Entity getPlayerState(const std::string& name);
-  void setMoneyValues(int roundWinner, int& moneyA, int& moneyB, Role winnerRole);
+  Entity getPlayerState(const std::string &name);
 
 public:
   Game(std::vector<std::vector<CellType>> game_map, GameRules& gameRules);

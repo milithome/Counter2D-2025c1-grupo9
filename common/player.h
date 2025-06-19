@@ -14,7 +14,6 @@ private:
   float x, y;
   Hitbox hitbox;
   Role role;
-  bool team= false; //true es A, false es B
   int money;
   Weapon equipped;
   WeaponType typeEquipped;
@@ -38,64 +37,25 @@ private:
   float lastVx = 0.0f;
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
-  uint32_t lastMoveId = 0;
   bool alive= true;
 
 public:
   explicit Player(const std::string &name, GameRules& gameRules);
 
   void changeWeapon(WeaponType newEquippedWeapon);
-  bool getAlreadyShot();
-  float getX() const;
-  float getY() const;
-  void setTeam(bool teamA);
-  int getBulletsPerShoot();
-  int getBulletsPrimary() const;
-  int getBulletsSecondary() const;
-  int getBurstFireBullets();
-  void setPrimaryBullets(int bullets);
-  void setSecondaryBullets(int bullets);
-  void setMoney(int money);
-  std::pair<float, float> getDamageRange() const;
-  bool getHasTheSpike();
-  int getHealth() const;
-  const Hitbox &getHitbox() const;
-  uint32_t getLastMoveId() const;
-  std::string getName() const;
-  int getMoney() const;
-  Weapon getEquipped();
-  WeaponName getPrimaryWeaponName() const;
-  Weapon getPrimaryWeapon();
-  WeaponName getSecondaryWeaponName() const;
-  WeaponType getTypeEquipped() const;
-  float getRotation() const;
-  float getShootCooldown();
-  float getSpreadAngle();
-  float getTimeLastBullet();
-  bool isAlive() const;
-  void setIsAlive(bool isAlive);
-  bool isShooting();
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);
   void resetCooldown();
   void resetPrimaryBullets();
   void resetSecondaryBullets();
   void resetTimeLastBullet();
-  void setAlreadyShot(bool value);
   void restoreHealth();
-  void setPosition(float x, float y);
-  void setRotation(float currentRotation);
-  void startShooting();
-  void stopShooting();
   std::tuple<float, float, float, float, float, float> shoot();
   std::pair<float, float> tryMove(float deltaTime);
   void updateAceleration(float deltaTime);
   void updateBurstFireBullets(int value);
   void updateCooldown(float deltaTime);
   void updateHealth(int value);
-  void setHasSpike(bool hasSpike);
-  void updateIsPlanting(bool isPlanting);
-  void updateIsDefusing(bool isDefusing);
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateTimeLastBullet(float deltaTime);
@@ -103,9 +63,9 @@ public:
   void updatePrimaryBullets(int value);
   void updateSecondaryBullets(int value);
   int getBullets();
-  Role getRole();
-  void setRole(Role newRole);
-  bool isPlanting();
-  bool isDefusing();
+  int getBulletsPerShoot();
+  std::pair<float, float> getDamageRange() const;
+  float getSpreadAngle();
+  void setPosition(float x, float y);
 };
 #endif
