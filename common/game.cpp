@@ -705,8 +705,6 @@ void Game::updateGamePhase(float deltaTime){
       teamB.resetSpikeCarrier();
       gameStart=false;
     }
-    
-    std::cout << purchaseElapsedTime << std::endl;
 
     purchaseElapsedTime += deltaTime;
     if (purchaseElapsedTime >= purchaseDuration){

@@ -302,7 +302,6 @@ std::vector<uint8_t> Protocol::serialize_state(const Response& r) {
     };
 
     Utilities::serialize_uint16(buf, game.entities.size());
-
     for (const Entity& entity : game.entities) {
         serialize_entity(buf, entity);
     }
@@ -793,8 +792,8 @@ Rounds Protocol::deserialize_rounds() {
     rounds.roundsWonTeamA = Utilities::deserialize_uint16(skt);
     rounds.roundsWonTeamB = Utilities::deserialize_uint16(skt);
     rounds.currentRound = Utilities::deserialize_uint16(skt);
-    rounds.winner.team = static_cast<char>(Utilities::deserialize_uint16(skt));
-    rounds.winner.typeEndRound = static_cast<TypeEndRound>(Utilities::deserialize_uint16(skt));
+    rounds.winner.team = static_cast<char>(Utilities::deserialize_uint8(skt));
+    rounds.winner.typeEndRound = static_cast<TypeEndRound>(Utilities::deserialize_uint8(skt));
     return rounds;
 }
 
@@ -802,9 +801,12 @@ Response Protocol::deserialize_state() {
     Response r;
     r.type = Type::STATE;
     r.result = Utilities::deserialize_uint8(skt);
+
     StateGame state;
+    
     uint8_t phase_val = Utilities::deserialize_uint8(skt);
     state.phase = static_cast<Phase>(phase_val);
+
     uint16_t entity_count = Utilities::deserialize_uint16(skt);
     for (uint16_t i = 0; i < entity_count; ++i) {
         state.entities.push_back(deserialize_entity());
