@@ -52,8 +52,21 @@ private:
 public:
     // Constructor
     Client(const std::string name, const char* host, const char* port);
+    ~Client() {
+        kill();
+        receiver.stop();
+        sender.stop();
+        receiver.join();
+        sender.join();
+    };
 
+    void setName(const std::string& name);
     void run(QApplication& app, MenuController& menuController);
+    void kill() {
+        protocol.close();
+    };
+
+    bool receiveConnectionResponse();
 };
 
 #endif // CLIENT_H
