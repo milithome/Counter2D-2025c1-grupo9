@@ -41,6 +41,7 @@ GameRules load_game_rules(const std::string& filename) {
     rules.time_until_plant = game["time_until_plant"].as<float>();
     rules.time_until_defuse = game["time_until_defuse"].as<float>();
     rules.time_until_new_round = game["time_until_new_round"].as<float>();
+    rules.timeUntilEndRunning = game["time_until_end_running"].as<float>();
 
     rules.ammo_price = game["ammo_price"].as<int>();
     rules.initial_money = game["initial_money"].as<int>();

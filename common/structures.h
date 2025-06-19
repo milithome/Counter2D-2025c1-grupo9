@@ -163,7 +163,7 @@ struct Action {
 enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
 
 // Estado del juego
-enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND };
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND, END_GAME };
 struct RoundWinner {
   char team;
   TypeEndRound typeEndRound;
@@ -303,6 +303,7 @@ struct GameRules {
   float time_until_plant;
   float time_until_defuse;
   float time_until_new_round;
+  float timeUntilEndRunning;
 
   int ammo_price;
 

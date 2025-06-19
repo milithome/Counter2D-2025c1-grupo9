@@ -69,9 +69,7 @@ private:
   void placePlayerInSpawnTeam(Player &player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
-  float bombElapsedTime = 0.0f;
-  float plantingElapsedTime = 0.0f;
-  float purchaseElapsedTime = 0.0f;
+  float elapsedTime= 0.0f;
   bool isBombPlanted = false;
   float timeUntilPlant;
   float timeUntilDefuse;
@@ -81,7 +79,8 @@ private:
   float purchaseDuration;
   float timeToPlantBomb;
   float timeUntilNewRound;
-  float endRoundElapsedTime = 0.0f;
+  float timeUntilEndRunning;
+  bool endGame= false;
   void updateRounds();
   char checkRoundWinner();
   void handleEndRound(char winnerTeam, TypeEndRound type);

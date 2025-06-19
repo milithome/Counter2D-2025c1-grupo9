@@ -19,6 +19,7 @@ game:
   time_until_plant: 3.0
   time_until_defuse: 3.0
   time_until_new_round: 7.0
+  time_until_end_running: 7.0
 
   ammo_price: 40
 
