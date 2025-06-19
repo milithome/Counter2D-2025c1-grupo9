@@ -58,6 +58,7 @@ Renderer GameView::createRenderer(Window& window) {
 
 void GameView::update(float deltaTime) {
     renderer.Clear();
+    phaseTimer -= deltaTime;
 
     Entity playerEntity;
     PlayerData playerData;
@@ -467,7 +468,6 @@ void GameView::showEntities(float cameraX, float cameraY) {
                     continue;
                 }
                 Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
-                
                 if (data.terrorist) { 
                     renderer.Copy(getTSkinSprite(info.terroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
                 } else {
@@ -561,11 +561,19 @@ void GameView::showNewPhase(float deltaTime) {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     Surface phaseLabel = font.RenderText_Blended(end_round_effect.text, Color(255, 255, 255));
+    int labelWidth = phaseLabel.GetWidth() * 2;
+    int labelHeight = phaseLabel.GetHeight() * 2;
+    const int MARGIN = 20;
+    if (labelWidth > width - MARGIN) {
+        float ratio = static_cast<float>(phaseLabel.GetHeight()) / static_cast<float>(phaseLabel.GetWidth()); 
+        labelWidth = width - MARGIN;
+        labelHeight = (width - MARGIN) * ratio;
+    };
     Rect phaseLabelRect(
-        (width - phaseLabel.GetWidth() * 2) / 2,
-        (height - phaseLabel.GetHeight() * 2) / 4,
-        phaseLabel.GetWidth() * 2,
-        phaseLabel.GetHeight() * 2
+        (width - labelWidth) / 2,
+        (height - labelHeight) / 4,
+        labelWidth,
+        labelHeight
     );
 
     Texture phaseLabelTexture(renderer, phaseLabel);
@@ -646,8 +654,8 @@ void GameView::showInterface(Inventory inventory, WeaponType equippedWeapon, int
             break;
         }
     }
-    int minutes = static_cast<int>(phaseTimer / 1000.0f) / 60;
-    int seconds = static_cast<int>(phaseTimer / 1000.0f) % 60;
+    int minutes = static_cast<int>(phaseTimer) / 60;
+    int seconds = static_cast<int>(phaseTimer) % 60;
     std::ostringstream oss;
     oss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
     Surface timeLabel = font.RenderText_Blended(oss.str(), Color(255, 255, 255));

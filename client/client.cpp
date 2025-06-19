@@ -10,6 +10,11 @@ Client::Client(const std::string name, const char* host, const char* port) :
 {
     receiver.start();
 	sender.start();
+    //protocol.send_name(clientName);
+    // Response r = protocol.recv_response();
+    // if (r.result) {
+    //     throw std::runtime_error(r.message);
+    // }
 }
 
 void Client::run(QApplication& app, MenuController& menuController) {
@@ -34,7 +39,7 @@ void Client::run(QApplication& app, MenuController& menuController) {
 
 
         GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map, initialData.weaponsInfo, initialData.shop, initialData.players);
-        GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, true);
+        GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, initialData, true);
 
         quit = gameClient.run();
 
