@@ -28,7 +28,6 @@ bool GameClient::run() {
 
 		Response msg;
         while (recv_queue.try_pop(msg)) {
-			std::cout << "poppeando mensaje gameClient" << std::endl;
 			switch (msg.type) {
 				case STATE: {
 					StateGame data = std::get<StateGame>(msg.data);
