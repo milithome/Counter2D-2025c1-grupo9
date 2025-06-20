@@ -9,7 +9,7 @@
 #include "client/views/connect_to_server_view.h"
 #include "client/views/search_party_view.h"
 #include "client/views/party_view.h"
-#include "message_event.h"
+#include "messages/message_event.h"
 #include "common/communication/protocol.h"
 
 class MenuController : public QWidget {

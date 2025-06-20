@@ -1,9 +1,4 @@
 #include "clientReceiverLoop.h"
-#include "client/controllers/action_event.h"
-#include "client/controllers/join_event.h"
-#include "client/controllers/leave_event.h"
-#include "client/controllers/list_event.h"
-#include "client/controllers/create_event.h"
 #include <functional>
 
 RecvLoop::RecvLoop(Protocol &proto, Queue<Response> &q) : protocol(proto), queue(q), active(true)  {}

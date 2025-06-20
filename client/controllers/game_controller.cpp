@@ -351,9 +351,9 @@ void GameController::updateGameState(StateGame new_state) {
         if (new_state.phase == BOMB_PLANTING) view.hideShop();
         shop_open = false;
         if (new_state.phase == END_ROUND) {
-            view.setEndRoundMessageEffect(new_state.rounds.winner);
+            view.showRoundEndMessage(new_state.rounds.winner);
         } else {
-            view.addNewPhaseEffect(new_state.phase);
+            view.showNewPhaseMessage(new_state.phase);
         }
 
         BombData data = std::get<BombData>(state.entities[bomb_index].data);

@@ -554,13 +554,13 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
 }
 
 void GameView::showNewPhase(float deltaTime) {
-    if (end_round_effect.time_left <= 0) {
+    if (on_screen_message_effect.time_left <= 0) {
         return;
     }
-    end_round_effect.time_left -= deltaTime;
+    on_screen_message_effect.time_left -= deltaTime;
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
-    Surface phaseLabel = font.RenderText_Blended(end_round_effect.text, Color(255, 255, 255));
+    Surface phaseLabel = font.RenderText_Blended(on_screen_message_effect.text, Color(255, 255, 255));
     int labelWidth = phaseLabel.GetWidth() * 2;
     int labelHeight = phaseLabel.GetHeight() * 2;
     const int MARGIN = 20;
@@ -1187,7 +1187,7 @@ void GameView::addDeathEffect(float x, float y, PlayerData& data) {
 
 }
 
-void GameView::addNewPhaseEffect(Phase phase) {
+void GameView::showNewPhaseMessage(Phase phase) {
     std::string text;
     switch (phase) {
         case PURCHASE: {
@@ -1206,9 +1206,9 @@ void GameView::addNewPhaseEffect(Phase phase) {
             break;
         }
     }
-    end_round_effect = OnScreenMessageEffect{text};
+    on_screen_message_effect = OnScreenMessageEffect{text};
 }
-void GameView::setEndRoundMessageEffect(RoundWinner winner) {
+void GameView::showRoundEndMessage(RoundWinner winner) {
     std::string text;
     if (winner.team == 'a') {
         text += "Team A wins! ";
@@ -1254,7 +1254,7 @@ void GameView::setEndRoundMessageEffect(RoundWinner winner) {
             break;
         }
     }
-    end_round_effect = OnScreenMessageEffect{text};
+    on_screen_message_effect = OnScreenMessageEffect{text};
 };
 
 void GameView::addBombExplosionEffect(float x, float y) {

@@ -2,8 +2,8 @@
 #define CT_SKIN_PICKED_EVENT_H
 
 #include "common/communication/protocol.h"
-#include "client/controllers/message_event.h"
-#include "client/views/game_view.h"
+#include "client/controllers/messages/message_event.h"
+#include "common/structures.h"
 #include <vector>
 #include <string>
 

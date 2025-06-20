@@ -4,14 +4,14 @@
 #include <QMessageBox>
 #include <QString>
 #include <iostream>
-#include "join_event.h"
-#include "leave_event.h"
-#include "list_event.h"
-#include "create_event.h"
-#include "start_event.h"
-#include "t_skin_picked_event.h"
-#include "ct_skin_picked_event.h"
-#include "map_picked_event.h"
+#include "messages/join_event.h"
+#include "messages/leave_event.h"
+#include "messages/list_event.h"
+#include "messages/create_event.h"
+#include "messages/start_event.h"
+#include "messages/t_skin_picked_event.h"
+#include "messages/ct_skin_picked_event.h"
+#include "messages/map_picked_event.h"
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
     connectToServerView = ConnectToServerView();

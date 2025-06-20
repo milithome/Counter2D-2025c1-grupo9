@@ -75,10 +75,6 @@ struct BombExplosionEffect {
 
 };
 
-struct NewPhaseEffect {
-    Phase phase;
-    float time_left = 2;
-};
 
 struct OnScreenMessageEffect {
     std::string text;
@@ -97,11 +93,6 @@ struct HitEffect {
 };
 
 
-
-// d inventory, dropped
-// m shop
-// _ ingame
-
 class GameView {
 public:
     GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players);
@@ -112,8 +103,8 @@ public:
     void addBulletEffects(Shot shot);
     void addDeathEffect(float x, float y, PlayerData& data);
     void addBombExplosionEffect(float x, float y);
-    void addNewPhaseEffect(Phase phase);
-    void setEndRoundMessageEffect(RoundWinner winner);
+    void showNewPhaseMessage(Phase phase);
+    void showRoundEndMessage(RoundWinner winner);
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
@@ -316,21 +307,6 @@ private:
         }
     }
 
-
-    // Surface buyPhaseLabel =  font.RenderText_Blended("Fase de compra", Color(255, 255, 255));
-    // Surface roundStartLabel = font.RenderText_Blended("Inicio de ronda", Color(255, 255, 255));
-    // Surface bombPlantedLabel =  font.RenderText_Blended("Bomba plantada", Color(255, 255, 255));
-    // Surface roundEndLabel =  font.RenderText_Blended("Fin de ronda", Color(255, 255, 255));
-    // Surface& getPhaseLabel(Phase phase) {
-    //     switch (phase) {
-    //         case PURCHASE:          return buyPhaseLabel;
-    //         case BOMB_PLANTING:     return roundStartLabel;
-    //         case BOMB_DEFUSING:     return bombPlantedLabel;
-    //         case END_ROUND:         return roundEndLabel;
-    //         default:                throw std::exception();
-    //     }
-    // }
-
     Texture bombAnimationSprite = Texture(renderer, "../assets/gfx/explosion.png");
 
     bool shopIsVisible = false;
@@ -341,8 +317,7 @@ private:
     std::vector<HitEffect> sparks_effects;
     std::vector<BulletEffect> bullet_effects;
     std::vector<DeathEffect> death_effects;
-    // NewPhaseEffect new_phase_effect = NewPhaseEffect{PURCHASE};
-    OnScreenMessageEffect end_round_effect = OnScreenMessageEffect{"Fase de compra"};
+    OnScreenMessageEffect on_screen_message_effect = OnScreenMessageEffect{"Fase de compra"};
     BombExplosionEffect bomb_explosion_effect;
     float phaseTimer = 0;
 
