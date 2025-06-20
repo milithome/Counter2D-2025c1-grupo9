@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-class QtView {
+class QtView { // : public QWidget
 public:
     virtual ~QtView() = 0;
     virtual QLayout *getLayout();

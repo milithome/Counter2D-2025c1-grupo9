@@ -39,7 +39,7 @@ public:
 
     void showStartingScreen() { 
         mainView = MainView();
-        listenToMainView(mainView);
+        listenToMainView();
         window.showView(mainView);
         window.show();
     }
@@ -72,15 +72,15 @@ private:
     void onConnectViewConnectButtonClicked();
     void onConnectViewBackButtonClicked();
 
-    void listenToMainView(MainView& mainView);
-    void listenToSearchPartyView(SearchPartyView& searchPartyView);
-    void listenToCreatePartyView(CreatePartyView& createPartyView);
-    void listenToPartyView(PartyView& createPartyView);
-    void listenToConnectView(ConnectToServerView& connectToServerView);
+    void listenToMainView();
+    void listenToSearchPartyView();
+    void listenToCreatePartyView();
+    void listenToPartyView();
+    void listenToConnectView();
 
 
 signals:
-    void nuevoEvento(std::shared_ptr<MessageEvent> event);
+    void newMessage(std::shared_ptr<MessageEvent> event);
     void connectRequest(const std::string& name, const std::string& addr, const std::string& port);
 };
 

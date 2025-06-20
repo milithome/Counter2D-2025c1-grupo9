@@ -72,8 +72,8 @@ bool MenuClient::run(bool looped) {
     timer->start(16); // limita el menu a 60fps
 
     // Conectar señales y slots
-    QObject::connect(&menuController, &MenuController::nuevoEvento, [this](std::shared_ptr<MessageEvent> event) {
-        send_queue.try_push(event);
+    QObject::connect(&menuController, &MenuController::newMessage, [this](std::shared_ptr<MessageEvent> message) {
+        send_queue.try_push(message);
     });
     if (looped) {
         menuController.showStartingScreen();
