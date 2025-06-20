@@ -38,7 +38,7 @@ public:
     QPoint getWindowPosition() { return window.getPosition(); }
 
     void showStartingScreen() { 
-        mainView = MainView();
+        mainView = new MainView();
         listenToMainView();
         window.showView(mainView);
         window.show();
@@ -47,16 +47,14 @@ public:
     
 
 private:
-
-    
     QtWindow& window;
-    MainView mainView;
-    SearchPartyView searchPartyView;
-    PartyView partyView;
-    CreatePartyView createPartyView;
-    ConnectToServerView connectToServerView;
+    MainView *mainView = nullptr;
+    SearchPartyView *searchPartyView = nullptr;
+    PartyView *partyView = nullptr;
+    CreatePartyView *createPartyView = nullptr;
+    ConnectToServerView *connectToServerView = nullptr;
 
-    std::string pName;
+    std::string pName; // Esto es un hack para ponerle nombre a la PartyView, hay mejores formas de hacerlo pero no me parece que valga la pena
 
 
 
@@ -68,7 +66,6 @@ private:
     void onSearchPartyViewBackButtonClicked();
     void onPartyViewLeaveButtonClicked();
     void onPartyViewStartButtonClicked();
-
     void onConnectViewConnectButtonClicked();
     void onConnectViewBackButtonClicked();
 

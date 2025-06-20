@@ -162,6 +162,8 @@ void ConnectToServerView::buildLayout() {
 
     layout->addWidget(container);
     layout->addStretch();
+
+    setLayout(layout);
 }
 
 QVBoxLayout *ConnectToServerView::getLayout() {

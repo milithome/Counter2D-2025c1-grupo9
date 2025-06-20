@@ -12,7 +12,6 @@
 #include <queue>
 #include <set>
 
-#define FRAMES_UNTIL_SUCCESSFUL_PLANT 240
 
 class GameController {
 public:

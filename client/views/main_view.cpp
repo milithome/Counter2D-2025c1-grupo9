@@ -33,6 +33,8 @@ void MainView::buildLayout() {
     layout->addSpacing(50);
     layout->addWidget(container, 0, Qt::AlignHCenter);
     layout->addStretch();
+
+    setLayout(layout);
 }
 
 QVBoxLayout *MainView::getLayout() {

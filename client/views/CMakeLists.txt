@@ -8,7 +8,6 @@ target_sources(taller_client
     search_party_view.cpp
     create_party_view.cpp
     connect_to_server_view.cpp
-    qtview.cpp
     PUBLIC
     # .h files
     game_view.h

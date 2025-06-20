@@ -83,6 +83,8 @@ void PartyView::buildLayout() {
     TranslucentContainer* container = new TranslucentContainer;
     container->addLayout(subLayout);
     layout->addWidget(container);
+
+    setLayout(layout);
 }
 
 QVBoxLayout* PartyView::getLayout() {
@@ -258,7 +260,7 @@ QWidget* PartyView::createTSkinsColumn(const std::unordered_map<tSkin, QString>&
 
 
 void PartyView::buildModal() {
-    QDialog* dialog = new QDialog();
+    QDialog* dialog = new QDialog(this, Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog->setWindowTitle("Settings");
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -316,4 +318,5 @@ void PartyView::buildModal() {
 
     dialog->setLayout(mainLayout);
     settingsModal = dialog;
+    //dialog->setParent(this);
 }

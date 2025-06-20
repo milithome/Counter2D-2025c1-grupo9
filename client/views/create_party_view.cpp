@@ -88,6 +88,8 @@ void CreatePartyView::buildLayout() {
 
     layout->addWidget(container);
     layout->addStretch();
+
+    setLayout(layout);
 }
 
 QVBoxLayout *CreatePartyView::getLayout() {
