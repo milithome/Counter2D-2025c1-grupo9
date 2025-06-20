@@ -109,13 +109,8 @@ public:
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
     void resizeHud();
-    void updateState(StateGame& new_state) {
-        state = new_state;
-    }
-    void setPhaseTimer(float time) {
-        std::cout << time << std::endl;
-        phaseTimer = time;
-    };
+    void updateState(StateGame& new_state) { state = new_state; }
+    void setPhaseTimer(float time) { phaseTimer = time; }
 
     std::unordered_map<WeaponName, std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>>> getWeaponShopButtons() { return weaponShopButtons; };
     std::pair<std::pair<uint32_t, uint32_t>, std::pair<uint32_t, uint32_t>> getBuyPrimaryAmmoButton() { return buyPrimaryAmmoButton; };
@@ -131,11 +126,9 @@ private:
     Shop& shop;
     std::vector<PlayerInfo>& players;
 
-
-
     Texture mapTiles;
     Texture backgroundTexture;
-    Texture playerTiles = Texture(renderer, "../assets/gfx/player/ct1.bmp"); // temporal
+
     Font font = Font("../assets/gfx/fonts/sourcesans.ttf", FONT_SIZE);
 
     // Surfaces de las skins para poder crear otras texturas, util para hacer las animaciones de muerte
@@ -143,10 +136,6 @@ private:
     Surface l337KrewS = Surface("../assets/gfx/player/t2.bmp");
     Surface arcticAvengerS = Surface("../assets/gfx/player/t3.bmp");
     Surface guerrillaS = Surface("../assets/gfx/player/t4.bmp");
-    Surface sealForceS = Surface("../assets/gfx/player/ct1.bmp");
-    Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
-    Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
-    Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
     Surface& getTSkinSpriteSurface(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenixS;
@@ -156,6 +145,10 @@ private:
             default:                throw std::exception();
         }
     }
+    Surface sealForceS = Surface("../assets/gfx/player/ct1.bmp");
+    Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
+    Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
+    Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
     Surface& getCtSkinSpriteSurface(ctSkin skin) {
         switch (skin) {
             case SEAL_FORCE:        return sealForceS;
@@ -171,12 +164,6 @@ private:
     Texture l337Krew = Texture(renderer, l337KrewS);
     Texture arcticAvenger = Texture(renderer, arcticAvengerS);
     Texture guerrilla = Texture(renderer, guerrillaS);
-
-    // CT skins
-    Texture sealForce = Texture(renderer, sealForceS);
-    Texture germanGsg9 = Texture(renderer, germanGsg9S);
-    Texture uksas = Texture(renderer, uksasS);
-    Texture frenchGign = Texture(renderer, frenchGignS);
     Texture& getTSkinSprite(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenix;
@@ -186,6 +173,11 @@ private:
             default:                throw std::exception();
         }
     }
+    // CT skins
+    Texture sealForce = Texture(renderer, sealForceS);
+    Texture germanGsg9 = Texture(renderer, germanGsg9S);
+    Texture uksas = Texture(renderer, uksasS);
+    Texture frenchGign = Texture(renderer, frenchGignS);
     Texture& getCtSkinSprite(ctSkin skin) {
         switch (skin) {
             case SEAL_FORCE:        return sealForce;
@@ -195,7 +187,6 @@ private:
             default:                throw std::exception();
         }
     }
-
 
 
     Texture bloodTexture;
@@ -228,7 +219,6 @@ private:
             return Texture(renderer, surface);
     }
 
-
     std::unordered_map<WeaponName, std::string> weaponTexts = {
         {AK47, "AK-47"},
         {M3, "M3"},
@@ -244,7 +234,6 @@ private:
         ShopSpriteS.SetColorKey(true, SDL_MapRGB(ShopSpriteS.Get()->format, 255, 0, 255));
         return Texture(renderer, ShopSpriteS);
     }
-
     Texture& getWeaponShopSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47: return akShopSprite;
@@ -332,7 +321,7 @@ private:
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
-    void showNewPhase(float deltaTime);
+    void showOnScreenMessage(float deltaTime);
     void showBombExplosion(float cameraX, float cameraY, float deltaTime);
     void showFov(float angle);
 

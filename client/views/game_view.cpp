@@ -100,7 +100,7 @@ void GameView::update(float deltaTime) {
     }
 
 
-    showNewPhase(deltaTime);
+    showOnScreenMessage(deltaTime);
 
 
     if (!shopIsVisible) {
@@ -184,7 +184,7 @@ void GameView::showFov(float angle) {
         .tex_coord = {0, 0}
     });
 
-    // Usamos la API raw de SDL porque SDL2pp no tiene RenderGeometry
+    // uso la API raw de SDL porque SDL2pp no tiene RenderGeometry
     SDL_RenderGeometry(renderer.Get(), nullptr, verts_cone.data(), verts_cone.size(), nullptr, 0);
 
 
@@ -196,14 +196,14 @@ void GameView::showFov(float angle) {
     verts_circle.reserve(NUM_SEGMENTS + 2); 
 
 
-    // Vértice central
+    // vertice central
     verts_circle.push_back({
         .position = {cx, cy},
         .color = color,
         .tex_coord = {0, 0}
     });
 
-    // Perímetro del círculo
+    // circulo
     for (int i = 0; i <= NUM_SEGMENTS; ++i) {
         float angle = (2.0f * M_PI * i) / NUM_SEGMENTS;
         float x = cx + circle_radius * std::cos(angle);
@@ -455,7 +455,7 @@ void GameView::showSparksEffects(float cameraX, float cameraY, float deltaTime) 
 void GameView::showEntities(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
     std::vector<Entity> entities = state.entities;
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
 
     for (size_t i = 0; i < entities.size(); i++) {
         switch (entities[i].type) {
@@ -526,8 +526,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
 }
 
 void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime) {
-
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
     for (auto it = death_effects.begin(); it < death_effects.end();) {
         DeathEffect& death = *it;
 
@@ -553,7 +552,7 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
     }
 }
 
-void GameView::showNewPhase(float deltaTime) {
+void GameView::showOnScreenMessage(float deltaTime) {
     if (on_screen_message_effect.time_left <= 0) {
         return;
     }
