@@ -14,7 +14,7 @@ struct Hitbox {
   float getWidth() const { return width; }
   float getHeight() const { return height; }
 
-  bool intersects(const Hitbox &other) const { // colisión entre hitboxes
+  bool intersects(const Hitbox &other) const {
     return !(x + width < other.x || x > other.x + other.width ||
              y + height < other.y || y > other.y + other.height);
   }
