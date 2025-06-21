@@ -10,7 +10,7 @@ EditorWindow::EditorWindow(ModoEditor modo, QWidget *parent)
     editorMapaWidget = new QWidget(this);
 
     // Agregar las vistas al stackedWidget
-    stackedWidget->addWidget(menuInicialWidget);  // menu principal ==0
+    stackedWidget->addWidget(menuInicialWidget);  // menu principal == 0
     stackedWidget->addWidget(editorMapaWidget);   // editor (crear o modificar) == 1
     setCentralWidget(stackedWidget);
 
@@ -166,7 +166,7 @@ void EditorWindow::aplicarEstilosResponsivos()
         "padding: 25px 20px;"
         "font-size: 30px;"
         "}"
-    );
+        );
     if (modo == CrearNuevoMapa) {
         cant_jugadores->setStyleSheet(
             "QLineEdit {"
@@ -227,10 +227,8 @@ void EditorWindow::actualizarFondo()
 }
 
 void EditorWindow::inicializarEditorMapa() {
-
-
     // CREAR LA BARRA DE MENÚ
-    miMenuBar = this->menuBar(); // Usar la barra de menú nativa de QMainWindow
+    miMenuBar = this->menuBar();
 
     // Crear menú File
     fileMenu = miMenuBar->addMenu("Archivo");
@@ -242,7 +240,7 @@ void EditorWindow::inicializarEditorMapa() {
 
     // Añadir acciones al menú
     fileMenu->addAction(guardarAction);
-    fileMenu->addSeparator(); // Separador visual
+    fileMenu->addSeparator();
     fileMenu->addAction(borrarAction);
     fileMenu->addAction(borrarTodoAction);
 
@@ -251,17 +249,12 @@ void EditorWindow::inicializarEditorMapa() {
     connect(borrarAction, &QAction::triggered, this, &EditorWindow::borrarSeleccionados);
     connect(borrarTodoAction, &QAction::triggered, this, &EditorWindow::borrarTodo);
 
-
-    // Layout principal vertical
+    // Layout principal vertical para el editorMapaWidget
     QVBoxLayout *mainLayout = new QVBoxLayout(editorMapaWidget);
-    mainLayout->setContentsMargins(50, 50, 50, 50);
-    mainLayout->setSpacing(30);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
+    mainLayout->setSpacing(20);
 
-    // Spacer superior para centrar verticalmente
-    QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->addItem(topSpacer);
-
-    // Parte superior: herramientas
+    // Parte superior: herramientas (FIJA)
     QHBoxLayout* toolbarLayout = new QHBoxLayout();
     toolbarLayout->setSpacing(20);
     toolbarLayout->setAlignment(Qt::AlignCenter);
@@ -273,9 +266,23 @@ void EditorWindow::inicializarEditorMapa() {
     categoriaCombo->addItem("Spawns/Zonas");
     toolbarLayout->addWidget(categoriaCombo);
 
-    // Layout para íconos, separado y accesible globalmente
+    // Layout para íconos
+    // Layout para íconos (dentro de un contenedor con scroll horizontal)
     iconosLayout = new QHBoxLayout();
-    toolbarLayout->addLayout(iconosLayout);  // agregamos el layout vacío al principio
+    iconosLayout->setSpacing(5);
+    iconosLayout->setContentsMargins(0, 0, 0, 0);
+
+    QWidget* iconosContainer = new QWidget();
+    iconosContainer->setLayout(iconosLayout);
+
+    QScrollArea* iconosScrollArea = new QScrollArea();
+    iconosScrollArea->setWidget(iconosContainer);
+    iconosScrollArea->setWidgetResizable(true);
+    iconosScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    iconosScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    iconosScrollArea->setFixedHeight(60);  // Ajustá según el alto de tus íconos
+
+    toolbarLayout->addWidget(iconosScrollArea);
 
 
     connect(categoriaCombo, &QComboBox::currentIndexChanged, this, [this]{
@@ -296,39 +303,109 @@ void EditorWindow::inicializarEditorMapa() {
         if (seleccion == "Pisos") {
             iconMapper = new QSignalMapper(this);
 
-            QStringList iconPaths = {
-                ":/pisos/aztec.png",
-                ":/pisos/dust.png",
-                ":/pisos/gras1.png",
-                ":/pisos/blood.png"
-            };
+            QString imagePath = ":/pisos/fondos_32.png"; // Imagen con bloques de muros
+            QPixmap originalPixmap(imagePath);
 
-            for (const QString& path : iconPaths) {
-                ClickableLabel* icono = new ClickableLabel();
+            int tileWidth = 32;
+            int tileHeight = 32;
 
-                icono->setPixmap(QPixmap(path).scaled(32, 32));
-                icono->setFrameStyle(QFrame::Box | QFrame::Plain);
-                icono->setLineWidth(1);
-                icono->setCursor(Qt::PointingHandCursor);
-                iconosLayout->addWidget(icono);
+            int columnas = originalPixmap.width() / tileWidth;
+            int filas = originalPixmap.height() / tileHeight;
 
-                connect(icono, &ClickableLabel::clicked, this, [this, path, icono]() {
-                    bloqueSeleccionado = path;
-                    actualizarSeleccionVisual(icono);
-                });
+            for (int fila = 0; fila < filas; ++fila) {
+                for (int columna = 0; columna < columnas; ++columna) {
+                    int x = columna * tileWidth;
+                    int y = fila * tileHeight;
+
+                    QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+
+                    ClickableLabel* icono = new ClickableLabel();
+                    icono->setPixmap(croppedPixmap);
+                    icono->setFrameStyle(QFrame::Box | QFrame::Plain);
+                    icono->setLineWidth(1);
+                    icono->setCursor(Qt::PointingHandCursor);
+                    iconosLayout->addWidget(icono);
+
+                    // Importante: guardar una copia del pixmap recortado como path temporal
+                    connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+                        bloqueSeleccionado = "";  // No hay path, usamos pixmap directamente
+                        pixmapSeleccionado = croppedPixmap;  // Tenés que declarar esto como atributo en tu clase
+                        actualizarSeleccionVisual(icono);
+                    });
+                }
             }
         }
+        else if (seleccion == "Muros") {
+            iconMapper = new QSignalMapper(this);
+
+            QString imagePath = ":/muros/muchos_bloques.png"; // Imagen con bloques de muros
+            QPixmap originalPixmap(imagePath);
+
+            int tileWidth = 32;
+            int tileHeight = 32;
+
+            int columnas = originalPixmap.width() / tileWidth;
+            int filas = originalPixmap.height() / tileHeight;
+
+            for (int fila = 0; fila < filas; ++fila) {
+                for (int columna = 0; columna < columnas; ++columna) {
+                    int x = columna * tileWidth;
+                    int y = fila * tileHeight;
+
+                    QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+
+                    ClickableLabel* icono = new ClickableLabel();
+                    icono->setPixmap(croppedPixmap);
+                    icono->setFrameStyle(QFrame::Box | QFrame::Plain);
+                    icono->setLineWidth(1);
+                    icono->setCursor(Qt::PointingHandCursor);
+                    iconosLayout->addWidget(icono);
+
+                    // Importante: guardar una copia del pixmap recortado como path temporal
+                    connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+                        bloqueSeleccionado = "";  // No hay path, usamos pixmap directamente
+                        pixmapSeleccionado = croppedPixmap;  // Tenés que declarar esto como atributo en tu clase
+                        actualizarSeleccionVisual(icono);
+                    });
+                }
+            }
+        }
+
     });
 
-
+    // Agregar la barra de herramientas al layout principal (FIJA)
     mainLayout->addLayout(toolbarLayout);
 
     qDebug() << jugadoresMaximos;
 
     auto [filas, columnas] = calcularDimensiones();
 
-    // Grilla central
-    gridLayout = new QGridLayout();
+    // CREAR EL SCROLL AREA - CONFIGURACIÓN CORRECTA
+    QScrollArea* scrollArea = new QScrollArea();
+
+    // CRÍTICO: widgetResizable debe ser FALSE para mantener tamaños fijos
+    scrollArea->setWidgetResizable(false);
+
+    // Configurar políticas de scroll
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    // Establecer un tamaño máximo para el scroll area para forzar scroll
+    scrollArea->setMaximumSize(3000, 3000); // Limitar el tamaño del área visible
+    scrollArea->setMinimumSize(400, 300);
+
+    // Widget que contendrá DIRECTAMENTE la grilla
+    QWidget* gridWidget = new QWidget();
+
+    // Layout de la grilla - SIN PADDING EXTRA
+    gridLayout = new QGridLayout(gridWidget);
+    gridLayout->setSpacing(0);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
+
+    // CRÍTICO: Política de tamaño fija para evitar redimensionamiento
+    gridWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    // Crear la grilla con tamaños FIJOS
     grillaCeldas.clear();
     grillaCeldas.resize(filas);
 
@@ -336,22 +413,84 @@ void EditorWindow::inicializarEditorMapa() {
         grillaCeldas[i].resize(columnas);
         for (int j = 0; j < columnas; ++j) {
             QLabel* celda = new QLabel();
+
+            // TAMAÑO FIJO - NO NEGOCIABLE
             celda->setFixedSize(32, 32);
-            celda->setStyleSheet("background-color: lightgray; border: 1px solid white;");
+            celda->setMinimumSize(32, 32);
+            celda->setMaximumSize(32, 32);
+
+            celda->setStyleSheet(
+                "background-color: #f0f0f0; "
+                "border: 0.5px solid #999999; "
+                "margin: 0px; "
+                "padding: 0px;"
+                );
             celda->setAlignment(Qt::AlignCenter);
+
+            // Política de tamaño fija
+            celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
             gridLayout->addWidget(celda, i, j);
             grillaCeldas[i][j] = celda;
 
-            // Hacer clickeable la celda
             celda->installEventFilter(this);
             celda->setProperty("fila", i);
             celda->setProperty("columna", j);
         }
     }
 
-    mainLayout->addLayout(gridLayout);
+    // Calcular y establecer el tamaño exacto del widget contenedor
+    int anchoTotal = columnas * 32;
+    int altoTotal = filas * 32;
+    gridWidget->setFixedSize(anchoTotal, altoTotal);
 
-    // Parte inferior: botones de acción
+    // Establecer el widget en el scroll area
+    scrollArea->setWidget(gridWidget);
+
+    // Centrar el contenido cuando sea más pequeño que el área
+    scrollArea->setAlignment(Qt::AlignCenter);
+
+    // Layout para centrar completamente el scrollArea
+    QWidget* centroContenedor = new QWidget();
+    QGridLayout* centroLayout = new QGridLayout(centroContenedor);
+    centroLayout->addWidget(scrollArea, 0, 0, Qt::AlignCenter);
+    centroLayout->setContentsMargins(0, 0, 0, 0);
+    centroLayout->setSpacing(0);
+
+    // Agregar el contenedor centrado al layout principal
+    mainLayout->addWidget(centroContenedor, /* stretch */ 1);
+
+    QHBoxLayout* resizeLayout = new QHBoxLayout();
+    resizeLayout->setAlignment(Qt::AlignCenter);
+
+    QLabel* anchoLabel = new QLabel("Ancho visible:");
+    QSpinBox* anchoSpin = new QSpinBox();
+    anchoSpin->setRange(200, 1000);
+    anchoSpin->setValue(scrollArea->width());
+
+    QLabel* altoLabel = new QLabel("Alto visible:");
+    QSpinBox* altoSpin = new QSpinBox();
+    altoSpin->setRange(200, 780);
+    altoSpin->setValue(scrollArea->height());
+
+    resizeLayout->addWidget(anchoLabel);
+    resizeLayout->addWidget(anchoSpin);
+    resizeLayout->addSpacing(20);
+    resizeLayout->addWidget(altoLabel);
+    resizeLayout->addWidget(altoSpin);
+
+    mainLayout->addLayout(resizeLayout);
+
+    // CONECTAR LOS SPINBOX A CAMBIOS DINÁMICOS DEL SCROLL AREA
+    connect(anchoSpin, QOverload<int>::of(&QSpinBox::valueChanged), scrollArea, [=](int w){
+        scrollArea->setFixedWidth(w);
+    });
+    connect(altoSpin, QOverload<int>::of(&QSpinBox::valueChanged), scrollArea, [=](int h){
+        scrollArea->setFixedHeight(h);
+    });
+
+
+    // Parte inferior: botones de acción (FIJOS)
     QHBoxLayout* accionesLayout = new QHBoxLayout();
 
     // Botones para agregar fila/columna
@@ -374,15 +513,11 @@ void EditorWindow::inicializarEditorMapa() {
     connect(eliminarFilaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarFila);
     connect(eliminarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarColumna);
 
+    // Agregar los botones de acción al layout principal (FIJOS)
     mainLayout->addLayout(accionesLayout);
-
-    // Spacer inferior para centrar verticalmente
-    QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->addItem(bottomSpacer);
 
     editorMapaWidget->setLayout(mainLayout);
     actualizarEstadoBotonesDimensiones();
-
 }
 
 void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado)
@@ -397,12 +532,31 @@ void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado)
     iconoSeleccionado = nuevoSeleccionado;
 }
 
+void EditorWindow::actualizarTamanoGridWidget() {
+    if (grillaCeldas.isEmpty()) return;
+
+    int filas = grillaCeldas.size();
+    int columnas = grillaCeldas[0].size();
+    int anchoTotal = columnas * 32;
+    int altoTotal = filas * 32;
+
+    // Buscar el widget contenedor de la grilla y actualizar su tamaño
+    QWidget* gridWidget = gridLayout->parentWidget();
+    if (gridWidget) {
+        gridWidget->setFixedSize(anchoTotal, altoTotal);
+    }
+}
+
 
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
         QLabel* celda = qobject_cast<QLabel*>(obj);
-        if (celda && !bloqueSeleccionado.isEmpty()) {
-            celda->setPixmap(QPixmap(bloqueSeleccionado).scaled(32, 32));
+        if (celda) {
+            if (!bloqueSeleccionado.isEmpty()) {
+                celda->setPixmap(QPixmap(bloqueSeleccionado).scaled(32, 32));
+            } else if (!pixmapSeleccionado.isNull()) {
+                celda->setPixmap(pixmapSeleccionado.scaled(32, 32));
+            }
         }
         return true;
     }
@@ -418,29 +572,32 @@ void EditorWindow::agregarFila() {
 
     for (int j = 0; j < columnas; ++j) {
         QLabel* celda = new QLabel();
+
+        // TAMAÑO FIJO
         celda->setFixedSize(32, 32);
-        celda->setStyleSheet("background-color: lightgray; border: 1px solid white;");
+        celda->setMinimumSize(32, 32);
+        celda->setMaximumSize(32, 32);
+        celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+        celda->setStyleSheet(
+            "background-color: #f0f0f0; "
+            "border: 0.5px solid #999999; "
+            "margin: 0px; "
+            "padding: 0px;"
+            );
         celda->setAlignment(Qt::AlignCenter);
         celda->installEventFilter(this);
         celda->setProperty("fila", nuevasFilas - 1);
         celda->setProperty("columna", j);
 
-        if (!gridLayout) return; // Por seguridad
+        if (!gridLayout) return;
         gridLayout->addWidget(celda, nuevasFilas - 1, j);
         grillaCeldas[nuevasFilas - 1][j] = celda;
     }
+
+    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
+    actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-
-}
-
-void EditorWindow::guardarMapa(){
-
-}
-void EditorWindow::borrarSeleccionados(){
-
-}
-void EditorWindow::borrarTodo(){
-
 }
 
 void EditorWindow::agregarColumna() {
@@ -453,26 +610,39 @@ void EditorWindow::agregarColumna() {
         grillaCeldas[i].resize(nuevasColumnas);
 
         QLabel* celda = new QLabel();
+
+        // TAMAÑO FIJO
         celda->setFixedSize(32, 32);
-        celda->setStyleSheet("background-color: lightgray; border: 1px solid white;");
+        celda->setMinimumSize(32, 32);
+        celda->setMaximumSize(32, 32);
+        celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+        celda->setStyleSheet(
+            "background-color: #f0f0f0; "
+            "border: 0.5px solid #999999; "
+            "margin: 0px; "
+            "padding: 0px;"
+            );
         celda->setAlignment(Qt::AlignCenter);
         celda->installEventFilter(this);
         celda->setProperty("fila", i);
         celda->setProperty("columna", nuevasColumnas - 1);
 
-        if (!gridLayout) return; // Por seguridad
+        if (!gridLayout) return;
         gridLayout->addWidget(celda, i, nuevasColumnas - 1);
         grillaCeldas[i][nuevasColumnas - 1] = celda;
     }
-    actualizarEstadoBotonesDimensiones();
 
+    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
+    actualizarTamanoGridWidget();
+    actualizarEstadoBotonesDimensiones();
 }
 
 void EditorWindow::eliminarFila() {
     int filas = grillaCeldas.size();
-    if (filas <= 1) return; // Evitamos dejar 0 filas
+    if (filas <= 1) return;
 
-    if (!gridLayout) return; // Por seguridad
+    if (!gridLayout) return;
     int columnas = grillaCeldas[0].size();
     for (int j = 0; j < columnas; ++j) {
         QLabel* celda = grillaCeldas[filas - 1][j];
@@ -481,14 +651,16 @@ void EditorWindow::eliminarFila() {
     }
 
     grillaCeldas.removeLast();
-    actualizarEstadoBotonesDimensiones();
 
+    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
+    actualizarTamanoGridWidget();
+    actualizarEstadoBotonesDimensiones();
 }
 
 void EditorWindow::eliminarColumna() {
     if (grillaCeldas.isEmpty() || grillaCeldas[0].size() <= 1) return;
 
-    if (!gridLayout) return; // Por seguridad
+    if (!gridLayout) return;
     int ultimaColumna = grillaCeldas[0].size() - 1;
     for (int i = 0; i < grillaCeldas.size(); ++i) {
         QLabel* celda = grillaCeldas[i][ultimaColumna];
@@ -496,8 +668,10 @@ void EditorWindow::eliminarColumna() {
         delete celda;
         grillaCeldas[i].removeLast();
     }
-    actualizarEstadoBotonesDimensiones();
 
+    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
+    actualizarTamanoGridWidget();
+    actualizarEstadoBotonesDimensiones();
 }
 
 void EditorWindow::actualizarEstadoBotonesDimensiones() {
@@ -514,7 +688,7 @@ void EditorWindow::actualizarEstadoBotonesDimensiones() {
 
 
 std::pair<int, int> EditorWindow::calcularDimensiones() {
-    int base = 10;
+    int base = 30;
     int aumento = 0;
     return {base + aumento, base + aumento};
 }
@@ -539,5 +713,15 @@ void EditorWindow::onSalirClicked()
 
 EditorWindow::~EditorWindow()
 {
+
+}
+
+void EditorWindow::guardarMapa(){
+
+}
+void EditorWindow::borrarSeleccionados(){
+
+}
+void EditorWindow::borrarTodo(){
 
 }

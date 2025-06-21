@@ -22,6 +22,8 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QScrollArea>
+#include <QSpinBox>
 
 
 #include "ClickableLabel.h"
@@ -31,9 +33,9 @@ enum ModoEditor {
     EditarMapaExistente
 };
 const int MIN_FILAS = 10;
-const int MAX_FILAS = 25;
+const int MAX_FILAS = 55;
 const int MIN_COLUMNAS = 10;
-const int MAX_COLUMNAS = 25;
+const int MAX_COLUMNAS = 55;
 
 
 class EditorWindow : public QMainWindow
@@ -73,11 +75,17 @@ private:
     QComboBox* categoriaCombo;
 
     QString bloqueSeleccionado; // Recurso del bloque elegido
+    QPixmap pixmapSeleccionado;
+
     QSignalMapper* iconMapper = nullptr;
     QHBoxLayout* iconosLayout = nullptr;  // Layout solo para íconos
 
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
+
     QGridLayout* gridLayout = nullptr;
+
+    bool dragging;
+
     ClickableLabel* iconoSeleccionado = nullptr; // Ícono actualmente seleccionado
     QPushButton* agregarFilaBtn;
     QPushButton* agregarColumnaBtn;
@@ -95,12 +103,14 @@ private:
     void borrarSeleccionados();
     void borrarTodo();
     void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado);
+    void actualizarTamanoGridWidget();
     void agregarFila();
     void agregarColumna();
     void eliminarFila();
     void eliminarColumna();
     void actualizarEstadoBotonesDimensiones();
     std::pair<int, int> calcularDimensiones();
+    void pintarCelda(QLabel* celda);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
