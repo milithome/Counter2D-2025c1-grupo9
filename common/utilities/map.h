@@ -15,8 +15,8 @@ enum class CellType {
     Walkable,
     Blocked,
     SpikeSite,
-    SpawnTeamA,
-    SpawnTeamB
+    Terrorist,
+    AntiTerrorist
 };
 
 struct MapData {

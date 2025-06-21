@@ -5,8 +5,8 @@ Game::Game(std::vector<std::vector<CellType>> game_map, GameRules &gameRules)
       map(std::move(game_map)) {
   teamA.setRole(Role::COUNTER_TERRORIST);
   teamB.setRole(Role::TERRORIST);
-  spawnTeamTerrorist = map.findSpawnTeam(false);
-  spawnTeamCounter = map.findSpawnTeam(true);
+  spawnTeamTerrorist = map.findSpawnTeam(true);
+  spawnTeamCounter = map.findSpawnTeam(false);
   spike.state = BombState::INVENTORY;
   rounds.roundsWonTeamA = 0;
   rounds.roundsWonTeamB = 0;
