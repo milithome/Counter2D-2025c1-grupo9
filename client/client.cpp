@@ -10,15 +10,27 @@ Client::Client(const std::string name, const char* host, const char* port) :
 {
     receiver.start();
 	sender.start();
-    //protocol.send_name(clientName);
-    // Response r = protocol.recv_response();
-    // if (r.result) {
-    //     throw std::runtime_error(r.message);
-    // }
+    protocol.send_name(clientName);
+}
+
+void Client::setName(const std::string& name) {
+    clientName = name;
+    protocol.send_name(name);
+}   
+
+bool Client::receiveConnectionResponse() {
+    Response r;
+    while (recv_queue.try_pop(r)) {
+        if (r.result) {
+            throw std::runtime_error(r.message);
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Client::run(QApplication& app, MenuController& menuController) {
-    protocol.send_name(clientName);
     bool looped = false;
     while (true) { // mientras el cliente no haya decidido irse
         MenuClient menuClient(app, menuController, recv_queue, send_queue, receiver, sender, protocol);
@@ -51,9 +63,5 @@ void Client::run(QApplication& app, MenuController& menuController) {
     
     send_queue.push(std::make_shared<DisconnectEvent>());
 
-	receiver.join();
-	sender.join();
-
-	TTF_Quit();
-
 }
+

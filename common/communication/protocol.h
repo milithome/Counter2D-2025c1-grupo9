@@ -41,6 +41,10 @@ public:
     // Metodos para recibir mensajes de clientes (servidor)
     Message recv_message();
 
+    void close() {
+        skt.shutdown(2);
+    };
+
 private:
     Socket skt;
     mutable std::mutex mtx;

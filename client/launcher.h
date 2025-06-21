@@ -61,38 +61,61 @@ public:
     };
 
     void run() {
-        // Nota: qt esta atado con un alambre
+        // Nota: qt esta atado con alambre
         int argc = 0;
         char** argv = nullptr;
         QApplication app(argc, argv);
-        QEventLoop waitForConnection;
         qputenv("QT_QPA_PLATFORM", "xcb");
         QtWindow menuWindow("Counter Strike 2D", SCREEN_WIDTH, SCREEN_HEIGHT);
         MenuController menuController(menuWindow); 
-        std::unique_ptr<Client> client = nullptr;
 
+
+        QEventLoop waitForConnection;
+        QEventLoop waitForServerResponse;
+        bool quit = false;
+        QObject::connect(&menuWindow, &QtWindow::windowClosed, [&]() {
+            quit = true;
+            waitForConnection.quit();
+            waitForServerResponse.quit();
+        });
+
+        std::unique_ptr<Client> client = nullptr;
         QObject::connect(&menuController, &MenuController::connectRequest, [&](const std::string& name, const std::string& addr, const std::string& port) {
             try {
                 client = std::make_unique<Client>(name, addr.c_str(), port.c_str());
-                menuController.onConnectionRequestResponseReceived("Exito", 0);
                 waitForConnection.quit();
-            // } catch (const std::runtime_error& e) {
-            //     menuController.onConnectionRequestResponseReceived(e.what(), 1);
             } catch (...) {
-                menuController.onConnectionRequestResponseReceived("Conexión fallida", 1);
+                menuController.onConnectionRequestResponseReceived("Conexión fallida: no se encontro un servidor con esa dirección y puerto", 1);
             }
         });
-        QObject::connect(&menuWindow, &QtWindow::windowClosed, [&]() {
-            waitForConnection.quit();
-        });
 
-        waitForConnection.exec();
-        if (client) {
-            client->run(app, menuController);
+        bool connected = false;
+        while (!connected) {
+            waitForConnection.exec();
+            if (quit) return;
+            if (client) {
+                QTimer *timer = new QTimer(nullptr);
+                QObject::connect(timer, &QTimer::timeout, timer, [&]() {
+                    try {
+                        bool received = client->receiveConnectionResponse();
+                        if (received) {
+                            menuController.onConnectionRequestResponseReceived("Exito", 0);
+                            connected = true;
+                            waitForServerResponse.quit();
+                        }
+                    } catch (const std::runtime_error& e) {
+                        menuController.onConnectionRequestResponseReceived(e.what(), 1);
+                        waitForServerResponse.quit();
+                        client = nullptr;
+                    }
+                });
+                timer->start(16);
+                waitForServerResponse.exec();
+                delete timer;
+            }
         }
+        client->run(app, menuController);
     };
-
-
 };
 
 #endif

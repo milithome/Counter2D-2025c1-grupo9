@@ -304,9 +304,9 @@ void PartyView::buildModal() {
     QVBoxLayout* bottomLayout = new QVBoxLayout;
     bottomLayout->addWidget(new MenuLabel("Seleccionar mapa"));
 
-    QComboBox* mapBox = new QComboBox;
-    mapBox->addItems({"default", "grande"});
-    bottomLayout->addWidget(mapBox);
+    mapCombo = new QComboBox;
+    mapCombo->addItems({"default", "big", "aztec"});
+    bottomLayout->addWidget(mapCombo);
 
     mainLayout->addLayout(bottomLayout);
 
