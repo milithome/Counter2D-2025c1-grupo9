@@ -3,10 +3,6 @@
 #include <filesystem>
 #include <unordered_map>
 #include <string>
-#include "components/sdl_components/sdl_container.h"
-#include "components/sdl_components/sdl_hboxcontainer.h"
-#include "components/sdl_components/sdl_vboxcontainer.h"
-#include "components/sdl_components/sdl_surfacewidget.h"
 #include <sstream>
 #include <iomanip>
 
@@ -814,11 +810,6 @@ void GameView::showInterface(Inventory inventory, WeaponType equippedWeapon, int
             NullOpt,
             bombSprite);
     }
-
-}
-
-
-void GameView::resizeHud() {
 
 }
 

@@ -9,7 +9,7 @@
 #include <iostream>
 
 QtWindow::QtWindow(const std::string& window_name, int width, int height) {
-    setFixedSize(width, height);
+    resize(width, height);
     setWindowTitle(QString::fromStdString(window_name));
 
 
@@ -24,9 +24,7 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     background->setObjectName("bg");
     background->setStyleSheet(
         "QWidget#bg {"
-        "  background-image: url(:/assets/gfx/cs2d.png);"
-        "  background-repeat: no-repeat;"
-        "  background-position: center;"
+        "  border-image: url(:/assets/gfx/cs2d.png) 0 0 0 0 stretch stretch;"
         "}"
     );
 
@@ -40,11 +38,28 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
 }
 
 void QtWindow::showView(QtView *view) {
+
     currentView = view;
     stackedLayout->addWidget(view);
     stackedLayout->setCurrentWidget(view);
     view->show();
     show();
+
+
+
+    qDebug() << "== QtWindow State ==";
+    qDebug() << "Window size:" << size();
+    qDebug() << "Minimum size:" << minimumSize();
+    qDebug() << "Size hint:" << sizeHint();
+
+    if (currentView) {
+        qDebug() << "Current view:" << currentView;
+        qDebug() << "View minimumSize:" << currentView->minimumSize();
+        qDebug() << "View sizePolicy:"
+                << currentView->sizePolicy().horizontalPolicy()
+                << currentView->sizePolicy().verticalPolicy();
+        qDebug() << "View sizeHint:" << currentView->sizeHint();
+    }
 }
 
 
