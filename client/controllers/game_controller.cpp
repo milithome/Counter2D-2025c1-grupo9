@@ -2,7 +2,6 @@
 #include <iostream>
 #include "common/structures.h"
 
-#define DESYNC_TOLERANCE 0.2
 
 GameController::GameController(GameView& view, const std::string& player_name, Times times, bool pulse_available)
     : view(view), soundHandler(pulse_available), player_name(player_name), times(times) {
@@ -390,10 +389,6 @@ bool GameController::processEvents() {
             case SDL_QUIT: {
                 return true;
             }
-            case SDL_WINDOWEVENT: {
-                onWindowEvent(e);
-                break;
-            }
             case SDL_KEYDOWN: {
                 onKeyPressed(e);
                 break;
@@ -422,12 +417,3 @@ bool GameController::processEvents() {
     return false;
 }
 
-void GameController::onWindowEvent(const SDL_Event& event) {
-    switch (event.window.event) {
-        case SDL_WINDOWEVENT_SIZE_CHANGED: {
-            view.resizeHud();
-            break;
-        }
-        default: break;
-    }
-}

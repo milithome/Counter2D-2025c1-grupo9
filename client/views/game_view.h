@@ -106,7 +106,6 @@ public:
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
-    void resizeHud();
     void updateState(StateGame& new_state) { state = new_state; }
     void setPhaseTimer(float time) { phaseTimer = time; }
 

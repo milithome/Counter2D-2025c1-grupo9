@@ -32,7 +32,6 @@ private:
 
     void onKeyPressed(const SDL_Event& event);
     void onKeyReleased(const SDL_Event& event);
-    void onWindowEvent(const SDL_Event& event);
     void onMouseMovement();
     void onMouseLeftClick(const SDL_Event& event);
     void onMouseLeftClickOnShop(const SDL_Event& event);
