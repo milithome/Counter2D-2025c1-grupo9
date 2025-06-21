@@ -450,75 +450,78 @@ void GameView::showSparksEffects(float cameraX, float cameraY, float deltaTime) 
         ++it;
     }
 }
+void GameView::showPlayer(float cameraX, float cameraY, Entity player) {
+    PlayerData data = std::get<PlayerData>(player.data);
+    PlayerInfo info = findPlayerInfo(data.name);
+    if (!data.alive) {
+        return;
+    }
+    Rect dst(cameraX + player.x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + player.y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
+    if (data.terrorist) { 
+        renderer.Copy(getTSkinSprite(info.terroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+    } else {
+        renderer.Copy(getCtSkinSprite(info.counterTerroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+    }
 
+    float angleRad = (data.rotation) * M_PI / 180.0f;
+    float dx = std::cos(angleRad) * BLOCK_SIZE/2;
+    float dy = std::sin(angleRad) * BLOCK_SIZE/2;
+
+    Rect weaponDst(cameraX + player.x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2 + dx, cameraY + player.y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2 + dy, BLOCK_SIZE, BLOCK_SIZE);
+    switch (data.equippedWeapon) {
+        case WeaponType::PRIMARY: {
+            renderer.Copy(getWeaponInGameSprite(data.inventory.primary), NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+        case WeaponType::SECONDARY: {
+            renderer.Copy(glockInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+        case WeaponType::KNIFE: {
+            renderer.Copy(knifeInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+    }
+}
+void GameView::showWeapon(float cameraX, float cameraY, Entity weapon) {
+    WeaponData data = std::get<WeaponData>(weapon.data);
+    Rect dst(cameraX + weapon.x * BLOCK_SIZE, cameraY + weapon.y * BLOCK_SIZE, 0, 0);
+    if (data.weapon == NONE) {
+        return;
+    }
+    Texture& weaponDroppedSprite = getWeaponDroppedSprite(data.weapon);
+    dst.SetH(weaponDroppedSprite.GetHeight());
+    dst.SetW(weaponDroppedSprite.GetWidth());
+    renderer.Copy(getWeaponDroppedSprite(data.weapon), NullOpt, dst);
+}
+
+void GameView::showBomb(float cameraX, float cameraY, Entity bomb) {
+    BombData data = std::get<BombData>(bomb.data);
+    Rect dst(cameraX + bomb.x * BLOCK_SIZE, cameraY + bomb.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+    if (data.state == BombState::PLANTED) {
+        renderer.Copy(bombInGameSprite, NullOpt, dst);
+    } else if (data.state == BombState::DROPPED) {
+        renderer.Copy(bombInvSprite, NullOpt, dst);
+    }
+}
 
 void GameView::showEntities(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
     std::vector<Entity> entities = state.entities;
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
 
     for (size_t i = 0; i < entities.size(); i++) {
         switch (entities[i].type) {
             case PLAYER: {
-                PlayerData data = std::get<PlayerData>(entities[i].data);
-                PlayerInfo info = findPlayerInfo(data.name);
-                float playerX = entities[i].x;
-                float playerY = entities[i].y;
-                if (!data.alive) {
-                    continue;
-                }
-                Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
-                if (data.terrorist) { 
-                    renderer.Copy(getTSkinSprite(info.terroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                } else {
-                    renderer.Copy(getCtSkinSprite(info.counterTerroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                }
-
-                float angleRad = (data.rotation) * M_PI / 180.0f;
-                float dx = std::cos(angleRad) * BLOCK_SIZE/2;
-                float dy = std::sin(angleRad) * BLOCK_SIZE/2;
-
-                Rect weaponDst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2 + dx, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2 + dy, BLOCK_SIZE, BLOCK_SIZE);
-                switch (data.equippedWeapon) {
-                    case WeaponType::PRIMARY: {
-                        renderer.Copy(getWeaponInGameSprite(data.inventory.primary), NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                    case WeaponType::SECONDARY: {
-                        renderer.Copy(glockInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                    case WeaponType::KNIFE: {
-                        renderer.Copy(knifeInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                }
+                showPlayer(cameraX, cameraY, entities[i]);
                 break;
             }
             case WEAPON: {  
-                WeaponData data = std::get<WeaponData>(entities[i].data);
-                float weaponX = entities[i].x;
-                float weaponY = entities[i].y;
-                Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, 0, 0);
-                if (data.weapon == NONE) {
-                    break;
-                }
-                Texture& weaponDroppedSprite = getWeaponDroppedSprite(data.weapon);
-                dst.SetH(weaponDroppedSprite.GetHeight());
-                dst.SetW(weaponDroppedSprite.GetWidth());
-                renderer.Copy(getWeaponDroppedSprite(data.weapon), NullOpt, dst);
+                showWeapon(cameraX, cameraY, entities[i]);
                 break;
             }
             case BOMB: {
-                BombData data = std::get<BombData>(entities[i].data);
-                float bombX = entities[i].x;
-                float bombY = entities[i].y;
-                Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                if (data.state == BombState::PLANTED) {
-                    renderer.Copy(bombInGameSprite, src, dst);
-                } else if (data.state == BombState::DROPPED) {
-                    renderer.Copy(bombInvSprite, src, dst);
-                }
+                showBomb(cameraX, cameraY, entities[i]);
                 break;
             }
         }
@@ -1170,7 +1173,7 @@ SDL_Point GameView::getCenterPoint() {
 void GameView::addBulletEffects(Shot shot) {
     for (size_t i = 0; i < shot.bullets.size(); i++) {
         Bullet bullet = shot.bullets[i];
-        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION, bullet.impact});
+        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, bullet.impact});
     }
 }
 
@@ -1178,10 +1181,10 @@ void GameView::addDeathEffect(float x, float y, PlayerData& data) {
     PlayerInfo info = findPlayerInfo(data.name);
     if (data.terrorist) {
         Surface& s = getTSkinSpriteSurface(info.terroristSkin);
-        death_effects.push_back(DeathEffect{x, y, data.rotation, s, DEATH_DURATION, 255});
+        death_effects.push_back(DeathEffect{x, y, data.rotation, s});
     } else {
         Surface& s = getCtSkinSpriteSurface(info.counterTerroristSkin);
-        death_effects.push_back(DeathEffect{x, y, data.rotation, s, DEATH_DURATION, 255});
+        death_effects.push_back(DeathEffect{x, y, data.rotation, s});
     }   
 
 }

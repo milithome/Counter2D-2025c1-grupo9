@@ -14,10 +14,8 @@
 
 using namespace SDL2pp;
 
-
 #define DEATH_DURATION 1
 #define BULLET_SPEED 120
-#define BULLET_DURATION 1
 #define BULLET_THICKNESS 2
 #define BULLET_LENGTH 8
 
@@ -31,8 +29,8 @@ struct BulletEffect {
     float target_x;
     float target_y;
     float angle;
-    float time_left;
     Impact impact;
+    float time_left = 1;
 };
 
 struct DeathEffect {
@@ -40,8 +38,8 @@ struct DeathEffect {
     float dead_body_y;
     float dead_body_rotation;
     std::reference_wrapper<Surface> dead_body_skin;
-    float time_left;
-    int alpha;
+    float time_left = DEATH_DURATION;
+    int alpha = 255;
 };
 
 #define FOV M_PI/2
@@ -320,6 +318,9 @@ private:
     void showBloodEffects(float cameraX, float cameraY, float deltaTime);
     void showSparksEffects(float cameraX, float cameraY, float deltaTime);
     void showEntities(float cameraX, float cameraY);
+    void showPlayer(float cameraX, float cameraY, Entity player);
+    void showBomb(float cameraX, float cameraY, Entity bomb);
+    void showWeapon(float cameraX, float cameraY, Entity weapon);
     void showDeathAnimations(float cameraX, float cameraY, float deltaTime);
     void showOnScreenMessage(float deltaTime);
     void showBombExplosion(float cameraX, float cameraY, float deltaTime);
