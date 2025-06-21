@@ -8,6 +8,7 @@
 #include <QStackedLayout>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include "components/menu_button.h"
 
 class QtWindow : public QWidget
 {
@@ -23,10 +24,7 @@ private:
     QStackedLayout* stackedLayout = new QStackedLayout(this);
     QWidget *background = new QWidget(this);
     QWidget *currentView = nullptr;
-
-    // musica del menu
-    QMediaPlayer* player = new QMediaPlayer(this);
-    QAudioOutput* audioOutput = new QAudioOutput(this);
+    QPushButton *muteButton = new MenuButton("Mute");
 
     void closeEvent(QCloseEvent* event) override {
         emit windowClosed();

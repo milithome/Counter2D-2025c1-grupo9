@@ -33,9 +33,19 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     stackedLayout->setStackingMode(QStackedLayout::StackAll);
 
     stackedLayout->addWidget(background);
-    setLayout(stackedLayout);
+    stackedLayout->addWidget(muteButton);
 
-    show();
+
+    QSize hint = muteButton->sizeHint();
+    QSize extraSize(hint.width() + 10, hint.height() + 4);
+
+    muteButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    muteButton->setMinimumSize(extraSize);
+    muteButton->setMaximumSize(extraSize);
+
+    muteButton->raise();
+
+    setLayout(stackedLayout);
 
     QMediaPlayer* player = new QMediaPlayer(this);
     QAudioOutput* audioOutput = new QAudioOutput(this);
@@ -47,6 +57,17 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     player->setLoops(QMediaPlayer::Infinite);
     player->play();
 
+    QObject::connect(muteButton, &QPushButton::clicked, this, [this, audioOutput]() mutable {
+        bool isMuted = audioOutput->isMuted();
+        audioOutput->setMuted(!isMuted);
+        muteButton->setText(isMuted ? "Mute" : "Unmute");
+        QSize hint = muteButton->sizeHint();
+        QSize extraSize(hint.width() + 10, hint.height() + 4);
+        muteButton->setMinimumSize(extraSize);
+        muteButton->setMaximumSize(extraSize);
+    });
+
+    show();
 }
 
 void QtWindow::showView(QtView *view) {
@@ -54,6 +75,7 @@ void QtWindow::showView(QtView *view) {
     currentView = view;
     stackedLayout->addWidget(view);
     stackedLayout->setCurrentWidget(view);
+    muteButton->raise();
     view->show();
     show();
 
