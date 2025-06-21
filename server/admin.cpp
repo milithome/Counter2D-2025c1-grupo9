@@ -102,18 +102,16 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     return client;
 }
 
-void Admin::removeClient(const std::string& name, bool fromReceiver) {
+void Admin::removeClient(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = std::find_if(clients.begin(), clients.end(), [&name](const std::shared_ptr<Client>& client) {
         return client->channels.name == name;
     });
 
     if (it != clients.end()) {
-        if (!fromReceiver) {
-            (*it)->receiver->stop();
-            (*it)->receiver->join();
-        }
+        (*it)->receiver->stop();
         (*it)->sender->stop();
+        (*it)->receiver->join();
         (*it)->sender->join();
         clients.erase(it);
     } else {

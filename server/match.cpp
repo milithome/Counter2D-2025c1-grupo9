@@ -185,13 +185,6 @@ void Match::handleStart() {
 void Match::handleDisconnect(const std::string& clientName) {
     for (auto it = clients.begin(); it != clients.end(); ++it) {
         if ((*it)->channels.name == clientName) {
-            Response response = {
-                Type::DISCONNECT,
-                0,
-                {},
-                "Disconnect successfull."
-            };
-            (*it)->channels.responses->push(response);
             clients.erase(it);
             break;
         }
