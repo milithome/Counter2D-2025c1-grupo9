@@ -181,7 +181,7 @@ PlayerCellBounds Game::getCellBounds(float x, float y, float width,
 void Game::defuseBomb(const std::string &name) {
   timeDefusing = 0.0f;
   Player &player = findPlayerByName(name);
-  if (player.role == Role::TERRORIST) { // solo puede defusear si es defensor
+  if (player.role == Role::TERRORIST) {
     return;
   }
   auto [x, y, width, height] = getPlayerHitbox(player);
