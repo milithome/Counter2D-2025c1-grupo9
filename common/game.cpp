@@ -416,10 +416,6 @@ bool Game::rectsOverlap(float ax, float ay, float aw, float ah, float bx,
 void Game::grab(const std::string &name) {
   Player &player = findPlayerByName(name);
 
-  // Print player role as string for debugging
-  std::string roleStr = (player.role == Role::TERRORIST) ? "TERRORIST" : "COUNTER_TERRORIST";
-  std::cout << roleStr << std::endl;
-
   if (spike.state == BombState::DROPPED && player.role==Role::TERRORIST) {
     if (rectsOverlap(player.x, player.y, player.hitbox.getWidth(),
                      player.hitbox.getHeight(), spike.position.x,

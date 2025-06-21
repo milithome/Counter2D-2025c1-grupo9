@@ -211,10 +211,8 @@ void Match::broadcastLobbyState() {
 
 void Match::updateLobbyReadyStatus(bool& lobbyReadySent) {
     if (clients.size() >= minPlayers && clients.size() <= maxPlayers) {
-        if (!lobbyReadySent) {
-            sendLobbyReadyToAll();
-            lobbyReadySent = true;
-        }
+        sendLobbyReadyToAll();
+        lobbyReadySent = true;
     } else if (lobbyReadySent) {
         sendNotLobbyReadyToAll();
         lobbyReadySent = false;
