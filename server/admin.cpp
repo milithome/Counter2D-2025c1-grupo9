@@ -71,8 +71,17 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
             }
             {
                 std::lock_guard<std::mutex> lock(this->mtx);
-                client->channels.name = name;
 
+                auto nameExists = std::any_of(this->clients.begin(), this->clients.end(),
+                    [&name](const std::shared_ptr<Client>& other) {
+                        return other->channels.name == name;
+                    });
+
+                if (nameExists) {
+                    throw std::runtime_error("A client with that name already exists");
+                }
+
+                client->channels.name = name;
                 this->unnamedClients.erase(client);
                 this->clients.insert(client);
             }
@@ -89,7 +98,6 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     );
 
     client->receiver->start();
-    //client->sender->start();
 
     return client;
 }
