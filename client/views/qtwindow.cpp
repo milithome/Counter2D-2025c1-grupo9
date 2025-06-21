@@ -75,6 +75,7 @@ void QtWindow::showView(QtView *view) {
     currentView = view;
     stackedLayout->addWidget(view);
     stackedLayout->setCurrentWidget(view);
+    view->setParent(this);
     muteButton->raise();
     view->show();
     show();

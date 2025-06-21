@@ -15,6 +15,7 @@ class QtWindow : public QWidget
     Q_OBJECT
 public:
     explicit QtWindow(const std::string& windowName, int width, int height);
+
     void showView(QtView *view);
     void clearWindow();
     void quit();
@@ -24,7 +25,7 @@ private:
     QStackedLayout* stackedLayout = new QStackedLayout(this);
     QWidget *background = new QWidget(this);
     QWidget *currentView = nullptr;
-    QPushButton *muteButton = new MenuButton("Mute");
+    QPushButton *muteButton = new MenuButton("Mute", this);
 
     void closeEvent(QCloseEvent* event) override {
         emit windowClosed();

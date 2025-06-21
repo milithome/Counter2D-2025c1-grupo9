@@ -181,7 +181,7 @@ QPushButton* PartyView::createSkinButton(const QString& imagePath) {
 
     QPixmap originalPixmap(imagePath);
 
-    QPixmap croppedPixmap = originalPixmap.copy(0, 0, 32, 32); // Top-left 32x32
+    QPixmap croppedPixmap = originalPixmap.copy(0, 0, 32, 32);
 
     QPixmap scaledPixmap = croppedPixmap.scaled(48, 48, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 

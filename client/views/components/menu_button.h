@@ -14,9 +14,6 @@ class MenuButton : public QPushButton {
 
 public:
 
-    ~MenuButton() {
-        delete effect;
-    }
     MenuButton(const QString &text, QWidget *parent = nullptr)
         : QPushButton(text, parent)
     {
@@ -54,8 +51,6 @@ protected:
         if (isEnabled()) {
             effect->setColor(Qt::yellow);
         }
-
-
 
         QPushButton::enterEvent(event);
 
