@@ -43,26 +43,4 @@ const float MAX_ACELERATION = 3.0f;
 const float MIN_ACELERATION = -2.0f;
 const float SLIDE_DURATION = 0.15f;
 
-/* Configurables */
-/*
-#define MAX_PLAYERS_PER_TEAM 5
-#define AMMO_PRICE 40
-#define MAX_HEALTH 200
-#define SPEED 5.0f
-
-const float PURCHASE_DURATION = 30.0f;
-const float BOMB_DURATION = 60.0f;
-const float TIME_TO_PLANT = 130.0f;
-const float TIME_UNTIL_PLANT = 5.0f;
-const float TIME_UNTIL_DEFUSE = 5.0f;
-const float TIME_UNTIL_NEW_ROUND = 10.0f;
-
-const int INITIAL_ROUNDS_UNTIL_ROLE_CHANGE = 3;
-const int INITIAL_ROUNDS_UNTIL_END_GAME = 6;
-const int MONEY_WINNER = 150;
-const int MONEY_LOSER = 100;
-const int INITIAL_MONEY = 1000;
-const int INITIAL_PRIMARY_AMMO = 0;
-const int INITIAL_SECONDARY_AMMO = 0;
-*/
 #endif

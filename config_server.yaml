@@ -18,8 +18,8 @@ game:
   time_to_plant: 30.0
   time_until_plant: 3.0
   time_until_defuse: 3.0
-  time_until_new_round: 5.0
-  time_until_end_running: 5.0
+  time_until_new_round: 10.0
+  time_until_end_running: 10.0
 
   ammo_price: 40
 

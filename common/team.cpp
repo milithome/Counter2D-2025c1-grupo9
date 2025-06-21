@@ -31,6 +31,7 @@ void Team::invertRole() {
     player->bulletsSecondary = gameRules.initial_secondary_ammo;
     player->money = gameRules.initial_money;
   }
+  currentRole = newRole;
 }
 
 void Team::updateMoneyAfterRound(int money) {

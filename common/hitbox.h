@@ -6,7 +6,7 @@
 #include <utility>
 
 struct Hitbox {
-  float x, y; // esquina superior izquierda
+  float x, y;
   float width;
   float height;
   float getX() const { return x; }
