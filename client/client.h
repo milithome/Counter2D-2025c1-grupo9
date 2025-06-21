@@ -47,13 +47,27 @@ private:
     RecvLoop receiver;
     SendLoop sender;
     std::vector<std::string> players;
-    //Map map_selected ()  se agarraria en una ventana de los mapas en la memoria del editor
 
 public:
     // Constructor
     Client(const std::string name, const char* host, const char* port);
+    ~Client() {
+        receiver.stop();
+        sender.stop();
+        recv_queue.close();
+        send_queue.close();
+        kill();
+        receiver.join();
+        sender.join();
+    };
 
+    void setName(const std::string& name);
     void run(QApplication& app, MenuController& menuController);
+    void kill() {
+        protocol.close();
+    };
+
+    bool receiveConnectionResponse();
 };
 
-#endif // CLIENT_H
+#endif

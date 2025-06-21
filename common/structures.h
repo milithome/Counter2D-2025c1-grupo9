@@ -4,27 +4,27 @@
 #include "common/utilities/map.h"
 #include "common/utilities/queue.h"
 #include <cstdint>
+#include <map>
 #include <string>
 #include <variant>
 #include <vector>
-#include <map>
 
 // Tipos de mensajes que pueden enviarse
 enum Type {
-  NAME,         // mandar name
-  LIST,         // mandar/recibir lista de lobbies
-  CREATE,       // crear un lobby y recibir confirmacion
-  JOIN,         // unirse a un lobby y recibir confirmacion
-  LEAVE,        // salir de un lobby y recibir confirmacion
-  STATE_LOBBY,  // recibir estado del lobby
-  LOBBY_READY,  // recibir que el lobby esta en condiciones
-  NOT_LOBBY_READY, // recibir que el lobby estaba en condiciones y ya no 
-  START,        // mandar iniciar partida
-  INITIAL_DATA, // recibir datos inicales
-  ACTION,       // mandar accion
-  STATE,        // recibir estado
-  FINISH,       // recibir fin de la partida
-  DISCONNECT    // mandar desconeccion
+  NAME,            // mandar name
+  LIST,            // mandar/recibir lista de lobbies
+  CREATE,          // crear un lobby y recibir confirmacion
+  JOIN,            // unirse a un lobby y recibir confirmacion
+  LEAVE,           // salir de un lobby y recibir confirmacion
+  STATE_LOBBY,     // recibir estado del lobby
+  LOBBY_READY,     // recibir que el lobby esta en condiciones
+  NOT_LOBBY_READY, // recibir que el lobby estaba en condiciones y ya no
+  START,           // mandar iniciar partida
+  INITIAL_DATA,    // recibir datos inicales
+  ACTION,          // mandar accion
+  STATE,           // recibir estado
+  FINISH,          // recibir fin de la partida
+  DISCONNECT       // mandar desconeccion
 };
 
 // Tipos de armas disponibles en el juego
@@ -37,18 +37,13 @@ enum class WeaponType {
 enum WeaponName { AK47, M3, AWP, GLOCK, KNIFE, NONE };
 
 enum tSkin {
-    PHOENIX,
-    L337_KREW, 
-    ARCTIC_AVENGER,
-    GUERRILLA,
+  PHOENIX,
+  L337_KREW,
+  ARCTIC_AVENGER,
+  GUERRILLA,
 };
 
-enum ctSkin {
-    SEAL_FORCE,
-    GERMAN_GSG9,
-    UKSAS,
-    FRENCH_GIGN
-};
+enum ctSkin { SEAL_FORCE, GERMAN_GSG9, UKSAS, FRENCH_GIGN };
 
 // Tipos de entidades del juego
 enum EntityType {
@@ -58,22 +53,22 @@ enum EntityType {
 };
 
 struct Inventory {
-    WeaponName primary;
-    WeaponName secondary;
-    uint32_t bulletsPrimary;
-    uint32_t bulletsSecondary;
-    bool has_the_bomb;
+  WeaponName primary;
+  WeaponName secondary;
+  uint32_t bulletsPrimary;
+  uint32_t bulletsSecondary;
+  bool has_the_bomb;
 };
 
 struct PlayerData {
-    std::string name;
-    float rotation;
-    int money;
-    int health;
-    Inventory inventory;
-    WeaponType equippedWeapon;
-    bool alive;
-    bool terrorist;
+  std::string name;
+  float rotation;
+  int money;
+  int health;
+  Inventory inventory;
+  WeaponType equippedWeapon;
+  bool alive;
+  bool terrorist;
 };
 
 enum BombState {
@@ -155,7 +150,10 @@ struct ChangeWeaponAction {
   WeaponType type;
 };
 
-using ActionData = std::variant<std::monostate, SelectTSkin, SelectCTSkin, SelectMap, MoveAction, PointToAction, BuyBulletAction, BuyWeaponAction, ChangeWeaponAction>;
+using ActionData =
+    std::variant<std::monostate, SelectTSkin, SelectCTSkin, SelectMap,
+                 MoveAction, PointToAction, BuyBulletAction, BuyWeaponAction,
+                 ChangeWeaponAction>;
 
 struct Action {
   ActionType type;
@@ -165,7 +163,7 @@ struct Action {
 enum TypeEndRound { BOMB_DEFUSED, DEAD_TEAM, BOMB_EXPLODED, BOMB_NOT_PLANTED };
 
 // Estado del juego
-enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND };
+enum Phase { PURCHASE, BOMB_PLANTING, BOMB_DEFUSING, END_ROUND, END_GAME };
 struct RoundWinner {
   char team;
   TypeEndRound typeEndRound;
@@ -177,8 +175,6 @@ struct Rounds {
   uint16_t currentRound;
   RoundWinner winner;
 };
-
-
 
 enum Impact { HUMAN, BLOCK, NOTHING };
 
@@ -202,7 +198,6 @@ struct StateGame {
   std::queue<Shot> shots;
   Rounds rounds;
 };
-
 
 struct PlayerInfo {
   std::string name;
@@ -238,7 +233,6 @@ struct InitialData {
   Times times;
 };
 
-
 // Lista de lobbies disponibles
 struct LobbyList {
   std::vector<std::string> lobbies;
@@ -249,7 +243,8 @@ struct StateLobby {
   std::vector<std::string> players;
 };
 
-using ResponseData = std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
+using ResponseData =
+    std::variant<std::monostate, LobbyList, StateLobby, InitialData, StateGame>;
 
 // Respuesta enviada por el servidor al cliente
 struct Response {
@@ -268,12 +263,11 @@ struct Message {
   std::string clientName;
 };
 
-
 /* Estructuras de configuracion */
 struct ServerConfig {
-    std::string port;
-    int tick_rate;
-    uint32_t max_events_per_tick;
+  std::string port;
+  int tick_rate;
+  uint32_t max_events_per_tick;
 };
 
 struct Weapon {
@@ -293,49 +287,50 @@ struct Weapon {
 };
 
 struct GameRules {
-    int max_players_per_team;
-    int min_players_per_team;
-    int rounds_until_role_change;
-    int rounds_until_end_game;
+  int max_players_per_team;
+  int min_players_per_team;
+  int rounds_until_role_change;
+  int rounds_until_end_game;
 
-    int max_health;
-    int max_bullets;
+  int max_health;
+  int max_bullets;
 
-    float speed;
+  float speed;
 
-    float purchase_duration;
-    float bomb_duration;
-    float time_to_plant;
-    float time_until_plant;
-    float time_until_defuse;
-    float time_until_new_round;
+  float purchase_duration;
+  float bomb_duration;
+  float time_to_plant;
+  float time_until_plant;
+  float time_until_defuse;
+  float time_until_new_round;
+  float timeUntilEndRunning;
 
-    int ammo_price;
-    
-    int money_winner;
-    int money_loser;
-    
-    int initial_money;
-    int initial_primary_ammo;
-    int initial_secondary_ammo;
+  int ammo_price;
 
-    std::map<WeaponName, Weapon> weapons;
+  int money_winner;
+  int money_loser;
+
+  int initial_money;
+  int initial_primary_ammo;
+  int initial_secondary_ammo;
+
+  std::map<WeaponName, Weapon> weapons;
 };
 
 struct WindowConfig {
-    bool fullscreen;
-    int width;
-    int height;
+  bool fullscreen;
+  int width;
+  int height;
 };
 
 struct FOVConfig {
-    float angle_deg;
-    float opacity;
+  float angle_deg;
+  float opacity;
 };
 
 struct ClientConfig {
-    WindowConfig windowConfig;
-    FOVConfig fovConfig;
+  WindowConfig windowConfig;
+  FOVConfig fovConfig;
 };
 
 #endif

@@ -32,3 +32,8 @@ void RecvLoop::run() {
 void RecvLoop::stop() {
     active = false;
 }
+
+void RecvLoop::kill() {
+    protocol.send_disconnect();
+    active = false;
+}

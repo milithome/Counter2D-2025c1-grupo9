@@ -1,6 +1,6 @@
 #include "team.h"
 
-Team::Team(GameRules& gameRules) : gameRules(gameRules) {}
+Team::Team(GameRules &gameRules) : gameRules(gameRules) {}
 
 void Team::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);

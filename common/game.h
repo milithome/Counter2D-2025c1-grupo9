@@ -25,7 +25,7 @@ private:
   int roundNumber = 1;
   int roundsUntilRoleChange;
   int roundsUntilEndGame;
-  Phase phase= Phase::PURCHASE;
+  Phase phase = Phase::PURCHASE;
   std::vector<std::tuple<int, int, bool>> spawnTeamTerrorist;
   std::vector<std::tuple<int, int, bool>> spawnTeamCounter;
   bool gameStart = true;
@@ -69,9 +69,7 @@ private:
   void placePlayerInSpawnTeam(Player &player);
   float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
-  float bombElapsedTime = 0.0f;
-  float plantingElapsedTime = 0.0f;
-  float purchaseElapsedTime = 0.0f;
+  float elapsedTime= 0.0f;
   bool isBombPlanted = false;
   float timeUntilPlant;
   float timeUntilDefuse;
@@ -81,7 +79,8 @@ private:
   float purchaseDuration;
   float timeToPlantBomb;
   float timeUntilNewRound;
-  float endRoundElapsedTime =0.0f;
+  float timeUntilEndRunning;
+  bool endGame= false;
   void updateRounds();
   char checkRoundWinner();
   void handleEndRound(char winnerTeam, TypeEndRound type);
@@ -90,7 +89,7 @@ private:
   Entity getPlayerState(const std::string &name);
 
 public:
-  Game(std::vector<std::vector<CellType>> game_map, GameRules& gameRules);
+  Game(std::vector<std::vector<CellType>> game_map, GameRules &gameRules);
   bool addPlayer(const std::string &name);
   StateGame getState();
   void update(float deltaTime);

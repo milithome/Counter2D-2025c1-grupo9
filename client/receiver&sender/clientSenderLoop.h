@@ -20,6 +20,8 @@ public:
     void run() override;
 
     void stop() override;
+
+    void kill();
 };
 
 #endif

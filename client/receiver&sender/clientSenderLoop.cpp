@@ -22,3 +22,8 @@ void SendLoop::run(){
 void SendLoop::stop() {
     active = false;
 }
+
+void SendLoop::kill() {
+    protocol.send_disconnect();
+    active = false;
+}
