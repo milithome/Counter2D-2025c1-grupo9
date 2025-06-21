@@ -6,6 +6,8 @@
 #include <QMainWindow>
 #include <QString>
 #include <QStackedLayout>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 class QtWindow : public QWidget
 {
@@ -21,6 +23,11 @@ private:
     QStackedLayout* stackedLayout = new QStackedLayout(this);
     QWidget *background = new QWidget(this);
     QWidget *currentView = nullptr;
+
+    // musica del menu
+    QMediaPlayer* player = new QMediaPlayer(this);
+    QAudioOutput* audioOutput = new QAudioOutput(this);
+
     void closeEvent(QCloseEvent* event) override {
         emit windowClosed();
         QWidget::closeEvent(event);

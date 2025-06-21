@@ -8,10 +8,11 @@
 #include <QRect>
 #include <iostream>
 
+
+
 QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     resize(width, height);
     setWindowTitle(QString::fromStdString(window_name));
-
 
     // Centrar ventana
     QScreen *screen = QGuiApplication::primaryScreen();
@@ -35,6 +36,17 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     setLayout(stackedLayout);
 
     show();
+
+    QMediaPlayer* player = new QMediaPlayer(this);
+    QAudioOutput* audioOutput = new QAudioOutput(this);
+
+    player->setAudioOutput(audioOutput);
+    player->setSource(QUrl("qrc:/assets/sfx/menu.wav"));
+
+    audioOutput->setVolume(0.35);
+    player->setLoops(QMediaPlayer::Infinite);
+    player->play();
+
 }
 
 void QtWindow::showView(QtView *view) {
@@ -45,21 +57,6 @@ void QtWindow::showView(QtView *view) {
     view->show();
     show();
 
-
-
-    qDebug() << "== QtWindow State ==";
-    qDebug() << "Window size:" << size();
-    qDebug() << "Minimum size:" << minimumSize();
-    qDebug() << "Size hint:" << sizeHint();
-
-    if (currentView) {
-        qDebug() << "Current view:" << currentView;
-        qDebug() << "View minimumSize:" << currentView->minimumSize();
-        qDebug() << "View sizePolicy:"
-                << currentView->sizePolicy().horizontalPolicy()
-                << currentView->sizePolicy().verticalPolicy();
-        qDebug() << "View sizeHint:" << currentView->sizeHint();
-    }
 }
 
 
