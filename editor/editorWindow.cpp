@@ -574,8 +574,7 @@ void EditorWindow::crearIconosPisos() {
 void EditorWindow::crearIconosMuros() {
     iconMapper = new QSignalMapper(this);
 
-    QString imagePath = ":/muros/muchos_bloques.png";
-    QPixmap originalPixmap(imagePath);
+    QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
         {2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},    // cajas
