@@ -24,7 +24,6 @@ void EditorWindow::configurarVistaSegunModo(ModoEditor modo) {
     if (modo == CrearNuevoMapa) {
         setupCustomUIConfiguracionMapa();
 
-
         aplicarEstilosResponsivos();
         connect(editar_mapa_btn, &QPushButton::clicked, this, &EditorWindow::onCrearMapaClicked);
         connect(volver_menu_btn, &QPushButton::clicked, this, &EditorWindow::onSalirClicked);
@@ -280,7 +279,7 @@ void EditorWindow::inicializarEditorMapa() {
     iconosScrollArea->setWidgetResizable(true);
     iconosScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     iconosScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    iconosScrollArea->setFixedHeight(60);  // Ajustá según el alto de tus íconos
+    iconosScrollArea->setFixedHeight(50);  // Ajustá según el alto de tus íconos
 
     toolbarLayout->addWidget(iconosScrollArea);
 
@@ -296,6 +295,9 @@ void EditorWindow::inicializarEditorMapa() {
         }
         else if (seleccion == "Muros") {
             crearIconosMuros();
+        }
+        else if(seleccion == "Spawns/Zonas"){
+            crearIconosSpawns();
         }
     });
     // Agregar la barra de herramientas al layout principal (FIJA)
@@ -512,8 +514,27 @@ void EditorWindow::limpiarIconosAnteriores() {
 void EditorWindow::crearIconosPisos() {
     iconMapper = new QSignalMapper(this);
 
-    QString imagePath = ":/pisos/fondos_32.png";
+    //QString imagePath = ":/pisos/fondos_32.png";
+    QString imagePath = ":/muros/muchos_bloques.png";
     QPixmap originalPixmap(imagePath);
+
+    QSet<QPair<int, int>> bloquesValidos = {
+        {0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},  //pasto
+
+        {1,0},{1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{2,0},  //arena
+
+        {3,0},{3,1},{3,2},{3,3},  //arena con pastitos
+
+        {3,4},{3,5},{3,6},{3,7},  //arena con cemento
+
+        {4,0},  //cemento
+
+        {5,4},{5,5},{5,6},{5,7}, //baldosas de madera?
+
+        {6,0},{6,1},{6,2}, //arena con piedritas
+
+        {9,5},{9,6},{9,7},  //arena mostaza
+    };
 
     int tileWidth = 32;
     int tileHeight = 32;
@@ -522,6 +543,9 @@ void EditorWindow::crearIconosPisos() {
 
     for (int fila = 0; fila < filas; ++fila) {
         for (int columna = 0; columna < columnas; ++columna) {
+            if (!bloquesValidos.contains({fila, columna}))
+                continue;
+
             int x = columna * tileWidth;
             int y = fila * tileHeight;
 
@@ -533,11 +557,53 @@ void EditorWindow::crearIconosPisos() {
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
 
-            // Agregar a la lista de íconos activos
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            // Conectar la señal
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+                bloqueSeleccionado = "";
+                pixmapSeleccionado = croppedPixmap;
+                actualizarSeleccionVisual(icono);
+            });
+        }
+    }
+
+}
+
+void EditorWindow::crearIconosMuros() {
+    iconMapper = new QSignalMapper(this);
+
+    QString imagePath = ":/muros/muchos_bloques.png";
+    QPixmap originalPixmap(imagePath);
+
+    QSet<QPair<int, int>> bloquesValidos = {
+        {2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},    // cajas
+    };
+
+    int tileWidth = 32;
+    int tileHeight = 32;
+    int columnas = originalPixmap.width() / tileWidth;
+    int filas = originalPixmap.height() / tileHeight;
+
+    for (int fila = 0; fila < filas; ++fila) {
+        for (int columna = 0; columna < columnas; ++columna) {
+            if (!bloquesValidos.contains({fila, columna}))
+                continue;
+
+            int x = columna * tileWidth;
+            int y = fila * tileHeight;
+
+            QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+
+            ClickableLabel* icono = new ClickableLabel();
+            icono->setPixmap(croppedPixmap);
+            icono->setFrameStyle(QFrame::Box | QFrame::Plain);
+            icono->setLineWidth(1);
+            icono->setCursor(Qt::PointingHandCursor);
+
+            iconosActivos.append(icono);
+            iconosLayout->addWidget(icono);
+
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
@@ -547,11 +613,16 @@ void EditorWindow::crearIconosPisos() {
     }
 }
 
-void EditorWindow::crearIconosMuros() {
+void EditorWindow::crearIconosSpawns() {
     iconMapper = new QSignalMapper(this);
 
+    //QString imagePath = ":/pisos/fondos_32.png";
     QString imagePath = ":/muros/muchos_bloques.png";
     QPixmap originalPixmap(imagePath);
+
+    QSet<QPair<int, int>> bloquesValidos = {
+        {7,0},{7,1},  // A y B en rojo
+    };
 
     int tileWidth = 32;
     int tileHeight = 32;
@@ -560,6 +631,9 @@ void EditorWindow::crearIconosMuros() {
 
     for (int fila = 0; fila < filas; ++fila) {
         for (int columna = 0; columna < columnas; ++columna) {
+            if (!bloquesValidos.contains({fila, columna}))
+                continue;
+
             int x = columna * tileWidth;
             int y = fila * tileHeight;
 
@@ -571,11 +645,9 @@ void EditorWindow::crearIconosMuros() {
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
 
-            // Agregar a la lista de íconos activos
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            // Conectar la señal
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
@@ -583,6 +655,7 @@ void EditorWindow::crearIconosMuros() {
             });
         }
     }
+
 }
 
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
