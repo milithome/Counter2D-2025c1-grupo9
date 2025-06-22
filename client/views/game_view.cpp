@@ -1188,6 +1188,9 @@ void GameView::showNewPhaseMessage(Phase phase) {
             text = "Bomba plantada";
             break;
         }
+        case END_GAME: {
+            text = "Final de partida";
+        }
         default: {
             break;
         }

@@ -61,7 +61,6 @@ void Client::run(QApplication& app, MenuController& menuController) {
         looped = true;
     }
     
-    send_queue.push(std::make_shared<DisconnectEvent>());
 
 }
 

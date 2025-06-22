@@ -10,10 +10,6 @@ void RecvLoop::run() {
         {
             msg = protocol.recv_response();
             queue.push(msg);
-
-            if (msg.type == Type::DISCONNECT) {
-                active = false;
-            } 
         }
         catch (const std::exception& e) {
             std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;
@@ -25,10 +21,5 @@ void RecvLoop::run() {
 }
 
 void RecvLoop::stop() {
-    active = false;
-}
-
-void RecvLoop::kill() {
-    protocol.send_disconnect();
     active = false;
 }

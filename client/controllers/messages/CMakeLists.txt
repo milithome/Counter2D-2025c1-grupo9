@@ -6,7 +6,6 @@ target_sources(taller_client
     join_event.cpp
     list_event.cpp
     start_event.cpp
-    disconnect_event.cpp
     message_event.cpp
 
     PUBLIC
@@ -16,6 +15,5 @@ target_sources(taller_client
     join_event.h
     list_event.h
     start_event.h
-    disconnect_event.h
     message_event.h
     )
