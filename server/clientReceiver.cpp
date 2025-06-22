@@ -8,10 +8,20 @@ ClientReceiver::~ClientReceiver() {}
 
 void ClientReceiver::run() {
     try {
-        if (onNameReceived) {
-            clientName = protocol.recv_name();
-            onNameReceived(clientName);
-        }
+        handleClientName();
+    } catch (...) {
+        return;  // Ya se logueó y envió la respuesta de error
+    }
+
+    receiveMessagesLoop();
+}
+
+void ClientReceiver::handleClientName() {
+    try {
+        if (!onNameReceived) return;
+
+        clientName = protocol.recv_name();
+        onNameReceived(clientName);
 
         protocol.send_response({
             Type::NAME,
@@ -19,50 +29,48 @@ void ClientReceiver::run() {
             {},
             "Client successfully connected"
         });
-
     } catch (const std::exception& e) {
-        std::cerr << "Exception receiving name in ClientReceiver: " << e.what() << std::endl;
-        active = false;
-        protocol.send_response({
-            Type::NAME,
-            1,
-            {},
-            "Error with the name: " + std::string(e.what())
-        });
+        handleNameError(e.what());
+        throw; // para que `run()` decida si continúa o no
     } catch (...) {
-        active = false;
-        protocol.send_response({
-            Type::NAME,
-            1,
-            {},
-            "Error with the name:"
-        });
-        std::cerr << "Unknown exception in ClientReceiver." << std::endl;
+        handleNameError("Unknown error");
+        throw;
     }
-    
+}
+
+void ClientReceiver::handleNameError(const std::string& errorMsg) {
+    active = false;
+    protocol.send_response({
+        Type::NAME,
+        1,
+        {},
+        "Error with the name: " + errorMsg
+    });
+    std::cerr << "Exception receiving name in ClientReceiver: " << errorMsg << std::endl;
+}
+
+void ClientReceiver::receiveMessagesLoop() {
     while (active) {
         try {
             Message message = protocol.recv_message();
             message.clientName = clientName;
-            
             {
                 std::lock_guard<std::mutex> lock(queueMutex);
                 requests->push(message);
             }
-
-            if (message.type == Type::DISCONNECT) {
-                active = false;
-            }
         } catch (const std::exception& e) {
-            active = false;
-            admin.removeClient(clientName,true);
-            std::cerr << "[" << clientName << "]" << "Exception receiving message in ClientReceiver: " << e.what() << std::endl;
+            handleDisconnection(e.what());
         } catch (...) {
-            active = false;
-            admin.removeClient(clientName,true);
-            std::cerr << "Unknown exception in ClientReceiver." << std::endl;
+            handleDisconnection("Unknown exception");
         }
     }
+}
+
+void ClientReceiver::handleDisconnection(const std::string& reason) {
+    requests->push({
+        Type::DISCONNECT,0,"",{}, clientName
+    });
+    std::cerr << "[" << clientName << "] Exception receiving message in ClientReceiver: " << reason << std::endl;
 }
 
 void ClientReceiver::changeQueue(std::shared_ptr<Queue<Message>> newQueue) {
@@ -72,4 +80,5 @@ void ClientReceiver::changeQueue(std::shared_ptr<Queue<Message>> newQueue) {
 
 void ClientReceiver::stop() {
     active = false;
+    protocol.close();
 }

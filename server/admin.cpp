@@ -71,8 +71,17 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
             }
             {
                 std::lock_guard<std::mutex> lock(this->mtx);
-                client->channels.name = name;
 
+                auto nameExists = std::any_of(this->clients.begin(), this->clients.end(),
+                    [&name](const std::shared_ptr<Client>& other) {
+                        return other->channels.name == name;
+                    });
+
+                if (nameExists) {
+                    throw std::runtime_error("A client with that name already exists");
+                }
+
+                client->channels.name = name;
                 this->unnamedClients.erase(client);
                 this->clients.insert(client);
             }
@@ -89,23 +98,20 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     );
 
     client->receiver->start();
-    //client->sender->start();
 
     return client;
 }
 
-void Admin::removeClient(const std::string& name, bool fromReceiver) {
+void Admin::removeClient(const std::string& name) {
     std::lock_guard<std::mutex> lock(mtx);
     auto it = std::find_if(clients.begin(), clients.end(), [&name](const std::shared_ptr<Client>& client) {
         return client->channels.name == name;
     });
 
     if (it != clients.end()) {
-        if (!fromReceiver) {
-            (*it)->receiver->stop();
-            (*it)->receiver->join();
-        }
+        (*it)->receiver->stop();
         (*it)->sender->stop();
+        (*it)->receiver->join();
         (*it)->sender->join();
         clients.erase(it);
     } else {

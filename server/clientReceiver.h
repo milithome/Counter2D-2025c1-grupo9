@@ -22,6 +22,11 @@ class ClientReceiver : public Thread {
         void stop() override;
 
     private:
+        void handleClientName();
+        void handleNameError(const std::string& errorMsg);
+        void receiveMessagesLoop();
+        void handleDisconnection(const std::string& reason);
+
         std::mutex queueMutex;
         Protocol& protocol;
         std::string clientName;

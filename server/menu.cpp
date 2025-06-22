@@ -26,7 +26,6 @@ void Menu::run()
                     handle_list();
                     break;
                 case Type::DISCONNECT:
-                    send_response_successful(Type::DISCONNECT, "Disconnect successful");
                     admin.removeClient(client->channels.name);
                     active = false;
                     break;

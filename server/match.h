@@ -32,7 +32,7 @@ private:
     std::string mapName = "big";
     std::vector<PlayerInfo> playersInfo;
     std::shared_ptr<Queue<Message>> toMatch;
-    GameRules gameRules = load_game_rules("../config_server.yaml");
+    GameRules gameRules = load_game_rules("/etc/taller/config_server.yaml");
     std::unordered_set<std::shared_ptr<Client>> clients;
     size_t disconnectedClients;
     
@@ -50,7 +50,6 @@ private:
     void gameLoop();
     void waitForPlayers();
     void setupGame(Game& game);
-    void startTimeoutThread(Game& game);
     void runGameLoop(Game& game);
     void processMessages(Game& game, uint maxEvents);
     void endGame();

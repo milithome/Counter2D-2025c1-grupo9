@@ -12,12 +12,15 @@ void ClientSender::run() {
         {
             Response response = requests->pop();
             protocol.send_response(response);
+
+            /*
             if (response.type == Type::DISCONNECT) {
                 active = false;
             }
+            */
         }
         catch (const std::exception& e) {
-                std::cerr << "Exception in ClientSender: " << e.what() << std::endl;
+            std::cerr << "Exception in ClientSender: " << e.what() << std::endl;
         } catch (...) {
             std::cerr << "Unknown exception in ClientSender." << std::endl;
         }
@@ -26,4 +29,5 @@ void ClientSender::run() {
 
 void ClientSender::stop() {
     active = false;
+    requests->close();
 }
