@@ -54,7 +54,7 @@ void ConnectToServerView::buildPortTextField() {
         "}"
     );
 
-    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    int fontId = QFontDatabase::addApplicationFont(BASE_PATH + "gfx/fonts/sourcesans.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(11);
@@ -82,7 +82,7 @@ void ConnectToServerView::buildAddressTextField() {
         "}"
     );
 
-    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    int fontId = QFontDatabase::addApplicationFont(BASE_PATH + "gfx/fonts/sourcesans.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(11);
@@ -110,7 +110,7 @@ void ConnectToServerView::buildNameTextField() {
         "}"
     );
 
-    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    int fontId = QFontDatabase::addApplicationFont(BASE_PATH + "gfx/fonts/sourcesans.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(11);

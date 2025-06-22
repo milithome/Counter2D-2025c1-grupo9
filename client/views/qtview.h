@@ -13,6 +13,8 @@ public:
         QMessageBox::critical(this, "Error", message.c_str());
     }
 private:
+protected:
+    const QString BASE_PATH = "/var/taller/";
 };
 
 #endif

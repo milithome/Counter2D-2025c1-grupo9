@@ -271,30 +271,30 @@ void PartyView::buildModal() {
     topLayout->setSpacing(32);
     std::unordered_map<ctSkin, QString> ctSkinPaths = {
         {
-            ctSkin::SEAL_FORCE, ":/assets/gfx/player/ct1.bmp"
+            ctSkin::SEAL_FORCE, BASE_PATH + "gfx/player/ct1.bmp"
         }, 
         {
-            ctSkin::GERMAN_GSG9, ":/assets/gfx/player/ct2.bmp"
+            ctSkin::GERMAN_GSG9, BASE_PATH + "gfx/player/ct2.bmp"
         }, 
         {
-            ctSkin::UKSAS, ":/assets/gfx/player/ct3.bmp"
+            ctSkin::UKSAS, BASE_PATH + "gfx/player/ct3.bmp"
         },
         {
-            ctSkin::FRENCH_GIGN, ":/assets/gfx/player/ct4.bmp"
+            ctSkin::FRENCH_GIGN, BASE_PATH + "gfx/player/ct4.bmp"
         }
     };
     std::unordered_map<tSkin, QString> tSkinPaths = {
         {
-            tSkin::PHOENIX, ":/assets/gfx/player/t1.bmp"
+            tSkin::PHOENIX, BASE_PATH + "gfx/player/t1.bmp"
         }, 
         {
-            tSkin::L337_KREW, ":/assets/gfx/player/t2.bmp"
+            tSkin::L337_KREW, BASE_PATH + "gfx/player/t2.bmp"
         }, 
         {
-            tSkin::ARCTIC_AVENGER, ":/assets/gfx/player/t3.bmp"
+            tSkin::ARCTIC_AVENGER, BASE_PATH + "gfx/player/t3.bmp"
         },
         {
-            tSkin::GUERRILLA, ":/assets/gfx/player/t4.bmp"
+            tSkin::GUERRILLA, BASE_PATH + "gfx/player/t4.bmp"
         }
     };
     

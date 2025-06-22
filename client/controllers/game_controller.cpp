@@ -342,6 +342,9 @@ void GameController::updateGameState(StateGame new_state) {
                 view.setPhaseTimer(times.time_until_new_round);
                 break;
             }
+            case END_GAME: {
+                view.setPhaseTimer(times.time_until_new_round); // TODO: reemplaza por el tiempo hasta q se cierre el juego
+            }
             default: {
                 break;
             }

@@ -25,7 +25,7 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     background->setObjectName("bg");
     background->setStyleSheet(
         "QWidget#bg {"
-        "  border-image: url(:/assets/gfx/cs2d.png) 0 0 0 0 stretch stretch;"
+        "  border-image: url(/var/taller/gfx/cs2d.png) 0 0 0 0 stretch stretch;"
         "}"
     );
 
@@ -51,7 +51,7 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     QAudioOutput* audioOutput = new QAudioOutput(this);
 
     player->setAudioOutput(audioOutput);
-    player->setSource(QUrl("qrc:/assets/sfx/menu.wav"));
+    player->setSource(QUrl("/var/taller/sfx/menu.wav"));
 
     audioOutput->setVolume(0.35);
     player->setLoops(QMediaPlayer::Infinite);
