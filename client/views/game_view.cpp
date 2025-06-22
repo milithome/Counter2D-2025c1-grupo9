@@ -6,14 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
-
-
 namespace fs = std::filesystem;
-
-
-
-
-
 
 
 GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players)

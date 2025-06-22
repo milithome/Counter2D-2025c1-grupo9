@@ -1,13 +1,15 @@
 #include "player.h"
 #include <iostream>
 
-Player::Player(const std::string &name, GameRules& gameRules) : gameRules(gameRules), name(name), x(0), y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT}, role(Role::COUNTER_TERRORIST), rotation(0) {
+Player::Player(const std::string &name, GameRules &gameRules)
+    : gameRules(gameRules), name(name), x(0),
+      y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
+      role(Role::COUNTER_TERRORIST), rotation(0) {
   money = gameRules.initial_money;
   bulletsPrimary = gameRules.initial_primary_ammo;
   bulletsSecondary = gameRules.initial_secondary_ammo;
   health = gameRules.max_health;
 
-  
   knife = gameRules.weapons[WeaponName::KNIFE];
   primaryWeapon = gameRules.weapons[WeaponName::NONE];
   secondaryWeapon = gameRules.weapons[WeaponName::GLOCK];
@@ -84,12 +86,7 @@ void Player::updateHealth(int value) {
   }
 }
 
-
-
-void Player::restoreHealth(){
-  health = gameRules.max_health;
-}
-
+void Player::restoreHealth() { health = gameRules.max_health; }
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
@@ -180,10 +177,8 @@ void Player::updateMoney(int value) { money += value; }
 void Player::updatePrimaryBullets(int value) { bulletsPrimary += value; }
 void Player::updateSecondaryBullets(int value) { bulletsSecondary += value; }
 
-void Player::resetPrimaryBullets() { // llenar cargador
-  bulletsPrimary = primaryWeapon.maxAmmo;
-}
-void Player::resetSecondaryBullets() { // llenar cargador
+void Player::resetPrimaryBullets() { bulletsPrimary = primaryWeapon.maxAmmo; }
+void Player::resetSecondaryBullets() {
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
 

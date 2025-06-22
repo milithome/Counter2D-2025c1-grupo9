@@ -9,11 +9,10 @@
 #include <string>
 class Player {
 private:
-  GameRules& gameRules;
+  GameRules &gameRules;
 
 public:
-  explicit Player(const std::string &name, GameRules& gameRules);
-
+  explicit Player(const std::string &name, GameRules &gameRules);
   std::string name;
   float x, y;
   Hitbox hitbox;
@@ -41,8 +40,7 @@ public:
   float lastVx = 0.0f;
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
-  bool alive= true;
-
+  bool alive = true;
   void changeWeapon(WeaponType newEquippedWeapon);
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);

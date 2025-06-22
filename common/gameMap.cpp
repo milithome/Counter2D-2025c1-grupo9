@@ -3,15 +3,15 @@
 GameMap::GameMap(std::vector<std::vector<CellType>> game_map)
     : map(std::move(game_map)) {}
 
-std::vector<std::tuple<int, int, bool>> GameMap::findSpawnTeam(bool teamA) {
+std::vector<std::tuple<int, int, bool>> GameMap::findSpawnTeam(bool Terrorist) {
   std::vector<std::tuple<int, int, bool>> result;
 
   for (size_t row = 0; row < map.size(); ++row) {
     for (size_t col = 0; col < map[row].size(); ++col) {
-      if (teamA && map[row][col] == CellType::SpawnTeamA) {
+      if (Terrorist && map[row][col] == CellType::Terrorist) {
         result.emplace_back(row, col, false);
       }
-      if (!teamA && map[row][col] == CellType::SpawnTeamB) {
+      if (!Terrorist && map[row][col] == CellType::AntiTerrorist) {
         result.emplace_back(row, col, false);
       }
     }

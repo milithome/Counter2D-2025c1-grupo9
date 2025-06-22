@@ -7,18 +7,15 @@
 
 class Team {
 private:
-  GameRules& gameRules;
+  GameRules &gameRules;
   Role currentRole;
   std::vector<std::shared_ptr<Player>> players;
-  int roundsWon = 0;
   int playersAlive;
 
 public:
-  explicit Team(GameRules& gameRules);
-  
+  explicit Team(GameRules &gameRules);
+
   void addPlayer(std::shared_ptr<Player> player);
-  int getRoundsWon() const;
-  void incrementRoundsWon();
   void setRole(Role rol);
   void invertRole();
   Role getRole();

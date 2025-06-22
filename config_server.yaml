@@ -6,19 +6,20 @@ server:
 game:
   max_players_per_team: 5
   min_players_per_team: 0
-  rounds_until_role_change: 3
-  rounds_until_end_game: 6
+  rounds_until_role_change: 1
+  rounds_until_end_game: 2
 
   max_health: 200
   max_bullets: 30
 
-  speed: 5.0
-  purchase_duration: 20.0
-  bomb_duration: 60.0
-  time_to_plant: 90.0
+  speed: 4.0
+  purchase_duration: 10.0
+  bomb_duration: 20.0
+  time_to_plant: 30.0
   time_until_plant: 3.0
   time_until_defuse: 3.0
-  time_until_new_round: 7.0
+  time_until_new_round: 10.0
+  time_until_end_running: 10.0
 
   ammo_price: 40
 

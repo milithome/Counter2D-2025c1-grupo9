@@ -1,6 +1,6 @@
 #include "team.h"
 
-Team::Team(GameRules& gameRules) : gameRules(gameRules) {}
+Team::Team(GameRules &gameRules) : gameRules(gameRules) {}
 
 void Team::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);
@@ -15,10 +15,6 @@ int Team::getPlayersAlive() const {
   }
   return aliveCount;
 }
-
-int Team::getRoundsWon() const { return roundsWon; }
-
-void Team::incrementRoundsWon() { roundsWon++; }
 
 void Team::invertRole() {
   Role newRole;
@@ -35,6 +31,7 @@ void Team::invertRole() {
     player->bulletsSecondary = gameRules.initial_secondary_ammo;
     player->money = gameRules.initial_money;
   }
+  currentRole = newRole;
 }
 
 void Team::updateMoneyAfterRound(int money) {
