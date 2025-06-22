@@ -95,6 +95,8 @@ private:
 
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
 
+    QVector<QVector<QPair<int, int>>> matrizGrilla; // Matriz para almacenar las coordenadas
+
     QGridLayout* gridLayout = nullptr;
 
     bool dragging;

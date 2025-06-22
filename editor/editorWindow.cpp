@@ -20,7 +20,9 @@ EditorWindow::EditorWindow(ModoEditor modo, QWidget *parent)
 
 }
 
-void EditorWindow::configurarVistaSegunModo(ModoEditor modo) {
+
+void EditorWindow::configurarVistaSegunModo(ModoEditor modo)
+{
     if (modo == CrearNuevoMapa) {
         setupCustomUIConfiguracionMapa();
 
@@ -306,7 +308,6 @@ void EditorWindow::inicializarEditorMapa() {
     qDebug() << jugadoresMaximos;
 
     auto [filas, columnas] = calcularDimensiones();
-    //inicializarDatosGrilla(filas, columnas);
 
     // CREAR EL SCROLL AREA - CONFIGURACIÓN CORRECTA
     QScrollArea* scrollArea = new QScrollArea();
@@ -653,20 +654,22 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
         QLabel* celda = qobject_cast<QLabel*>(obj);
         if (celda && (!pixmapSeleccionado.isNull() || !bloqueSeleccionado.isEmpty())) {
-            // Limpiar el contenido anterior de la celda
+            int fila = celda->property("fila").toInt();
+            int columna = celda->property("columna").toInt();
+
             celda->clear();
 
-            // Colocar el nuevo bloque
             if (!bloqueSeleccionado.isEmpty()) {
                 QPixmap pixmap(bloqueSeleccionado);
                 if (!pixmap.isNull()) {
                     celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                 }
+                matrizGrilla[fila][columna] = std::make_pair(fila, columna);
             } else if (!pixmapSeleccionado.isNull()) {
                 celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                matrizGrilla[fila][columna] = {0,0};
             }
 
-            // Mantener el estilo de la celda
             celda->setAlignment(Qt::AlignCenter);
             return true;
         }
@@ -681,6 +684,11 @@ void EditorWindow::agregarFila() {
 
     grillaCeldas.resize(nuevasFilas);
     grillaCeldas[nuevasFilas - 1].resize(columnas);
+
+
+    // Actualizar matrizGrilla
+    matrizGrilla.resize(nuevasFilas);
+    matrizGrilla[nuevasFilas - 1].resize(columnas, {0, 0});
 
     for (int j = 0; j < columnas; ++j) {
         QLabel* celda = new QLabel();
@@ -710,7 +718,7 @@ void EditorWindow::agregarFila() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    //redimensionarDatosGrilla();
+    
 }
 
 void EditorWindow::agregarColumna() {
@@ -721,6 +729,9 @@ void EditorWindow::agregarColumna() {
 
     for (int i = 0; i < filas; ++i) {
         grillaCeldas[i].resize(nuevasColumnas);
+
+        // Actualizar matrizGrilla
+        matrizGrilla[i].resize(nuevasColumnas, {0, 0});
 
         QLabel* celda = new QLabel();
 
@@ -768,6 +779,8 @@ void EditorWindow::eliminarFila() {
     }
 
     grillaCeldas.removeLast();
+    // Actualizar matrizGrilla
+    matrizGrilla.removeLast();
 
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
@@ -788,6 +801,8 @@ void EditorWindow::eliminarColumna() {
         gridLayout->removeWidget(celda);
         delete celda;
         grillaCeldas[i].removeLast();
+        // Actualizar matrizGrilla
+        matrizGrilla[i].removeLast();
     }
 
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
@@ -847,12 +862,33 @@ void EditorWindow::crearArchivoYamlInicial() {
     stream << "  players: " << jugadoresMaximos << "\n";
     stream << "  tiles:" << "\n";
 
-    // Inicializar todas las celdas como vacías
+    
+    matrizGrilla.resize(filas);
     for (int i = 0; i < filas; ++i) {
+        matrizGrilla[i].resize(columnas);
         for (int j = 0; j < columnas; ++j) {
-            stream << "    - x: " << j << " y: " << i << " type: empty" << "\n";
+            matrizGrilla[i][j] = {0, 0}; // Inicializar con coordenadas vacías
         }
     }
+
+    //inicializo matrizGrilla
+    for (int i = 0; i < filas; ++i) {
+        if(i!=0){
+            stream << "\n"; // Añadir nueva línea para separar filas
+        }
+        stream << "  - ["; // Indentación para cada fila
+        for (int j = 0; j < columnas; ++j) {
+            stream << "{" << QString::number(matrizGrilla[i][j].first) 
+                    << "," << QString::number(matrizGrilla[i][j].second) << "}";
+            if (j < columnas - 1) {
+                stream << ","; // Mantener el formato correcto
+            }
+        }
+        if(i < filas){
+            stream << "]" << "\n "; // Cerrar la fila
+        }
+    }
+
 
     archivo.close();
 
@@ -885,23 +921,24 @@ void EditorWindow::guardarProgresoEnYaml() {
     stream << "  players: " << jugadoresMaximos << "\n";
     stream << "  tiles:" << "\n";
 
-    // Escribir información de cada celda
+    //inicializo matrizGrilla
     for (int i = 0; i < filas; ++i) {
+        if(i!=0){
+            stream << "\n"; // Añadir nueva línea para separar filas
+        }
+        stream << "  - ["; // Indentación para cada fila
         for (int j = 0; j < columnas; ++j) {
-            QLabel* celda = grillaCeldas[i][j];
-            QString tipo = "empty";
-
-            // Determinar el tipo de celda basado en si tiene contenido
-            if (celda && !celda->pixmap().isNull()) {
-                // Aquí podrías implementar lógica más sofisticada para determinar
-                // el tipo exacto basado en el pixmap usado
-                // Por ahora, simplemente marcamos como "tile" si tiene contenido
-                tipo = "tile";
+            stream << "{" << QString::number(matrizGrilla[i][j].first) 
+                    << "," << QString::number(matrizGrilla[i][j].second) << "}";
+            if (j < columnas - 1) {
+                stream << ","; // Mantener el formato correcto
             }
-
-            stream << "    - x: " << j << " y: " << i << " type: " << tipo << "\n";
+        }
+        if(i < filas){
+            stream << "]" << "\n "; // Cerrar la fila
         }
     }
+
 
     archivo.close();
 
