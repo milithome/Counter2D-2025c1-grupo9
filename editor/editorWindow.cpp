@@ -288,97 +288,27 @@ void EditorWindow::inicializarEditorMapa() {
     connect(categoriaCombo, &QComboBox::currentIndexChanged, this, [this]{
         QString seleccion = categoriaCombo->currentText();
 
-        // Limpiar íconos anteriores
-        QLayoutItem* child;
-        while ((child = iconosLayout->takeAt(0)) != nullptr) {
-            if (child->widget()) delete child->widget();
-            delete child;
-        }
-
-        if (iconMapper) {
-            delete iconMapper;
-            iconMapper = nullptr;
-        }
+        // Limpiar íconos anteriores de forma segura
+        limpiarIconosAnteriores();
 
         if (seleccion == "Pisos") {
-            iconMapper = new QSignalMapper(this);
-
-            QString imagePath = ":/pisos/fondos_32.png"; // Imagen con bloques de muros
-            QPixmap originalPixmap(imagePath);
-
-            int tileWidth = 32;
-            int tileHeight = 32;
-
-            int columnas = originalPixmap.width() / tileWidth;
-            int filas = originalPixmap.height() / tileHeight;
-
-            for (int fila = 0; fila < filas; ++fila) {
-                for (int columna = 0; columna < columnas; ++columna) {
-                    int x = columna * tileWidth;
-                    int y = fila * tileHeight;
-
-                    QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
-
-                    ClickableLabel* icono = new ClickableLabel();
-                    icono->setPixmap(croppedPixmap);
-                    icono->setFrameStyle(QFrame::Box | QFrame::Plain);
-                    icono->setLineWidth(1);
-                    icono->setCursor(Qt::PointingHandCursor);
-                    iconosLayout->addWidget(icono);
-
-                    // Importante: guardar una copia del pixmap recortado como path temporal
-                    connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
-                        bloqueSeleccionado = "";  // No hay path, usamos pixmap directamente
-                        pixmapSeleccionado = croppedPixmap;  // Tenés que declarar esto como atributo en tu clase
-                        actualizarSeleccionVisual(icono);
-                    });
-                }
-            }
+            crearIconosPisos();
         }
         else if (seleccion == "Muros") {
-            iconMapper = new QSignalMapper(this);
-
-            QString imagePath = ":/muros/muchos_bloques.png"; // Imagen con bloques de muros
-            QPixmap originalPixmap(imagePath);
-
-            int tileWidth = 32;
-            int tileHeight = 32;
-
-            int columnas = originalPixmap.width() / tileWidth;
-            int filas = originalPixmap.height() / tileHeight;
-
-            for (int fila = 0; fila < filas; ++fila) {
-                for (int columna = 0; columna < columnas; ++columna) {
-                    int x = columna * tileWidth;
-                    int y = fila * tileHeight;
-
-                    QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
-
-                    ClickableLabel* icono = new ClickableLabel();
-                    icono->setPixmap(croppedPixmap);
-                    icono->setFrameStyle(QFrame::Box | QFrame::Plain);
-                    icono->setLineWidth(1);
-                    icono->setCursor(Qt::PointingHandCursor);
-                    iconosLayout->addWidget(icono);
-
-                    // Importante: guardar una copia del pixmap recortado como path temporal
-                    connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
-                        bloqueSeleccionado = "";  // No hay path, usamos pixmap directamente
-                        pixmapSeleccionado = croppedPixmap;  // Tenés que declarar esto como atributo en tu clase
-                        actualizarSeleccionVisual(icono);
-                    });
-                }
-            }
+            crearIconosMuros();
         }
-
     });
-
     // Agregar la barra de herramientas al layout principal (FIJA)
     mainLayout->addLayout(toolbarLayout);
 
     qDebug() << jugadoresMaximos;
 
     auto [filas, columnas] = calcularDimensiones();
+    //inicializarDatosGrilla(filas, columnas);
+
+    // Inicializar variables de selección
+    tipoSeleccionado = VACIO;
+    subTipoSeleccionado = 0;
 
     // CREAR EL SCROLL AREA - CONFIGURACIÓN CORRECTA
     QScrollArea* scrollArea = new QScrollArea();
@@ -520,15 +450,17 @@ void EditorWindow::inicializarEditorMapa() {
     actualizarEstadoBotonesDimensiones();
 }
 
-void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado)
-{
+void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado) {
+    // Verificar que el nuevo seleccionado no sea nullptr
+    if (!nuevoSeleccionado) return;
+
     // Si había uno seleccionado antes, le saco el borde
-    if (iconoSeleccionado) {
-        iconoSeleccionado->setStyleSheet("background-color: lightgray; border: 1px solid white;"); // o el estilo que tenía por defecto
+    if (iconoSeleccionado && iconosActivos.contains(iconoSeleccionado)) {
+        iconoSeleccionado->setStyleSheet("border: 1px solid #999999;");
     }
 
     // Poner borde al nuevo seleccionado
-    nuevoSeleccionado->setStyleSheet("border: 2px solid yellow;");
+    nuevoSeleccionado->setStyleSheet("border: 2px solid yellow; background-color: rgba(255, 255, 0, 0.2);");
     iconoSeleccionado = nuevoSeleccionado;
 }
 
@@ -546,22 +478,138 @@ void EditorWindow::actualizarTamanoGridWidget() {
         gridWidget->setFixedSize(anchoTotal, altoTotal);
     }
 }
+// Agregar estas nuevas funciones a la clase EditorWindow:
 
+void EditorWindow::limpiarIconosAnteriores() {
+    // Desconectar todas las señales de los íconos actuales
+    for (ClickableLabel* icono : iconosActivos) {
+        if (icono) {
+            disconnect(icono, nullptr, this, nullptr);
+        }
+    }
+    iconosActivos.clear();
+
+    // Limpiar el layout
+    QLayoutItem* child;
+    while ((child = iconosLayout->takeAt(0)) != nullptr) {
+        if (child->widget()) {
+            child->widget()->deleteLater(); // Usar deleteLater() en lugar de delete
+        }
+        delete child;
+    }
+
+    // Eliminar el iconMapper de forma segura
+    if (iconMapper) {
+        disconnect(iconMapper, nullptr, this, nullptr);
+        iconMapper->deleteLater(); // Usar deleteLater() en lugar de delete
+        iconMapper = nullptr;
+    }
+
+    // Resetear la selección visual
+    iconoSeleccionado = nullptr;
+}
+
+void EditorWindow::crearIconosPisos() {
+    iconMapper = new QSignalMapper(this);
+
+    QString imagePath = ":/pisos/fondos_32.png";
+    QPixmap originalPixmap(imagePath);
+
+    int tileWidth = 32;
+    int tileHeight = 32;
+    int columnas = originalPixmap.width() / tileWidth;
+    int filas = originalPixmap.height() / tileHeight;
+
+    for (int fila = 0; fila < filas; ++fila) {
+        for (int columna = 0; columna < columnas; ++columna) {
+            int x = columna * tileWidth;
+            int y = fila * tileHeight;
+
+            QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+
+            ClickableLabel* icono = new ClickableLabel();
+            icono->setPixmap(croppedPixmap);
+            icono->setFrameStyle(QFrame::Box | QFrame::Plain);
+            icono->setLineWidth(1);
+            icono->setCursor(Qt::PointingHandCursor);
+
+            // Agregar a la lista de íconos activos
+            iconosActivos.append(icono);
+            iconosLayout->addWidget(icono);
+
+            // Conectar la señal
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+                bloqueSeleccionado = "";
+                pixmapSeleccionado = croppedPixmap;
+                actualizarSeleccionVisual(icono);
+            });
+        }
+    }
+}
+
+void EditorWindow::crearIconosMuros() {
+    iconMapper = new QSignalMapper(this);
+
+    QString imagePath = ":/muros/muchos_bloques.png";
+    QPixmap originalPixmap(imagePath);
+
+    int tileWidth = 32;
+    int tileHeight = 32;
+    int columnas = originalPixmap.width() / tileWidth;
+    int filas = originalPixmap.height() / tileHeight;
+
+    for (int fila = 0; fila < filas; ++fila) {
+        for (int columna = 0; columna < columnas; ++columna) {
+            int x = columna * tileWidth;
+            int y = fila * tileHeight;
+
+            QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+
+            ClickableLabel* icono = new ClickableLabel();
+            icono->setPixmap(croppedPixmap);
+            icono->setFrameStyle(QFrame::Box | QFrame::Plain);
+            icono->setLineWidth(1);
+            icono->setCursor(Qt::PointingHandCursor);
+
+            // Agregar a la lista de íconos activos
+            iconosActivos.append(icono);
+            iconosLayout->addWidget(icono);
+
+            // Conectar la señal
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+                bloqueSeleccionado = "";
+                pixmapSeleccionado = croppedPixmap;
+                actualizarSeleccionVisual(icono);
+            });
+        }
+    }
+}
 
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress) {
         QLabel* celda = qobject_cast<QLabel*>(obj);
-        if (celda) {
+        if (celda && (!pixmapSeleccionado.isNull() || !bloqueSeleccionado.isEmpty())) {
+            // Limpiar el contenido anterior de la celda
+            celda->clear();
+
+            // Colocar el nuevo bloque
             if (!bloqueSeleccionado.isEmpty()) {
-                celda->setPixmap(QPixmap(bloqueSeleccionado).scaled(32, 32));
+                QPixmap pixmap(bloqueSeleccionado);
+                if (!pixmap.isNull()) {
+                    celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                }
             } else if (!pixmapSeleccionado.isNull()) {
-                celda->setPixmap(pixmapSeleccionado.scaled(32, 32));
+                celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             }
+
+            // Mantener el estilo de la celda
+            celda->setAlignment(Qt::AlignCenter);
+            return true;
         }
-        return true;
     }
     return QMainWindow::eventFilter(obj, event);
 }
+
 
 void EditorWindow::agregarFila() {
     int nuevasFilas = grillaCeldas.size() + 1;
@@ -598,6 +646,7 @@ void EditorWindow::agregarFila() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
+    //redimensionarDatosGrilla();
 }
 
 void EditorWindow::agregarColumna() {
@@ -636,6 +685,7 @@ void EditorWindow::agregarColumna() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
+    //redimensionarDatosGrilla();
 }
 
 void EditorWindow::eliminarFila() {
@@ -655,6 +705,7 @@ void EditorWindow::eliminarFila() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
+    //redimensionarDatosGrilla();
 }
 
 void EditorWindow::eliminarColumna() {
@@ -672,6 +723,7 @@ void EditorWindow::eliminarColumna() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
+    //redimensionarDatosGrilla();
 }
 
 void EditorWindow::actualizarEstadoBotonesDimensiones() {
@@ -684,7 +736,6 @@ void EditorWindow::actualizarEstadoBotonesDimensiones() {
     agregarColumnaBtn->setEnabled(columnas < MAX_COLUMNAS);
     eliminarColumnaBtn->setEnabled(columnas > MIN_COLUMNAS);
 }
-
 
 
 std::pair<int, int> EditorWindow::calcularDimensiones() {
@@ -716,8 +767,8 @@ EditorWindow::~EditorWindow()
 
 }
 
-void EditorWindow::guardarMapa(){
-
+void EditorWindow::guardarMapa() {
+    //guardarMapaEnArchivo();
 }
 void EditorWindow::borrarSeleccionados(){
 
@@ -725,3 +776,318 @@ void EditorWindow::borrarSeleccionados(){
 void EditorWindow::borrarTodo(){
 
 }
+
+/* void EditorWindow::inicializarDatosGrilla(int filas, int columnas) {
+    datosGrilla.clear();
+    datosGrilla.resize(filas);
+    for (int i = 0; i < filas; ++i) {
+        datosGrilla[i].resize(columnas);
+        for (int j = 0; j < columnas; ++j) {
+            datosGrilla[i][j] = InfoCelda(); // Inicializar como VACIO
+        }
+    }
+    qDebug() << "Datos de grilla inicializados:" << filas << "x" << columnas;
+} */
+
+// Actualizar información de una celda específica
+/* void EditorWindow::actualizarCelda(int fila, int columna, TipoBloque tipo, int subTipo) {
+    if (fila >= 0 && fila < datosGrilla.size() &&
+        columna >= 0 && columna < datosGrilla[0].size()) {
+
+        datosGrilla[fila][columna].tipo = tipo;
+        datosGrilla[fila][columna].subTipo = subTipo;
+
+        qDebug() << "Celda actualizada [" << fila << "," << columna << "]:"
+                 << tipoAString(tipo) << "subtipo:" << subTipo;
+    }
+} */
+
+// Obtener información de una celda
+/* InfoCelda EditorWindow::obtenerInfoCelda(int fila, int columna) {
+    if (fila >= 0 && fila < datosGrilla.size() &&
+        columna >= 0 && columna < datosGrilla[0].size()) {
+        return datosGrilla[fila][columna];
+    }
+    return InfoCelda(); // Retorna celda vacía si está fuera de rango
+} */
+
+// Redimensionar la matriz cuando se agregan/eliminan filas/columnas
+/* void EditorWindow::redimensionarDatosGrilla() {
+    int nuevasFilas = grillaCeldas.size();
+    int nuevasColumnas = grillaCeldas.isEmpty() ? 0 : grillaCeldas[0].size();
+
+    // Redimensionar filas
+    datosGrilla.resize(nuevasFilas);
+
+    // Redimensionar columnas
+    for (int i = 0; i < nuevasFilas; ++i) {
+        datosGrilla[i].resize(nuevasColumnas);
+    }
+
+    qDebug() << "Datos redimensionados a:" << nuevasFilas << "x" << nuevasColumnas;
+} */
+
+// Convertir tipo a string para debug
+/* QString EditorWindow::tipoAString(TipoBloque tipo) {
+    switch(tipo) {
+    case VACIO: return "VACIO";
+    case PISO: return "PISO";
+    case MURO: return "MURO";
+    case SPAWN: return "SPAWN";
+    case ZONA: return "ZONA";
+    default: return "DESCONOCIDO";
+    }
+} */
+
+// Mostrar estado actual de la grilla en consola (para debug)
+/* void EditorWindow::mostrarEstadoGrillaEnConsola() {
+    qDebug() << "=== ESTADO ACTUAL DE LA GRILLA ===";
+    for (int i = 0; i < datosGrilla.size(); ++i) {
+        QString fila = "Fila " + QString::number(i) + ": ";
+        for (int j = 0; j < datosGrilla[i].size(); ++j) {
+            InfoCelda info = datosGrilla[i][j];
+            fila += "[" + tipoAString(info.tipo) +
+                    (info.subTipo > 0 ? ":" + QString::number(info.subTipo) : "") + "] ";
+        }
+        qDebug() << fila;
+    }
+    qDebug() << "================================";
+} */
+
+/* void EditorWindow::guardarMapaEnArchivo() {
+    QString nombreMapa = nombre_mapa->text();
+    if (nombreMapa.isEmpty() || nombreMapa == "Nombre del mapa") {
+        QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
+        return;
+    }
+
+    QString nombreArchivo = nombreMapa + ".txt";
+    QFile archivo(nombreArchivo);
+
+    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "No se pudo crear el archivo: " + nombreArchivo);
+        return;
+    }
+
+    QTextStream stream(&archivo);
+
+    // Escribir metadatos
+    stream << "MAPA: " << nombreMapa << "\n";
+    stream << "JUGADORES: " << jugadoresMaximos << "\n";
+    stream << "DIMENSIONES: " << datosGrilla.size() << "x" << (datosGrilla.isEmpty() ? 0 : datosGrilla[0].size()) << "\n";
+    stream << "---\n";
+
+    // Escribir datos de la grilla
+    for (int i = 0; i < datosGrilla.size(); ++i) {
+        for (int j = 0; j < datosGrilla[i].size(); ++j) {
+            InfoCelda info = datosGrilla[i][j];
+            stream << info.tipo << "," << info.subTipo;
+            if (j < datosGrilla[i].size() - 1) stream << " ";
+        }
+        stream << "\n";
+    }
+
+    archivo.close();
+
+    QMessageBox::information(this, "Éxito", "Mapa guardado correctamente: " + nombreArchivo);
+    qDebug() << "Mapa guardado en:" << nombreArchivo;
+
+    // Mostrar estado en consola para debug
+    mostrarEstadoGrillaEnConsola();
+} */
+
+/* void EditorWindow::cargarMapaDesdeArchivo(const QString& nombreArchivo) {
+    QFile archivo(nombreArchivo);
+
+    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "No se pudo abrir el archivo: " + nombreArchivo);
+        return;
+    }
+
+    QTextStream stream(&archivo);
+    QString linea;
+
+    // Leer metadatos
+    linea = stream.readLine(); // MAPA: nombre
+    if (linea.startsWith("MAPA: ")) {
+        QString nombreMapaCargado = linea.mid(6);
+        nombre_mapa->setText(nombreMapaCargado);
+    }
+
+    linea = stream.readLine(); // JUGADORES: numero
+    if (linea.startsWith("JUGADORES: ")) {
+        jugadoresMaximos = linea.mid(11).toInt();
+        if (cant_jugadores) {
+            cant_jugadores->setText(QString::number(jugadoresMaximos));
+        }
+    }
+
+    linea = stream.readLine(); // DIMENSIONES: filasxcolumnas
+    int filas = 0, columnas = 0;
+    if (linea.startsWith("DIMENSIONES: ")) {
+        QString dimensiones = linea.mid(13);
+        QStringList partes = dimensiones.split('x');
+        if (partes.size() == 2) {
+            filas = partes[0].toInt();
+            columnas = partes[1].toInt();
+        }
+    }
+
+    stream.readLine(); // Leer línea separadora "---"
+
+    // Redimensionar grilla si es necesario
+    if (filas > 0 && columnas > 0) {
+        // Primero redimensionar la estructura de datos
+        datosGrilla.resize(filas);
+        for (int i = 0; i < filas; ++i) {
+            datosGrilla[i].resize(columnas);
+        }
+
+        // Recrear la grilla visual si el tamaño es diferente
+        if (grillaCeldas.size() != filas ||
+            (grillaCeldas.size() > 0 && grillaCeldas[0].size() != columnas)) {
+
+            // Limpiar grilla actual
+            for (int i = 0; i < grillaCeldas.size(); ++i) {
+                for (int j = 0; j < grillaCeldas[i].size(); ++j) {
+                    if (grillaCeldas[i][j]) {
+                        gridLayout->removeWidget(grillaCeldas[i][j]);
+                        delete grillaCeldas[i][j];
+                    }
+                }
+            }
+
+            // Recrear grilla con nuevas dimensiones
+            grillaCeldas.clear();
+            grillaCeldas.resize(filas);
+
+            for (int i = 0; i < filas; ++i) {
+                grillaCeldas[i].resize(columnas);
+                for (int j = 0; j < columnas; ++j) {
+                    QLabel* celda = new QLabel();
+                    celda->setFixedSize(32, 32);
+                    celda->setMinimumSize(32, 32);
+                    celda->setMaximumSize(32, 32);
+                    celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+                    celda->setStyleSheet(
+                        "background-color: #f0f0f0; "
+                        "border: 0.5px solid #999999; "
+                        "margin: 0px; "
+                        "padding: 0px;"
+                        );
+                    celda->setAlignment(Qt::AlignCenter);
+                    celda->installEventFilter(this);
+                    celda->setProperty("fila", i);
+                    celda->setProperty("columna", j);
+
+                    gridLayout->addWidget(celda, i, j);
+                    grillaCeldas[i][j] = celda;
+                }
+            }
+
+            actualizarTamanoGridWidget();
+            actualizarEstadoBotonesDimensiones();
+        }
+    }
+
+    // Leer y aplicar datos de la grilla
+    for (int i = 0; i < filas && !stream.atEnd(); ++i) {
+        linea = stream.readLine();
+        QStringList celdas = linea.split(' ');
+
+        for (int j = 0; j < columnas && j < celdas.size(); ++j) {
+            QStringList partes = celdas[j].split(',');
+            if (partes.size() == 2) {
+                TipoBloque tipo = static_cast<TipoBloque>(partes[0].toInt());
+                int subTipo = partes[1].toInt();
+
+                // Actualizar datos
+                datosGrilla[i][j] = InfoCelda(tipo, subTipo);
+
+                // Actualizar visual (necesitarías crear una función que convierta tipo+subtipo a pixmap)
+                if (tipo != VACIO && i < grillaCeldas.size() && j < grillaCeldas[i].size()) {
+                    QPixmap pixmap = obtenerPixmapParaTipo(tipo, subTipo);
+                    if (!pixmap.isNull()) {
+                        grillaCeldas[i][j]->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                    }
+                }
+            }
+        }
+    }
+
+    archivo.close();
+
+    QMessageBox::information(this, "Éxito", "Mapa cargado correctamente: " + nombreArchivo);
+    qDebug() << "Mapa cargado desde:" << nombreArchivo;
+    mostrarEstadoGrillaEnConsola();
+} */
+
+// FUNCIÓN AUXILIAR PARA OBTENER PIXMAP SEGÚN TIPO (necesitarás implementar esto):
+
+/* QPixmap EditorWindow::obtenerPixmapParaTipo(TipoBloque tipo, int subTipo) {
+    // Esta función debería retornar el pixmap correcto según el tipo y subtipo
+    // Necesitarás almacenar los pixmaps de alguna manera para poder recuperarlos
+
+    if (tipo == PISO) {
+        // Cargar desde la imagen de pisos usando el subtipo
+        QString imagePath = ":/pisos/fondos_32.png";
+        QPixmap originalPixmap(imagePath);
+
+        int tileWidth = 32;
+        int tileHeight = 32;
+        int columnas = originalPixmap.width() / tileWidth;
+
+        // Calcular posición basada en subtipo
+        int indice = subTipo - 1; // subTipo empieza en 1
+        if (indice >= 0) {
+            int fila = indice / columnas;
+            int columna = indice % columnas;
+
+            int x = columna * tileWidth;
+            int y = fila * tileHeight;
+
+            return originalPixmap.copy(x, y, tileWidth, tileHeight);
+        }
+    }
+    else if (tipo == MURO) {
+        // Similar para muros
+        QString imagePath = ":/muros/muchos_bloques.png";
+        QPixmap originalPixmap(imagePath);
+
+        int tileWidth = 32;
+        int tileHeight = 32;
+        int columnas = originalPixmap.width() / tileWidth;
+
+        int indice = subTipo - 1;
+        if (indice >= 0) {
+            int fila = indice / columnas;
+            int columna = indice % columnas;
+
+            int x = columna * tileWidth;
+            int y = fila * tileHeight;
+
+            return originalPixmap.copy(x, y, tileWidth, tileHeight);
+        }
+    }
+
+    return QPixmap(); // Retorna pixmap vacío si no se encuentra
+} */
+
+// AGREGAR BOTÓN PARA CARGAR EN EL MENÚ:
+// En la función inicializarEditorMapa(), agregar:
+
+/* cargarAction = new QAction("Cargar", this);
+fileMenu->addAction(cargarAction);
+connect(cargarAction, &QAction::triggered, this, [this]() {
+   QString nombreArchivo = QFileDialog::getOpenFileName(
+       this,
+       "Cargar Mapa",
+       "",
+       "Archivos de Mapa (*.txt)"
+       );
+
+   if (!nombreArchivo.isEmpty()) {
+       cargarMapaDesdeArchivo(nombreArchivo);
+   }
+}); */
