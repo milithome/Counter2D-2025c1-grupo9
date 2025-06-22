@@ -24,6 +24,10 @@
 #include <QAction>
 #include <QScrollArea>
 #include <QSpinBox>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QDir>
+
 
 
 #include "ClickableLabel.h"
@@ -33,25 +37,7 @@ enum ModoEditor {
     EditarMapaExistente
 };
 
-// Enumeración para tipos de bloques
-enum TipoBloque {
-    VACIO = 0,
-    PISO = 1,
-    MURO = 2,
-    SPAWN = 3,
-    ZONA = 4
-};
-
-// Estructura para guardar información completa de cada celda
-struct InfoCelda {
-    TipoBloque tipo;
-    int subTipo;  // Para diferenciar entre diferentes pisos/muros/etc
-    QString texturePath; // Path de la textura si es necesario
-
-    InfoCelda() : tipo(VACIO), subTipo(0), texturePath("") {}
-    InfoCelda(TipoBloque t, int st = 0, QString path = "")
-        : tipo(t), subTipo(st), texturePath(path) {}
-};
+enum TipoGrid { GRID_TERRENO, GRID_SPAWNS };
 
 const int MIN_FILAS = 10;
 const int MAX_FILAS = 55;
@@ -104,7 +90,7 @@ private:
 
     QSignalMapper* iconMapper = nullptr;
     QHBoxLayout* iconosLayout = nullptr;  // Layout solo para íconos
-    // En el archivo editorWindow.h, agregar estos miembros privados:
+    
     QList<ClickableLabel*> iconosActivos; // Para mantener referencia a los íconos activos
 
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
@@ -119,6 +105,10 @@ private:
     QPushButton* eliminarFilaBtn;
     QPushButton* eliminarColumnaBtn;
 
+    QString nombreArchivoActual;  // Para guardar el nombre del archivo YAML actual
+    QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
+
+    QPixmap pixmapSeleccionado;              // Pixmap del bloque seleccionado
 
     void configurarVistaSegunModo(ModoEditor modo);
     void setupCustomUIConfiguracionMapa();
@@ -132,33 +122,22 @@ private:
     void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado);
     void actualizarTamanoGridWidget();
 
+    void crearGrilla(int filas, int columnas,
+                               QWidget *&gridWidget,
+                               QGridLayout *&gridLayout,
+                               QVector<QVector<QLabel*>> &grilla,
+                               TipoGrid tipo);
+
     void agregarFila();
     void agregarColumna();
     void eliminarFila();
     void eliminarColumna();
     void actualizarEstadoBotonesDimensiones();
     std::pair<int, int> calcularDimensiones();
-    void pintarCelda(QLabel* celda);
 
-
-    QVector<QVector<InfoCelda>> datosGrilla; // Matriz paralela con información de bloques
-    TipoBloque tipoSeleccionado;             // Tipo actualmente seleccionado
-    int subTipoSeleccionado;                 // Subtipo actualmente seleccionado
-    QPixmap pixmapSeleccionado;              // Pixmap del bloque seleccionado
-    QAction* cargarAction;                   // Acción para cargar mapas
-
-    // Funciones para manejo de datos
-    //void inicializarDatosGrilla(int filas, int columnas);
-    //void actualizarCelda(int fila, int columna, TipoBloque tipo, int subTipo);
-    //InfoCelda obtenerInfoCelda(int fila, int columna);
-    //void redimensionarDatosGrilla();
-    //void guardarMapaEnArchivo();
-    //void cargarMapaDesdeArchivo(const QString& nombreArchivo);
-    //void mostrarEstadoGrillaEnConsola(); // Para debug
-    //QString tipoAString(TipoBloque tipo);
-    //QPixmap obtenerPixmapParaTipo(TipoBloque tipo, int subTipo);
-
-
+    void crearArchivoYamlInicial();
+    void guardarProgresoEnYaml();
+   
 protected:
     void resizeEvent(QResizeEvent *event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;

@@ -308,10 +308,6 @@ void EditorWindow::inicializarEditorMapa() {
     auto [filas, columnas] = calcularDimensiones();
     //inicializarDatosGrilla(filas, columnas);
 
-    // Inicializar variables de selección
-    tipoSeleccionado = VACIO;
-    subTipoSeleccionado = 0;
-
     // CREAR EL SCROLL AREA - CONFIGURACIÓN CORRECTA
     QScrollArea* scrollArea = new QScrollArea();
 
@@ -321,11 +317,11 @@ void EditorWindow::inicializarEditorMapa() {
     // Configurar políticas de scroll
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
+    
     // Establecer un tamaño máximo para el scroll area para forzar scroll
     scrollArea->setMaximumSize(3000, 3000); // Limitar el tamaño del área visible
-    scrollArea->setMinimumSize(400, 300);
-
+    scrollArea->setMinimumSize(400, 300); 
+    
     // Widget que contendrá DIRECTAMENTE la grilla
     QWidget* gridWidget = new QWidget();
 
@@ -514,9 +510,6 @@ void EditorWindow::limpiarIconosAnteriores() {
 void EditorWindow::crearIconosPisos() {
     iconMapper = new QSignalMapper(this);
 
-    //QString imagePath = ":/pisos/fondos_32.png";
-    //QString imagePath = ":/muros/muchos_bloques.png";
-    // QString imagePath = ":/assets/gfx/tiles/dust.bmp";
     QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
@@ -616,8 +609,6 @@ void EditorWindow::crearIconosMuros() {
 void EditorWindow::crearIconosSpawns() {
     iconMapper = new QSignalMapper(this);
 
-    //QString imagePath = ":/pisos/fondos_32.png";
-    //QString imagePath = ":/muros/muchos_bloques.png";
     QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
@@ -758,7 +749,10 @@ void EditorWindow::agregarColumna() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    //redimensionarDatosGrilla();
+    if (!rutaArchivoActual.isEmpty()) {
+        guardarProgresoEnYaml();
+    }
+    
 }
 
 void EditorWindow::eliminarFila() {
@@ -778,7 +772,10 @@ void EditorWindow::eliminarFila() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    //redimensionarDatosGrilla();
+    if (!rutaArchivoActual.isEmpty()) {
+        guardarProgresoEnYaml();
+    }
+    
 }
 
 void EditorWindow::eliminarColumna() {
@@ -796,7 +793,10 @@ void EditorWindow::eliminarColumna() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    //redimensionarDatosGrilla();
+    if (!rutaArchivoActual.isEmpty()) {
+        guardarProgresoEnYaml();
+    }
+    
 }
 
 void EditorWindow::actualizarEstadoBotonesDimensiones() {
@@ -816,19 +816,159 @@ std::pair<int, int> EditorWindow::calcularDimensiones() {
     int aumento = 0;
     return {base + aumento, base + aumento};
 }
+void EditorWindow::crearArchivoYamlInicial() {
+    QString nombreMapa = nombre_mapa->text();
+
+    // Crear el nombre del archivo (sin espacios y con extensión .yaml)
+    QString nombreArchivo = nombreMapa;
+    nombreArchivo.replace(" ", "_"); // Reemplazar espacios con guiones bajos
+    nombreArchivo += ".yaml";
+
+    // Guardar referencias del archivo
+    nombreArchivoActual = nombreMapa;
+    rutaArchivoActual = QDir::cleanPath("../assets/maps/" + nombreArchivo);
+
+    // Crear el archivo
+    QFile archivo(rutaArchivoActual);
+    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "No se pudo crear el archivo YAML: " + nombreArchivo);
+        return;
+    }
+
+    QTextStream stream(&archivo);
+
+    // Escribir el contenido inicial del YAML
+    auto [filas, columnas] = calcularDimensiones();
+
+    stream << "map:" << "\n";
+    stream << "  name: " << nombreMapa << "\n";
+    stream << "  width: " << columnas << "\n";
+    stream << "  height: " << filas << "\n";
+    stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "  tiles:" << "\n";
+
+    // Inicializar todas las celdas como vacías
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < columnas; ++j) {
+            stream << "    - x: " << j << " y: " << i << " type: empty" << "\n";
+        }
+    }
+
+    archivo.close();
+
+    QMessageBox::information(this, "Archivo Creado",
+                             "Archivo YAML creado: " + nombreArchivo + "\n" +
+                                 "Ubicación: " + rutaArchivoActual);
+
+    qDebug() << "Archivo YAML inicial creado en:" << rutaArchivoActual;
+}
+
+
+void EditorWindow::guardarProgresoEnYaml() {
+    QFile archivo(rutaArchivoActual);
+    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "No se pudo abrir el archivo YAML para guardar");
+        return;
+    }
+
+    QTextStream stream(&archivo);
+
+    // Obtener dimensiones actuales
+    int filas = grillaCeldas.size();
+    int columnas = grillaCeldas.isEmpty() ? 0 : grillaCeldas[0].size();
+
+    // Escribir encabezado YAML
+    stream << "map:" << "\n";
+    stream << "  name: " << nombreArchivoActual << "\n";
+    stream << "  width: " << columnas << "\n";
+    stream << "  height: " << filas << "\n";
+    stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "  tiles:" << "\n";
+
+    // Escribir información de cada celda
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < columnas; ++j) {
+            QLabel* celda = grillaCeldas[i][j];
+            QString tipo = "empty";
+
+            // Determinar el tipo de celda basado en si tiene contenido
+            if (celda && !celda->pixmap().isNull()) {
+                // Aquí podrías implementar lógica más sofisticada para determinar
+                // el tipo exacto basado en el pixmap usado
+                // Por ahora, simplemente marcamos como "tile" si tiene contenido
+                tipo = "tile";
+            }
+
+            stream << "    - x: " << j << " y: " << i << " type: " << tipo << "\n";
+        }
+    }
+
+    archivo.close();
+
+    QMessageBox::information(this, "Guardado Exitoso",
+                             "Mapa guardado correctamente en: " + rutaArchivoActual);
+
+    qDebug() << "Progreso guardado en:" << rutaArchivoActual;
+}
+
 
 
 void EditorWindow::onCrearMapaClicked() {
-    QString texto = cant_jugadores->text();
-    jugadoresMaximos = texto.toInt();
+    QString nombreMapa = nombre_mapa->text();
+
+    // Validar que el nombre no esté vacío y no sea el placeholder
+    if (nombreMapa.isEmpty() || nombreMapa == "Nombre del mapa") {
+        QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
+        return;
+    }
+
+    QString textoCantJugadores = cant_jugadores->text();
+    jugadoresMaximos = textoCantJugadores.toInt();
+
+    // Validar cantidad de jugadores
+    if (jugadoresMaximos <= 0 || jugadoresMaximos > 10) {
+        QMessageBox::warning(this, "Error", "La cantidad de jugadores debe ser entre 1 y 10");
+        return;
+    }
+
+    // Crear el archivo YAML inicial
+    crearArchivoYamlInicial();
+
     inicializarEditorMapa();
     stackedWidget->setCurrentIndex(1);
 }
 
 void EditorWindow::onEditarMapaClicked() {
+    QString nombreMapa = nombre_mapa->text();
+
+    if (nombreMapa.isEmpty() || nombreMapa == "Nombre del mapa") {
+        QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
+        return;
+    }
+
+    // Buscar el archivo YAML
+    QString nombreArchivo = nombreMapa;
+    nombreArchivo.replace(" ", "_");
+    nombreArchivo += ".yaml";
+
+    QString rutaArchivo = QDir::cleanPath("../assets/maps/" + nombreArchivo);
+
+    if (!QFile::exists(rutaArchivo)) {
+        QMessageBox::warning(this, "Error", "No se encontró el archivo: " + nombreArchivo);
+        return;
+    }
+
+    // Configurar referencias del archivo
+    nombreArchivoActual = nombreMapa;
+    rutaArchivoActual = rutaArchivo;
+
     inicializarEditorMapa();
     stackedWidget->setCurrentIndex(1);
+
+    QMessageBox::information(this, "Mapa Cargado",
+                             "Mapa cargado: " + nombreArchivo);
 }
+
 
 void EditorWindow::onSalirClicked()
 {
@@ -841,7 +981,12 @@ EditorWindow::~EditorWindow()
 }
 
 void EditorWindow::guardarMapa() {
-    //guardarMapaEnArchivo();
+    if (rutaArchivoActual.isEmpty()) {
+        QMessageBox::warning(this, "Error", "No hay archivo YAML asociado a este mapa");
+        return;
+    }
+
+    guardarProgresoEnYaml();
 }
 void EditorWindow::borrarSeleccionados(){
 
@@ -849,318 +994,3 @@ void EditorWindow::borrarSeleccionados(){
 void EditorWindow::borrarTodo(){
 
 }
-
-/* void EditorWindow::inicializarDatosGrilla(int filas, int columnas) {
-    datosGrilla.clear();
-    datosGrilla.resize(filas);
-    for (int i = 0; i < filas; ++i) {
-        datosGrilla[i].resize(columnas);
-        for (int j = 0; j < columnas; ++j) {
-            datosGrilla[i][j] = InfoCelda(); // Inicializar como VACIO
-        }
-    }
-    qDebug() << "Datos de grilla inicializados:" << filas << "x" << columnas;
-} */
-
-// Actualizar información de una celda específica
-/* void EditorWindow::actualizarCelda(int fila, int columna, TipoBloque tipo, int subTipo) {
-    if (fila >= 0 && fila < datosGrilla.size() &&
-        columna >= 0 && columna < datosGrilla[0].size()) {
-
-        datosGrilla[fila][columna].tipo = tipo;
-        datosGrilla[fila][columna].subTipo = subTipo;
-
-        qDebug() << "Celda actualizada [" << fila << "," << columna << "]:"
-                 << tipoAString(tipo) << "subtipo:" << subTipo;
-    }
-} */
-
-// Obtener información de una celda
-/* InfoCelda EditorWindow::obtenerInfoCelda(int fila, int columna) {
-    if (fila >= 0 && fila < datosGrilla.size() &&
-        columna >= 0 && columna < datosGrilla[0].size()) {
-        return datosGrilla[fila][columna];
-    }
-    return InfoCelda(); // Retorna celda vacía si está fuera de rango
-} */
-
-// Redimensionar la matriz cuando se agregan/eliminan filas/columnas
-/* void EditorWindow::redimensionarDatosGrilla() {
-    int nuevasFilas = grillaCeldas.size();
-    int nuevasColumnas = grillaCeldas.isEmpty() ? 0 : grillaCeldas[0].size();
-
-    // Redimensionar filas
-    datosGrilla.resize(nuevasFilas);
-
-    // Redimensionar columnas
-    for (int i = 0; i < nuevasFilas; ++i) {
-        datosGrilla[i].resize(nuevasColumnas);
-    }
-
-    qDebug() << "Datos redimensionados a:" << nuevasFilas << "x" << nuevasColumnas;
-} */
-
-// Convertir tipo a string para debug
-/* QString EditorWindow::tipoAString(TipoBloque tipo) {
-    switch(tipo) {
-    case VACIO: return "VACIO";
-    case PISO: return "PISO";
-    case MURO: return "MURO";
-    case SPAWN: return "SPAWN";
-    case ZONA: return "ZONA";
-    default: return "DESCONOCIDO";
-    }
-} */
-
-// Mostrar estado actual de la grilla en consola (para debug)
-/* void EditorWindow::mostrarEstadoGrillaEnConsola() {
-    qDebug() << "=== ESTADO ACTUAL DE LA GRILLA ===";
-    for (int i = 0; i < datosGrilla.size(); ++i) {
-        QString fila = "Fila " + QString::number(i) + ": ";
-        for (int j = 0; j < datosGrilla[i].size(); ++j) {
-            InfoCelda info = datosGrilla[i][j];
-            fila += "[" + tipoAString(info.tipo) +
-                    (info.subTipo > 0 ? ":" + QString::number(info.subTipo) : "") + "] ";
-        }
-        qDebug() << fila;
-    }
-    qDebug() << "================================";
-} */
-
-/* void EditorWindow::guardarMapaEnArchivo() {
-    QString nombreMapa = nombre_mapa->text();
-    if (nombreMapa.isEmpty() || nombreMapa == "Nombre del mapa") {
-        QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
-        return;
-    }
-
-    QString nombreArchivo = nombreMapa + ".txt";
-    QFile archivo(nombreArchivo);
-
-    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Error", "No se pudo crear el archivo: " + nombreArchivo);
-        return;
-    }
-
-    QTextStream stream(&archivo);
-
-    // Escribir metadatos
-    stream << "MAPA: " << nombreMapa << "\n";
-    stream << "JUGADORES: " << jugadoresMaximos << "\n";
-    stream << "DIMENSIONES: " << datosGrilla.size() << "x" << (datosGrilla.isEmpty() ? 0 : datosGrilla[0].size()) << "\n";
-    stream << "---\n";
-
-    // Escribir datos de la grilla
-    for (int i = 0; i < datosGrilla.size(); ++i) {
-        for (int j = 0; j < datosGrilla[i].size(); ++j) {
-            InfoCelda info = datosGrilla[i][j];
-            stream << info.tipo << "," << info.subTipo;
-            if (j < datosGrilla[i].size() - 1) stream << " ";
-        }
-        stream << "\n";
-    }
-
-    archivo.close();
-
-    QMessageBox::information(this, "Éxito", "Mapa guardado correctamente: " + nombreArchivo);
-    qDebug() << "Mapa guardado en:" << nombreArchivo;
-
-    // Mostrar estado en consola para debug
-    mostrarEstadoGrillaEnConsola();
-} */
-
-/* void EditorWindow::cargarMapaDesdeArchivo(const QString& nombreArchivo) {
-    QFile archivo(nombreArchivo);
-
-    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Error", "No se pudo abrir el archivo: " + nombreArchivo);
-        return;
-    }
-
-    QTextStream stream(&archivo);
-    QString linea;
-
-    // Leer metadatos
-    linea = stream.readLine(); // MAPA: nombre
-    if (linea.startsWith("MAPA: ")) {
-        QString nombreMapaCargado = linea.mid(6);
-        nombre_mapa->setText(nombreMapaCargado);
-    }
-
-    linea = stream.readLine(); // JUGADORES: numero
-    if (linea.startsWith("JUGADORES: ")) {
-        jugadoresMaximos = linea.mid(11).toInt();
-        if (cant_jugadores) {
-            cant_jugadores->setText(QString::number(jugadoresMaximos));
-        }
-    }
-
-    linea = stream.readLine(); // DIMENSIONES: filasxcolumnas
-    int filas = 0, columnas = 0;
-    if (linea.startsWith("DIMENSIONES: ")) {
-        QString dimensiones = linea.mid(13);
-        QStringList partes = dimensiones.split('x');
-        if (partes.size() == 2) {
-            filas = partes[0].toInt();
-            columnas = partes[1].toInt();
-        }
-    }
-
-    stream.readLine(); // Leer línea separadora "---"
-
-    // Redimensionar grilla si es necesario
-    if (filas > 0 && columnas > 0) {
-        // Primero redimensionar la estructura de datos
-        datosGrilla.resize(filas);
-        for (int i = 0; i < filas; ++i) {
-            datosGrilla[i].resize(columnas);
-        }
-
-        // Recrear la grilla visual si el tamaño es diferente
-        if (grillaCeldas.size() != filas ||
-            (grillaCeldas.size() > 0 && grillaCeldas[0].size() != columnas)) {
-
-            // Limpiar grilla actual
-            for (int i = 0; i < grillaCeldas.size(); ++i) {
-                for (int j = 0; j < grillaCeldas[i].size(); ++j) {
-                    if (grillaCeldas[i][j]) {
-                        gridLayout->removeWidget(grillaCeldas[i][j]);
-                        delete grillaCeldas[i][j];
-                    }
-                }
-            }
-
-            // Recrear grilla con nuevas dimensiones
-            grillaCeldas.clear();
-            grillaCeldas.resize(filas);
-
-            for (int i = 0; i < filas; ++i) {
-                grillaCeldas[i].resize(columnas);
-                for (int j = 0; j < columnas; ++j) {
-                    QLabel* celda = new QLabel();
-                    celda->setFixedSize(32, 32);
-                    celda->setMinimumSize(32, 32);
-                    celda->setMaximumSize(32, 32);
-                    celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-                    celda->setStyleSheet(
-                        "background-color: #f0f0f0; "
-                        "border: 0.5px solid #999999; "
-                        "margin: 0px; "
-                        "padding: 0px;"
-                        );
-                    celda->setAlignment(Qt::AlignCenter);
-                    celda->installEventFilter(this);
-                    celda->setProperty("fila", i);
-                    celda->setProperty("columna", j);
-
-                    gridLayout->addWidget(celda, i, j);
-                    grillaCeldas[i][j] = celda;
-                }
-            }
-
-            actualizarTamanoGridWidget();
-            actualizarEstadoBotonesDimensiones();
-        }
-    }
-
-    // Leer y aplicar datos de la grilla
-    for (int i = 0; i < filas && !stream.atEnd(); ++i) {
-        linea = stream.readLine();
-        QStringList celdas = linea.split(' ');
-
-        for (int j = 0; j < columnas && j < celdas.size(); ++j) {
-            QStringList partes = celdas[j].split(',');
-            if (partes.size() == 2) {
-                TipoBloque tipo = static_cast<TipoBloque>(partes[0].toInt());
-                int subTipo = partes[1].toInt();
-
-                // Actualizar datos
-                datosGrilla[i][j] = InfoCelda(tipo, subTipo);
-
-                // Actualizar visual (necesitarías crear una función que convierta tipo+subtipo a pixmap)
-                if (tipo != VACIO && i < grillaCeldas.size() && j < grillaCeldas[i].size()) {
-                    QPixmap pixmap = obtenerPixmapParaTipo(tipo, subTipo);
-                    if (!pixmap.isNull()) {
-                        grillaCeldas[i][j]->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                    }
-                }
-            }
-        }
-    }
-
-    archivo.close();
-
-    QMessageBox::information(this, "Éxito", "Mapa cargado correctamente: " + nombreArchivo);
-    qDebug() << "Mapa cargado desde:" << nombreArchivo;
-    mostrarEstadoGrillaEnConsola();
-} */
-
-// FUNCIÓN AUXILIAR PARA OBTENER PIXMAP SEGÚN TIPO (necesitarás implementar esto):
-
-/* QPixmap EditorWindow::obtenerPixmapParaTipo(TipoBloque tipo, int subTipo) {
-    // Esta función debería retornar el pixmap correcto según el tipo y subtipo
-    // Necesitarás almacenar los pixmaps de alguna manera para poder recuperarlos
-
-    if (tipo == PISO) {
-        // Cargar desde la imagen de pisos usando el subtipo
-        QString imagePath = ":/pisos/fondos_32.png";
-        QPixmap originalPixmap(imagePath);
-
-        int tileWidth = 32;
-        int tileHeight = 32;
-        int columnas = originalPixmap.width() / tileWidth;
-
-        // Calcular posición basada en subtipo
-        int indice = subTipo - 1; // subTipo empieza en 1
-        if (indice >= 0) {
-            int fila = indice / columnas;
-            int columna = indice % columnas;
-
-            int x = columna * tileWidth;
-            int y = fila * tileHeight;
-
-            return originalPixmap.copy(x, y, tileWidth, tileHeight);
-        }
-    }
-    else if (tipo == MURO) {
-        // Similar para muros
-        QString imagePath = ":/muros/muchos_bloques.png";
-        QPixmap originalPixmap(imagePath);
-
-        int tileWidth = 32;
-        int tileHeight = 32;
-        int columnas = originalPixmap.width() / tileWidth;
-
-        int indice = subTipo - 1;
-        if (indice >= 0) {
-            int fila = indice / columnas;
-            int columna = indice % columnas;
-
-            int x = columna * tileWidth;
-            int y = fila * tileHeight;
-
-            return originalPixmap.copy(x, y, tileWidth, tileHeight);
-        }
-    }
-
-    return QPixmap(); // Retorna pixmap vacío si no se encuentra
-} */
-
-// AGREGAR BOTÓN PARA CARGAR EN EL MENÚ:
-// En la función inicializarEditorMapa(), agregar:
-
-/* cargarAction = new QAction("Cargar", this);
-fileMenu->addAction(cargarAction);
-connect(cargarAction, &QAction::triggered, this, [this]() {
-   QString nombreArchivo = QFileDialog::getOpenFileName(
-       this,
-       "Cargar Mapa",
-       "",
-       "Archivos de Mapa (*.txt)"
-       );
-
-   if (!nombreArchivo.isEmpty()) {
-       cargarMapaDesdeArchivo(nombreArchivo);
-   }
-}); */
