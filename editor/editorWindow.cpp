@@ -718,6 +718,9 @@ void EditorWindow::agregarFila() {
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
+    if (!rutaArchivoActual.isEmpty()) {
+        guardarProgresoEnYaml();
+    }
     
 }
 
