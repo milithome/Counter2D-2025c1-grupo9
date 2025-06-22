@@ -643,6 +643,7 @@ void Game::updateGamePhase(float deltaTime) {
       handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
     } else if (spike.state == BombState::PLANTED) {
       phase = Phase::BOMB_DEFUSING;
+      elapsedTime=0.0f;
     }
     break;
 
