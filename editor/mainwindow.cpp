@@ -146,7 +146,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::actualizarFondo()
 {
-    QPixmap fondo(":/fondos/fondoFinal.jpg");
+    QPixmap fondo(":/assets/gfxfondoFinal.jpg");
     if (!fondo.isNull()) {
         fondo = fondo.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QPalette palette;
