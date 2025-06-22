@@ -75,6 +75,7 @@ private slots:
     void limpiarIconosAnteriores();
     void crearIconosPisos();
     void crearIconosMuros();
+    void crearIconosSpawns();
 
 private:
 
