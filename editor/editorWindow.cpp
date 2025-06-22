@@ -515,19 +515,12 @@ void EditorWindow::crearIconosPisos() {
 
     QSet<QPair<int, int>> bloquesValidos = {
         {0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},  //pasto
-
         {1,0},{1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{2,0},  //arena
-
         {3,0},{3,1},{3,2},{3,3},  //arena con pastitos
-
         {3,4},{3,5},{3,6},{3,7},  //arena con cemento
-
         {4,0},  //cemento
-
         {5,4},{5,5},{5,6},{5,7}, //baldosas de madera?
-
         {6,0},{6,1},{6,2}, //arena con piedritas
-
         {9,5},{9,6},{9,7},  //arena mostaza
     };
 
@@ -555,14 +548,15 @@ void EditorWindow::crearIconosPisos() {
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
+                coordenadasSeleccionadas = {fila, columna}; // NUEVA LÍNEA
                 actualizarSeleccionVisual(icono);
             });
         }
     }
-
 }
 
 void EditorWindow::crearIconosMuros() {
@@ -598,9 +592,11 @@ void EditorWindow::crearIconosMuros() {
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
+                coordenadasSeleccionadas = {fila, columna}; // NUEVA LÍNEA
                 actualizarSeleccionVisual(icono);
             });
         }
@@ -640,14 +636,15 @@ void EditorWindow::crearIconosSpawns() {
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono]() {
+            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
+            connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
+                coordenadasSeleccionadas = {fila, columna}; // NUEVA LÍNEA
                 actualizarSeleccionVisual(icono);
             });
         }
     }
-
 }
 
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
@@ -660,14 +657,23 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
             celda->clear();
 
             if (!bloqueSeleccionado.isEmpty()) {
+                // Caso para bloques con string (si lo usas)
                 QPixmap pixmap(bloqueSeleccionado);
                 if (!pixmap.isNull()) {
                     celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                 }
-                matrizGrilla[fila][columna] = std::make_pair(fila, columna);
+                // Aquí podrías guardar las coordenadas si tuvieras una variable para bloqueSeleccionado
             } else if (!pixmapSeleccionado.isNull()) {
+                // MODIFICACIÓN: Guardar las coordenadas en la matriz
+                matrizGrilla[fila][columna] = coordenadasSeleccionadas;
+                
                 celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                matrizGrilla[fila][columna] = {0,0};
+                
+                // Debug para verificar que se guarden correctamente
+                qDebug() << "Bloque colocado en (" << fila << "," << columna 
+                         << ") con coordenadas del tileset (" 
+                         << coordenadasSeleccionadas.first << "," 
+                         << coordenadasSeleccionadas.second << ")";
             }
 
             celda->setAlignment(Qt::AlignCenter);
