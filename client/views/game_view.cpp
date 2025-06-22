@@ -18,15 +18,15 @@ GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map
     backgroundTexture(renderer, map.get_background_path()), 
     bloodTexture(createBloodTexture()), 
     sparkTexture(createSparkTexture()),
-    akShopSprite(createShopTexture("../assets/gfx/weapons/ak47_m.bmp")),
-    m3ShopSprite(createShopTexture("../assets/gfx/weapons/m3_m.bmp")),
-    awpShopSprite(createShopTexture("../assets/gfx/weapons/awp_m.bmp")),
-    akInvSprite(createInvTexture("../assets/gfx/weapons/ak47_k.bmp")),
-    m3InvSprite(createInvTexture("../assets/gfx/weapons/m3_k.bmp")),
-    awpInvSprite(createInvTexture("../assets/gfx/weapons/awp_k.bmp")),
-    glockInvSprite(createInvTexture("../assets/gfx/weapons/glock_k.bmp")),
-    knifeInvSprite(createInvTexture("../assets/gfx/weapons/knife_k.bmp")),
-    bombInvSprite(createInvTexture("../assets/gfx/weapons/bomb_d.bmp")) {
+    akShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/ak47_m.bmp")),
+    m3ShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/m3_m.bmp")),
+    awpShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/awp_m.bmp")),
+    akInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/ak47_k.bmp")),
+    m3InvSprite(createInvTexture(BASE_PATH + "gfx/weapons/m3_k.bmp")),
+    awpInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/awp_k.bmp")),
+    glockInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/glock_k.bmp")),
+    knifeInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/knife_k.bmp")),
+    bombInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/bomb_d.bmp")) {
 }
 
 

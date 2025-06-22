@@ -6,8 +6,10 @@
 #include "common/game.h"
 #include "common/player.h"
 
-#define MAP_TILES_PATH 'assets/gfx/tiles/'
-#define PLAYER_TILES_PATH 'assets/gfx/player/'
+
+// ../assets/
+
+
 #define CLIP_SIZE 32
 #define BLOCK_SIZE 32
 #define BACKGROUND_TEXTURE_SIZE 64
@@ -125,14 +127,15 @@ private:
 
     Texture mapTiles;
     Texture backgroundTexture;
+    const std::string BASE_PATH = "/var/taller/";
 
-    Font font = Font("../assets/gfx/fonts/sourcesans.ttf", FONT_SIZE);
+    Font font = Font(BASE_PATH + "gfx/fonts/sourcesans.ttf", FONT_SIZE);
 
     // Surfaces de las skins para poder crear otras texturas, util para hacer las animaciones de muerte
-    Surface phoenixS = Surface("../assets/gfx/player/t1.bmp");
-    Surface l337KrewS = Surface("../assets/gfx/player/t2.bmp");
-    Surface arcticAvengerS = Surface("../assets/gfx/player/t3.bmp");
-    Surface guerrillaS = Surface("../assets/gfx/player/t4.bmp");
+    Surface phoenixS = Surface(BASE_PATH + "gfx/player/t1.bmp");
+    Surface l337KrewS = Surface(BASE_PATH + "gfx/player/t2.bmp");
+    Surface arcticAvengerS = Surface(BASE_PATH + "gfx/player/t3.bmp");
+    Surface guerrillaS = Surface(BASE_PATH + "gfx/player/t4.bmp");
     Surface& getTSkinSpriteSurface(tSkin skin) {
         switch (skin) {
             case PHOENIX:           return phoenixS;
@@ -142,10 +145,10 @@ private:
             default:                throw std::exception();
         }
     }
-    Surface sealForceS = Surface("../assets/gfx/player/ct1.bmp");
-    Surface germanGsg9S = Surface("../assets/gfx/player/ct2.bmp");
-    Surface uksasS = Surface("../assets/gfx/player/ct3.bmp");
-    Surface frenchGignS = Surface("../assets/gfx/player/ct4.bmp");
+    Surface sealForceS = Surface(BASE_PATH + "gfx/player/ct1.bmp");
+    Surface germanGsg9S = Surface(BASE_PATH + "gfx/player/ct2.bmp");
+    Surface uksasS = Surface(BASE_PATH + "gfx/player/ct3.bmp");
+    Surface frenchGignS = Surface(BASE_PATH + "gfx/player/ct4.bmp");
     Surface& getCtSkinSpriteSurface(ctSkin skin) {
         switch (skin) {
             case SEAL_FORCE:        return sealForceS;
@@ -263,12 +266,12 @@ private:
         }
     }
 
-    Texture akInGameSprite = Texture(renderer, "../assets/gfx/weapons/ak47.bmp");
-    Texture m3InGameSprite = Texture(renderer, "../assets/gfx/weapons/m3.bmp");
-    Texture awpInGameSprite = Texture(renderer, "../assets/gfx/weapons/awp.bmp");
-    Texture glockInGameSprite = Texture(renderer, "../assets/gfx/weapons/glock.bmp");
-    Texture knifeInGameSprite = Texture(renderer, "../assets/gfx/weapons/knife.bmp");
-    Texture bombInGameSprite = Texture(renderer, "../assets/gfx/weapons/bomb.bmp");
+    Texture akInGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/ak47.bmp");
+    Texture m3InGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/m3.bmp");
+    Texture awpInGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/awp.bmp");
+    Texture glockInGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/glock.bmp");
+    Texture knifeInGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/knife.bmp");
+    Texture bombInGameSprite = Texture(renderer, BASE_PATH + "gfx/weapons/bomb.bmp");
     Texture& getWeaponInGameSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47:  return akInGameSprite;
@@ -281,9 +284,9 @@ private:
     }
 
 
-    Texture akDroppedSprite = Texture(renderer, "../assets/gfx/weapons/ak47_d.bmp");
-    Texture m3DroppedSprite = Texture(renderer, "../assets/gfx/weapons/m3_d.bmp");
-    Texture awpDroppedSprite = Texture(renderer, "../assets/gfx/weapons/awp_d.bmp");
+    Texture akDroppedSprite = Texture(renderer, BASE_PATH + "gfx/weapons/ak47_d.bmp");
+    Texture m3DroppedSprite = Texture(renderer, BASE_PATH + "gfx/weapons/m3_d.bmp");
+    Texture awpDroppedSprite = Texture(renderer, BASE_PATH + "gfx/weapons/awp_d.bmp");
     Texture& getWeaponDroppedSprite(WeaponName weapon) {
         switch (weapon) {
             case AK47:  return akDroppedSprite;
@@ -293,7 +296,7 @@ private:
         }
     }
 
-    Texture bombAnimationSprite = Texture(renderer, "../assets/gfx/explosion.png");
+    Texture bombAnimationSprite = Texture(renderer, BASE_PATH + "gfx/explosion.png");
 
     bool shopIsVisible = false;
     bool fovIsVisible = true;
