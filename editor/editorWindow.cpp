@@ -515,8 +515,9 @@ void EditorWindow::crearIconosPisos() {
     iconMapper = new QSignalMapper(this);
 
     //QString imagePath = ":/pisos/fondos_32.png";
-    QString imagePath = ":/muros/muchos_bloques.png";
-    QPixmap originalPixmap(imagePath);
+    //QString imagePath = ":/muros/muchos_bloques.png";
+    // QString imagePath = ":/assets/gfx/tiles/dust.bmp";
+    QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
         {0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7},  //pasto
@@ -617,8 +618,8 @@ void EditorWindow::crearIconosSpawns() {
     iconMapper = new QSignalMapper(this);
 
     //QString imagePath = ":/pisos/fondos_32.png";
-    QString imagePath = ":/muros/muchos_bloques.png";
-    QPixmap originalPixmap(imagePath);
+    //QString imagePath = ":/muros/muchos_bloques.png";
+    QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
         {7,0},{7,1},  // A y B en rojo

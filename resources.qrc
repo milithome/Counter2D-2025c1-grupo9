@@ -5,5 +5,7 @@
         <file>assets/gfx/fonts/sourcesans.ttf</file>
         <file>assets/gfx/fondoSolo.jpg</file>
         <file>assets/gfx/fondoFinal.jpg</file>
+
+        <file>assets/gfx/tiles/dust.bmp</file>
     </qresource>
 </RCC>
