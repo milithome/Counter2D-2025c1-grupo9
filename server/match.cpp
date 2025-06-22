@@ -32,9 +32,8 @@ void Match::run() {
 
 void Match::lobbyLoop() {
     bool lobbyReadySent = false;
-
-    while (inLobby) {
-        try {
+    try {
+        while (inLobby) {
             Message message = toMatch->pop();
             handleLobbyMessage(message);
 
@@ -42,12 +41,11 @@ void Match::lobbyLoop() {
 
             broadcastLobbyState();
             updateLobbyReadyStatus(lobbyReadySent);
-
-        } catch (const ClosedQueue&) {
-            break;
-        } catch (const std::exception& e) {
-            std::cerr << "Exception in lobby loop: " << e.what() << std::endl;
         }
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << name << "] Closing Lobby." << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown exception in Lobby." << std::endl;
     }
 }
 
@@ -252,8 +250,8 @@ void Match::gameLoop() {
         broadcastInitialData(map.getMapData(), gameRules);
         runGameLoop(game);
 
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in gameLoop: " << e.what() << std::endl;
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << name << "]" << " Closing Game." << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in gameLoop." << std::endl;
     }
