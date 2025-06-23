@@ -268,17 +268,18 @@ void EditorWindow::inicializarSpawnsMapa() {
 
     connect(opciones, &QComboBox::currentIndexChanged, this, [this]{
         QString seleccion = opciones->currentText();
+        qDebug() <<jugadoresMaximos;
 
-        // Limpiar íconos anteriores de forma segura
         limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
 
-        if (seleccion == "Zona de Spawn" && jugadoresMaximos > 0) {
+        if (seleccion == "Zona de Spawn") {
             crearIconosSpawns();
         }
         else if (seleccion == "Zona de plantar bomba" && cantZonaPlantable > 0) {
             crearIconosZonaBomba();
         }
     });
+
     // Agregar la barra de herramientas al layout principal (FIJA)
     mainLayout->addLayout(toolbarLayout);
 
@@ -438,7 +439,7 @@ void EditorWindow::inicializarSpawnsMapa() {
    
 
     seleccionSpawnPoints->setLayout(mainLayout);
-     actualizarEstadoBotonesDimensiones();
+    actualizarEstadoBotonesDimensiones();
     actualizarOpcionesDisponibles();
 }
 
@@ -451,17 +452,23 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
 
     // Crear acciones del menú
     guardarAction = new QAction("Guardar", this);
+    guardarSalirAction = new QAction("Guardar y Salir", this);
     borrarAction = new QAction("Borrar", this);
     borrarTodoAction = new QAction("Borrar Todo", this);
 
     // Añadir acciones al menú
     fileMenu->addAction(guardarAction);
+    fileMenu->addAction(guardarSalirAction);
     fileMenu->addSeparator();
     fileMenu->addAction(borrarAction);
     fileMenu->addAction(borrarTodoAction);
 
     // Conectar las acciones a sus slots
     connect(guardarAction, &QAction::triggered, this, &EditorWindow::guardarMapa);
+    connect(guardarSalirAction,  &QAction::triggered, this, [this]() {
+        guardarProgresoEnYaml();                   
+        this->close();  // Cerrar la ventana después de guardar
+    });
     connect(borrarAction, &QAction::triggered, this, &EditorWindow::borrarSeleccionados);
     connect(borrarTodoAction, &QAction::triggered, this, &EditorWindow::borrarTodo);
 
@@ -640,7 +647,7 @@ void EditorWindow::actualizarOpcionesDisponibles() {
     QStringList opcionesNecesarias;
     opcionesNecesarias << "Elegir bloque:";
     
-    if (jugadoresMaximos > 0) {
+    if (terroristas < jugadoresMaximos|| antiterroristas < jugadoresMaximos) {
         opcionesNecesarias << "Zona de Spawn";
     }
     
@@ -678,18 +685,11 @@ void EditorWindow::actualizarOpcionesDisponibles() {
     
     // Verificar si la selección actual sigue siendo válida
     QString nuevaSeleccion = opciones->currentText();
-    if ((nuevaSeleccion == "Zona de Spawn" && jugadoresMaximos <= 0) ||
-        (nuevaSeleccion == "Zona de plantar bomba" && cantZonaPlantable <= 0)) {
+    if ((nuevaSeleccion == "Zona de plantar bomba" && cantZonaPlantable <= 0)) {
         opciones->setCurrentIndex(0);
         limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
     }
     
-    // Deshabilitar completamente solo si no hay opciones disponibles
-    if (jugadoresMaximos <= 0 && cantZonaPlantable <= 0) {
-        opciones->setEnabled(false);
-    } else {
-        opciones->setEnabled(true);
-    }
 }
 
 void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
@@ -699,7 +699,7 @@ void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado,
 
     // Si había uno seleccionado antes, le saco el borde
     if (iconSelec && iconsActivs.contains(iconSelec)) {
-        iconoSeleccionado->setStyleSheet("border: 1px solid #999999;");
+        iconSelec->setStyleSheet("border: 1px solid #999999;");
     }
 
     // Poner borde al nuevo seleccionado
@@ -708,35 +708,46 @@ void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado,
 }
 
 void EditorWindow::actualizarTamanoGridWidget() {
-    if (grillaCeldas.isEmpty()) return;
+    if (grillasCeldasSpawns.isEmpty()) return;
 
-    int filas = grillaCeldas.size();
-    int columnas = grillaCeldas[0].size();
+    int filas = grillasCeldasSpawns.size();
+    int columnas = grillasCeldasSpawns[0].size();
     int anchoTotal = columnas * 32;
     int altoTotal = filas * 32;
 
     // Buscar el widget contenedor de la grilla y actualizar su tamaño
-    QWidget* gridWidget = gridLayout->parentWidget();
+    QWidget* gridWidget = gridLayoutSpawns->parentWidget();
     if (gridWidget) {
         gridWidget->setFixedSize(anchoTotal, altoTotal);
     }
 }
  
-void EditorWindow::actualizarJugadoresMaximos(int nuevoValor) {
-    jugadoresMaximos = nuevoValor;
+void EditorWindow::actualizarTerroristas(int nuevoValor) {
+    terroristas = nuevoValor;
 
-    if (jugadoresMaximos == 0) {
+    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
         guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
     } else {
         guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
     }
-    actualizarOpcionesDisponibles();
 }
+
+void EditorWindow::actualizarAntiterroristas(int nuevoValor) {
+    antiterroristas = nuevoValor;
+
+    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
+        guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
+    } else {
+        guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
+    }
+
+}
+
 
 void EditorWindow::actualizarZonasPlantables(int nuevoValor) {
     cantZonaPlantable = nuevoValor;
 
-    if (cantZonaPlantable == 0) {
+    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
         guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
     } else {
         guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
@@ -873,13 +884,14 @@ void EditorWindow::crearIconosMuros() {
     }
 }
 
-void EditorWindow::crearIconosZonaBomba() {
+void EditorWindow::crearIconosSpawns() {
+
     iconMapperSpawns = new QSignalMapper(this);
 
     QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> bloquesValidos = {
-        {4,7}
+        {9,0},{4,7}
     };
 
     int tileWidth = 32;
@@ -906,18 +918,18 @@ void EditorWindow::crearIconosZonaBomba() {
             iconosActivosSpawns.append(icono);
             iconosLayoutSpawns->addWidget(icono);
 
-            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionadoSpawns = croppedPixmap;
-                coordenadasSeleccionadasSpawns = {fila, columna}; // NUEVA LÍNEA
+                coordenadasSeleccionadasSpawns = {fila, columna};
                 actualizarSeleccionVisual(icono, iconosActivosSpawns, iconoSeleccionadoSpawns);
             });
         }
     }
 }
 
-void EditorWindow::crearIconosSpawns() {
+
+void EditorWindow::crearIconosZonaBomba() {
     iconMapperSpawns = new QSignalMapper(this);
 
     QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
@@ -981,14 +993,21 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
                         celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                     }
                     // Aquí podrías guardar las coordenadas si tuvieras una variable para bloqueSeleccionado
-                } else if (!pixmapSeleccionadoSpawns.isNull()) { // ✅ CORREGIDO: usar pixmapSeleccionadoSpawns
+                } else if (!pixmapSeleccionadoSpawns.isNull()) { 
                     // MODIFICACIÓN: Guardar las coordenadas en la matriz
-                    if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
-                        matrizGrillaSpawns[fila][columna] = 1; // Zona de spawn
-                        actualizarJugadoresMaximos(jugadoresMaximos - 1); // Reducir el contador de jugadores
-                        qDebug() << jugadoresMaximos;
+                    if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
+                        matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn
+                        actualizarTerroristas(terroristas + 1); // Reducir el contador de jugadores
+                        //actualizarOpcionesDisponibles();
+                        qDebug() << terroristas;
                     }
-                    else if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
+                    else if(coordenadasSeleccionadasSpawns.first == 9 && coordenadasSeleccionadasSpawns.second == 0) {
+                        matrizGrillaSpawns[fila][columna] = 4; // Zona de spawn
+                        actualizarAntiterroristas(antiterroristas + 1);  // Reducir el contador de jugadores
+                        //actualizarOpcionesDisponibles();
+                        qDebug() << antiterroristas;
+                    }
+                    else if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
                         matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
                         actualizarZonasPlantables(cantZonaPlantable - 1); // Reducir el contador de zonas plantables
                         qDebug() << cantZonaPlantable;
@@ -1503,6 +1522,8 @@ void EditorWindow::onCrearMapaClicked() {
 
     QString textoCantJugadores = cant_jugadores->text();
     jugadoresMaximos = textoCantJugadores.toInt();
+    terroristas = 0;
+    antiterroristas = 0;
     cantZonaPlantable = 4;
 
     // Validar cantidad de jugadores
