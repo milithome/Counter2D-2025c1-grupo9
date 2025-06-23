@@ -597,6 +597,7 @@ Entity Game::getPlayerState(const std::string &name) {
 }
 
 void Game::handleEndRound(char winnerTeam, TypeEndRound type) {
+  elapsedTime=0.0f;
   winner.team = winnerTeam;
   winner.typeEndRound = type;
   rounds.winner = winner;
@@ -637,7 +638,6 @@ void Game::updateGamePhase(float deltaTime) {
     if (roundWinner != '-') {
       handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
     } else if (elapsedTime >= timeToPlantBomb) {
-      elapsedTime=0.0f;
       char winningTeam =
           (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
       handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
@@ -655,7 +655,6 @@ void Game::updateGamePhase(float deltaTime) {
       handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
 
     } else if (elapsedTime >= timeUntilBombExplode) {
-      elapsedTime=0.0f;
       char winningTeam = (teamA.getRole() == Role::TERRORIST) ? 'a' : 'b';
       handleEndRound(winningTeam, TypeEndRound::BOMB_EXPLODED);
 
