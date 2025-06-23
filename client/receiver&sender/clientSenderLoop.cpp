@@ -9,7 +9,7 @@ void SendLoop::run(){
             std::shared_ptr<MessageEvent> msg = queue.pop();
             msg->send(protocol);
         }
-    } catch (const ServerClosedException& e) {
+    } catch (const ServerClosedConnection& e) {
         stop();
         queue.close();
     } catch (const std::exception& e) {

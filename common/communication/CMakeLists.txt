@@ -14,5 +14,5 @@ target_sources(taller_common
     resolver.h
     resolvererror.h
     socket.h
-    ServerClosedException.h
+    connectioneExceptions.h
     )

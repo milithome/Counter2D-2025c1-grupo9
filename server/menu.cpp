@@ -38,8 +38,8 @@ void Menu::run()
             }
         }
         admin.removeMenu(client->channels.name);
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in Menu: " << e.what() << std::endl;
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << client->channels.name << "]" << " Closing Menu." << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in Menu." << std::endl;
     }
@@ -93,4 +93,5 @@ void Menu::send_response_error(Type type, const std::string& msg, uint8_t result
 
 void Menu::stop() {
     active = false;
+    client->channels.requests->close();
 }

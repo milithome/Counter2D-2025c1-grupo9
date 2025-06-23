@@ -1244,7 +1244,7 @@ void GameView::showRoundEndMessage(RoundWinner winner) {
         }
     }
     on_screen_message_effect = OnScreenMessageEffect{text};
-};
+}
 
 
 void GameView::showGameEndMessage(RoundWinner winner) {

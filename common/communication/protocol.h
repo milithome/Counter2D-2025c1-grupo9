@@ -6,7 +6,7 @@
 #include <mutex>
 #include "../structures.h"
 #include "../utilities/serializer_utils.h"
-#include "ServerClosedException.h"
+#include "socket.h"
 
 class Protocol {
 public:
@@ -43,7 +43,8 @@ public:
     Message recv_message();
 
     void close() {
-        skt.shutdown(2);
+        skt.shutdown(SHUT_RDWR);
+        skt.close();
     };
 
 private:

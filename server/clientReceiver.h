@@ -25,7 +25,7 @@ class ClientReceiver : public Thread {
         void handleClientName();
         void handleNameError(const std::string& errorMsg);
         void receiveMessagesLoop();
-        void handleDisconnection(const std::string& reason);
+        void handleDisconnection();
 
         std::mutex queueMutex;
         Protocol& protocol;

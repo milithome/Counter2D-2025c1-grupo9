@@ -85,16 +85,16 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
                 this->unnamedClients.erase(client);
                 this->clients.insert(client);
             }
+            client->sender = std::make_shared<ClientSender>(
+                client->protocol,
+                client->channels.name,
+                *this,
+                client->channels.responses
+            );
             client->sender->start();
+
             this->createMenu(client);
         }
-    );
-
-    client->sender = std::make_shared<ClientSender>(
-        client->protocol,
-        client->channels.name,
-        *this,
-        client->channels.responses
     );
 
     client->receiver->start();

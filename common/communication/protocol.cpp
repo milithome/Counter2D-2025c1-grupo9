@@ -31,7 +31,7 @@ void Protocol::send_name(const std::string& name) {
 }
 
 void Protocol::send_create(const std::string& name) {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::CREATE);
 
@@ -43,7 +43,7 @@ void Protocol::send_create(const std::string& name) {
 }
 
 void Protocol::send_join(const std::string& name) {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::JOIN);
 
@@ -55,7 +55,7 @@ void Protocol::send_join(const std::string& name) {
 }
 
 void Protocol::send_list() {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     std::vector<uint8_t> buffer;
     buffer.push_back(Type::LIST);
 
@@ -108,7 +108,7 @@ void  Protocol::serialize_action_select_map(const Action& action, std::vector<ui
 }
 
 void Protocol::send_action(const Action& action) {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     std::vector<uint8_t> buffer;
 
     buffer.push_back(Type::ACTION);
@@ -163,7 +163,7 @@ void Protocol::send_action(const Action& action) {
 }
 
 void Protocol::send_leave_lobby() {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     uint8_t type = Type::LEAVE;
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
@@ -172,7 +172,7 @@ void Protocol::send_leave_lobby() {
 }
 
 void Protocol::send_start() {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     uint8_t type = Type::START;
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
@@ -181,7 +181,7 @@ void Protocol::send_start() {
 }
 
 void Protocol::send_disconnect() {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     uint8_t type = Type::DISCONNECT;
 
     if (skt.sendall(&type, sizeof(type)) <= 0) {
@@ -854,7 +854,7 @@ Response Protocol::deserialize_state_lobby() {
 }
 
 Response Protocol::recv_response() {
-    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedException();
+    if (skt.is_stream_send_closed() || skt.is_stream_recv_closed()) throw ServerClosedConnection();
     uint8_t type_byte;
     if (skt.recvall(&type_byte, sizeof(type_byte)) == 0) {
         throw std::runtime_error("Error receiving message type");
