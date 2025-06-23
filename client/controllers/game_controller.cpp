@@ -356,6 +356,8 @@ void GameController::updateGameState(StateGame new_state) {
         shop_open = false;
         if (new_state.phase == END_ROUND) {
             view.showRoundEndMessage(new_state.rounds.winner);
+        } else if (new_state.phase == END_GAME) {
+            view.showGameEndMessage(new_state.rounds.winner);
         } else {
             view.showNewPhaseMessage(new_state.phase);
         }

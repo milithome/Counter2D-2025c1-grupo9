@@ -848,6 +848,7 @@ Response Protocol::deserialize_state_lobby() {
 
 Response Protocol::recv_response() {
     uint8_t type_byte;
+    if (skt.is_stream_recv_closed()) throw std::runtime_error("Server closed");
     if (skt.recvall(&type_byte, sizeof(type_byte)) == 0) {
         throw std::runtime_error("Error receiving message type");
     }

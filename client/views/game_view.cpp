@@ -1246,6 +1246,17 @@ void GameView::showRoundEndMessage(RoundWinner winner) {
     on_screen_message_effect = OnScreenMessageEffect{text};
 };
 
+
+void GameView::showGameEndMessage(RoundWinner winner) {
+    std::string text;
+    if (winner.team == 'a') {
+        text += "Team A won the game! Returning to main menu...";
+    } else {
+        text += "Team B won the game! Returning to main menu...";
+    }
+    on_screen_message_effect = OnScreenMessageEffect{text};
+};
+
 void GameView::addBombExplosionEffect(float x, float y) {
     bomb_explosion_effect = BombExplosionEffect{x, y};
     bombExplosionEffect = true;

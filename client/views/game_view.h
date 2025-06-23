@@ -105,6 +105,7 @@ public:
     void addBombExplosionEffect(float x, float y);
     void showNewPhaseMessage(Phase phase);
     void showRoundEndMessage(RoundWinner winner);
+    void showGameEndMessage(RoundWinner winner);
     void switchShopVisibility();
     void hideShop() { shopIsVisible = false; };
     void switchFovVisibility() { fovIsVisible = !fovIsVisible; };
