@@ -97,6 +97,7 @@ private:
     QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
 
 
+
     void configurarVistaSegunModo(ModoEditor modo);
     void setupCustomUIConfiguracionMapa();
     void setupCustomUIEleccionMapa();
@@ -136,6 +137,8 @@ private:
     QPushButton* agregarColumnaBtn;
     QPushButton* eliminarFilaBtn;
     QPushButton* eliminarColumnaBtn;
+
+    void verificarCondicionFinal();
 
     void actualizarOpcionesDisponibles();
 
@@ -180,6 +183,7 @@ private:
     void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
                                              QList<ClickableLabel*>& iconsActivs, ClickableLabel*& iconSelec);
     void actualizarTamanoGridWidget();
+
 
 
     void agregarFila();

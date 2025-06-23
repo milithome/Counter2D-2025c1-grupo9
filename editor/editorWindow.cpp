@@ -443,6 +443,21 @@ void EditorWindow::inicializarSpawnsMapa() {
     actualizarOpcionesDisponibles();
 }
 
+void EditorWindow::verificarCondicionFinal() {
+    qDebug() << "Verificando condición final:"
+             << terroristas << antiterroristas << cantZonaPlantable << jugadoresMaximos;
+
+    if (terroristas == jugadoresMaximos && 
+        antiterroristas == jugadoresMaximos && 
+        cantZonaPlantable == 0) {
+        guardarSpawnBtn->setEnabled(true);
+        qDebug() << "Condición final cumplida.";
+    } else {
+        guardarSpawnBtn->setEnabled(false);
+    }
+}
+
+
 void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
     // CREAR LA BARRA DE MENÚ
     miMenuBar = this->menuBar();
@@ -722,39 +737,6 @@ void EditorWindow::actualizarTamanoGridWidget() {
     }
 }
  
-void EditorWindow::actualizarTerroristas(int nuevoValor) {
-    terroristas = nuevoValor;
-
-    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
-        guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
-    } else {
-        guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
-    }
-}
-
-void EditorWindow::actualizarAntiterroristas(int nuevoValor) {
-    antiterroristas = nuevoValor;
-
-    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
-        guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
-    } else {
-        guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
-    }
-
-}
-
-
-void EditorWindow::actualizarZonasPlantables(int nuevoValor) {
-    cantZonaPlantable = nuevoValor;
-
-    if (terroristas == jugadoresMaximos && antiterroristas == jugadoresMaximos && cantZonaPlantable == 0) {
-        guardarSpawnBtn->setEnabled(true);  // Habilitar el botón
-    } else {
-        guardarSpawnBtn->setEnabled(false); // (Opcional) Deshabilitar si vuelve a ser > 0
-    }
-    actualizarOpcionesDisponibles();
-}
-
 
 
 // Agregar estas nuevas funciones a la clase EditorWindow:
@@ -1005,15 +987,19 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
                     int valorAnterior = matrizGrillaSpawns[fila][columna];
                     if (valorAnterior == 3) {
                         // Era zona de spawn terrorista
-                        actualizarTerroristas(terroristas - 1);
+                        --terroristas;
+                        verificarCondicionFinal();
                         qDebug() << "Terrorista removido. Total:" << terroristas;
                     } else if (valorAnterior == 4) {
                         // Era zona de spawn antiterrorista
-                        actualizarAntiterroristas(antiterroristas - 1);
+                        --antiterroristas;
+                        verificarCondicionFinal();
                         qDebug() << "Antiterrorista removido. Total:" << antiterroristas;
                     } else if (valorAnterior == 2) {
                         // Era zona plantable
-                        actualizarZonasPlantables(cantZonaPlantable + 1);
+                        ++cantZonaPlantable;
+                        verificarCondicionFinal();
+                        actualizarOpcionesDisponibles();
                         qDebug() << "Zona plantable removida. Total:" << cantZonaPlantable;
                     }
                     
@@ -1039,17 +1025,21 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
                         // MODIFICACIÓN: Guardar las coordenadas en la matriz
                         if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
                             matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn
-                            actualizarTerroristas(terroristas + 1); // Aumentar el contador de jugadores
+                            ++terroristas;
+                            verificarCondicionFinal(); // Aumentar el contador de jugadores
                             qDebug() << terroristas;
                         }
                         else if(coordenadasSeleccionadasSpawns.first == 9 && coordenadasSeleccionadasSpawns.second == 0) {
                             matrizGrillaSpawns[fila][columna] = 4; // Zona de spawn
-                            actualizarAntiterroristas(antiterroristas + 1);  // Aumentar el contador de jugadores
+                            ++antiterroristas;
+                            verificarCondicionFinal();  // Aumentar el contador de jugadores
                             qDebug() << antiterroristas;
                         }
                         else if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
                             matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
-                            actualizarZonasPlantables(cantZonaPlantable - 1); // Reducir el contador de zonas plantables
+                            --cantZonaPlantable;
+                            verificarCondicionFinal(); // Reducir el contador de zonas plantables
+                            actualizarOpcionesDisponibles();
                             qDebug() << cantZonaPlantable;
                         }
                         
@@ -1600,7 +1590,7 @@ void EditorWindow::onCrearMapaClicked() {
         return;
     }
 
-    jugadoresMaximos = jugadoresMaximos*2;
+    //jugadoresMaximos = jugadoresMaximos*2;
 
     inicializarSpawnsMapa();
 
