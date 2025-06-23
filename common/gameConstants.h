@@ -25,6 +25,8 @@ struct DroppedWeapon {
   float y;
 };
 
+enum class EquippedWeapon { KNIFE, PRIMARY, SECONDARY };
+
 #define PLAYER_WIDTH 0.7f
 #define PLAYER_HEIGHT 0.7f
 #define WEAPON_WIDTH 0.7f

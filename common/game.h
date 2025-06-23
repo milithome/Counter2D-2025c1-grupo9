@@ -88,7 +88,6 @@ private:
   void stopShooting(const std::string &name);
   void grab(const std::string &name);
   void placePlayerInSpawnTeam(Player &player);
-  float randomFloatInRange(float min, float max);
   void updateGamePhase(float deltaTime);
   void updatePlayers(float deltaTime);
   void updateRounds();
