@@ -9,7 +9,7 @@
 #include "client/views/connect_to_server_view.h"
 #include "client/views/search_party_view.h"
 #include "client/views/party_view.h"
-#include "message_event.h"
+#include "messages/message_event.h"
 #include "common/communication/protocol.h"
 
 class MenuController : public QWidget {
@@ -38,8 +38,8 @@ public:
     QPoint getWindowPosition() { return window.getPosition(); }
 
     void showStartingScreen() { 
-        mainView = MainView();
-        listenToMainView(mainView);
+        mainView = new MainView();
+        listenToMainView();
         window.showView(mainView);
         window.show();
     }
@@ -47,16 +47,14 @@ public:
     
 
 private:
-
-    
     QtWindow& window;
-    MainView mainView;
-    SearchPartyView searchPartyView;
-    PartyView partyView;
-    CreatePartyView createPartyView;
-    ConnectToServerView connectToServerView;
+    MainView *mainView = nullptr;
+    SearchPartyView *searchPartyView = nullptr;
+    PartyView *partyView = nullptr;
+    CreatePartyView *createPartyView = nullptr;
+    ConnectToServerView *connectToServerView = nullptr;
 
-    std::string pName;
+    std::string pName; // Esto es un hack para ponerle nombre a la PartyView, hay mejores formas de hacerlo pero no me parece que valga la pena
 
 
 
@@ -68,19 +66,18 @@ private:
     void onSearchPartyViewBackButtonClicked();
     void onPartyViewLeaveButtonClicked();
     void onPartyViewStartButtonClicked();
-
     void onConnectViewConnectButtonClicked();
     void onConnectViewBackButtonClicked();
 
-    void listenToMainView(MainView& mainView);
-    void listenToSearchPartyView(SearchPartyView& searchPartyView);
-    void listenToCreatePartyView(CreatePartyView& createPartyView);
-    void listenToPartyView(PartyView& createPartyView);
-    void listenToConnectView(ConnectToServerView& connectToServerView);
+    void listenToMainView();
+    void listenToSearchPartyView();
+    void listenToCreatePartyView();
+    void listenToPartyView();
+    void listenToConnectView();
 
 
 signals:
-    void nuevoEvento(std::shared_ptr<MessageEvent> event);
+    void newMessage(std::shared_ptr<MessageEvent> event);
     void connectRequest(const std::string& name, const std::string& addr, const std::string& port);
 };
 

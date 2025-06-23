@@ -11,5 +11,6 @@
         <file>assets/gfx/player/t2.bmp</file>
         <file>assets/gfx/player/t3.bmp</file>
         <file>assets/gfx/player/t4.bmp</file>
+        <file>assets/sfx/menu.wav</file>
     </qresource>
 </RCC>

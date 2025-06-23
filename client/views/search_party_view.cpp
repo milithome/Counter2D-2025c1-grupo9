@@ -65,6 +65,7 @@ void SearchPartyView::buildLayout() {
     container->addLayout(subLayout);
 
     layout->addWidget(container);
+    setLayout(layout);
 }
 
 

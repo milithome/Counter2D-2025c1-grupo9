@@ -32,9 +32,8 @@ void Match::run() {
 
 void Match::lobbyLoop() {
     bool lobbyReadySent = false;
-
-    while (inLobby) {
-        try {
+    try {
+        while (inLobby) {
             Message message = toMatch->pop();
             handleLobbyMessage(message);
 
@@ -42,12 +41,11 @@ void Match::lobbyLoop() {
 
             broadcastLobbyState();
             updateLobbyReadyStatus(lobbyReadySent);
-
-        } catch (const ClosedQueue&) {
-            break;
-        } catch (const std::exception& e) {
-            std::cerr << "Exception in lobby loop: " << e.what() << std::endl;
         }
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << name << "] Closing Lobby." << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown exception in Lobby." << std::endl;
     }
 }
 
@@ -144,20 +142,17 @@ void Match::handleAction(const Action& action, const std::string& clientName) {
     case ActionType::SELECT_T_SKIN: {
         const SelectTSkin& tSkinData = std::get<SelectTSkin>(action.data);
         it->terroristSkin = tSkinData.terroristSkin;
-        std::cout << tSkinData.terroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_CT_SKIN: {
         const SelectCTSkin& ctSkinData = std::get<SelectCTSkin>(action.data);
         it->counterTerroristSkin = ctSkinData.counterTerroristSkin;
-        std::cout << ctSkinData.counterTerroristSkin << std::endl;
         break;
     }
     case ActionType::SELECT_MAP: {
         const SelectMap& mapData = std::get<SelectMap>(action.data);
         // haria falta una verificacion de que sea un mapa que exista -> ver mejor cuando haya un editor
         mapName = mapData.name;
-        std::cout << mapData.name << std::endl;
         break;
     }
     default:
@@ -188,13 +183,6 @@ void Match::handleStart() {
 void Match::handleDisconnect(const std::string& clientName) {
     for (auto it = clients.begin(); it != clients.end(); ++it) {
         if ((*it)->channels.name == clientName) {
-            Response response = {
-                Type::DISCONNECT,
-                0,
-                {},
-                "Disconnect successfull."
-            };
-            (*it)->channels.responses->push(response);
             clients.erase(it);
             break;
         }
@@ -221,10 +209,8 @@ void Match::broadcastLobbyState() {
 
 void Match::updateLobbyReadyStatus(bool& lobbyReadySent) {
     if (clients.size() >= minPlayers && clients.size() <= maxPlayers) {
-        if (!lobbyReadySent) {
-            sendLobbyReadyToAll();
-            lobbyReadySent = true;
-        }
+        sendLobbyReadyToAll();
+        lobbyReadySent = true;
     } else if (lobbyReadySent) {
         sendNotLobbyReadyToAll();
         lobbyReadySent = false;
@@ -257,18 +243,15 @@ void Match::sendNotLobbyReadyToAll() {
 
 void Match::gameLoop() {
     try {
-        Map map("../assets/maps/" + mapName + ".yaml");
-        GameRules gameRules = load_game_rules("../config_server.yaml");
+        Map map("/var/taller/maps/" + mapName + ".yaml");
         Game game(map.getMapData().game_map, gameRules);
 
         setupGame(game);
         broadcastInitialData(map.getMapData(), gameRules);
-        startTimeoutThread(game);
-
         runGameLoop(game);
 
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in gameLoop: " << e.what() << std::endl;
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << name << "]" << " Closing Game." << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in gameLoop." << std::endl;
     }
@@ -278,18 +261,6 @@ void Match::setupGame(Game& game) {
     for (const auto& client : clients) {
         game.addPlayer(client->channels.name);
     }
-}
-
-void Match::startTimeoutThread(Game& game) {
-    std::thread timeoutThread([this, &game]() {
-        std::this_thread::sleep_for(std::chrono::minutes(15));
-        //std::this_thread::sleep_for(std::chrono::seconds(180));
-        game.stop();
-        inGame = false;
-        
-        //std::cout << "pasaron 20 segundos" << std::endl;
-    });
-    timeoutThread.detach();
 }
 
 void Match::runGameLoop(Game& game) {

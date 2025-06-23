@@ -6,9 +6,6 @@
 #include "client/views/qtwindow.h"
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
-#include "client/controllers/message_event.h"
-#include "client/controllers/disconnect_event.h"
-#include "client/controllers/action_event.h"
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
@@ -16,6 +13,7 @@
 #include "client/receiver&sender/clientSenderLoop.h"
 #include "client/menuClient.h"
 #include "client/gameClient.h"
+#include "client/client.h"
 
 #include <iostream>
 #include <exception>

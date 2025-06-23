@@ -8,9 +8,6 @@ void SendLoop::run(){
         while (active) {
             std::shared_ptr<MessageEvent> msg = queue.pop();
             msg->send(protocol);
-            if (msg->getType() == DISCONNECT) {
-                stop();
-            }
         }
     } catch (const std::exception& e) {
         std::cerr << "SendLoop exception::run() " << e.what() << std::endl;
@@ -20,10 +17,5 @@ void SendLoop::run(){
 }
 
 void SendLoop::stop() {
-    active = false;
-}
-
-void SendLoop::kill() {
-    protocol.send_disconnect();
     active = false;
 }

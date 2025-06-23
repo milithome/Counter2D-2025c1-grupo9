@@ -6,7 +6,7 @@
 
 int main() {
     try {
-        auto a = load_server_config("../config_server.yaml");
+        auto a = load_server_config("/etc/taller/config_server.yaml");
         Server server{a};
         server.start();
     } catch (const std::exception& e) {

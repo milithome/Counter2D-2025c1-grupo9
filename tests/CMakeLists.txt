@@ -1,21 +1,21 @@
 target_sources(taller_tests
 PUBLIC
-    ../server/server.h
-    ../server/admin.h
-    ../server/acceptor.h
-    ../common/utilities/map.h
-    helper_test.h
+    #../server/server.h
+    #../server/admin.h
+    #../server/acceptor.h
+    #../common/utilities/map.h
+    #helper_test.h
 PRIVATE
     #protocolClientSenderTest.cpp
     #protocolActionTest.cpp
     #protocolServerSenderTest.cpp
     #flowControlTest.cpp
-    ../server/server.cpp
-    ../server/admin.cpp
-    ../server/acceptor.cpp
-    ../common/utilities/map.cpp
-    ../server/match.cpp
-    ../server/clientReceiver.cpp
-    ../server/clientSender.cpp
-    ../server/menu.cpp
+    #../server/server.cpp
+    #../server/admin.cpp
+    #../server/acceptor.cpp
+    #../common/utilities/map.cpp
+    #../server/match.cpp
+    #../server/clientReceiver.cpp
+    #../server/clientSender.cpp
+    #../server/menu.cpp  
 )

@@ -2,7 +2,6 @@
 #include <iostream>
 #include "common/structures.h"
 
-#define DESYNC_TOLERANCE 0.2
 
 GameController::GameController(GameView& view, const std::string& player_name, Times times, bool pulse_available)
     : view(view), soundHandler(pulse_available), player_name(player_name), times(times) {
@@ -10,19 +9,8 @@ GameController::GameController(GameView& view, const std::string& player_name, T
 
 
 void GameController::onKeyPressed(const SDL_Event& event) {
-    if (event.key.repeat > 0) {
-        return;
-    }
+    if (event.key.repeat > 0) return;
 
-    switch (event.key.keysym.sym) {
-        case SDLK_m: {
-            soundHandler.switchMute();
-            break;
-        }
-        default: {
-            break;
-        }
-    }
     switch (event.key.keysym.sym) {
         case SDLK_w: {
             movement_keys_vector[1] -= 1;
@@ -52,12 +40,9 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             action_queue.push(action);
             break;
         }
-        case SDLK_g: {
-            view.switchFovVisibility();
-            break;
-        }
         case SDLK_1: {
             if (!clientPlayerData.alive) return;
+            if (defusing || planting) return;
             Inventory inv = clientPlayerData.inventory;
             if (inv.primary != WeaponName::NONE) {
                 Action action;
@@ -69,6 +54,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         case SDLK_2: {
             if (!clientPlayerData.alive) return;
+            if (defusing || planting) return;
             Action action;
             action.type = ActionType::CHANGE_WEAPON;
             action.data = ChangeWeaponAction{WeaponType::SECONDARY};
@@ -77,6 +63,7 @@ void GameController::onKeyPressed(const SDL_Event& event) {
         }
         case SDLK_3: {
             if (!clientPlayerData.alive) return;
+            if (defusing || planting) return;
             Action action;
             action.type = ActionType::CHANGE_WEAPON;
             action.data = ChangeWeaponAction{WeaponType::KNIFE};
@@ -99,6 +86,14 @@ void GameController::onKeyPressed(const SDL_Event& event) {
             defusing = true;
             Action action{ActionType::DEFUSE, {}};
             action_queue.push(action);
+            break;
+        }
+        case SDLK_g: {
+            view.switchFovVisibility();
+            break;
+        }
+        case SDLK_m: {
+            soundHandler.switchMute();
             break;
         }
         default: {
@@ -160,8 +155,6 @@ void GameController::onKeyReleased(const SDL_Event& event) {
     }
 }
 
-void GameController::onQuitPressed() {
-}
 
 void GameController::onMouseMovement() {
     if (!clientPlayerData.alive) return;
@@ -179,54 +172,10 @@ void GameController::onMouseMovement() {
 
 void GameController::onMouseLeftClick(const SDL_Event& event) {
     if (!clientPlayerData.alive) return;
+
     if (event.button.button == SDL_BUTTON_LEFT) {
         if (shop_open) {
-            auto buyPrimaryAmmoButton = view.getBuyPrimaryAmmoButton();
-            uint32_t x_range_begining = buyPrimaryAmmoButton.first.first;
-            uint32_t x_range_end = x_range_begining + buyPrimaryAmmoButton.second.first;
-
-            uint32_t y_range_begining = buyPrimaryAmmoButton.first.second;
-            uint32_t y_range_end = y_range_begining + buyPrimaryAmmoButton.second.second;
-            uint32_t x = event.button.x;
-            uint32_t y = event.button.y;
-
-            Inventory inv = clientPlayerData.inventory;
-            if (inv.primary != WeaponName::NONE  && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
-                Action action;
-                action.type = ActionType::BUY_BULLET;
-                action.data = BuyBulletAction{WeaponType::PRIMARY};
-                action_queue.push(action);
-                return;
-            }
-            auto buySecondaryAmmoButton = view.getBuySecondaryAmmoButton();
-            x_range_begining = buySecondaryAmmoButton.first.first;
-            x_range_end = x_range_begining + buySecondaryAmmoButton.second.first;
-
-            y_range_begining = buySecondaryAmmoButton.first.second;
-            y_range_end = y_range_begining + buySecondaryAmmoButton.second.second;
-            if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
-                Action action;
-                action.type = ActionType::BUY_BULLET;
-                action.data = BuyBulletAction{WeaponType::SECONDARY};
-                action_queue.push(action);
-                return;
-            }
-            auto buyWeaponButtons = view.getWeaponShopButtons();
-            
-            for (const auto& [weapon, buyWeaponButton] : buyWeaponButtons) {
-                x_range_begining = buyWeaponButton.first.first;
-                x_range_end = x_range_begining + buyWeaponButton.second.first;
-
-                y_range_begining = buyWeaponButton.first.second;
-                y_range_end = y_range_begining + buyWeaponButton.second.second;
-                if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
-                    Action action;
-                    action.type = ActionType::BUY_WEAPON;
-                    action.data = BuyWeaponAction{weapon};
-                    action_queue.push(action);
-                    return;
-                }
-            }
+            onMouseLeftClickOnShop(event);
             return;
         }
 
@@ -236,6 +185,61 @@ void GameController::onMouseLeftClick(const SDL_Event& event) {
         Action action;
         action.type = ActionType::SHOOT;
         action_queue.push(action);
+    }
+}
+
+void GameController::onMouseLeftClickOnShop(const SDL_Event& event) {
+    Inventory inv = clientPlayerData.inventory;
+    uint32_t x = event.button.x;
+    uint32_t y = event.button.y;
+
+    auto buyPrimaryAmmoButton = view.getBuyPrimaryAmmoButton();
+
+    uint32_t x_range_begining = buyPrimaryAmmoButton.first.first;
+    uint32_t x_range_end = x_range_begining + buyPrimaryAmmoButton.second.first;
+
+    uint32_t y_range_begining = buyPrimaryAmmoButton.first.second;
+    uint32_t y_range_end = y_range_begining + buyPrimaryAmmoButton.second.second;
+
+    if (inv.primary != WeaponName::NONE && x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+        Action action;
+        action.type = ActionType::BUY_BULLET;
+        action.data = BuyBulletAction{WeaponType::PRIMARY};
+        action_queue.push(action);
+        return;
+    }
+
+    auto buySecondaryAmmoButton = view.getBuySecondaryAmmoButton();
+
+    x_range_begining = buySecondaryAmmoButton.first.first;
+    x_range_end = x_range_begining + buySecondaryAmmoButton.second.first;
+
+    y_range_begining = buySecondaryAmmoButton.first.second;
+    y_range_end = y_range_begining + buySecondaryAmmoButton.second.second;
+
+    if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+        Action action;
+        action.type = ActionType::BUY_BULLET;
+        action.data = BuyBulletAction{WeaponType::SECONDARY};
+        action_queue.push(action);
+        return;
+    }
+
+    auto buyWeaponButtons = view.getWeaponShopButtons();
+    
+    for (const auto& [weapon, buyWeaponButton] : buyWeaponButtons) {
+        x_range_begining = buyWeaponButton.first.first;
+        x_range_end = x_range_begining + buyWeaponButton.second.first;
+
+        y_range_begining = buyWeaponButton.first.second;
+        y_range_end = y_range_begining + buyWeaponButton.second.second;
+        if (x > x_range_begining && x < x_range_end && y > y_range_begining && y < y_range_end) {
+            Action action;
+            action.type = ActionType::BUY_WEAPON;
+            action.data = BuyWeaponAction{weapon};
+            action_queue.push(action);
+            return;
+        }
     }
 }
 
@@ -257,9 +261,6 @@ bool GameController::actionQueueIsEmpty() {
     return action_queue.empty();
 }
 
-
-
-// rework
 void GameController::updateGameState(StateGame new_state) {
     if (!state_available) {
         state_available = true;
@@ -341,6 +342,9 @@ void GameController::updateGameState(StateGame new_state) {
                 view.setPhaseTimer(times.time_until_new_round);
                 break;
             }
+            case END_GAME: {
+                view.setPhaseTimer(times.time_until_new_round); // TODO: reemplaza por el tiempo hasta q se cierre el juego
+            }
             default: {
                 break;
             }
@@ -351,9 +355,9 @@ void GameController::updateGameState(StateGame new_state) {
         if (new_state.phase == BOMB_PLANTING) view.hideShop();
         shop_open = false;
         if (new_state.phase == END_ROUND) {
-            view.setEndRoundMessageEffect(new_state.rounds.winner);
+            view.showRoundEndMessage(new_state.rounds.winner);
         } else {
-            view.addNewPhaseEffect(new_state.phase);
+            view.showNewPhaseMessage(new_state.phase);
         }
 
         BombData data = std::get<BombData>(state.entities[bomb_index].data);
@@ -386,12 +390,7 @@ bool GameController::processEvents() {
         SDL_EventType eventType = static_cast<SDL_EventType>(e.type);
         switch (eventType) {
             case SDL_QUIT: {
-                onQuitPressed();
                 return true;
-            }
-            case SDL_WINDOWEVENT: {
-                onWindowEvent(e);
-                break;
             }
             case SDL_KEYDOWN: {
                 onKeyPressed(e);
@@ -421,12 +420,3 @@ bool GameController::processEvents() {
     return false;
 }
 
-void GameController::onWindowEvent(const SDL_Event& event) {
-    switch (event.window.event) {
-        case SDL_WINDOWEVENT_SIZE_CHANGED: {
-            view.resizeHud();
-            break;
-        }
-        default: break;
-    }
-}

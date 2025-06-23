@@ -24,7 +24,7 @@ public:
     ServerConfig& getServerConfig();
 
     std::shared_ptr<Client> createClient(Protocol&& protocol);
-    void removeClient(const std::string& name, bool fromReceiver = false);
+    void removeClient(const std::string& name);
 
     void createMenu(std::shared_ptr<Client> client, bool createNewRequests = false);
     void removeMenu(const std::string& clientName);

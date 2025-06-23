@@ -11,9 +11,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "liberror.h"
 #include "resolver.h"
+
 
 #define STREAM_SEND_CLOSED 0x01
 #define STREAM_RECV_CLOSED 0x02
@@ -160,32 +162,43 @@ bool Socket::has_data(int timeout_ms) const {
 int Socket::recvsome(void* data, unsigned int sz) {
     chk_skt_or_fail();
     int s = recv(this->skt, (char*)data, sz, 0);
+
     if (s == 0) {
         stream_status |= STREAM_RECV_CLOSED;
-        return 0;
+        if (stream_status & STREAM_SEND_CLOSED) {
+            throw ServerClosedConnection();
+        } else {
+            throw ClientClosedConnection();
+        }
     } else if (s == -1) {
+        if (errno == ECONNRESET) {
+            throw ClientClosedConnection();
+        }
         throw LibError(errno, "socket recv failed");
-    } else {
-        return s;
     }
+
+    return s;
 }
+
 
 int Socket::sendsome(const void* data, unsigned int sz) {
     chk_skt_or_fail();
     int s = send(this->skt, (char*)data, sz, MSG_NOSIGNAL);
+
     if (s == -1) {
         if (errno == EPIPE) {
             stream_status |= STREAM_SEND_CLOSED;
-            return 0;
+            throw ClientClosedConnection();
         }
         throw LibError(errno, "socket send failed");
     } else if (s == 0) {
         stream_status |= STREAM_SEND_CLOSED;
-        return 0;
-    } else {
-        return s;
+        throw ServerClosedConnection();
     }
+
+    return s;
 }
+
 
 int Socket::recvall(void* data, unsigned int sz) {
     unsigned int received = 0;
@@ -193,15 +206,14 @@ int Socket::recvall(void* data, unsigned int sz) {
     while (received < sz) {
         int s = recvsome((char*)data + received, sz - received);
 
-        if (s <= 0) {
-            assert(s == 0);
-            if (received)
-                throw LibError(EPIPE, "socket received only %d of %d bytes", received, sz);
+        if (s == 0) {
+            if (received == 0)
+                throw ServerClosedConnection();
             else
-                return 0;
-        } else {
-            received += s;
+                throw LibError(EPIPE, "socket received only %d of %d bytes", received, sz);
         }
+
+        received += s;
     }
 
     return sz;
@@ -213,15 +225,13 @@ int Socket::sendall(const void* data, unsigned int sz) {
     while (sent < sz) {
         int s = sendsome((char*)data + sent, sz - sent);
 
-        if (s <= 0) {
-            assert(s == 0);
-            if (sent)
-                throw LibError(EPIPE, "socket sent only %d of %d bytes", sent, sz);
-            else
+        if (s == 0) {
+            if (sent == 0)
                 return 0;
-        } else {
-            sent += s;
+            throw LibError(EPIPE, "socket sent only %d of %d bytes", sent, sz);
         }
+
+        sent += s;
     }
 
     return sz;

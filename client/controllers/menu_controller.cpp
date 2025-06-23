@@ -4,24 +4,24 @@
 #include <QMessageBox>
 #include <QString>
 #include <iostream>
-#include "join_event.h"
-#include "leave_event.h"
-#include "list_event.h"
-#include "create_event.h"
-#include "start_event.h"
-#include "t_skin_picked_event.h"
-#include "ct_skin_picked_event.h"
-#include "map_picked_event.h"
+#include "messages/join_event.h"
+#include "messages/leave_event.h"
+#include "messages/list_event.h"
+#include "messages/create_event.h"
+#include "messages/start_event.h"
+#include "messages/t_skin_picked_event.h"
+#include "messages/ct_skin_picked_event.h"
+#include "messages/map_picked_event.h"
 
 MenuController::MenuController(QtWindow& window) : QWidget(nullptr), window(window) {
-    connectToServerView = ConnectToServerView();
-    listenToConnectView(connectToServerView);
+    connectToServerView = new ConnectToServerView();
+    listenToConnectView();
     window.showView(connectToServerView);
 }
 
-void MenuController::listenToMainView(MainView& mainView) {
-    QPushButton *searchButton = mainView.getSearchButton();
-    QPushButton *createButton = mainView.getCreateButton(); 
+void MenuController::listenToMainView() {
+    QPushButton *searchButton = mainView->getSearchButton();
+    QPushButton *createButton = mainView->getCreateButton(); 
 
     QObject::connect(createButton, &QPushButton::clicked, [this]() {
         onMainViewCreatePartyButtonClicked();
@@ -31,9 +31,9 @@ void MenuController::listenToMainView(MainView& mainView) {
     });
 }
 
-void MenuController::listenToCreatePartyView(CreatePartyView& createPartyView) {
-    QPushButton *backButton = createPartyView.getBackButton();
-    QPushButton *createButton = createPartyView.getCreateButton();
+void MenuController::listenToCreatePartyView() {
+    QPushButton *backButton = createPartyView->getBackButton();
+    QPushButton *createButton = createPartyView->getCreateButton();
     QObject::connect(createButton, &QPushButton::clicked, [this]() {
         onCreatePartyViewCreateButtonClicked();
     });
@@ -42,9 +42,9 @@ void MenuController::listenToCreatePartyView(CreatePartyView& createPartyView) {
     });
 }
 
-void MenuController::listenToConnectView(ConnectToServerView& connectView) {
-    QPushButton *backButton = connectView.getBackButton();
-    QPushButton *connectButton = connectView.getConnectButton();
+void MenuController::listenToConnectView() {
+    QPushButton *backButton = connectToServerView->getBackButton();
+    QPushButton *connectButton = connectToServerView->getConnectButton();
     QObject::connect(connectButton, &QPushButton::clicked, [this]() {
         onConnectViewConnectButtonClicked();
     });
@@ -54,13 +54,13 @@ void MenuController::listenToConnectView(ConnectToServerView& connectView) {
 }
 
 
-void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
-    QPushButton *backButton = searchPartyView.getBackButton();
+void MenuController::listenToSearchPartyView() {
+    QPushButton *backButton = searchPartyView->getBackButton();
     QObject::connect(backButton, &QPushButton::clicked, [this]() {
         onSearchPartyViewBackButtonClicked();
     });
 
-    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView.getJoinButtons(); 
+    std::unordered_map<std::string, QPushButton *> joinButtons = searchPartyView->getJoinButtons(); 
     for (auto [partyName, button] : joinButtons) {
 
         QObject::connect(button, &QPushButton::clicked, [this, partyName]() {
@@ -70,44 +70,44 @@ void MenuController::listenToSearchPartyView(SearchPartyView& searchPartyView) {
     }
 }
 
-void MenuController::listenToPartyView(PartyView& partyView) {
-    QPushButton *leaveButton = partyView.getLeaveButton();
-    QPushButton *startButton = partyView.getStartButton();
-    QPushButton *settingsButton = partyView.getSettingsButton();
+void MenuController::listenToPartyView() {
+    QPushButton *leaveButton = partyView->getLeaveButton();
+    QPushButton *startButton = partyView->getStartButton();
+    QPushButton *settingsButton = partyView->getSettingsButton();
     QObject::connect(leaveButton, &QPushButton::clicked, [this]() {
         onPartyViewLeaveButtonClicked();
     });
     QObject::connect(startButton, &QPushButton::clicked, [this]() {
         onPartyViewStartButtonClicked();
     });
-    QObject::connect(settingsButton, &QPushButton::clicked, [this, &partyView]() {
-        partyView.showModal();
+    QObject::connect(settingsButton, &QPushButton::clicked, [this]() {
+        partyView->showModal();
     });
-    std::unordered_map<tSkin, QPushButton*> tSkins = partyView.getTSkinButtons();
-    std::unordered_map<ctSkin, QPushButton*> ctSkins = partyView.getCtSkinButtons();
+    std::unordered_map<tSkin, QPushButton*> tSkins = partyView->getTSkinButtons();
+    std::unordered_map<ctSkin, QPushButton*> ctSkins = partyView->getCtSkinButtons();
 
     for (auto [skin, button] : tSkins) {
         QObject::connect(button, &QPushButton::clicked, [this, skin]() {
-            emit nuevoEvento(std::make_shared<TSkinPickedEvent>(skin));
+            emit newMessage(std::make_shared<TSkinPickedEvent>(skin));
         });
     }
     for (auto [skin, button] : ctSkins) {
         QObject::connect(button, &QPushButton::clicked, [this, skin]() {
-            emit nuevoEvento(std::make_shared<CtSkinPickedEvent>(skin));
+            emit newMessage(std::make_shared<CtSkinPickedEvent>(skin));
         });
     }
-    QComboBox *mapBox = partyView.getMapCombo();
+    QComboBox *mapBox = partyView->getMapCombo();
     QObject::connect(mapBox, &QComboBox::currentTextChanged, [this](const QString& text) {
-        emit nuevoEvento(std::make_shared<MapPickedEvent>(text.toStdString()));
+        emit newMessage(std::make_shared<MapPickedEvent>(text.toStdString()));
     });
 }
 
 void MenuController::onPartyViewLeaveButtonClicked() {
-    emit nuevoEvento(std::make_shared<LeaveEvent>());
+    emit newMessage(std::make_shared<LeaveEvent>());
 }
 
 void MenuController::onPartyViewStartButtonClicked() {
-    emit nuevoEvento(std::make_shared<StartEvent>());
+    emit newMessage(std::make_shared<StartEvent>());
 }
 
 void MenuController::onGameStarted() {
@@ -116,33 +116,33 @@ void MenuController::onGameStarted() {
 
 void MenuController::onMainViewCreatePartyButtonClicked() {
     window.clearWindow();
-    createPartyView = CreatePartyView();
-    listenToCreatePartyView(createPartyView);
+    createPartyView = new CreatePartyView();
+    listenToCreatePartyView();
     window.showView(createPartyView);
 }
 
 void MenuController::onMainViewSearchPartyButtonClicked() {
-    emit nuevoEvento(std::make_shared<ListEvent>());
+    emit newMessage(std::make_shared<ListEvent>());
 }
 
 void MenuController::onCreatePartyViewCreateButtonClicked() {
-    QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
+    QLineEdit *partyNameTextField = createPartyView->getPartyNameTextField();
     std::string partyName = partyNameTextField->text().toStdString();
-    emit nuevoEvento(std::make_shared<CreateEvent>(partyName));
+    emit newMessage(std::make_shared<CreateEvent>(partyName));
 }
 
 void MenuController::onCreatePartyViewBackButtonClicked() {
     window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
+    mainView = new MainView();
+    listenToMainView();
     window.showView(mainView);
 }
 
 
 void MenuController::onConnectViewConnectButtonClicked() {
-    QLineEdit *portTextField = connectToServerView.getPortTextField();
-    QLineEdit *addressTextField = connectToServerView.getAddressTextField();
-    QLineEdit *nameTextField = connectToServerView.getNameTextField();
+    QLineEdit *portTextField = connectToServerView->getPortTextField();
+    QLineEdit *addressTextField = connectToServerView->getAddressTextField();
+    QLineEdit *nameTextField = connectToServerView->getNameTextField();
     std::string port = portTextField->text().toStdString();
     std::string address = addressTextField->text().toStdString();
     std::string name = nameTextField->text().toStdString();
@@ -155,101 +155,95 @@ void MenuController::onConnectViewBackButtonClicked() {
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
-    emit nuevoEvento(std::make_shared<JoinEvent>(partyName));
+    emit newMessage(std::make_shared<JoinEvent>(partyName));
 
 }
 
 void MenuController::onSearchPartyViewBackButtonClicked() {
     window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
+    mainView = new MainView();
+    listenToMainView();
     window.showView(mainView);
 }
 
-void MenuController::onConnectionRequestResponseReceived(const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onConnectionRequestResponseReceived(const std::string& message, const uint8_t error) {
+    if (error) {
+        connectToServerView->showMessage(message);
         return;
     }
     window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
+    mainView = new MainView();
+    listenToMainView();
     window.showView(mainView);
 }
 
 
-void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onPartyListReceived(const std::vector<std::string>& parties, const std::string& message, const uint8_t error) {
+    if (error) {
+        mainView->showMessage(message);
         return;
     }
     window.clearWindow();
-    searchPartyView = SearchPartyView(parties);
-    listenToSearchPartyView(searchPartyView);
+    searchPartyView = new SearchPartyView(parties);
+    listenToSearchPartyView();
     window.showView(searchPartyView);
     
 }
 
-void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onLobbyPlayersReceived(const std::vector<std::string>& players, const std::string& message, const uint8_t error) {
+    if (error) {
+        partyView->showMessage(message);
         return;
     }
-    partyView.clearPlayers();
+    partyView->clearPlayers();
     for (size_t i = 0; i < players.size(); i++) {
-        partyView.addPlayer(players[i]);
+        partyView->addPlayer(players[i]);
     }
 }
 
 
-void MenuController::onJoinPartyResponseReceived(const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onJoinPartyResponseReceived(const std::string& message, const uint8_t error) {
+    if (error) { 
+        searchPartyView->showMessage(message);
         return;
     }
     window.clearWindow();
-    partyView = PartyView(pName);
-    listenToPartyView(partyView);
+    partyView = new PartyView(pName);
+    listenToPartyView();
     window.showView(partyView);
 
 }
 
-void MenuController::onCreatePartyResponseReceived(const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onCreatePartyResponseReceived(const std::string& message, const uint8_t error) {
+    if (error) {
+        createPartyView->showMessage(message);
         return;
     }
-    QLineEdit *partyNameTextField = createPartyView.getPartyNameTextField();
+    QLineEdit *partyNameTextField = createPartyView->getPartyNameTextField();
     std::string partyName = partyNameTextField->text().toStdString();
     window.clearWindow();
-    partyView = PartyView(partyName);
-    listenToPartyView(partyView);
+    partyView = new PartyView(partyName);
+    listenToPartyView();
     window.showView(partyView);
 }
 
-void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t result) {
-    if (result) { // caso error
-        std::cout << message << std::endl;
-        QMessageBox::critical(nullptr, "Error", message.c_str());
+void MenuController::onLeavePartyResponseReceived(const std::string& message, const uint8_t error) {
+    if (error) {
+        partyView->showMessage(message);
         return;
     }
     window.clearWindow();
-    mainView = MainView();
-    listenToMainView(mainView);
+    mainView = new MainView();
+    listenToMainView();
     window.showView(mainView);
 }
 
 
 void MenuController::onLobbyReady() {
-    QPushButton *startButton = partyView.getStartButton();
+    QPushButton *startButton = partyView->getStartButton();
     startButton->setEnabled(true);
 }
 void MenuController::onLobbyNotReady() {
-    QPushButton *startButton = partyView.getStartButton();
+    QPushButton *startButton = partyView->getStartButton();
     startButton->setEnabled(false);
 }
