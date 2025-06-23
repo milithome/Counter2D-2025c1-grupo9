@@ -929,6 +929,72 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
 
+    stream << "\n";
+    stream << "  legend_tiles:" << "\n";
+
+    stream << "     1:" << "\n"; // 1 es el muro
+    stream << "     name: \"Cajas\"" << "\n";
+    stream << "         {2,4}" << "\n" << // {2,4} es la caja
+            "           {2,5}" << "\n" << 
+            "           {2,6}" << "\n" << 
+            "           {2,7}" << "\n" << 
+            "           {9,2}" << "\n" << 
+            "           {9,3}" << "\n" << 
+            "           {9,4}" << "\n"; 
+
+    stream << "     2:" << "\n"; // 2 es el piso
+    stream << "     name: \"Pasto\"" << "\n";
+    stream << "         {0,1}" << "\n" << 
+            "           {0,2}" << "\n" << 
+            "           {0,3}" << "\n" << 
+            "           {0,4}" << "\n" << 
+            "           {0,5}" << "\n" << 
+            "           {0,6}" << "\n" << 
+            "           {0,7}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena\"" << "\n";
+    stream << "         {1,0}" << "\n" << 
+            "           {1,1}" << "\n" << 
+            "           {1,2}" << "\n" << 
+            "           {1,3}" << "\n" << 
+            "           {1,4}" << "\n" << 
+            "           {1,5}" << "\n" << 
+            "           {1,6}" << "\n" << 
+            "           {1,7}" << "\n" << 
+            "           {2,0}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena con pastitos\"" << "\n";
+    stream << "         {3,0}" << "\n" << 
+            "           {3,1}" << "\n" <<
+            "           {3,2}" << "\n" <<
+            "           {3,3}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena con cemento\"" << "\n";
+    stream << "         {3,4}" << "\n" << 
+            "           {3,5}" << "\n" <<
+            "           {3,6}" << "\n" <<
+            "           {3,7}" << "\n"; // <-- CORREGIDO
+
+    stream << "     name: \"Cemento\"" << "\n";
+    stream << "         {4,0}" << "\n"; // {4,0} es el cemento
+
+    stream << "     name: \"Baldosas de madera\"" << "\n";
+    stream << "         {5,4}" << "\n" << 
+            "           {5,5}" << "\n" <<
+            "           {5,6}" << "\n" <<
+            "           {5,7}" << "\n";
+
+    stream << "     name: \"A y B en rojo\"" << "\n";
+    stream << "         {7,0}" << "\n" << 
+            "           {7,1}" << "\n";
+
+    stream << "     name: \"Arena mostaza\"" << "\n";
+    stream << "         {9,5}" << "\n" <<
+            "           {9,6}" << "\n" <<
+            "           {9,7}" << "\n";
+
+
+
     archivo.close();
 
     QMessageBox::information(this, "Archivo Creado",
@@ -1000,6 +1066,72 @@ void EditorWindow::guardarProgresoEnYaml() {
         }
     }
 
+    stream << "\n";
+    stream << "  legend_tiles:" << "\n";
+
+    stream << "     1:" << "\n"; // 1 es el muro
+    stream << "     name: \"Cajas\"" << "\n";
+    stream << "         {2,4}" << "\n" << // {2,4} es la caja
+            "           {2,5}" << "\n" << 
+            "           {2,6}" << "\n" << 
+            "           {2,7}" << "\n" << 
+            "           {9,2}" << "\n" << 
+            "           {9,3}" << "\n" << 
+            "           {9,4}" << "\n"; 
+
+    stream << "     2:" << "\n"; // 2 es el piso
+    stream << "     name: \"Pasto\"," << "\n";
+    stream << "         {0,1}" << "\n" << 
+            "           {0,2}" << "\n" << 
+            "           {0,3}" << "\n" << 
+            "           {0,4}" << "\n" << 
+            "           {0,5}" << "\n" << 
+            "           {0,6}" << "\n" << 
+            "           {0,7}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena\"" << "\n";
+    stream << "         {1,0}" << "\n" << 
+            "           {1,1}" << "\n" << 
+            "           {1,2}" << "\n" << 
+            "           {1,3}" << "\n" << 
+            "           {1,4}" << "\n" << 
+            "           {1,5}" << "\n" << 
+            "           {1,6}" << "\n" << 
+            "           {1,7}" << "\n" << 
+            "           {2,0}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena con pastitos\"" << "\n";
+    stream << "         {3,0}" << "\n" << 
+            "           {3,1}" << "\n" <<
+            "           {3,2}" << "\n" <<
+            "           {3,3}" << "\n"; // <-- CORREGIDO: faltaba ;
+
+    stream << "     name: \"Arena con cemento\"" << "\n";
+    stream << "         {3,4}" << "\n" << 
+            "           {3,5}" << "\n" <<
+            "           {3,6}" << "\n" <<
+            "           {3,7}" << "\n"; // <-- CORREGIDO
+
+    stream << "     name: \"Cemento\"" << "\n";
+    stream << "         {4,0}" << "\n"; // {4,0} es el cemento
+
+    stream << "     name: \"Baldosas de madera\"" << "\n";
+    stream << "         {5,4}" << "\n" << 
+            "           {5,5}" << "\n" <<
+            "           {5,6}" << "\n" <<
+            "           {5,7}" << "\n";
+
+    stream << "     name: \"A y B en rojo\"" << "\n";
+    stream << "         {7,0}" << "\n" << 
+            "           {7,1}" << "\n";
+
+    stream << "     name: \"Arena mostaza\"" << "\n";
+    stream << "         {9,5}" << "\n" <<
+            "           {9,6}" << "\n" <<
+            "           {9,7}" << "\n";
+
+    
+    
 
     archivo.close();
 
