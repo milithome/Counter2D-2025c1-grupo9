@@ -28,7 +28,7 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QDir>
-
+#include "common/utilities/map.h"
 
 
 #include "ClickableLabel.h"
@@ -185,6 +185,14 @@ private:
 
     void crearArchivoYamlInicial();
     void guardarProgresoEnYaml();
+
+
+    MapData mapData;
+
+    MapData crearMapData();
+
+    QSet<QPair<int, int>> solid_blocks;
+    QPixmap tiles = QPixmap(":/assets/gfx/tiles/dust.bmp");;
    
 protected:
     void resizeEvent(QResizeEvent *event) override;
