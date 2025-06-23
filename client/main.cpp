@@ -6,6 +6,7 @@ int main(int argc, char **argv) try {
 
 	Launcher launcher;
 	launcher.run();
+	
 
 	return 0;
 

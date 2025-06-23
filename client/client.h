@@ -7,6 +7,7 @@
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
 #include "client/controllers/messages/message_event.h"
+#include "client/controllers/messages/leave_event.h"
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
@@ -53,11 +54,14 @@ public:
         receiver.stop();
         sender.stop();
         try {
+            // Esto es un hack, es para q el hilo sender salga del queue.pop() y tire error asi se cierra correctamente
+            send_queue.try_push(std::make_shared<LeaveEvent>());
+        } catch (...) {}
+        try {
             recv_queue.close();
             send_queue.close();
-        } catch (...) {
-
-        }
+        } catch (...) {}
+        
         kill();
         receiver.join();
         sender.join();

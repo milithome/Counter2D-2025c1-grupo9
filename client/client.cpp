@@ -45,6 +45,7 @@ void Client::run(QApplication& app, MenuController& menuController) {
 
         if (quit) {
             break;
+
         }
 
         Map map = Map(initialData.data);
@@ -60,7 +61,5 @@ void Client::run(QApplication& app, MenuController& menuController) {
         }
         looped = true;
     }
-    
-
 }
 

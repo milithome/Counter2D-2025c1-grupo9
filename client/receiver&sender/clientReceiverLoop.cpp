@@ -9,16 +9,17 @@ void RecvLoop::run() {
             Response msg = protocol.recv_response();
             queue.push(msg);
         }
+    } catch (const ClientClosedConnection& e) {
+        stop();
+        queue.close();
     } catch (const ServerClosedConnection& e) {
         stop();
         queue.close();
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Exception random\n";
     }
-            
-
 }
 
 
