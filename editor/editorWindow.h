@@ -96,6 +96,7 @@ private:
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
 
     QVector<QVector<QPair<int, int>>> matrizGrilla; // Matriz para almacenar las coordenadas
+    QVector<QVector<int>> matrizGrillaSpawns;
     QPair<int, int> coordenadasSeleccionadas;
 
     QGridLayout* gridLayout = nullptr;

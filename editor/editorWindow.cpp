@@ -868,7 +868,10 @@ void EditorWindow::crearArchivoYamlInicial() {
     stream << "  name: " << nombreMapa << "\n";
     stream << "  width: " << columnas << "\n";
     stream << "  height: " << filas << "\n";
+    stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
+    stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
     stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "\n";
     stream << "  tiles:" << "\n";
 
     
@@ -885,7 +888,7 @@ void EditorWindow::crearArchivoYamlInicial() {
         if(i!=0){
             stream << "\n"; // Añadir nueva línea para separar filas
         }
-        stream << "  - ["; // Indentación para cada fila
+        stream << "   - ["; // Indentación para cada fila
         for (int j = 0; j < columnas; ++j) {
             stream << "{" << QString::number(matrizGrilla[i][j].first) 
                     << "," << QString::number(matrizGrilla[i][j].second) << "}";
@@ -898,6 +901,33 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
 
+    stream << "\n";
+    stream << "  game:" << "\n";
+
+    //incializo la matriz de spawns (game)
+    matrizGrillaSpawns.resize(filas);
+    for (int i = 0; i < filas; ++i) {
+        matrizGrillaSpawns[i].resize(columnas);
+        for (int j = 0; j < columnas; ++j) {
+            matrizGrillaSpawns[i][j] = 0; // Inicializar con coordenadas vacías
+        }
+    }
+
+    for (int i = 0; i < filas; ++i) {
+        if(i!=0){
+            stream << "\n"; // Añadir nueva línea para separar filas
+        }
+        stream << "   - ["; // Indentación para cada fila
+        for (int j = 0; j < columnas; ++j) {
+            stream << matrizGrillaSpawns[i][j];
+            if (j < columnas - 1) {
+                stream << ","; // Mantener el formato correcto
+            }
+        }
+        if(i < filas){
+            stream << "]" << "\n "; // Cerrar la fila
+        }
+    }
 
     archivo.close();
 
@@ -927,7 +957,10 @@ void EditorWindow::guardarProgresoEnYaml() {
     stream << "  name: " << nombreArchivoActual << "\n";
     stream << "  width: " << columnas << "\n";
     stream << "  height: " << filas << "\n";
+    stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
+    stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
     stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "\n";
     stream << "  tiles:" << "\n";
 
     //inicializo matrizGrilla
@@ -935,10 +968,29 @@ void EditorWindow::guardarProgresoEnYaml() {
         if(i!=0){
             stream << "\n"; // Añadir nueva línea para separar filas
         }
-        stream << "  - ["; // Indentación para cada fila
+        stream << "   - ["; // Indentación para cada fila
         for (int j = 0; j < columnas; ++j) {
             stream << "{" << QString::number(matrizGrilla[i][j].first) 
                     << "," << QString::number(matrizGrilla[i][j].second) << "}";
+            if (j < columnas - 1) {
+                stream << ","; // Mantener el formato correcto
+            }
+        }
+        if(i < filas){
+            stream << "]" << "\n "; // Cerrar la fila
+        }
+    }
+
+    stream << "\n";
+    stream << "  game:" << "\n";
+
+    for (int i = 0; i < filas; ++i) {
+        if(i!=0){
+            stream << "\n"; // Añadir nueva línea para separar filas
+        }
+        stream << "   - ["; // Indentación para cada fila
+        for (int j = 0; j < columnas; ++j) {
+            stream << matrizGrillaSpawns[i][j];
             if (j < columnas - 1) {
                 stream << ","; // Mantener el formato correcto
             }
