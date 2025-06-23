@@ -70,7 +70,9 @@ public:
     void setName(const std::string& name);
     void run(QApplication& app, MenuController& menuController);
     void kill() {
-        protocol.close();
+        try {
+            protocol.close();
+        } catch (...) {}
     };
 
     bool receiveConnectionResponse();
