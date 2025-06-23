@@ -6,6 +6,7 @@
 #include <mutex>
 #include "../structures.h"
 #include "../utilities/serializer_utils.h"
+#include "ServerClosedException.h"
 
 class Protocol {
 public:

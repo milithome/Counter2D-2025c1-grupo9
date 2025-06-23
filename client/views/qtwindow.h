@@ -20,11 +20,14 @@ public:
     void clearWindow();
     void quit();
     QPoint getPosition();
+    void showMessage(const std::string& message) {
+        currentView->showMessage(message);
+    }
 
 private:
     QStackedLayout* stackedLayout = new QStackedLayout(this);
     QWidget *background = new QWidget(this);
-    QWidget *currentView = nullptr;
+    QtView *currentView = nullptr;
     QPushButton *muteButton = new MenuButton("Mute", this);
 
     void closeEvent(QCloseEvent* event) override {

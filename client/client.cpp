@@ -33,7 +33,7 @@ bool Client::receiveConnectionResponse() {
 void Client::run(QApplication& app, MenuController& menuController) {
     bool looped = false;
     while (true) { // mientras el cliente no haya decidido irse
-        MenuClient menuClient(app, menuController, recv_queue, send_queue, receiver, sender, protocol);
+        MenuClient menuClient(app, menuController, recv_queue, send_queue, protocol);
         InitialData initialData;
         QObject::connect(&menuClient, &MenuClient::initialDataReceived, &menuClient, [this, &initialData, &app](InitialData data) {
             initialData = data;

@@ -35,6 +35,8 @@ public:
     
     void onLobbyNotReady();
 
+    void onServerClosed();
+
     QPoint getWindowPosition() { return window.getPosition(); }
 
     void showStartingScreen() { 
@@ -53,6 +55,8 @@ private:
     PartyView *partyView = nullptr;
     CreatePartyView *createPartyView = nullptr;
     ConnectToServerView *connectToServerView = nullptr;
+
+    QtView *currentView = nullptr;
 
     std::string pName; // Esto es un hack para ponerle nombre a la PartyView, hay mejores formas de hacerlo pero no me parece que valga la pena
 

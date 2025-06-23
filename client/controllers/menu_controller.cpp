@@ -151,7 +151,7 @@ void MenuController::onConnectViewConnectButtonClicked() {
 }
 
 void MenuController::onConnectViewBackButtonClicked() {
-    window.clearWindow();
+    //window.clearWindow();
 }
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
@@ -246,4 +246,8 @@ void MenuController::onLobbyReady() {
 void MenuController::onLobbyNotReady() {
     QPushButton *startButton = partyView->getStartButton();
     startButton->setEnabled(false);
+}
+
+void MenuController::onServerClosed() {
+    window.showMessage("Server closed. Please restart the client");
 }

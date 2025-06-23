@@ -28,22 +28,26 @@ bool GameClient::run() {
         lastTime = currentTime;
 
 		Response msg;
-        while (recv_queue.try_pop(msg)) {
-			switch (msg.type) {
-				case STATE: {
-					StateGame data = std::get<StateGame>(msg.data);
-					gameView.updateState(data);
-					gameController.updateGameState(data);
-					state_available = true;
-					break;
-				}
-				case FINISH: {
-					return false;
-				}
-				default: {
-					break;
+		try {
+			while (recv_queue.try_pop(msg)) {
+				switch (msg.type) {
+					case STATE: {
+						StateGame data = std::get<StateGame>(msg.data);
+						gameView.updateState(data);
+						gameController.updateGameState(data);
+						state_available = true;
+						break;
+					}
+					case FINISH: {
+						return false;
+					}
+					default: {
+						break;
+					}
 				}
 			}
+		} catch (const ClosedQueue& e) {
+			return false;
 		}
 		if (!state_available) continue;
 		bool quit = gameController.processEvents();
@@ -55,7 +59,11 @@ bool GameClient::run() {
 		while (!gameController.actionQueueIsEmpty()) {
 			Action action = gameController.actionQueuePop();
 			std::shared_ptr<MessageEvent> event = std::make_shared<ActionEvent>(action);
-			send_queue.try_push(event);
+			try {
+				send_queue.try_push(event);
+			} catch (const ClosedQueue& e) {
+				return false;
+			}
 		}
 
 		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(

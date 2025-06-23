@@ -45,8 +45,6 @@ private:
     bool partida_iniciada = false;
     Queue<Response>& recv_queue;
     Queue<std::shared_ptr<MessageEvent>>& send_queue;
-    RecvLoop& receiver;
-    SendLoop& sender;
     Protocol& protocol;
     std::vector<std::string> players;
     QApplication& app;
@@ -58,8 +56,6 @@ public:
          MenuController& menuController,
          Queue<Response>& recv_queue, 
          Queue<std::shared_ptr<MessageEvent>>& send_queue, 
-         RecvLoop& receiver, 
-         SendLoop& sender, 
          Protocol& protocol);
     
     bool run(bool looped);
