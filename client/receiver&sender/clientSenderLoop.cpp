@@ -15,7 +15,7 @@ void SendLoop::run(){
     } catch (const ServerClosedConnection& e) {
         stop();
         queue.close();
-    }catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "SendLoop exception::run() " << e.what() << std::endl;
     } catch (...) {
         std::cerr << "Exception desconocida\n";
