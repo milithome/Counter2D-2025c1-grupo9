@@ -52,8 +52,12 @@ public:
     ~Client() {
         receiver.stop();
         sender.stop();
-        recv_queue.close();
-        send_queue.close();
+        try {
+            recv_queue.close();
+            send_queue.close();
+        } catch (...) {
+
+        }
         kill();
         receiver.join();
         sender.join();
