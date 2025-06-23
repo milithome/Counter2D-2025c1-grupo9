@@ -644,7 +644,6 @@ void Game::updateGamePhase(float deltaTime) {
     } else if (spike.state == BombState::PLANTED) {
       elapsedTime=0.0f;
       phase = Phase::BOMB_DEFUSING;
-      elapsedTime=0.0f;
     }
     break;
 
