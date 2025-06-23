@@ -642,21 +642,17 @@ void Game::updateGamePhase(float deltaTime) {
           (teamA.getRole() == Role::COUNTER_TERRORIST) ? 'a' : 'b';
       handleEndRound(winningTeam, TypeEndRound::BOMB_NOT_PLANTED);
     } else if (spike.state == BombState::PLANTED) {
+      elapsedTime=0.0f;
       phase = Phase::BOMB_DEFUSING;
     }
     break;
 
   case Phase::BOMB_DEFUSING:
     roundWinner = checkRoundWinner();
-
-    if (roundWinner != '-') {
-      Role roleA = teamA.getRole();
-      Role roleB = teamB.getRole();
-
-      if ((roundWinner == 'a' && roleA == Role::TERRORIST) ||
-          (roundWinner == 'b' && roleB == Role::TERRORIST)) {
-        handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
-      }
+    if ((roundWinner == 'a' && teamB.getRole() == Role::TERRORIST) ||
+          (roundWinner == 'b' && teamA.getRole() == Role::TERRORIST)) {
+    
+      handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
 
     } else if (elapsedTime >= timeUntilBombExplode) {
       elapsedTime=0.0f;
