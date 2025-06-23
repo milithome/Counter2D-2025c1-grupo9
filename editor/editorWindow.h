@@ -28,6 +28,9 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 
 
 
@@ -97,12 +100,13 @@ private:
     QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
 
 
-
     void configurarVistaSegunModo(ModoEditor modo);
     void setupCustomUIConfiguracionMapa();
     void setupCustomUIEleccionMapa();
     void actualizarFondo();
     void aplicarEstilosResponsivos();
+    void configurarCeldasParaDrops(QVector<QVector<QLabel*>>& celdas);
+    bool manejoDragAndDrop(QObject* obj, QEvent* event);
 
     void inicializarSpawnsMapa();
 
@@ -139,15 +143,12 @@ private:
     QPushButton* eliminarColumnaBtn;
 
     void verificarCondicionFinal();
-
+    bool eventSpawns(QObject* obj, QEvent* event);
+    bool alClickearIzquierdoSpawns(QLabel*& celda);
+    bool alClickearDerechoSpawns(QLabel*& celda);
     void actualizarOpcionesDisponibles();
 
     void crearIconosZonaBomba();
-
-    void actualizarTerroristas(int nuevoValor);
-    void actualizarAntiterroristas(int nuevoValor);
-
-    void actualizarZonasPlantables(int nuevoValor);
 
     void inicializarEditorMapa(int filas, int columnas);
 
@@ -177,13 +178,16 @@ private:
 
     ClickableLabel* iconoSeleccionado = nullptr; // Ícono actualmente seleccionado
 
+
+    bool eventEditar(QObject* obj, QEvent* event);
+    bool alClickearIzquierdo(QLabel*& celda);
+    bool alClickearDerecho(QLabel*& celda);
     void guardarMapa();
     void borrarSeleccionados();
     void borrarTodo();
     void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
                                              QList<ClickableLabel*>& iconsActivs, ClickableLabel*& iconSelec);
     void actualizarTamanoGridWidget();
-
 
 
     void agregarFila();

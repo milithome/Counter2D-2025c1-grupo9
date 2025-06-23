@@ -344,6 +344,9 @@ void EditorWindow::inicializarSpawnsMapa() {
             // Política de tamaño fija
             celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            celda->setAcceptDrops(true);
+            celda->setAttribute(Qt::WA_DeleteOnClose);
+
             gridLayoutSpawns->addWidget(celda, i, j);
             grillasCeldasSpawns[i][j] = celda;
 
@@ -352,6 +355,7 @@ void EditorWindow::inicializarSpawnsMapa() {
             celda->setProperty("columna", j);
         }
     }
+    configurarCeldasParaDrops(grillasCeldasSpawns);
 
     // Calcular y establecer el tamaño exacto del widget contenedor
     int anchoTotal = columnas * 32;
@@ -442,21 +446,6 @@ void EditorWindow::inicializarSpawnsMapa() {
     actualizarEstadoBotonesDimensiones();
     actualizarOpcionesDisponibles();
 }
-
-void EditorWindow::verificarCondicionFinal() {
-    qDebug() << "Verificando condición final:"
-             << terroristas << antiterroristas << cantZonaPlantable << jugadoresMaximos;
-
-    if (terroristas == jugadoresMaximos && 
-        antiterroristas == jugadoresMaximos && 
-        cantZonaPlantable == 0) {
-        guardarSpawnBtn->setEnabled(true);
-        qDebug() << "Condición final cumplida.";
-    } else {
-        guardarSpawnBtn->setEnabled(false);
-    }
-}
-
 
 void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
     // CREAR LA BARRA DE MENÚ
@@ -590,6 +579,9 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
             // Política de tamaño fija
             celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            celda->setAcceptDrops(true);
+            celda->setAttribute(Qt::WA_DeleteOnClose);
+
             gridLayout->addWidget(celda, i, j);
             grillaCeldas[i][j] = celda;
 
@@ -598,6 +590,7 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
             celda->setProperty("columna", j);
         }
     }
+    configurarCeldasParaDrops(grillaCeldas);
 
     // Calcular y establecer el tamaño exacto del widget contenedor
     int anchoTotal = columnas * 32;
@@ -652,7 +645,326 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
     editorMapaWidget->setLayout(mainLayout);
 }
 
-void EditorWindow::actualizarOpcionesDisponibles() {
+void EditorWindow::configurarCeldasParaDrops(QVector<QVector<QLabel*>>& grilla) {
+    
+    int numeroFilas = grilla.size();
+    int numeroColumnas = grilla[0].size();
+    for (int fila = 0; fila < numeroFilas; ++fila) {
+        for (int columna = 0; columna < numeroColumnas; ++columna) {
+            QLabel* celda = grilla[fila][columna]; // Ajusta según tu estructura
+            celda->setAcceptDrops(true);
+        }
+    }
+    for (const auto& fila : grilla) {
+        for (QLabel* celda : fila) {
+            if (celda) {
+                celda->setAcceptDrops(true);
+            }
+        }
+    }
+}
+
+bool EditorWindow::eventSpawns(QObject* obj, QEvent* event)
+{
+    QLabel* celda = qobject_cast<QLabel*>(obj);
+    if (!celda) {
+        return QMainWindow::eventFilter(obj, event);
+    }
+
+    manejoDragAndDrop(obj, event);
+
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        QLabel* celda = qobject_cast<QLabel*>(obj);
+        if (!celda) {
+            return QMainWindow::eventFilter(obj, event);
+        }
+        if (mouseEvent->button() == Qt::RightButton) {
+            return alClickearDerechoSpawns(celda);
+        }
+        else if (mouseEvent->button() == Qt::LeftButton && 
+                (!pixmapSeleccionadoSpawns.isNull() || !bloqueSeleccionadoSpawns.isEmpty())) {
+            return alClickearIzquierdoSpawns(celda);
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
+
+bool EditorWindow::alClickearIzquierdoSpawns(QLabel*& celda)
+{
+    // Obtener fila y columna de la celda
+    int fila = celda->property("fila").toInt();
+    int columna = celda->property("columna").toInt();
+
+    // Limpiar la celda
+   celda->clear();
+
+    if (!bloqueSeleccionadoSpawns.isEmpty()) {
+        // Caso para bloques con string (si lo usas)
+        QPixmap pixmap(bloqueSeleccionadoSpawns);
+        if (!pixmap.isNull()) {
+            celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+    } else if (!pixmapSeleccionadoSpawns.isNull()) { 
+        // MODIFICACIÓN: Guardar las coordenadas en la matriz
+        if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
+            matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn
+            ++terroristas;
+            verificarCondicionFinal(); // Aumentar el contador de jugadores
+        }
+        else if(coordenadasSeleccionadasSpawns.first == 9 && coordenadasSeleccionadasSpawns.second == 0) {
+            matrizGrillaSpawns[fila][columna] = 4; // Zona de spawn
+            ++antiterroristas;
+            verificarCondicionFinal();  // Aumentar el contador de jugadores
+        }
+        else if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
+            matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
+            --cantZonaPlantable;
+            verificarCondicionFinal(); // Reducir el contador de zonas plantables
+            actualizarOpcionesDisponibles();
+        }
+        
+        celda->setPixmap(pixmapSeleccionadoSpawns.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        
+        // Debug para verificar que se guarden correctamente
+        qDebug() << "Bloque colocado en (" << fila << "," << columna 
+                << ") con coordenadas del tileset (" 
+                << coordenadasSeleccionadasSpawns.first << "," 
+                << coordenadasSeleccionadasSpawns.second << ")";
+    }
+
+    celda->setAlignment(Qt::AlignCenter);
+    return true;
+}
+bool EditorWindow::alClickearDerechoSpawns(QLabel*& celda)
+{
+    // Obtener fila y columna de la celda
+    int fila = celda->property("fila").toInt();
+    int columna = celda->property("columna").toInt();
+
+    // Limpiar la celda
+    celda->clear();
+    celda->setPixmap(QPixmap()); // Asegurar que no hay pixmap
+    
+    // Restaurar el estilo base
+    celda->setStyleSheet(
+        "background-color: #f0f0f0; "
+        "border: 0.5px solid #999999; "
+        "margin: 0px; "
+        "padding: 0px;"
+    );
+    celda->setAlignment(Qt::AlignCenter);
+    
+    // Restaurar valores en la matriz según el tipo anterior
+    int valorAnterior = matrizGrillaSpawns[fila][columna];
+    if (valorAnterior == 3) {
+        // Era zona de spawn terrorista
+        --terroristas;
+        verificarCondicionFinal(); // Aumentar el contador de jugadores
+
+    } else if (valorAnterior == 4) {
+        // Era zona de spawn antiterrorista
+        --antiterroristas;
+        verificarCondicionFinal();  // Aumentar el contador de jugadores
+
+    } else if (valorAnterior == 2) {
+        // Era zona plantable
+        ++cantZonaPlantable;
+        verificarCondicionFinal(); // Reducir el contador de zonas plantables
+        actualizarOpcionesDisponibles();
+
+    }
+    
+    // Resetear la matriz a valor base (asumiendo 0 o 1 como base)
+    matrizGrillaSpawns[fila][columna] = 0; // o el valor que uses como base
+    
+    qDebug() << "Celda restaurada en (" << fila << "," << columna << ")";
+    return true;
+}
+
+bool EditorWindow::eventEditar(QObject* obj, QEvent* event)
+{
+    if (manejoDragAndDrop(obj, event)) {
+        return true;
+    }
+    
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        QLabel* celda = qobject_cast<QLabel*>(obj);
+        if (!celda) {
+            return QMainWindow::eventFilter(obj, event);
+        }
+        if (mouseEvent->button() == Qt::RightButton) {
+            return alClickearDerecho(celda);
+        }
+        else if (mouseEvent->button() == Qt::LeftButton && 
+                (!pixmapSeleccionado.isNull() || !bloqueSeleccionado.isEmpty())) {
+            return alClickearIzquierdo(celda);
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
+
+
+bool EditorWindow::alClickearIzquierdo(QLabel*& celda)
+{
+    // Obtener fila y columna de la celda
+    int fila = celda->property("fila").toInt();
+    int columna = celda->property("columna").toInt();
+
+    // Limpiar la celda
+    celda->clear();
+
+    if (!bloqueSeleccionado.isEmpty()) {
+        // Caso para bloques con string (si lo usas)
+        QPixmap pixmap(bloqueSeleccionado);
+        if (!pixmap.isNull()) {
+            celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+    } else if (!pixmapSeleccionado.isNull()) {
+        // MODIFICACIÓN: Guardar las coordenadas en la matriz
+        matrizGrilla[fila][columna] = coordenadasSeleccionadas;
+        
+        celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        
+        // Debug para verificar que se guarden correctamente
+        qDebug() << "Bloque colocado en (" << fila << "," << columna 
+                << ") con coordenadas del tileset (" 
+                << coordenadasSeleccionadas.first << "," 
+                << coordenadasSeleccionadas.second << ")";
+    }
+
+    celda->setAlignment(Qt::AlignCenter);
+    return true;
+}
+
+bool EditorWindow::alClickearDerecho(QLabel*& celda)
+{
+    // Obtener fila y columna de la celda
+    int fila = celda->property("fila").toInt();
+    int columna = celda->property("columna").toInt();
+
+    // Limpiar la celda
+    celda->clear();
+    celda->setPixmap(QPixmap());
+    
+    // Restaurar el estilo base
+    celda->setStyleSheet(
+        "background-color: #f0f0f0; "
+        "border: 0.5px solid #999999; "
+        "margin: 0px; "
+        "padding: 0px;"
+    );
+    celda->setAlignment(Qt::AlignCenter);
+    
+    // Resetear la matriz a valor base
+    matrizGrilla[fila][columna] = std::make_pair(0, 0); // o el valor que uses como base
+    
+    qDebug() << "Celda restaurada en (" << fila << "," << columna << ")";
+    return true;
+}
+
+bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
+{
+    QLabel* celda = qobject_cast<QLabel*>(obj);
+    // =============== MANEJO DE DRAG AND DROP ===============
+    if (event->type() == QEvent::DragEnter) {
+        QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
+        if (dragEvent->mimeData()->hasFormat("application/x-tile-coords")) {
+            dragEvent->acceptProposedAction();
+            // Opcional: cambiar apariencia de la celda durante el drag
+            QString estiloOriginal = celda->styleSheet();
+            if (estiloOriginal.contains("background-color: #f0f0f0")) {
+                celda->setStyleSheet(estiloOriginal.replace("#f0f0f0", "#e0e0ff"));
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    if (event->type() == QEvent::DragLeave) {
+        // Restaurar apariencia original solo si la celda está vacía
+        if (celda->pixmap().isNull()) {
+            celda->setStyleSheet(
+                "background-color: #f0f0f0; "
+                "border: 0.5px solid #999999; "
+                "margin: 0px; "
+                "padding: 0px;"
+            );
+        }
+        return true;
+    }
+    
+    if (event->type() == QEvent::Drop) {
+        QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
+        if (dropEvent->mimeData()->hasFormat("application/x-tile-coords")) {
+            QByteArray itemData = dropEvent->mimeData()->data("application/x-tile-coords");
+            QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+            int dragFila, dragColumna;
+            dataStream >> dragFila >> dragColumna;
+            
+            // Obtener coordenadas de la celda destino
+            int fila = celda->property("fila").toInt();
+            int columna = celda->property("columna").toInt();
+            
+            // Crear el pixmap desde las coordenadas del drag
+            QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
+            int tileWidth = 32;
+            int tileHeight = 32;
+            int x = dragColumna * tileWidth;
+            int y = dragFila * tileHeight;
+            QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
+            
+            // Limpiar la celda y aplicar el nuevo tile
+            celda->clear();
+            celda->setPixmap(croppedPixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            celda->setAlignment(Qt::AlignCenter);
+            
+            // Aplicar lógica según el área activa
+            if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
+                // Lógica específica para spawns
+                if(dragFila == 4 && dragColumna == 7) {
+                    matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn terrorista
+                    ++terroristas;
+                    verificarCondicionFinal(); // Aumentar el contador de jugadores
+
+                }
+                else if(dragFila == 9 && dragColumna == 0) {
+                    matrizGrillaSpawns[fila][columna] = 4; // Zona de spawn antiterrorista
+                    ++antiterroristas;
+                    verificarCondicionFinal();  // Aumentar el contador de jugadores
+                }
+                else if(dragFila == 0 && dragColumna == 0) {
+                    matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
+                    --cantZonaPlantable;
+                    verificarCondicionFinal(); // Reducir el contador de zonas plantables
+                    actualizarOpcionesDisponibles();
+
+                } else {
+                    // Para otros tiles en spawn area, usar valor por defecto
+                    matrizGrillaSpawns[fila][columna] = 1;
+                }
+            } else {
+                // Área normal - guardar coordenadas del tileset
+                matrizGrilla[fila][columna] = {dragFila, dragColumna};
+            }
+            
+            qDebug() << "Tile aplicado por drag en (" << fila << "," << columna 
+                     << ") desde tileset (" << dragFila << "," << dragColumna << ")";
+            
+            dropEvent->acceptProposedAction();
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+
+void EditorWindow::actualizarOpcionesDisponibles()
+{
     if (!opciones) return;
     
     // Guardar la selección actual
@@ -704,7 +1016,6 @@ void EditorWindow::actualizarOpcionesDisponibles() {
         opciones->setCurrentIndex(0);
         limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
     }
-    
 }
 
 void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
@@ -737,6 +1048,21 @@ void EditorWindow::actualizarTamanoGridWidget() {
     }
 }
  
+
+void EditorWindow::verificarCondicionFinal() {
+    qDebug() << "Verificando condición final:"
+             << terroristas << antiterroristas << cantZonaPlantable << jugadoresMaximos;
+
+    if (terroristas == jugadoresMaximos && 
+        antiterroristas == jugadoresMaximos && 
+        cantZonaPlantable == 0) {
+        guardarSpawnBtn->setEnabled(true);
+        qDebug() << "Condición final cumplida.";
+    } else {
+        guardarSpawnBtn->setEnabled(false);
+    }
+}
+
 
 
 // Agregar estas nuevas funciones a la clase EditorWindow:
@@ -807,6 +1133,8 @@ void EditorWindow::crearIconosPisos() {
             icono->setFrameStyle(QFrame::Box | QFrame::Plain);
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
+            icono->setDragData(croppedPixmap, fila, columna);
+            icono->setDraggable(true);
 
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
@@ -851,6 +1179,8 @@ void EditorWindow::crearIconosMuros() {
             icono->setFrameStyle(QFrame::Box | QFrame::Plain);
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
+            icono->setDragData(croppedPixmap, fila, columna);
+            icono->setDraggable(true);
 
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
@@ -896,6 +1226,8 @@ void EditorWindow::crearIconosSpawns() {
             icono->setFrameStyle(QFrame::Box | QFrame::Plain);
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
+            icono->setDragData(croppedPixmap, fila, columna);
+            icono->setDraggable(true);
 
             iconosActivosSpawns.append(icono);
             iconosLayoutSpawns->addWidget(icono);
@@ -940,6 +1272,8 @@ void EditorWindow::crearIconosZonaBomba() {
             icono->setFrameStyle(QFrame::Box | QFrame::Plain);
             icono->setLineWidth(1);
             icono->setCursor(Qt::PointingHandCursor);
+            icono->setDragData(croppedPixmap, fila, columna);
+            icono->setDraggable(true);
 
             iconosActivosSpawns.append(icono);
             iconosLayoutSpawns->addWidget(icono);
@@ -960,166 +1294,10 @@ void EditorWindow::crearIconosZonaBomba() {
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
     
     if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
-        if (event->type() == QEvent::MouseButtonPress) {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            QLabel* celda = qobject_cast<QLabel*>(obj);
-            
-            if (celda) {
-                int fila = celda->property("fila").toInt();
-                int columna = celda->property("columna").toInt();
-                
-                // CLIC DERECHO - Restaurar celda a estado base
-                if (mouseEvent->button() == Qt::RightButton) {
-                    // Limpiar la celda
-                    celda->clear();
-                    celda->setPixmap(QPixmap()); // Asegurar que no hay pixmap
-                    
-                    // Restaurar el estilo base
-                    celda->setStyleSheet(
-                        "background-color: #f0f0f0; "
-                        "border: 0.5px solid #999999; "
-                        "margin: 0px; "
-                        "padding: 0px;"
-                    );
-                    celda->setAlignment(Qt::AlignCenter);
-                    
-                    // Restaurar valores en la matriz según el tipo anterior
-                    int valorAnterior = matrizGrillaSpawns[fila][columna];
-                    if (valorAnterior == 3) {
-                        // Era zona de spawn terrorista
-                        --terroristas;
-                        verificarCondicionFinal();
-                        qDebug() << "Terrorista removido. Total:" << terroristas;
-                    } else if (valorAnterior == 4) {
-                        // Era zona de spawn antiterrorista
-                        --antiterroristas;
-                        verificarCondicionFinal();
-                        qDebug() << "Antiterrorista removido. Total:" << antiterroristas;
-                    } else if (valorAnterior == 2) {
-                        // Era zona plantable
-                        ++cantZonaPlantable;
-                        verificarCondicionFinal();
-                        actualizarOpcionesDisponibles();
-                        qDebug() << "Zona plantable removida. Total:" << cantZonaPlantable;
-                    }
-                    
-                    // Resetear la matriz a valor base (asumiendo 0 o 1 como base)
-                    matrizGrillaSpawns[fila][columna] = 0; // o el valor que uses como base
-                    
-                    qDebug() << "Celda restaurada en (" << fila << "," << columna << ")";
-                    return true;
-                }
-                // CLIC IZQUIERDO - Lógica original
-                else if (mouseEvent->button() == Qt::LeftButton && 
-                        (!pixmapSeleccionadoSpawns.isNull() || !bloqueSeleccionadoSpawns.isEmpty())) {
-                    
-                    celda->clear();
-
-                    if (!bloqueSeleccionadoSpawns.isEmpty()) {
-                        // Caso para bloques con string (si lo usas)
-                        QPixmap pixmap(bloqueSeleccionadoSpawns);
-                        if (!pixmap.isNull()) {
-                            celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                        }
-                    } else if (!pixmapSeleccionadoSpawns.isNull()) { 
-                        // MODIFICACIÓN: Guardar las coordenadas en la matriz
-                        if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
-                            matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn
-                            ++terroristas;
-                            verificarCondicionFinal(); // Aumentar el contador de jugadores
-                            qDebug() << terroristas;
-                        }
-                        else if(coordenadasSeleccionadasSpawns.first == 9 && coordenadasSeleccionadasSpawns.second == 0) {
-                            matrizGrillaSpawns[fila][columna] = 4; // Zona de spawn
-                            ++antiterroristas;
-                            verificarCondicionFinal();  // Aumentar el contador de jugadores
-                            qDebug() << antiterroristas;
-                        }
-                        else if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
-                            matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
-                            --cantZonaPlantable;
-                            verificarCondicionFinal(); // Reducir el contador de zonas plantables
-                            actualizarOpcionesDisponibles();
-                            qDebug() << cantZonaPlantable;
-                        }
-                        
-                        celda->setPixmap(pixmapSeleccionadoSpawns.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                        
-                        // Debug para verificar que se guarden correctamente
-                        qDebug() << "Bloque colocado en (" << fila << "," << columna 
-                                << ") con coordenadas del tileset (" 
-                                << coordenadasSeleccionadasSpawns.first << "," 
-                                << coordenadasSeleccionadasSpawns.second << ")";
-                    }
-
-                    celda->setAlignment(Qt::AlignCenter);
-                    return true;
-                }
-            }
-        }
-        return QMainWindow::eventFilter(obj, event);
+        return eventSpawns(obj, event);
         
     } else {
-        if (event->type() == QEvent::MouseButtonPress) {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            QLabel* celda = qobject_cast<QLabel*>(obj);
-            
-            if (celda) {
-                int fila = celda->property("fila").toInt();
-                int columna = celda->property("columna").toInt();
-                
-                // CLIC DERECHO - Restaurar celda a estado base
-                if (mouseEvent->button() == Qt::RightButton) {
-                    // Limpiar la celda
-                    celda->clear();
-                    celda->setPixmap(QPixmap());
-                    
-                    // Restaurar el estilo base
-                    celda->setStyleSheet(
-                        "background-color: #f0f0f0; "
-                        "border: 0.5px solid #999999; "
-                        "margin: 0px; "
-                        "padding: 0px;"
-                    );
-                    celda->setAlignment(Qt::AlignCenter);
-                    
-                    // Resetear la matriz a valor base
-                    matrizGrilla[fila][columna] = std::make_pair(0, 0); // o el valor que uses como base
-                    
-                    qDebug() << "Celda restaurada en (" << fila << "," << columna << ")";
-                    return true;
-                }
-                // CLIC IZQUIERDO - Lógica original  
-                else if (mouseEvent->button() == Qt::LeftButton && 
-                        (!pixmapSeleccionado.isNull() || !bloqueSeleccionado.isEmpty())) {
-                    
-                    celda->clear();
-
-                    if (!bloqueSeleccionado.isEmpty()) {
-                        // Caso para bloques con string (si lo usas)
-                        QPixmap pixmap(bloqueSeleccionado);
-                        if (!pixmap.isNull()) {
-                            celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                        }
-                    } else if (!pixmapSeleccionado.isNull()) {
-                        // MODIFICACIÓN: Guardar las coordenadas en la matriz
-                        matrizGrilla[fila][columna] = coordenadasSeleccionadas;
-                        
-                        celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                        
-                        // Debug para verificar que se guarden correctamente
-                        qDebug() << "Bloque colocado en (" << fila << "," << columna 
-                                << ") con coordenadas del tileset (" 
-                                << coordenadasSeleccionadas.first << "," 
-                                << coordenadasSeleccionadas.second << ")";
-                    }
-
-                    celda->setAlignment(Qt::AlignCenter);
-                    return true;
-                }
-            }
-        }
-        return QMainWindow::eventFilter(obj, event);
+        return eventEditar(obj, event);
     }
 }
 
@@ -1655,7 +1833,9 @@ EditorWindow::~EditorWindow()
 
 }
 
-void EditorWindow::guardarMapa() {
+
+void EditorWindow::guardarMapa()
+{
     if (rutaArchivoActual.isEmpty()) {
         QMessageBox::warning(this, "Error", "No hay archivo YAML asociado a este mapa");
         return;
