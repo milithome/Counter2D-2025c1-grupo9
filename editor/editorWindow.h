@@ -39,9 +39,19 @@ enum ModoEditor {
 
 enum TipoGrid { GRID_TERRENO, GRID_SPAWNS };
 
-const int MIN_FILAS = 10;
+struct dataMap{
+    QString nombreMapa;
+    int filas;
+    int columnas;
+    int playersMax;
+    int cantZonaPlantable;
+    QVector<QVector<QPair<int, int>>> matrizG; // Matriz de bloques
+    QVector<QVector<int>> matrizSpawns; // Matriz de coordenadas de spawns
+};
+
+const int MIN_FILAS = 20;
 const int MAX_FILAS = 55;
-const int MIN_COLUMNAS = 10;
+const int MIN_COLUMNAS = 20;
 const int MAX_COLUMNAS = 55;
 
 
@@ -58,7 +68,9 @@ private slots:
     void onEditarMapaClicked();
     void onSalirClicked();
 
-    void limpiarIconosAnteriores();
+    void onGuardarSpawnMapa();
+
+    void limpiarIconosAnteriores(QHBoxLayout*& iconosLay, QList<ClickableLabel*>& iconosActivs, QSignalMapper*& iconMapperSs, ClickableLabel*& iconoSelec);
     void crearIconosPisos();
     void crearIconosMuros();
     void crearIconosSpawns();
@@ -68,15 +80,64 @@ private:
     QStackedWidget* stackedWidget;
 
     QWidget *menuInicialWidget;   // vista 1
-    QWidget *editorMapaWidget;    // vista 2
+    QWidget *seleccionSpawnPoints; // vista 2
+    QWidget *editorMapaWidget;    // vista 3
 
     ModoEditor modo;
     QWidget *centralWidget;
     QLineEdit *nombre_mapa;
     QLineEdit *cant_jugadores;
-    int jugadoresMaximos;
+    
     QPushButton *editar_mapa_btn;
     QPushButton *volver_menu_btn;
+
+    dataMap datosMapa; // Estructura para almacenar los datos del mapa
+    QString nombreArchivoActual;  // Para guardar el nombre del archivo YAML actual
+    QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
+
+
+    void configurarVistaSegunModo(ModoEditor modo);
+    void setupCustomUIConfiguracionMapa();
+    void setupCustomUIEleccionMapa();
+    void actualizarFondo();
+    void aplicarEstilosResponsivos();
+
+    void inicializarSpawnsMapa();
+
+    int jugadoresMaximos;
+    int cantZonaPlantable;
+
+    QComboBox* opciones;
+
+    QHBoxLayout* iconosLayoutSpawns = nullptr;
+    QSignalMapper* iconMapperSpawns = nullptr;
+
+    QVector<QVector<QLabel*>> grillasCeldasSpawns; // Grilla de celdas para spawns
+
+    QVector<QVector<int>> matrizGrillaSpawns; // Matriz para almacenar las coordenadas de spawns
+
+    QList<ClickableLabel*> iconosActivosSpawns; // Para mantener referencia a los íconos activos
+
+    QPair<int, int> coordenadasSeleccionadasSpawns;
+
+    QGridLayout* gridLayoutSpawns = nullptr;
+
+    ClickableLabel* iconoSeleccionadoSpawns = nullptr; // Ícono actualmente seleccionado
+
+    QPushButton* guardarSpawnBtn;
+
+    QString bloqueSeleccionadoSpawns;
+    QPixmap pixmapSeleccionadoSpawns;  
+
+    void actualizarOpcionesDisponibles();
+
+    void crearIconosZonaBomba();
+
+    void actualizarJugadoresMaximos(int nuevoValor);
+
+    void actualizarZonasPlantables(int nuevoValor);
+
+    void inicializarEditorMapa(int filas, int columnas);
 
     QMenuBar *miMenuBar;
     QMenu *fileMenu;
@@ -91,17 +152,15 @@ private:
     QSignalMapper* iconMapper = nullptr;
     QHBoxLayout* iconosLayout = nullptr;  // Layout solo para íconos
     
+    QPixmap pixmapSeleccionado;              // Pixmap del bloque seleccionado
     QList<ClickableLabel*> iconosActivos; // Para mantener referencia a los íconos activos
 
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
 
     QVector<QVector<QPair<int, int>>> matrizGrilla; // Matriz para almacenar las coordenadas
-    QVector<QVector<int>> matrizGrillaSpawns;
     QPair<int, int> coordenadasSeleccionadas;
 
     QGridLayout* gridLayout = nullptr;
-
-    bool dragging;
 
     ClickableLabel* iconoSeleccionado = nullptr; // Ícono actualmente seleccionado
     QPushButton* agregarFilaBtn;
@@ -109,35 +168,18 @@ private:
     QPushButton* eliminarFilaBtn;
     QPushButton* eliminarColumnaBtn;
 
-    QString nombreArchivoActual;  // Para guardar el nombre del archivo YAML actual
-    QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
-
-    QPixmap pixmapSeleccionado;              // Pixmap del bloque seleccionado
-
-    void configurarVistaSegunModo(ModoEditor modo);
-    void setupCustomUIConfiguracionMapa();
-    void setupCustomUIEleccionMapa();
-    void actualizarFondo();
-    void aplicarEstilosResponsivos();
-    void inicializarEditorMapa();
     void guardarMapa();
     void borrarSeleccionados();
     void borrarTodo();
-    void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado);
+    void actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado,QList<ClickableLabel*> iconsActivs, ClickableLabel* iconSelec);
     void actualizarTamanoGridWidget();
 
-    void crearGrilla(int filas, int columnas,
-                               QWidget *&gridWidget,
-                               QGridLayout *&gridLayout,
-                               QVector<QVector<QLabel*>> &grilla,
-                               TipoGrid tipo);
 
     void agregarFila();
     void agregarColumna();
     void eliminarFila();
     void eliminarColumna();
     void actualizarEstadoBotonesDimensiones();
-    std::pair<int, int> calcularDimensiones();
 
     void crearArchivoYamlInicial();
     void guardarProgresoEnYaml();
