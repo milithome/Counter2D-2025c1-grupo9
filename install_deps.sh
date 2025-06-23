@@ -1,7 +1,6 @@
 #!/bin/bash
 # install_deps.sh
 
-# Colores
 GREEN="\033[1;32m"
 CYAN="\033[1;36m"
 YELLOW="\033[1;33m"
@@ -91,13 +90,12 @@ function run_tests() {
 function post_install() {
     local NAME="taller"
     local BIN_DIR="build"
-    local BINARIES=("taller_client" "taller_server" "taller_tests") #agregar el editor en algun momento
+    local BINARIES=("taller_client" "taller_server" "taller_editor" "taller_tests") #agregar el editor en algun momento
     local ASSETS_DIR="assets"
     local CONFIG_FILES=("config_server.yaml" "config_client.yaml")
 
     echo -e "${GREEN}Instalando binarios, assets y configuración del proyecto '${NAME}'...${RESET}"
 
-    # Copiar binarios
     for binary in "${BINARIES[@]}"; do
         local BIN_PATH="${BIN_DIR}/${binary}"
         if [ -f "$BIN_PATH" ]; then
@@ -108,7 +106,6 @@ function post_install() {
         fi
     done
 
-    # Copiar assets
     if [ -d "$ASSETS_DIR" ]; then
         echo -e "${CYAN}Copiando assets a /var/${NAME}/assets...${RESET}"
         sudo mkdir -p "/var/${NAME}"
@@ -117,7 +114,6 @@ function post_install() {
         echo -e "${YELLOW}Carpeta de assets no encontrada en '${ASSETS_DIR}'${RESET}"
     fi
 
-    # Copiar archivo de configuración
     echo -e "${CYAN}Copiando archivos de configuración a /etc/${NAME}/...${RESET}"
     sudo mkdir -p "/etc/${NAME}/"
     for config in "${CONFIG_FILES[@]}"; do
@@ -145,8 +141,8 @@ while true; do
     echo "7. Instalar soporte YAML"
     echo "8. Compilar proyecto con make"
     echo "9. Ejecutar tests unitarios"
-    echo "10. Ejecutar TODO (deps + compilación + tests)"
-    echo "11. Mover binarios a /usr/bin, asseta a /var/NAME/ y configs a  /etc/NAME/" 
+    echo "10. Mover binarios a /usr/bin, asseta a /var/NAME/ y configs a  /etc/NAME/" 
+    echo "11. Ejecutar TODO (deps + compilación + tests)"
     echo "0. Salir"
     echo -n "Seleccione una opción: "
     read -r option
@@ -162,13 +158,13 @@ while true; do
         7) install_yaml_dep ;;
         8) compile_project ;;
         9) run_tests ;;
-        10)
+        10) post_install ;; 
+        11)
             install_all
             compile_project
             run_tests
             post_install
             ;;
-        11) post_install ;;
         0) echo "Saliendo."; exit 0 ;;
         *) echo -e "${YELLOW}Opción no válida.${RESET}" ;;
     esac

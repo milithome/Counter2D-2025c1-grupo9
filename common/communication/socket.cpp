@@ -188,17 +188,17 @@ int Socket::sendsome(const void* data, unsigned int sz) {
     if (s == -1) {
         if (errno == EPIPE) {
             stream_status |= STREAM_SEND_CLOSED;
-            throw ClientClosedConnection();
+            if (stream_status & STREAM_RECV_CLOSED) {
+                throw ClientClosedConnection();
+            } else {
+                throw ServerClosedConnection();
+            }
         }
         throw LibError(errno, "socket send failed");
-    } else if (s == 0) {
-        stream_status |= STREAM_SEND_CLOSED;
-        throw ServerClosedConnection();
     }
 
     return s;
 }
-
 
 int Socket::recvall(void* data, unsigned int sz) {
     unsigned int received = 0;
