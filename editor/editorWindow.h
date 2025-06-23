@@ -28,9 +28,11 @@
 #include <QTextStream>
 #include <QDir>
 
+#include <iostream>
 
 
 #include "ClickableLabel.h"
+#include "common/utilities/map.h"
 
 enum ModoEditor {
     CrearNuevoMapa,
@@ -95,6 +97,10 @@ private:
 
     QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
 
+
+    QPixmap tiles = QPixmap(":/assets/gfx/tiles/dust.bmp");
+
+    QSet<QPair<int, int>> solid_blocks;
     QVector<QVector<QPair<int, int>>> matrizGrilla; // Matriz para almacenar las coordenadas
     QVector<QVector<int>> matrizGrillaSpawns;
     QPair<int, int> coordenadasSeleccionadas;
@@ -141,6 +147,7 @@ private:
 
     void crearArchivoYamlInicial();
     void guardarProgresoEnYaml();
+    MapData crearMapData();
    
 protected:
     void resizeEvent(QResizeEvent *event) override;
