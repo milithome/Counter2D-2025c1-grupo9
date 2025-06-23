@@ -827,9 +827,11 @@ void EditorWindow::crearIconosMuros() {
 
     QPixmap originalPixmap(":/assets/gfx/tiles/dust.bmp");
 
+
     QSet<QPair<int, int>> bloquesValidos = {
-        {2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},    // cajas
+        {2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},  // cajas
     };
+    solid_blocks = bloquesValidos;
 
     int tileWidth = 32;
     int tileHeight = 32;
@@ -1217,15 +1219,6 @@ void EditorWindow::crearArchivoYamlInicial() {
     int filas = 20; //base
     int columnas = 20;
 
-    stream << "map:" << "\n";
-    stream << "  name: " << nombreMapa << "\n";
-    stream << "  width: " << columnas << "\n";
-    stream << "  height: " << filas << "\n";
-    stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
-    stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
-    stream << "  players: " << jugadoresMaximos << "\n";
-    stream << "\n";
-    stream << "  tiles:" << "\n";
 
     
     matrizGrilla.resize(filas);
@@ -1236,27 +1229,6 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
 
-    //inicializo matrizGrilla
-    for (int i = 0; i < filas; ++i) {
-        if(i!=0){
-            stream << "\n"; // Añadir nueva línea para separar filas
-        }
-        stream << "   - ["; // Indentación para cada fila
-        for (int j = 0; j < columnas; ++j) {
-            stream << "{" << QString::number(matrizGrilla[i][j].first) 
-                    << "," << QString::number(matrizGrilla[i][j].second) << "}";
-            if (j < columnas - 1) {
-                stream << ","; // Mantener el formato correcto
-            }
-        }
-        if(i < filas){
-            stream << "]" << "\n "; // Cerrar la fila
-        }
-    }
-
-    stream << "\n";
-    stream << "  game:" << "\n";
-
     //incializo la matriz de spawns (game)
     matrizGrillaSpawns.resize(filas);
     for (int i = 0; i < filas; ++i) {
@@ -1266,87 +1238,6 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
 
-    for (int i = 0; i < filas; ++i) {
-        if(i!=0){
-            stream << "\n"; // Añadir nueva línea para separar filas
-        }
-        stream << "   - ["; // Indentación para cada fila
-        for (int j = 0; j < columnas; ++j) {
-            stream << matrizGrillaSpawns[i][j];
-            if (j < columnas - 1) {
-                stream << ","; // Mantener el formato correcto
-            }
-        }
-        if(i < filas){
-            stream << "]" << "\n "; // Cerrar la fila
-        }
-    }
-
-    stream << "\n";
-    stream << "  legend_tiles:" << "\n";
-
-    stream << "     1:" << "\n"; // 1 es el muro
-    stream << "     name: \"Cajas\"" << "\n";
-    stream << "         {2,4}" << "\n" << // {2,4} es la caja
-            "           {2,5}" << "\n" << 
-            "           {2,6}" << "\n" << 
-            "           {2,7}" << "\n" << 
-            "           {9,2}" << "\n" << 
-            "           {9,3}" << "\n" << 
-            "           {9,4}" << "\n"; 
-
-    stream << "     2:" << "\n"; // 2 es el piso
-    stream << "     name: \"Pasto\"" << "\n";
-    stream << "         {0,1}" << "\n" << 
-            "           {0,2}" << "\n" << 
-            "           {0,3}" << "\n" << 
-            "           {0,4}" << "\n" << 
-            "           {0,5}" << "\n" << 
-            "           {0,6}" << "\n" << 
-            "           {0,7}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena\"" << "\n";
-    stream << "         {1,0}" << "\n" << 
-            "           {1,1}" << "\n" << 
-            "           {1,2}" << "\n" << 
-            "           {1,3}" << "\n" << 
-            "           {1,4}" << "\n" << 
-            "           {1,5}" << "\n" << 
-            "           {1,6}" << "\n" << 
-            "           {1,7}" << "\n" << 
-            "           {2,0}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena con pastitos\"" << "\n";
-    stream << "         {3,0}" << "\n" << 
-            "           {3,1}" << "\n" <<
-            "           {3,2}" << "\n" <<
-            "           {3,3}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena con cemento\"" << "\n";
-    stream << "         {3,4}" << "\n" << 
-            "           {3,5}" << "\n" <<
-            "           {3,6}" << "\n" <<
-            "           {3,7}" << "\n"; // <-- CORREGIDO
-
-    stream << "     name: \"Cemento\"" << "\n";
-    stream << "         {4,0}" << "\n"; // {4,0} es el cemento
-
-    stream << "     name: \"Baldosas de madera\"" << "\n";
-    stream << "         {5,4}" << "\n" << 
-            "           {5,5}" << "\n" <<
-            "           {5,6}" << "\n" <<
-            "           {5,7}" << "\n";
-
-    stream << "     name: \"A y B en rojo\"" << "\n";
-    stream << "         {7,0}" << "\n" << 
-            "           {7,1}" << "\n";
-
-    stream << "     name: \"Arena mostaza\"" << "\n";
-    stream << "         {9,5}" << "\n" <<
-            "           {9,6}" << "\n" <<
-            "           {9,7}" << "\n";
-
-
 
     archivo.close();
 
@@ -1355,6 +1246,60 @@ void EditorWindow::crearArchivoYamlInicial() {
                                  "Ubicación: " + rutaArchivoActual);
 
     qDebug() << "Archivo YAML inicial creado en:" << rutaArchivoActual;
+}
+
+MapData EditorWindow::crearMapData() {
+    MapData mapData;
+    std::string background_path;
+    std::string sprite_path;
+
+    int filas = grillaCeldas.size();
+    int columnas = grillaCeldas.isEmpty() ? 0 : grillaCeldas[0].size();
+
+    std::vector<std::vector<CellType>> game_map = std::vector<std::vector<CellType>>(filas, std::vector<CellType>(columnas));;
+
+    std::vector<std::vector<uint16_t>> tiles_map = std::vector<std::vector<uint16_t>>(filas, std::vector<uint16_t>(columnas));;
+    std::unordered_map<uint16_t, MapLegendEntry> legend_tiles;
+
+    int hor_tile_amount = tiles.width() / 32;
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < columnas; ++j) {
+            int numeric_value = matrizGrilla[i][j].first % hor_tile_amount +  matrizGrilla[i][j].second * hor_tile_amount;
+            tiles_map[i][j] = numeric_value;
+            if (!legend_tiles.contains(numeric_value)) {
+                legend_tiles[numeric_value] = MapLegendEntry{matrizGrilla[i][j].first * 32, matrizGrilla[i][j].second * 32};
+            }
+            if (solid_blocks.contains(matrizGrilla[i][j])) {
+                game_map[i][j] = CellType::Blocked;
+            } else {
+                game_map[i][j] = CellType::Walkable;
+            }
+            switch (matrizGrillaSpawns[i][j]) {
+                case 1: {
+                    game_map[i][j] = CellType::SpawnTeamA;
+                    break;
+                }
+                case 2: {
+                    game_map[i][j] = CellType::SpawnTeamB;
+                    break;
+                }
+                case 3: {
+                    game_map[i][j] = CellType::SpikeSite;
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+    mapData.background_path = "../assets/gfx/backgrounds/dust.png";
+    mapData.sprite_path = "../assets/gfx/tiles/dust.bmp";
+    mapData.game_map = game_map;
+    mapData.tiles_map = tiles_map;
+    mapData.legend_tiles = legend_tiles;
+
+    return mapData;
 }
 
 
@@ -1378,29 +1323,30 @@ void EditorWindow::guardarProgresoEnYaml() {
     stream << "  height: " << filas << "\n";
     stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
     stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
-    stream << "  players: " << jugadoresMaximos << "\n";
     stream << "\n";
     stream << "  tiles:" << "\n";
 
-    //inicializo matrizGrilla
+
+    MapData mapData = crearMapData();
+    
     for (int i = 0; i < filas; ++i) {
         if(i!=0){
             stream << "\n"; // Añadir nueva línea para separar filas
         }
         stream << "   - ["; // Indentación para cada fila
         for (int j = 0; j < columnas; ++j) {
-            stream << "{" << QString::number(matrizGrilla[i][j].first) 
-                    << "," << QString::number(matrizGrilla[i][j].second) << "}";
+            stream << mapData.tiles_map[i][j];
             if (j < columnas - 1) {
                 stream << ","; // Mantener el formato correcto
             }
         }
         if(i < filas){
-            stream << "]" << "\n "; // Cerrar la fila
+            stream << "]";  //<< "\n "; // Cerrar la fila
         }
     }
 
-    stream << "\n";
+
+    stream << "\n\n";
     stream << "  game:" << "\n";
 
     for (int i = 0; i < filas; ++i) {
@@ -1409,79 +1355,23 @@ void EditorWindow::guardarProgresoEnYaml() {
         }
         stream << "   - ["; // Indentación para cada fila
         for (int j = 0; j < columnas; ++j) {
-            stream << matrizGrillaSpawns[i][j];
+            stream << static_cast<int>(mapData.game_map[i][j]);
             if (j < columnas - 1) {
                 stream << ","; // Mantener el formato correcto
             }
         }
         if(i < filas){
-            stream << "]" << "\n "; // Cerrar la fila
+            stream << "]"; // Cerrar la fila
         }
     }
 
-    stream << "\n";
-    stream << "  legend_tiles:" << "\n";
-
-    stream << "     1:" << "\n"; // 1 es el muro
-    stream << "     name: \"Cajas\"" << "\n";
-    stream << "         {2,4}" << "\n" << // {2,4} es la caja
-            "           {2,5}" << "\n" << 
-            "           {2,6}" << "\n" << 
-            "           {2,7}" << "\n" << 
-            "           {9,2}" << "\n" << 
-            "           {9,3}" << "\n" << 
-            "           {9,4}" << "\n"; 
-
-    stream << "     2:" << "\n"; // 2 es el piso
-    stream << "     name: \"Pasto\"," << "\n";
-    stream << "         {0,1}" << "\n" << 
-            "           {0,2}" << "\n" << 
-            "           {0,3}" << "\n" << 
-            "           {0,4}" << "\n" << 
-            "           {0,5}" << "\n" << 
-            "           {0,6}" << "\n" << 
-            "           {0,7}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena\"" << "\n";
-    stream << "         {1,0}" << "\n" << 
-            "           {1,1}" << "\n" << 
-            "           {1,2}" << "\n" << 
-            "           {1,3}" << "\n" << 
-            "           {1,4}" << "\n" << 
-            "           {1,5}" << "\n" << 
-            "           {1,6}" << "\n" << 
-            "           {1,7}" << "\n" << 
-            "           {2,0}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena con pastitos\"" << "\n";
-    stream << "         {3,0}" << "\n" << 
-            "           {3,1}" << "\n" <<
-            "           {3,2}" << "\n" <<
-            "           {3,3}" << "\n"; // <-- CORREGIDO: faltaba ;
-
-    stream << "     name: \"Arena con cemento\"" << "\n";
-    stream << "         {3,4}" << "\n" << 
-            "           {3,5}" << "\n" <<
-            "           {3,6}" << "\n" <<
-            "           {3,7}" << "\n"; // <-- CORREGIDO
-
-    stream << "     name: \"Cemento\"" << "\n";
-    stream << "         {4,0}" << "\n"; // {4,0} es el cemento
-
-    stream << "     name: \"Baldosas de madera\"" << "\n";
-    stream << "         {5,4}" << "\n" << 
-            "           {5,5}" << "\n" <<
-            "           {5,6}" << "\n" <<
-            "           {5,7}" << "\n";
-
-    stream << "     name: \"A y B en rojo\"" << "\n";
-    stream << "         {7,0}" << "\n" << 
-            "           {7,1}" << "\n";
-
-    stream << "     name: \"Arena mostaza\"" << "\n";
-    stream << "         {9,5}" << "\n" <<
-            "           {9,6}" << "\n" <<
-            "           {9,7}" << "\n";
+    stream << "\n\n";
+    stream << "legend_tiles:" << "\n";
+    for (auto [num, entry] : mapData.legend_tiles) {
+        stream << "   " << num << ":" << "\n";
+        stream << "      x: " << entry.x << "\n";
+        stream << "      y: " << entry.y << "\n";
+    }
 
     
     
