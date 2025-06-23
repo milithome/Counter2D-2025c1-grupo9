@@ -106,9 +106,12 @@ private:
     void inicializarSpawnsMapa();
 
     int jugadoresMaximos;
+    int terroristas;
+    int antiterroristas;
     int cantZonaPlantable;
 
     QComboBox* opciones;
+    QGridLayout* gridLayoutSpawns = nullptr;
 
     QHBoxLayout* iconosLayoutSpawns = nullptr;
     QSignalMapper* iconMapperSpawns = nullptr;
@@ -121,20 +124,25 @@ private:
 
     QPair<int, int> coordenadasSeleccionadasSpawns;
 
-    QGridLayout* gridLayoutSpawns = nullptr;
 
     ClickableLabel* iconoSeleccionadoSpawns = nullptr; // Ícono actualmente seleccionado
 
     QPushButton* guardarSpawnBtn;
 
     QString bloqueSeleccionadoSpawns;
+    
     QPixmap pixmapSeleccionadoSpawns;  
+    QPushButton* agregarFilaBtn;
+    QPushButton* agregarColumnaBtn;
+    QPushButton* eliminarFilaBtn;
+    QPushButton* eliminarColumnaBtn;
 
     void actualizarOpcionesDisponibles();
 
     void crearIconosZonaBomba();
 
-    void actualizarJugadoresMaximos(int nuevoValor);
+    void actualizarTerroristas(int nuevoValor);
+    void actualizarAntiterroristas(int nuevoValor);
 
     void actualizarZonasPlantables(int nuevoValor);
 
@@ -143,6 +151,7 @@ private:
     QMenuBar *miMenuBar;
     QMenu *fileMenu;
     QAction *guardarAction;
+    QAction *guardarSalirAction;
     QAction *borrarAction;
     QAction *borrarTodoAction;
 
@@ -164,10 +173,6 @@ private:
     QGridLayout* gridLayout = nullptr;
 
     ClickableLabel* iconoSeleccionado = nullptr; // Ícono actualmente seleccionado
-    QPushButton* agregarFilaBtn;
-    QPushButton* agregarColumnaBtn;
-    QPushButton* eliminarFilaBtn;
-    QPushButton* eliminarColumnaBtn;
 
     void guardarMapa();
     void borrarSeleccionados();
