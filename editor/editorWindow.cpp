@@ -313,6 +313,15 @@ void EditorWindow::inicializarSpawnsMapa() {
     grillasCeldasSpawns.clear();
     grillasCeldasSpawns.resize(filas);
 
+    //incializo la matriz de spawns (game)
+    matrizGrillaSpawns.resize(filas);
+    for (int i = 0; i < filas; ++i) {
+        matrizGrillaSpawns[i].resize(columnas);
+        for (int j = 0; j < columnas; ++j) {
+            matrizGrillaSpawns[i][j] = 0; // Inicializar con coordenadas vacías
+        }
+    }
+
     for (int i = 0; i < filas; ++i) {
         grillasCeldasSpawns[i].resize(columnas);
         for (int j = 0; j < columnas; ++j) {
@@ -403,7 +412,33 @@ void EditorWindow::inicializarSpawnsMapa() {
     accionesLayout->addWidget(guardarSpawnBtn);
     mainLayout->addLayout(accionesLayout);
 
+    // Botones para agregar fila/columna
+    agregarFilaBtn = new QPushButton("Agregar fila");
+    agregarColumnaBtn = new QPushButton("Agregar columna");
+
+    accionesLayout->addWidget(agregarFilaBtn);
+    accionesLayout->addWidget(agregarColumnaBtn);
+
+    // Conectar los botones a sus slots
+    connect(agregarFilaBtn, &QPushButton::clicked, this, &EditorWindow::agregarFila);
+    connect(agregarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::agregarColumna);
+
+    eliminarFilaBtn = new QPushButton("Eliminar fila");
+    eliminarColumnaBtn = new QPushButton("Eliminar columna");
+
+    accionesLayout->addWidget(eliminarFilaBtn);
+    accionesLayout->addWidget(eliminarColumnaBtn);
+
+    connect(eliminarFilaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarFila);
+    connect(eliminarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarColumna);
+
+    // Agregar los botones de acción al layout principal (FIJOS)
+    mainLayout->addLayout(accionesLayout);
+
+   
+
     seleccionSpawnPoints->setLayout(mainLayout);
+     actualizarEstadoBotonesDimensiones();
     actualizarOpcionesDisponibles();
 }
 
@@ -592,35 +627,7 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas) {
         scrollArea->setFixedHeight(h);
     });
 
-
-    // Parte inferior: botones de acción (FIJOS)
-    QHBoxLayout* accionesLayout = new QHBoxLayout();
-
-    // Botones para agregar fila/columna
-    agregarFilaBtn = new QPushButton("Agregar fila");
-    agregarColumnaBtn = new QPushButton("Agregar columna");
-
-    accionesLayout->addWidget(agregarFilaBtn);
-    accionesLayout->addWidget(agregarColumnaBtn);
-
-    // Conectar los botones a sus slots
-    connect(agregarFilaBtn, &QPushButton::clicked, this, &EditorWindow::agregarFila);
-    connect(agregarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::agregarColumna);
-
-    eliminarFilaBtn = new QPushButton("Eliminar fila");
-    eliminarColumnaBtn = new QPushButton("Eliminar columna");
-
-    accionesLayout->addWidget(eliminarFilaBtn);
-    accionesLayout->addWidget(eliminarColumnaBtn);
-
-    connect(eliminarFilaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarFila);
-    connect(eliminarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarColumna);
-
-    // Agregar los botones de acción al layout principal (FIJOS)
-    mainLayout->addLayout(accionesLayout);
-
     editorMapaWidget->setLayout(mainLayout);
-    actualizarEstadoBotonesDimensiones();
 }
 
 void EditorWindow::actualizarOpcionesDisponibles() {
@@ -686,7 +693,7 @@ void EditorWindow::actualizarOpcionesDisponibles() {
 }
 
 void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
-                                             QList<ClickableLabel*> iconsActivs, ClickableLabel* iconSelec) {
+                                             QList<ClickableLabel*>& iconsActivs, ClickableLabel*& iconSelec) {
     // Verificar que el nuevo seleccionado no sea nullptr
     if (!nuevoSeleccionado) return;
 
@@ -1041,16 +1048,16 @@ bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
 
 
 void EditorWindow::agregarFila() {
-    int nuevasFilas = grillaCeldas.size() + 1;
-    int columnas = grillaCeldas.isEmpty() ? 0 : grillaCeldas[0].size();
+    int nuevasFilas = grillasCeldasSpawns.size() + 1;
+    int columnas = grillasCeldasSpawns.isEmpty() ? 0 : grillasCeldasSpawns[0].size();
 
-    grillaCeldas.resize(nuevasFilas);
-    grillaCeldas[nuevasFilas - 1].resize(columnas);
+    grillasCeldasSpawns.resize(nuevasFilas);
+    grillasCeldasSpawns[nuevasFilas - 1].resize(columnas);
 
 
     // Actualizar matrizGrilla
-    matrizGrilla.resize(nuevasFilas);
-    matrizGrilla[nuevasFilas - 1].resize(columnas, {0, 0});
+    matrizGrillaSpawns.resize(nuevasFilas);
+    matrizGrillaSpawns[nuevasFilas - 1].resize(columnas, 0);
 
     for (int j = 0; j < columnas; ++j) {
         QLabel* celda = new QLabel();
@@ -1072,31 +1079,29 @@ void EditorWindow::agregarFila() {
         celda->setProperty("fila", nuevasFilas - 1);
         celda->setProperty("columna", j);
 
-        if (!gridLayout) return;
-        gridLayout->addWidget(celda, nuevasFilas - 1, j);
-        grillaCeldas[nuevasFilas - 1][j] = celda;
+        if (!gridLayoutSpawns) return;
+        gridLayoutSpawns->addWidget(celda, nuevasFilas - 1, j);
+        grillasCeldasSpawns[nuevasFilas - 1][j] = celda;
     }
+
+    qDebug() << grillasCeldasSpawns.size();
 
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    if (!rutaArchivoActual.isEmpty()) {
-        guardarProgresoEnYaml();
-    }
-    
 }
 
 void EditorWindow::agregarColumna() {
-    int filas = grillaCeldas.size();
+    int filas = grillasCeldasSpawns.size();
     if (filas == 0) return;
 
-    int nuevasColumnas = grillaCeldas[0].size() + 1;
+    int nuevasColumnas = grillasCeldasSpawns[0].size() + 1;
 
     for (int i = 0; i < filas; ++i) {
-        grillaCeldas[i].resize(nuevasColumnas);
+        grillasCeldasSpawns[i].resize(nuevasColumnas);
 
         // Actualizar matrizGrilla
-        matrizGrilla[i].resize(nuevasColumnas, {0, 0});
+        matrizGrillaSpawns[i].resize(nuevasColumnas, 0);
 
         QLabel* celda = new QLabel();
 
@@ -1117,71 +1122,70 @@ void EditorWindow::agregarColumna() {
         celda->setProperty("fila", i);
         celda->setProperty("columna", nuevasColumnas - 1);
 
-        if (!gridLayout) return;
-        gridLayout->addWidget(celda, i, nuevasColumnas - 1);
-        grillaCeldas[i][nuevasColumnas - 1] = celda;
+        if (!gridLayoutSpawns) return;
+        gridLayoutSpawns->addWidget(celda, i, nuevasColumnas - 1);
+        grillasCeldasSpawns[i][nuevasColumnas - 1] = celda;
     }
+
+    qDebug() << grillasCeldasSpawns[0].size();
 
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    if (!rutaArchivoActual.isEmpty()) {
-        guardarProgresoEnYaml();
-    }
     
 }
 
 void EditorWindow::eliminarFila() {
-    int filas = grillaCeldas.size();
+    int filas = grillasCeldasSpawns.size();
     if (filas <= 1) return;
 
-    if (!gridLayout) return;
-    int columnas = grillaCeldas[0].size();
+    if (!gridLayoutSpawns) return;
+    int columnas = grillasCeldasSpawns[0].size();
     for (int j = 0; j < columnas; ++j) {
-        QLabel* celda = grillaCeldas[filas - 1][j];
-        gridLayout->removeWidget(celda);
+        QLabel* celda = grillasCeldasSpawns[filas - 1][j];
+        gridLayoutSpawns->removeWidget(celda);
         delete celda;
     }
 
-    grillaCeldas.removeLast();
+    grillasCeldasSpawns.removeLast();
     // Actualizar matrizGrilla
-    matrizGrilla.removeLast();
+    matrizGrillaSpawns.removeLast();
+
+    qDebug() << grillasCeldasSpawns.size();
 
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    if (!rutaArchivoActual.isEmpty()) {
-        guardarProgresoEnYaml();
-    }
+    
     
 }
 
 void EditorWindow::eliminarColumna() {
-    if (grillaCeldas.isEmpty() || grillaCeldas[0].size() <= 1) return;
+    if (grillasCeldasSpawns.isEmpty() || grillasCeldasSpawns[0].size() <= 1) return;
 
-    if (!gridLayout) return;
-    int ultimaColumna = grillaCeldas[0].size() - 1;
-    for (int i = 0; i < grillaCeldas.size(); ++i) {
-        QLabel* celda = grillaCeldas[i][ultimaColumna];
-        gridLayout->removeWidget(celda);
+    if (!gridLayoutSpawns) return;
+    int ultimaColumna = grillasCeldasSpawns[0].size() - 1;
+    for (int i = 0; i < grillasCeldasSpawns.size(); ++i) {
+        QLabel* celda = grillasCeldasSpawns[i][ultimaColumna];
+        gridLayoutSpawns->removeWidget(celda);
         delete celda;
-        grillaCeldas[i].removeLast();
+        grillasCeldasSpawns[i].removeLast();
         // Actualizar matrizGrilla
-        matrizGrilla[i].removeLast();
+        matrizGrillaSpawns[i].removeLast();
     }
 
+    
+    qDebug() << grillasCeldasSpawns[0].size();
     // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
-    if (!rutaArchivoActual.isEmpty()) {
-        guardarProgresoEnYaml();
-    }
+    
     
 }
 
 void EditorWindow::actualizarEstadoBotonesDimensiones() {
-    int filas = grillaCeldas.size();
-    int columnas = grillaCeldas[0].size();
+    int filas = grillasCeldasSpawns.size();
+    int columnas = grillasCeldasSpawns[0].size();
 
     agregarFilaBtn->setEnabled(filas < MAX_FILAS);
     eliminarFilaBtn->setEnabled(filas > MIN_FILAS);
@@ -1214,8 +1218,8 @@ void EditorWindow::crearArchivoYamlInicial() {
 
     // Escribir el contenido inicial del YAML
 
-    int filas = 20; //base
-    int columnas = 20;
+    int filas = matrizGrillaSpawns.size();
+    int columnas = matrizGrillaSpawns[0].size();
 
     stream << "map:" << "\n";
     stream << "  name: " << nombreMapa << "\n";
@@ -1223,7 +1227,7 @@ void EditorWindow::crearArchivoYamlInicial() {
     stream << "  height: " << filas << "\n";
     stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
     stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
-    stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "  players: " << cant_jugadores->text() << "\n";
     stream << "\n";
     stream << "  tiles:" << "\n";
 
@@ -1256,15 +1260,6 @@ void EditorWindow::crearArchivoYamlInicial() {
 
     stream << "\n";
     stream << "  game:" << "\n";
-
-    //incializo la matriz de spawns (game)
-    matrizGrillaSpawns.resize(filas);
-    for (int i = 0; i < filas; ++i) {
-        matrizGrillaSpawns[i].resize(columnas);
-        for (int j = 0; j < columnas; ++j) {
-            matrizGrillaSpawns[i][j] = 0; // Inicializar con coordenadas vacías
-        }
-    }
 
     for (int i = 0; i < filas; ++i) {
         if(i!=0){
@@ -1368,8 +1363,8 @@ void EditorWindow::guardarProgresoEnYaml() {
     QTextStream stream(&archivo);
 
     // Obtener dimensiones actuales
-    int filas = datosMapa.filas;
-    int columnas = datosMapa.columnas;
+    int filas = matrizGrilla.size();
+    int columnas = matrizGrilla[0].size();
 
     // Escribir encabezado YAML
     stream << "map:" << "\n";
@@ -1378,7 +1373,7 @@ void EditorWindow::guardarProgresoEnYaml() {
     stream << "  height: " << filas << "\n";
     stream << "  background_path: " << "../assets/gfx/backgrounds/sand1.jpg" << "\n";
     stream << "  sprites_path: " << "../assets/gfx/tiles/dust.bmp" << "\n";
-    stream << "  players: " << jugadoresMaximos << "\n";
+    stream << "  players: " << cant_jugadores->text() << "\n";
     stream << "\n";
     stream << "  tiles:" << "\n";
 
@@ -1518,20 +1513,8 @@ void EditorWindow::onCrearMapaClicked() {
 
     jugadoresMaximos = jugadoresMaximos*2;
 
-    // Crear el archivo YAML inicial
-    crearArchivoYamlInicial();
-
     inicializarSpawnsMapa();
 
-    datosMapa = {
-        name,     // nombreMapa
-        20,              // filas
-        20,              // columnas
-        jugadoresMaximos,               // playersMax
-        4,               // cantZonaPlantable
-        matrizGrilla, // matrizGrilla
-        matrizGrillaSpawns               // matrizGrillaSpawns
-    };
 
     // Conectar los botones a sus slots
     connect(guardarSpawnBtn, &QPushButton::clicked, this, &EditorWindow::onGuardarSpawnMapa);
@@ -1570,7 +1553,6 @@ void EditorWindow::onEditarMapaClicked() {
                              "Mapa cargado: " + nombreArchivo);
 }
 
-
 void EditorWindow::onSalirClicked()
 {
     this->close();
@@ -1578,7 +1560,9 @@ void EditorWindow::onSalirClicked()
 
 void EditorWindow::onGuardarSpawnMapa()
 {
-    guardarProgresoEnYaml();
+    // Crear el archivo YAML inicial
+    crearArchivoYamlInicial();
+    
     int filas = grillasCeldasSpawns.size();
     int columnas = grillasCeldasSpawns.isEmpty() ? 0 : grillasCeldasSpawns[0].size();
 
