@@ -1,5 +1,4 @@
 #include "match.h"
-#include "admin.h"
 
 Match::Match(std::string& name, Admin& admin) : name(name), admin(admin), inLobby(true), inGame(false), toMatch(std::make_shared<Queue<Message>>(100)) {
     minPlayers = gameRules.min_players_per_team*2;

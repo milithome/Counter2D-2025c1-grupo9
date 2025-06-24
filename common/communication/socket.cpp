@@ -180,7 +180,6 @@ int Socket::recvsome(void* data, unsigned int sz) {
     return s;
 }
 
-
 int Socket::sendsome(const void* data, unsigned int sz) {
     chk_skt_or_fail();
     int s = send(this->skt, (char*)data, sz, MSG_NOSIGNAL);

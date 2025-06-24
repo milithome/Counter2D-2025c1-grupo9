@@ -16,6 +16,4 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x install_deps.sh
-
-RUN echo 11 | ./install_deps.sh
+RUN chmod +x install.sh

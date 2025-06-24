@@ -1,8 +1,7 @@
 #include "clientReceiver.h"
-#include "admin.h"
 
-ClientReceiver::ClientReceiver(Protocol& protocol, const std::string& clientName, Admin& admin, std::shared_ptr<Queue<Message>> requests, std::function<void(const std::string&)> onNameReceived)
-    : protocol(protocol), clientName(clientName), active(true), admin(admin), requests(std::move(requests)), onNameReceived(std::move(onNameReceived)) {}
+ClientReceiver::ClientReceiver(Protocol& protocol, const std::string& clientName, std::shared_ptr<Queue<Message>> requests, std::function<void(const std::string&)> onNameReceived)
+    : protocol(protocol), clientName(clientName), active(true), requests(std::move(requests)), onNameReceived(std::move(onNameReceived)) {}
 
 ClientReceiver::~ClientReceiver() {}
 

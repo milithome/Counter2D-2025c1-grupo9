@@ -1,7 +1,7 @@
 #ifndef STORE_H
 #define STORE_H
 
-#include "structures.h"
+#include "../../common/structures.h"
 #include <utility>
 #include <vector>
 

@@ -1,9 +1,9 @@
 #ifndef SERVER_STRUCTURES_H
 #define SERVER_STRUCTURES_H
 
-#include "../common/communication/protocol.h"
-#include "clientReceiver.h"
-#include "clientSender.h"
+#include "common/communication/protocol.h"
+#include "receiver&sender/clientReceiver.h"
+#include "receiver&sender/clientSender.h"
 
 struct ClientChannels {
     std::string name;

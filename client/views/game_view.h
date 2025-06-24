@@ -3,9 +3,8 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2pp/SDL2pp.hh>
-#include "common/game.h"
-#include "common/player.h"
-
+#include <random>
+#include "../../common/structures.h"
 
 // ../assets/
 

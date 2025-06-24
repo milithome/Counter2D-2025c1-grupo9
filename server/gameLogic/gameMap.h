@@ -2,7 +2,7 @@
 #define GAMEMAP_H
 
 #include "gameConstants.h"
-#include "structures.h"
+#include "../../common/structures.h"
 #include <cmath>
 #include <utility>
 #include <vector>

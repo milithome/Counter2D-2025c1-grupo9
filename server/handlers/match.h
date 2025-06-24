@@ -3,12 +3,12 @@
 
 #include <string>
 #include <unordered_set>
-#include "../common/utilities/thread.h"
-#include "admin.h"
+#include "common/utilities/thread.h"
+#include "server/admin.h"
 #include "common/utilities/queue.h"
 #include "common/utilities/config.h"
 #include "common/structures.h"
-#include "../common/game.h"
+#include "server/gameLogic/game.h"
 
 class Match : public Thread {
 public:
