@@ -57,6 +57,8 @@ private:
     QWidget* createCtSkinsColumn(const std::unordered_map<ctSkin, QString>& imagePaths);
     QWidget* createTSkinsColumn(const std::unordered_map<tSkin, QString>& imagePaths);
     QPushButton* createSkinButton(const QString& imagePath);
+
+    QStringList getMaps();
     
     void addPlayerToList(const std::string& playerName);
 };
