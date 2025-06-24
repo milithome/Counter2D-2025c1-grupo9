@@ -37,6 +37,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QProcess>
+#include <QShortcut>
 
 
 
@@ -80,7 +81,7 @@ private:
 
     QStackedWidget* stackedWidget;
 
-    QWidget *menuInicialWidget;   // vista Ingreso de data
+    QWidget *menuInicialWidget;   // vista Ingreso de
     QWidget *seleccionSpawnPoints; // vista spawn
     QWidget *editorMapaWidget;    // vista editarMapaNuevo
     QWidget *editorMapaExistenteWidget; // vista editarMapaExistente
@@ -88,13 +89,14 @@ private:
     ModoEditor modo;
     QWidget *centralWidget;
     QLineEdit *nombre_mapa;
+    QLabel* tituloCantJugadores;
     QLineEdit *cant_jugadores;
     
     QPushButton *editar_mapa_btn;
     QPushButton *volver_menu_btn;
 
-    QString nombreArchivoActual;  // Para guardar el nombre del archivo YAML actual
-    QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
+    QString nombreArchivoActual;  
+    QString rutaArchivoActual;    
 
 
     void configurarVistaSegunModo(ModoEditor modo);
@@ -118,16 +120,15 @@ private:
     QHBoxLayout* iconosLayoutSpawns = nullptr;
     QSignalMapper* iconMapperSpawns = nullptr;
 
-    QVector<QVector<QLabel*>> grillasCeldasSpawns; // Grilla de celdas para spawns
+    QVector<QVector<QLabel*>> grillasCeldasSpawns; 
 
-    QVector<QVector<int>> matrizGrillaSpawns; // Matriz para almacenar las coordenadas de spawns
+    QVector<QVector<int>> matrizGrillaSpawns;
 
-    QList<ClickableLabel*> iconosActivosSpawns; // Para mantener referencia a los íconos activos
-
+    QList<ClickableLabel*> iconosActivosSpawns; 
     QPair<int, int> coordenadasSeleccionadasSpawns;
 
 
-    ClickableLabel* iconoSeleccionadoSpawns = nullptr; // Ícono actualmente seleccionado
+    ClickableLabel* iconoSeleccionadoSpawns = nullptr; 
 
     QPushButton* guardarSpawnBtn;
 
@@ -153,27 +154,25 @@ private:
     QMenu *fileMenu;
     QAction *guardarAction;
     QAction *guardarSalirAction;
-    QAction *borrarAction;
-    QAction *borrarTodoAction;
 
     QComboBox* categoriaCombo;
 
-    QString bloqueSeleccionado; // Recurso del bloque elegido
+    QString bloqueSeleccionado; 
 
     QSignalMapper* iconMapper = nullptr;
-    QHBoxLayout* iconosLayout = nullptr;  // Layout solo para íconos
+    QHBoxLayout* iconosLayout = nullptr;  
     
-    QPixmap pixmapSeleccionado;              // Pixmap del bloque seleccionado
-    QList<ClickableLabel*> iconosActivos; // Para mantener referencia a los íconos activos
+    QPixmap pixmapSeleccionado;             
+    QList<ClickableLabel*> iconosActivos; 
 
-    QVector<QVector<QLabel*>> grillaCeldas; // Grilla del mapa
+    QVector<QVector<QLabel*>> grillaCeldas;
 
-    QVector<QVector<QPair<int, int>>> matrizGrilla; // Matriz para almacenar las coordenadas
+    QVector<QVector<QPair<int, int>>> matrizGrilla; 
     QPair<int, int> coordenadasSeleccionadas;
 
     QGridLayout* gridLayout = nullptr;
 
-    ClickableLabel* iconoSeleccionado = nullptr; // Ícono actualmente seleccionado
+    ClickableLabel* iconoSeleccionado = nullptr;
 
 
     bool eventEditar(QObject* obj, QEvent* event);
@@ -209,7 +208,6 @@ private:
 
     void cargarArchivosYamlEnComboBox(QComboBox* comboBox);
     void cargarMatrizDesdeYaml();
-    //void asignarIconoACelda(QLabel* celda, const QPixmap& pixmap, int fila, int columna);
     MapData crearMapData();
     void diagnosticarDirectorio();
     void limpiarGrillaExistente();
