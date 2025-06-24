@@ -1078,7 +1078,7 @@ void EditorWindow::actualizarOpcionesDisponibles()
     // Solo actualizar si las opciones han cambiado
     if (opcionesActuales != opcionesNecesarias) {
         // Bloquear señales para evitar triggers innecesarios
-        bool señalesBlocked = opciones->blockSignals(true);
+        bool senalesBlocked = opciones->blockSignals(true);
         
         opciones->clear();
         opciones->addItems(opcionesNecesarias);
@@ -1094,7 +1094,7 @@ void EditorWindow::actualizarOpcionesDisponibles()
         }
         
         // Restaurar señales
-        opciones->blockSignals(señalesBlocked);
+        opciones->blockSignals(senalesBlocked);
     }
     
     // Verificar si la selección actual sigue siendo válida
