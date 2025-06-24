@@ -1,6 +1,6 @@
 #include "admin.h"
-#include "match.h"
-#include "menu.h"
+#include "server/handlers/match.h"
+#include "server/handlers/menu.h"
 
 Admin::Admin(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 
@@ -63,7 +63,6 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
     client->receiver = std::make_shared<ClientReceiver>(
         client->protocol,
         client->channels.name,
-        *this,
         client->channels.requests,
         [this, client](const std::string& name) {
             if (name == "") {
@@ -88,7 +87,6 @@ std::shared_ptr<Client> Admin::createClient(Protocol&& protocol) {
             client->sender = std::make_shared<ClientSender>(
                 client->protocol,
                 client->channels.name,
-                *this,
                 client->channels.responses
             );
             client->sender->start();

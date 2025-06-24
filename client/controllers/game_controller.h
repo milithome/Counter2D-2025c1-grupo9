@@ -3,8 +3,6 @@
 
 #include "client/views/game_sound_handler.h"
 #include "client/views/game_view.h"
-#include "common/game.h"
-#include "common/player.h"
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2/SDL.h>
 #include <unordered_map>

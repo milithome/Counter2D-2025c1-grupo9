@@ -44,11 +44,6 @@ bool Game::addPlayer(const std::string &name) {
   return false;
 }
 
-float Game::randomFloatInRange(float min, float max) {
-  return min + static_cast<float>(std::rand()) /
-                   (static_cast<float>(RAND_MAX) + 1) * (max - min);
-}
-
 void Game::placePlayerInSpawnTeam(Player &player) {
   std::vector<std::tuple<int, int, bool>> &spawn =
       (player.role == Role::COUNTER_TERRORIST) ? spawnTeamCounter

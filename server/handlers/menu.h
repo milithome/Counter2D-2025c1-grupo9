@@ -4,12 +4,12 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "../common/communication/protocol.h"
-#include "../common/structures.h"
-#include "admin.h"
+#include "common/communication/protocol.h"
+#include "common/structures.h"
+#include "server/admin.h"
 #include "common/utilities/thread.h"
 #include "common/utilities/queue.h"
-#include "serverStructures.h"
+#include "server/serverStructures.h"
 
 class Menu : public Thread {
 public:

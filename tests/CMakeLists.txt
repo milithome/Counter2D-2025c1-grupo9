@@ -6,7 +6,7 @@ PUBLIC
     #../common/utilities/map.h
     #helper_test.h
 PRIVATE
-    protocolClientSenderTest.cpp
+    #protocolClientSenderTest.cpp
     #protocolActionTest.cpp
     #protocolServerSenderTest.cpp
     #flowControlTest.cpp

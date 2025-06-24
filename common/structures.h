@@ -9,6 +9,13 @@
 #include <variant>
 #include <vector>
 
+#define PLAYER_WIDTH 0.7f
+#define PLAYER_HEIGHT 0.7f
+#define WEAPON_WIDTH 0.7f
+#define WEAPON_HEIGHT 0.7f
+#define BOMB_WIDTH 0.7f
+#define BOMB_HEIGHT 0.7f
+
 // Tipos de mensajes que pueden enviarse
 enum Type {
   NAME,            // mandar name
