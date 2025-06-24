@@ -209,7 +209,7 @@ private:
     QVector<QVector<int>> matrizGame;
     QVector<QVector<QLabel*>> grillaCeldasExistente;
     void cargarArchivosYamlEnComboBox(QComboBox* comboBox);
-    //void cargarMatrizDesdeYaml(const std::string& pathYaml);
+    void //cargarMatrizDesdeYaml(const std::string& pathYaml);
     void cargarGrillaMapaExistente();
     void asignarIconoACelda(QLabel* celda, const QPair<int, int>& coordenadas);
     MapData crearMapData();
