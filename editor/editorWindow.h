@@ -36,6 +36,7 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QProcess>
 
 
 
@@ -79,10 +80,10 @@ private:
 
     QStackedWidget* stackedWidget;
 
-    QWidget *menuInicialWidget;   // vista 1
-    QWidget *seleccionSpawnPoints; // vista 2
-    QWidget *editorMapaWidget;    // vista 3
-    QWidget *editorMapaExistenteWidget; // vista 4
+    QWidget *menuInicialWidget;   // vista Ingreso de data
+    QWidget *seleccionSpawnPoints; // vista spawn
+    QWidget *editorMapaWidget;    // vista editarMapaNuevo
+    QWidget *editorMapaExistenteWidget; // vista editarMapaExistente
 
     ModoEditor modo;
     QWidget *centralWidget;
@@ -198,21 +199,22 @@ private:
 
     //-------------------------------------------------------------------------
 
+    QString comboBoxStyle;
 
     QComboBox* mapasExistentes;
-    QString pathMapa;
-    QPixmap tiles = QPixmap(":/assets/gfx/tiles/dust.bmp");
+
+    QPixmap tiles = QPixmap("/var/taller/gfx/tiles/dust.bmp");
 
     QSet<QPair<int, int>> solid_blocks = {{2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},};
 
-    QVector<QVector<QPair<int, int>>> matrizTiles;
-    QVector<QVector<int>> matrizGame;
-    QVector<QVector<QLabel*>> grillaCeldasExistente;
     void cargarArchivosYamlEnComboBox(QComboBox* comboBox);
-    void //cargarMatrizDesdeYaml(const std::string& pathYaml);
-    void cargarGrillaMapaExistente();
-    void asignarIconoACelda(QLabel* celda, const QPair<int, int>& coordenadas);
+    void cargarMatrizDesdeYaml();
+    //void asignarIconoACelda(QLabel* celda, const QPixmap& pixmap, int fila, int columna);
     MapData crearMapData();
+    void diagnosticarDirectorio();
+    void limpiarGrillaExistente();
+    void crearGrillaVisual(int filas, int columnas);
+    void actualizarGrillaVisualDesdeMatriz();
 
 
 protected:
