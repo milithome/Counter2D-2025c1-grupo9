@@ -1,7 +1,12 @@
 #ifndef EDITORWINDOW_H
 #define EDITORWINDOW_H
 
-
+#include <yaml-cpp/yaml.h>
+#include <QPair>
+#include <QVector>
+#include <QFile>
+#include <QString>
+#include <fstream>
 #include <QMainWindow>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -35,23 +40,14 @@
 
 
 #include "ClickableLabel.h"
+#include "common/utilities/map.h"
+
 
 enum ModoEditor {
     CrearNuevoMapa,
     EditarMapaExistente
 };
 
-enum TipoGrid { GRID_TERRENO, GRID_SPAWNS };
-
-struct dataMap{
-    QString nombreMapa;
-    int filas;
-    int columnas;
-    int playersMax;
-    int cantZonaPlantable;
-    //QVector<QVector<QPair<int, int>>> matrizG; // Matriz de bloques
-    //QVector<QVector<int>> matrizSpawns; // Matriz de coordenadas de spawns
-};
 
 const int MIN_FILAS = 20;
 const int MAX_FILAS = 55;
@@ -86,6 +82,7 @@ private:
     QWidget *menuInicialWidget;   // vista 1
     QWidget *seleccionSpawnPoints; // vista 2
     QWidget *editorMapaWidget;    // vista 3
+    QWidget *editorMapaExistenteWidget; // vista 4
 
     ModoEditor modo;
     QWidget *centralWidget;
@@ -95,7 +92,6 @@ private:
     QPushButton *editar_mapa_btn;
     QPushButton *volver_menu_btn;
 
-    dataMap datosMapa; // Estructura para almacenar los datos del mapa
     QString nombreArchivoActual;  // Para guardar el nombre del archivo YAML actual
     QString rutaArchivoActual;    // Para guardar la ruta completa del archivo
 
@@ -150,7 +146,7 @@ private:
 
     void crearIconosZonaBomba();
 
-    void inicializarEditorMapa(int filas, int columnas);
+    void inicializarEditorMapa(int filas, int columnas, bool esNuevoMapa);
 
     QMenuBar *miMenuBar;
     QMenu *fileMenu;
@@ -198,7 +194,27 @@ private:
 
     void crearArchivoYamlInicial();
     void guardarProgresoEnYaml();
-   
+
+
+    //-------------------------------------------------------------------------
+
+
+    QComboBox* mapasExistentes;
+    QString pathMapa;
+    QPixmap tiles = QPixmap(":/assets/gfx/tiles/dust.bmp");
+
+    QSet<QPair<int, int>> solid_blocks = {{2,4},{2,5},{2,6},{2,7},{9,2},{9,3},{9,4},};
+
+    QVector<QVector<QPair<int, int>>> matrizTiles;
+    QVector<QVector<int>> matrizGame;
+    QVector<QVector<QLabel*>> grillaCeldasExistente;
+    void cargarArchivosYamlEnComboBox(QComboBox* comboBox);
+    //void cargarMatrizDesdeYaml(const std::string& pathYaml);
+    void cargarGrillaMapaExistente();
+    void asignarIconoACelda(QLabel* celda, const QPair<int, int>& coordenadas);
+    MapData crearMapData();
+
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;
