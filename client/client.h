@@ -55,10 +55,6 @@ public:
             // Esto es un hack, es para q el hilo sender salga del queue.pop() y tire error asi se cierra correctamente
             send_queue.try_push(std::make_shared<LeaveEvent>());
         } catch (...) {}
-        try {
-            recv_queue.close();
-            send_queue.close();
-        } catch (...) {}
         
         kill();
         receiver.join();

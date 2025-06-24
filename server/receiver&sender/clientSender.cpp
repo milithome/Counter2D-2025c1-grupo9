@@ -12,7 +12,8 @@ void ClientSender::run() {
             protocol.send_response(response);
         }
     } catch (const ClosedQueue&) {
-        std::cout << "[" << clientName << "] Sender closed." << std::endl;
+        //std::cout << "[" << clientName << "] Sender closed." << std::endl;
+        return;
     } catch (...) {
         std::cerr << "[" << clientName << "] Unknown exception in ClientSender." << std::endl;
     }

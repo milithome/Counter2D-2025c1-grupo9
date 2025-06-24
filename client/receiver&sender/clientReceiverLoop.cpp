@@ -9,6 +9,8 @@ void RecvLoop::run() {
             Response msg = protocol.recv_response();
             queue.push(msg);
         }
+    } catch(const ClosedQueue& e) {
+        stop();
     } catch (const ClientClosedConnection& e) {
         stop();
         queue.close();
