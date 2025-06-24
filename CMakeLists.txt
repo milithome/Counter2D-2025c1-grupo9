@@ -161,9 +161,6 @@ if(TALLER_CLIENT)
             yaml-cpp
     )
 
-    qt_add_resources(RESOURCES resources.qrc)
-    target_sources(taller_client PRIVATE ${RESOURCES})
-
 endif()
 
 if(TALLER_SERVER)
