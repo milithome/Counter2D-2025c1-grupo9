@@ -300,6 +300,8 @@ void GameController::updateGameState(StateGame new_state) {
                     float dead_player_y = entity.y;
                     float distance = std::sqrt((player_x - dead_player_x) * (player_x - dead_player_x) + (player_y - dead_player_y) * (player_y - dead_player_y));
                     soundHandler.playDeathSound(distance);
+                    Action action{ActionType::MOVE, MoveAction{0, 0}};
+                    action_queue.push(action);
                 }
                 break;
             }
@@ -357,18 +359,18 @@ void GameController::updateGameState(StateGame new_state) {
         if (new_state.phase == END_ROUND) {
             view.showRoundEndMessage(new_state.rounds.winner);
         } else if (new_state.phase == END_GAME) {
-            view.showGameEndMessage(new_state.rounds.winner);
+            view.showGameEndMessage(new_state.rounds);
         } else {
             view.showNewPhaseMessage(new_state.phase);
         }
 
-        BombData data = std::get<BombData>(state.entities[bomb_index].data);
-        if (new_state.phase == END_ROUND && data.state == PLANTED) {
-            view.addBombExplosionEffect(state.entities[bomb_index].x, state.entities[bomb_index].y);
+        // BombData data = std::get<BombData>(new_state.entities[bomb_index].data);
+        if (new_state.phase == END_ROUND && new_state.rounds.winner.typeEndRound == BOMB_EXPLODED) {
+            view.addBombExplosionEffect(new_state.entities[bomb_index].x, new_state.entities[bomb_index].y);
 
             float player_x = newClientPlayer.x;
             float player_y = newClientPlayer.y;
-            float distance = std::sqrt((player_x - state.entities[bomb_index].x) * (player_x - state.entities[bomb_index].x) + (player_y - state.entities[bomb_index].y) * (player_y - state.entities[bomb_index].y));
+            float distance = std::sqrt((player_x - new_state.entities[bomb_index].x) * (player_x - new_state.entities[bomb_index].x) + (player_y - new_state.entities[bomb_index].y) * (player_y - new_state.entities[bomb_index].y));
             soundHandler.playBombSound(distance);
         }
         if (new_state.phase == PURCHASE) {

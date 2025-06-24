@@ -1251,12 +1251,14 @@ void GameView::showRoundEndMessage(RoundWinner winner) {
 }
 
 
-void GameView::showGameEndMessage(RoundWinner winner) {
+void GameView::showGameEndMessage(Rounds rounds) {
     std::string text;
-    if (winner.team == 'a') {
+    if (rounds.roundsWonTeamA > rounds.roundsWonTeamB) {
         text += "Team A won the game! Returning to main menu...";
-    } else {
+    } else if (rounds.roundsWonTeamA < rounds.roundsWonTeamB) {
         text += "Team B won the game! Returning to main menu...";
+    } else {
+        text += "Game ended in a draw! Returning to main menu...";
     }
     on_screen_message_effect = OnScreenMessageEffect{text};
 }

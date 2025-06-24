@@ -5,17 +5,17 @@ server:
 
 game:
   max_players_per_team: 5
-  min_players_per_team: 0
+  min_players_per_team: 1
   rounds_until_role_change: 2 
-  rounds_until_end_game: 4
+  rounds_until_end_game: 5
 
-  max_health: 200
+  max_health: 100
   max_bullets: 30
 
   speed: 4.0
-  purchase_duration: 10.0
+  purchase_duration: 15.0
   bomb_duration: 30.0
-  time_to_plant: 30.0
+  time_to_plant: 60.0
   time_until_plant: 3.0
   time_until_defuse: 3.0
   time_until_new_round: 5.0
