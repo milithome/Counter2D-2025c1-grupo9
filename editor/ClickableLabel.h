@@ -26,7 +26,6 @@ public:
         return seleccionado;
     }
 
-    // NUEVAS FUNCIONES PARA DRAG AND DROP
     void setDragData(const QPixmap& pixmap, int fila, int columna) {
         dragPixmap = pixmap;
         dragFila = fila;
@@ -50,7 +49,6 @@ protected:
         QLabel::mousePressEvent(event);
     }
 
-    // NUEVA FUNCIÓN PARA MANEJAR EL DRAG
     void mouseMoveEvent(QMouseEvent* event) override {
         if (!(event->buttons() & Qt::LeftButton) || !isDraggable)
             return;
@@ -58,22 +56,18 @@ protected:
         if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance())
             return;
 
-        // Crear el drag
         QDrag* drag = new QDrag(this);
         QMimeData* mimeData = new QMimeData;
 
-        // Crear datos personalizados para el drag
         QByteArray itemData;
         QDataStream dataStream(&itemData, QIODevice::WriteOnly);
         dataStream << dragFila << dragColumna;
         mimeData->setData("application/x-tile-coords", itemData);
 
-        // Establecer el pixmap para mostrar durante el drag
         drag->setMimeData(mimeData);
         drag->setPixmap(dragPixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         drag->setHotSpot(QPoint(16, 16)); // Centro del tile
 
-        // Ejecutar el drag
         Qt::DropAction dropAction = drag->exec(Qt::CopyAction);
         Q_UNUSED(dropAction);
     }
@@ -81,7 +75,6 @@ protected:
 private:
     bool seleccionado;
     
-    // NUEVAS VARIABLES PARA DRAG AND DROP
     QPoint dragStartPosition;
     QPixmap dragPixmap;
     int dragFila;
