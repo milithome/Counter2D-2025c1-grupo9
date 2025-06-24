@@ -59,12 +59,13 @@ void ClientReceiver::receiveMessagesLoop() {
             }
         }
     } catch (const ClientClosedConnection&) {
-        std::cout << "[" << clientName << "] Receiver closed because the client closed the connection" << std::endl;
+        //std::cout << "[" << clientName << "] Receiver closed because the client closed the connection" << std::endl;
         handleDisconnection();
     } catch (const ServerClosedConnection&) {
-        std::cout << "[" << clientName << "] Receiver closed because the server closed the connection." << std::endl;
+        //std::cout << "[" << clientName << "] Receiver closed because the server closed the connection." << std::endl;
+        return;
     } catch (...) {
-        std::cerr << "[" << clientName << "] Unknown error in receiveMessagesLoop()." << std::endl;
+        //std::cerr << "[" << clientName << "] Unknown error in receiveMessagesLoop()." << std::endl;
         handleDisconnection();
     }
 }

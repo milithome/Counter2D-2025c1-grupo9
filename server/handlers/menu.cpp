@@ -39,7 +39,8 @@ void Menu::run()
         }
         admin.removeMenu(client->channels.name);
     } catch (const ClosedQueue&) {
-        std::cout << "[" << client->channels.name << "]" << " Closing Menu." << std::endl;
+        //std::cout << "[" << client->channels.name << "]" << " Closing Menu." << std::endl;
+        return;
     } catch (...) {
         std::cerr << "Unknown exception in Menu." << std::endl;
     }

@@ -42,7 +42,8 @@ void Match::lobbyLoop() {
             updateLobbyReadyStatus(lobbyReadySent);
         }
     } catch (const ClosedQueue&) {
-        std::cout << "[" << name << "] Closing Lobby." << std::endl;
+        //std::cout << "[" << name << "] Closing Lobby." << std::endl;
+        return;
     } catch (...) {
         std::cerr << "Unknown exception in Lobby." << std::endl;
     }
@@ -255,7 +256,8 @@ void Match::gameLoop() {
         runGameLoop(game);
 
     } catch (const ClosedQueue&) {
-        std::cout << "[" << name << "]" << " Closing Game." << std::endl;
+        //std::cout << "[" << name << "]" << " Closing Game." << std::endl;
+        return;
     } catch (...) {
         std::cerr << "Unknown exception in gameLoop." << std::endl;
     }
