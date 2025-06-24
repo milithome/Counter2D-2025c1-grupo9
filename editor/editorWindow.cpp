@@ -1487,7 +1487,7 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
     
-    rutaArchivoActual = QDir::cleanPath(directorioMaps + "/" + nombreArchivo);
+    rutaArchivoActual = QDir::cleanPath(directorioMaps + "/" + nombreArchivo + extension);
     
     QFile archivo(rutaArchivoActual);
     if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
