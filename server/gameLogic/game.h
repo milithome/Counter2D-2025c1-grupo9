@@ -3,7 +3,6 @@
 #include "gameConstants.h"
 #include "gameMap.h"
 #include "player.h"
-#include "store.h"
 #include "../../common/structures.h"
 #include "team.h"
 #include <algorithm>
@@ -24,7 +23,7 @@ public:
   void update(float deltaTime);
   void shotQueueClear();
   void execute(const std::string &name, Action action);
-  bool isRunning();
+  bool isRunning() const;
   void stop();
 
 private:
@@ -41,7 +40,7 @@ private:
   bool gameStart = true;
   std::vector<DroppedWeapon> droppedWeapons;
   bool running = true;
-  float time;
+  float time = 0.0f;
   Spike spike;
   Rounds rounds;
   RoundWinner winner;
@@ -71,18 +70,18 @@ private:
   std::optional<std::pair<float, float>>
   rayHitsWall(float x0, float y0, float x1, float y1, float maxDist) const;
   void buyWeapon(const std::string &name, WeaponName weaponName);
-  void buyBullet(const std::string &name, WeaponType weaponName);
-  void updatePlayerMovement(Player &player, float deltaTime);
+  void buyBullet(const std::string &name, WeaponType type);
+  void updatePlayerMovement(Player &player, float deltaTime) const;
   void updateDefusing(const std::string &name, float deltaTime);
   void updatePlanting(const std::string &name, float deltaTime);
   void shoot(const std::string &shooterName, float deltaTime);
   void applyDamageToPlayer(const Player &shooter, Player &target,
                            float distance);
   std::tuple<float, float, float, float>
-  getPlayerHitbox(const Player &player) const;
-  PlayerCellBounds getCellBounds(float x, float y, float width,
-                                 float height) const;
-  bool rectsOverlap(float ax, float ay, float aw, float ah, float bx, float by,
+  static getPlayerHitbox(const Player &player);
+  static PlayerCellBounds getCellBounds(float x, float y, float width,
+                                 float height);
+  static bool rectsOverlap(float ax, float ay, float aw, float ah, float bx, float by,
                     float bw, float bh);
   void movePlayer(const std::string &name, float vx, float vy);
   void stopShooting(const std::string &name);
@@ -91,15 +90,16 @@ private:
   void updateGamePhase(float deltaTime);
   void updatePlayers(float deltaTime);
   void updateRounds();
-  char checkRoundWinner();
+  char checkRoundWinner() const;
   void handleEndRound(char winnerTeam, TypeEndRound type);
   void handlePlayerDeath(Player &target); 
   void placeTeamsInSpawn();
-  void subtractAmmo(Player &shooter, int bullets);
+  static void subtractAmmo(Player &shooter, int bullets);
   Bullet simulateBullet(Player &shooter);
   void updateRotation(const std::string &name, float currentRotation);
   Entity getPlayerState(const std::string &name);
-  Entity getBombState();
-  Entity getDroppedWeaponState(const DroppedWeapon &dw);
+  Entity getBombState() const;
+  static Entity getDroppedWeaponState(const DroppedWeapon &dw);
+  int getWeaponPrice(WeaponName name);
 };
 #endif

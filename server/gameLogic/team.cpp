@@ -1,19 +1,15 @@
 #include "team.h"
 
-Team::Team(GameRules &gameRules) : gameRules(gameRules) {}
+Team::Team(GameRules &gameRules)
+    : gameRules(gameRules), currentRole(Role::TERRORIST), playersAlive(0) {}
 
 void Team::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);
 }
 
 int Team::getPlayersAlive() const {
-  int aliveCount = 0;
-  for (const auto &player : players) {
-    if (player->alive) {
-      aliveCount++;
-    }
-  }
-  return aliveCount;
+  return std::count_if(players.begin(), players.end(),
+                       [](const std::shared_ptr<Player> &p) { return p->alive; });
 }
 
 void Team::invertRole() {
@@ -57,7 +53,7 @@ void Team::setRole(Role role) {
   }
 }
 
-Role Team::getRole() { return currentRole; }
+Role Team::getRole() const { return currentRole; }
 
 void Team::restartPlayersAlive() {
   playersAlive = players.size();
@@ -67,4 +63,4 @@ void Team::restartPlayersAlive() {
   }
 }
 
-int Team::getTeamSize() { return players.size(); }
+int Team::getTeamSize() const { return players.size(); }

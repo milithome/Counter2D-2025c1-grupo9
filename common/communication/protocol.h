@@ -10,7 +10,7 @@
 
 class Protocol {
 public:
-    Protocol(Socket skt);
+    explicit Protocol(Socket skt);
     ~Protocol();
     Protocol(Protocol&& other) noexcept;
     Protocol& operator=(Protocol&& other) noexcept;

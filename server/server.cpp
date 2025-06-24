@@ -1,6 +1,6 @@
 #include "server.h"
 
-Server::Server(ServerConfig config) : admin(config), acceptor(config.port, admin) {} 
+Server::Server(const ServerConfig& config) : admin(config), acceptor(config.port, admin) {} 
 
 Server::~Server() {}
 

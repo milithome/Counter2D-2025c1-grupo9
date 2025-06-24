@@ -1,10 +1,13 @@
 #include "match.h"
 
-Match::Match(std::string& name, Admin& admin) : name(name), admin(admin), inLobby(true), inGame(false), toMatch(std::make_shared<Queue<Message>>(100)) {
-    minPlayers = gameRules.min_players_per_team*2;
-    maxPlayers = gameRules.max_players_per_team*2;
+Match::Match(std::string& name, Admin& admin)
+    : name(name), admin(admin), inLobby(true), inGame(false),
+      toMatch(std::make_shared<Queue<Message>>(100)),
+      disconnectedClients(0)
+{
+    minPlayers = gameRules.min_players_per_team * 2;
+    maxPlayers = gameRules.max_players_per_team * 2;
 }
-
 Match::~Match() {}
 
 void Match::addClient(std::shared_ptr<Client> client) {
@@ -30,8 +33,8 @@ void Match::run() {
 }
 
 void Match::lobbyLoop() {
-    bool lobbyReadySent = false;
     try {
+        bool lobbyReadySent = false;
         while (inLobby) {
             Message message = toMatch->pop();
             handleLobbyMessage(message);
@@ -270,7 +273,7 @@ void Match::setupGame(Game& game) {
 }
 
 void Match::runGameLoop(Game& game) {
-    auto& ServerConfig = admin.getServerConfig();
+    const auto& ServerConfig = admin.getServerConfig();
     const std::chrono::milliseconds TICK_DURATION(1000/ServerConfig.tick_rate);
     const uint MAX_EVENTS_PER_CLICK = ServerConfig.max_events_per_tick;
 
@@ -331,7 +334,7 @@ void Match::endGame() {
     }
 }
 
-void Match::broadcastInitialData(const MapData& mapData, GameRules& gameRules) {
+void Match::broadcastInitialData(const MapData& mapData, const GameRules& gameRules) {
     std::vector<WeaponInfo> weaponsInfo;
     std::vector<WeaponName> shopWeapons;
 

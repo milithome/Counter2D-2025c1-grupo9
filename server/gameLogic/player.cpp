@@ -2,21 +2,39 @@
 #include <iostream>
 
 Player::Player(const std::string &name, GameRules &gameRules)
-    : gameRules(gameRules), name(name), x(0),
-      y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
-      role(Role::COUNTER_TERRORIST), rotation(0) {
-  money = gameRules.initial_money;
-  bulletsPrimary = gameRules.initial_primary_ammo;
-  bulletsSecondary = gameRules.initial_secondary_ammo;
-  health = gameRules.max_health;
+    : gameRules(gameRules),
+      name(name),
+      x(0),
+      y(0),
+      hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
+      role(Role::COUNTER_TERRORIST),
+      money(gameRules.initial_money),
+      equipped(gameRules.weapons.at(WeaponName::GLOCK)),  // Inicializo con alguna arma válida (por ejemplo secondaryWeapon)
+      typeEquipped(WeaponType::SECONDARY),
+      knife(gameRules.weapons.at(WeaponName::KNIFE)),
+      primaryWeapon(gameRules.weapons.at(WeaponName::NONE)),
+      secondaryWeapon(gameRules.weapons.at(WeaponName::GLOCK)),
+      bulletsPrimary(gameRules.initial_primary_ammo),
+      bulletsSecondary(gameRules.initial_secondary_ammo),
+      rotation(0),
+      health(gameRules.max_health),
+      vx(0),
+      vy(0),
+      aceleration(0),
+      hasTheSpike(true),
+      shooting(false),
+      planting(false),
+      defusing(false),
+      alreadyShot(false),
+      shootCooldown(0.0f),
+      timeLastBullet(0.0f),
+      burstFireBullets(1),
+      lastVx(0.0f),
+      lastVy(0.0f),
+      slideTimer(0.0f),
+      alive(true)
+{}
 
-  knife = gameRules.weapons[WeaponName::KNIFE];
-  primaryWeapon = gameRules.weapons[WeaponName::NONE];
-  secondaryWeapon = gameRules.weapons[WeaponName::GLOCK];
-
-  typeEquipped = WeaponType::SECONDARY;
-  equipped = secondaryWeapon;
-}
 
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
   float totalSpeed = gameRules.speed + aceleration;
@@ -45,7 +63,7 @@ void Player::move(float deltaTime, bool onlyX, bool onlyY) {
   hitbox.y = this->y;
 }
 
-std::pair<float, float> Player::tryMove(float deltaTime) {
+std::pair<float, float> Player::tryMove(float deltaTime) const {
   float dirX =
       (vx != 0.0f || vy != 0.0f) ? vx : ((slideTimer > 0.0f) ? lastVx : 0.0f);
   float dirY =
@@ -153,9 +171,9 @@ std::tuple<float, float, float, float, float, float> Player::shoot() {
                          angle);
 }
 
-int Player::getBulletsPerShoot() { return equipped.bulletsPerShoot; }
+int Player::getBulletsPerShoot() const { return equipped.bulletsPerShoot; }
 
-float Player::getSpreadAngle() { return equipped.spreadAngle; }
+float Player::getSpreadAngle() const { return equipped.spreadAngle; }
 
 void Player::changeWeapon(WeaponType newEquippedWeapon) {
   if (newEquippedWeapon == WeaponType::PRIMARY) {
@@ -190,7 +208,7 @@ void Player::resetTimeLastBullet() { timeLastBullet = 0; }
 
 void Player::updateBurstFireBullets(int value) { burstFireBullets += value; }
 
-int Player::getBullets() {
+int Player::getBullets() const {
   if (typeEquipped == WeaponType::PRIMARY) {
     return bulletsPrimary;
   } else if (typeEquipped == WeaponType::SECONDARY) {

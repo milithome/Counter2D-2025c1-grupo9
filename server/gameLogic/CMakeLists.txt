@@ -10,7 +10,6 @@ target_sources(taller_server
     game.h
     player.h
     team.h
-    store.h
     gameMap.h
     gameConstants.h
     )

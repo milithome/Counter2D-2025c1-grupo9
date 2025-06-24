@@ -6,6 +6,7 @@
 #include <cmath>
 #include <random>
 #include <string>
+
 class Player {
 private:
   GameRules &gameRules;
@@ -40,6 +41,7 @@ public:
   float lastVy = 0.0f;
   float slideTimer = 0.0f;
   bool alive = true;
+
   void changeWeapon(WeaponType newEquippedWeapon);
   void move(float deltaTime, bool onlyX, bool onlyY);
   void replaceWeapon(WeaponName weapon);
@@ -49,7 +51,9 @@ public:
   void resetTimeLastBullet();
   void restoreHealth();
   std::tuple<float, float, float, float, float, float> shoot();
-  std::pair<float, float> tryMove(float deltaTime);
+
+  std::pair<float, float> tryMove(float deltaTime) const;
+
   void updateAceleration(float deltaTime);
   void updateBurstFireBullets(int value);
   void updateCooldown(float deltaTime);
@@ -57,13 +61,17 @@ public:
   void updateMoney(int value);
   void updateMovement(float deltaTime, bool onlyX, bool onlyY);
   void updateTimeLastBullet(float deltaTime);
-  void updateVelocity(float vx, float vy);
+
+  void updateVelocity(float newVx, float newVy);
+
   void updatePrimaryBullets(int value);
   void updateSecondaryBullets(int value);
-  int getBullets();
-  int getBulletsPerShoot();
+  int getBullets() const;
+  int getBulletsPerShoot() const;
   std::pair<float, float> getDamageRange() const;
-  float getSpreadAngle();
+  float getSpreadAngle() const;
+
   void setPosition(float x, float y);
 };
+
 #endif

@@ -16,10 +16,10 @@ public:
   explicit Team(GameRules &gameRules);
 
   void addPlayer(std::shared_ptr<Player> player);
-  void setRole(Role rol);
+  void setRole(Role role);
   void invertRole();
-  Role getRole();
-  int getTeamSize();
+  Role getRole() const;
+  int getTeamSize() const;
   void restartPlayersAlive();
   int getPlayersAlive() const;
   void resetSpikeCarrier();

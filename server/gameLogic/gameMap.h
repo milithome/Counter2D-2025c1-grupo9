@@ -12,9 +12,9 @@ private:
   std::vector<std::vector<CellType>> map;
 
 public:
-  GameMap(std::vector<std::vector<CellType>> game_map);
+  explicit GameMap(std::vector<std::vector<CellType>> game_map);
 
-  std::vector<std::tuple<int, int, bool>> findSpawnTeam(bool teamA);
+  std::vector<std::tuple<int, int, bool>> findSpawnTeam(bool Terrorist);
 
   bool isColliding(PlayerCellBounds bounds) const;
 

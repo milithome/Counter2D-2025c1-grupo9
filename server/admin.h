@@ -16,7 +16,7 @@ class Menu;
 
 class Admin {
 public:
-    explicit Admin(ServerConfig config);
+    explicit Admin(ServerConfig serverConfig);
     ~Admin();
  
     void stop();

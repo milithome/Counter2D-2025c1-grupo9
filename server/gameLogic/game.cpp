@@ -75,12 +75,17 @@ void Game::resetSpawn() {
   }
 }
 
-Player &Game::findPlayerByName(const std::string &name) {
-  for (auto &player : players) {
-    if (player->name == name)
-      return *player;
-  }
-  throw std::runtime_error("Player not found");
+Player& Game::findPlayerByName(const std::string& name) {
+    auto it = std::find_if(players.begin(), players.end(),
+        [&name](const std::shared_ptr<Player>& player) {
+            return player->name == name;
+        });
+    
+    if (it != players.end()) {
+        return **it;
+    }
+
+    throw std::runtime_error("Player not found");
 }
 
 void Game::stopShooting(const std::string &name) {
@@ -96,7 +101,7 @@ void Game::movePlayer(const std::string &name, float vx, float vy) {
 
 void Game::plantBomb(const std::string &name) {
   timePlanting = 0.0f;
-  Player &player = findPlayerByName(name);
+  const Player &player = findPlayerByName(name);
   if (!player.hasTheSpike) {
     return;
   }
@@ -147,7 +152,7 @@ void Game::updateDefusing(const std::string &name, float deltaTime) {
 }
 
 std::tuple<float, float, float, float>
-Game::getPlayerHitbox(const Player &player) const {
+Game::getPlayerHitbox(const Player &player) {
   Hitbox hb = player.hitbox;
   float x = player.x;
   float y = player.y;
@@ -157,7 +162,7 @@ Game::getPlayerHitbox(const Player &player) const {
 }
 
 PlayerCellBounds Game::getCellBounds(float x, float y, float width,
-                                     float height) const {
+                                     float height) {
 
   float left = x;
   float right = x + width;
@@ -196,7 +201,7 @@ void Game::defuseBomb(const std::string &name) {
   return;
 }
 
-void Game::updatePlayerMovement(Player &player, float deltaTime) {
+void Game::updatePlayerMovement(Player &player, float deltaTime) const {
   Hitbox hb = player.hitbox;
 
   std::pair<float, float> newPos = player.tryMove(deltaTime);
@@ -240,9 +245,17 @@ void Game::changeWeapon(const std::string &name, WeaponType type) {
   findPlayerByName(name).changeWeapon(type);
 }
 
+int Game::getWeaponPrice(WeaponName name) {
+    auto it = gameRules.weapons.find(name);
+    if (it != gameRules.weapons.end()) {
+        return it->second.price;
+    }
+    return -1;
+}
+
 void Game::buyWeapon(const std::string &name, WeaponName weaponName) {
   Player &player = findPlayerByName(name);
-  int price = Store::getWeaponPrice(weaponName);
+  int price = getWeaponPrice(weaponName);
   if (player.money >= price) {
     player.updateMoney(-price);
     player.replaceWeapon(weaponName);
@@ -263,7 +276,7 @@ void Game::buyBullet(const std::string &name, WeaponType type) {
   }
 }
 
-char Game::checkRoundWinner() {
+char Game::checkRoundWinner() const {
   if (teamA.getPlayersAlive() > 0 && teamB.getPlayersAlive() == 0) {
     return 'a';
   }
@@ -280,7 +293,7 @@ void Game::placeTeamsInSpawn() {
   }
 }
 
-bool Game::isRunning() { return running; }
+bool Game::isRunning() const { return running; }
 
 void Game::stop() { running = false; }
 
@@ -527,9 +540,11 @@ StateGame Game::getState() {
 
   entities.push_back(getBombState());
 
-  for (const DroppedWeapon &dropped : droppedWeapons) {
-    entities.push_back(getDroppedWeaponState(dropped));
-  }
+  std::transform(droppedWeapons.begin(), droppedWeapons.end(),
+                 std::back_inserter(entities),
+                 [this](const DroppedWeapon &dropped) {
+                     return getDroppedWeaponState(dropped);
+                 });
 
   state.entities = entities;
   state.shots = shot_queue;
@@ -538,7 +553,7 @@ StateGame Game::getState() {
   return state;
 }
 
-Entity Game::getBombState(){
+Entity Game::getBombState() const {
   Entity bomb;
   bomb.type = BOMB;
   BombData data;

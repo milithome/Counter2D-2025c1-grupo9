@@ -6,7 +6,7 @@
 
 class Server {
 public:
-    explicit Server(ServerConfig config);
+    explicit Server(const ServerConfig& config);
     ~Server();
 
     void start(std::istream& input = std::cin);

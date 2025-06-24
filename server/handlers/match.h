@@ -53,7 +53,7 @@ private:
     void runGameLoop(Game& game);
     void processMessages(Game& game, uint maxEvents);
     void endGame();
-    void broadcastInitialData(const MapData& mapData, GameRules& gameRules);
+    void broadcastInitialData(const MapData& mapData, const GameRules& gameRules);
     void broadcastGameState(const StateGame& state);
     void handleGameMessage(const Message& message);
 };
