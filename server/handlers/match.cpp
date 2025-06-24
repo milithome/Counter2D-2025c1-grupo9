@@ -186,6 +186,11 @@ void Match::handleDisconnect(const std::string& clientName) {
             break;
         }
     }
+
+    if (clients.size() == 0) {
+        inLobby = false;
+    }
+
     admin.removeClient(clientName);
 }
 

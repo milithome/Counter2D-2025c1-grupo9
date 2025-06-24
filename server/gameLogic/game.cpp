@@ -644,8 +644,8 @@ void Game::updateGamePhase(float deltaTime) {
 
   case Phase::BOMB_DEFUSING:
     roundWinner = checkRoundWinner();
-    if ((roundWinner == 'a' && teamB.getRole() == Role::TERRORIST) ||
-          (roundWinner == 'b' && teamA.getRole() == Role::TERRORIST)) {
+    if ((roundWinner == 'a' && teamA.getRole() == Role::TERRORIST) ||
+          (roundWinner == 'b' && teamB.getRole() == Role::TERRORIST)) {
     
       handleEndRound(roundWinner, TypeEndRound::DEAD_TEAM);
 
