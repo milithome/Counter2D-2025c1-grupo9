@@ -1,18 +1,56 @@
 #include "clientReceiver.h"
+#include "admin.h"
 
 ClientReceiver::ClientReceiver(Protocol& protocol, const std::string& clientName, Admin& admin, std::shared_ptr<Queue<Message>> requests, std::function<void(const std::string&)> onNameReceived)
     : protocol(protocol), clientName(clientName), active(true), admin(admin), requests(std::move(requests)), onNameReceived(std::move(onNameReceived)) {}
 
-ClientReceiver::~ClientReceiver() {
-}
+ClientReceiver::~ClientReceiver() {}
 
 void ClientReceiver::run() {
     try {
-        if (onNameReceived) {
-            clientName = protocol.recv_name();
-            onNameReceived(clientName);
-        }
+        handleClientName();
+    } catch (...) {
+        return;  // Ya se logueó y envió la respuesta de error
+    }
 
+    receiveMessagesLoop();
+}
+
+void ClientReceiver::handleClientName() {
+    try {
+        if (!onNameReceived) return;
+
+        clientName = protocol.recv_name();
+        onNameReceived(clientName);
+
+        protocol.send_response({
+            Type::NAME,
+            0,
+            {},
+            "Client successfully connected"
+        });
+    } catch (const std::exception& e) {
+        handleNameError(e.what());
+        throw; // para que `run()` decida si continúa o no
+    } catch (...) {
+        handleNameError("Unknown error");
+        throw;
+    }
+}
+
+void ClientReceiver::handleNameError(const std::string& errorMsg) {
+    active = false;
+    protocol.send_response({
+        Type::NAME,
+        1,
+        {},
+        "Error with the name: " + errorMsg
+    });
+    std::cerr << "Exception receiving name in ClientReceiver: " << errorMsg << std::endl;
+}
+
+void ClientReceiver::receiveMessagesLoop() {
+    try {
         while (active) {
             Message message = protocol.recv_message();
             message.clientName = clientName;
@@ -20,16 +58,23 @@ void ClientReceiver::run() {
                 std::lock_guard<std::mutex> lock(queueMutex);
                 requests->push(message);
             }
-
-            if (message.type == Type::DISCONNECT) {
-                active = false;
-            }
         }
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in " << clientName << " ClientReceiver: " << e.what() << std::endl;
+    } catch (const ClientClosedConnection&) {
+        std::cout << "[" << clientName << "] Receiver closed because the client closed the connection" << std::endl;
+        handleDisconnection();
+    } catch (const ServerClosedConnection&) {
+        std::cout << "[" << clientName << "] Receiver closed because the server closed the connection." << std::endl;
     } catch (...) {
-        std::cerr << "Unknown exception in ClientReceiver." << std::endl;
+        std::cerr << "[" << clientName << "] Unknown error in receiveMessagesLoop()." << std::endl;
+        handleDisconnection();
     }
+}
+
+void ClientReceiver::handleDisconnection() {
+    requests->push({
+        Type::DISCONNECT,0,"",{}, clientName
+    });
+    std::cout << "[" << clientName << "] Receiver disconnected."<< std::endl;
 }
 
 void ClientReceiver::changeQueue(std::shared_ptr<Queue<Message>> newQueue) {
@@ -39,4 +84,5 @@ void ClientReceiver::changeQueue(std::shared_ptr<Queue<Message>> newQueue) {
 
 void ClientReceiver::stop() {
     active = false;
+    protocol.close();
 }

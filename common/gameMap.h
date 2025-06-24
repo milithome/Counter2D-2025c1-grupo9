@@ -1,28 +1,28 @@
 #ifndef GAMEMAP_H
 #define GAMEMAP_H
 
-#include <vector>
-#include <utility>
+#include "gameConstants.h"
 #include "structures.h"
 #include <cmath>
-#include "gameConstants.h"
+#include <utility>
+#include <vector>
 
 class GameMap {
 private:
-    std::vector<std::vector<CellType>> map;
+  std::vector<std::vector<CellType>> map;
 
 public:
-    GameMap(std::vector<std::vector<CellType>> game_map);
+  GameMap(std::vector<std::vector<CellType>> game_map);
 
-    std::vector<std::tuple<int, int, bool>> findSpawnTeam(bool teamA);
+  std::vector<std::tuple<int, int, bool>> findSpawnTeam(bool teamA);
 
-    bool isColliding(PlayerCellBounds bounds) const;
+  bool isColliding(PlayerCellBounds bounds) const;
 
-    bool isSpikeSite(int row, int col) const;
+  bool isSpikeSite(int row, int col) const;
 
-    bool isValidCell(int row, int col) const;
+  bool isValidCell(int row, int col) const;
 
-    bool isBlocked(int row, int col) const;
+  bool isBlocked(int row, int col) const;
 };
 
 #endif

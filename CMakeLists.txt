@@ -16,7 +16,7 @@ project(taller_tp
     LANGUAGES CXX
     )
 
-option(TALLER_TESTS "Enable / disable tests." ON)
+option(TALLER_TESTS "Enable / disable tests." OFF)
 option(TALLER_CLIENT "Enable / disable client program." ON)
 option(TALLER_SERVER "Enable / disable server program." ON)
 option(TALLER_EDITOR "Enable / disable editor program." ON)
@@ -107,7 +107,7 @@ if(TALLER_CLIENT OR TALLER_EDITOR)
         URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
-    find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Multimedia)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
@@ -134,7 +134,8 @@ if(TALLER_CLIENT)
     add_executable(taller_client ${SOURCES})
 
     # Make them depend on taller_common lib
-    add_dependencies(taller_client taller_common SDL2pp::SDL2pp Qt6::Core Qt6::Gui Qt6::Widgets)
+    add_dependencies(taller_client taller_common SDL2pp::SDL2pp Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Multimedia)
+
 
     # Add source files and enable warnings
     # HEY!! TODO XXX: add more subfolders here
@@ -156,6 +157,7 @@ if(TALLER_CLIENT)
             taller_common
             SDL2pp::SDL2pp
             Qt6::Widgets
+            Qt6::Multimedia
             yaml-cpp
     )
 

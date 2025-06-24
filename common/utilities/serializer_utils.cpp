@@ -79,6 +79,10 @@ namespace Utilities {
     std::string deserialize_string(Socket& skt){
         uint16_t size = deserialize_uint16(skt);
 
+        if (size == 0) {
+            return "";
+        }
+
         std::vector<char> buffer(size);
         if (skt.recvall(buffer.data(), size) == 0) {
             throw std::runtime_error("Error receiving string data");

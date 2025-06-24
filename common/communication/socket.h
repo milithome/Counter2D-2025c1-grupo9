@@ -2,6 +2,7 @@
 #define SOCKET_H
 
 #include <sys/socket.h>
+#include "connectioneExceptions.h"
 
 /*
  * TDA Socket.

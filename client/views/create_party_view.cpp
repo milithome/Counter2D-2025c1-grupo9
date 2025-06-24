@@ -46,7 +46,7 @@ void CreatePartyView::buildPartyNameTextField() {
         "}"
     );
 
-    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    int fontId = QFontDatabase::addApplicationFont("/var/taller/gfx/fonts/sourcesans.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(11);
@@ -88,6 +88,8 @@ void CreatePartyView::buildLayout() {
 
     layout->addWidget(container);
     layout->addStretch();
+
+    setLayout(layout);
 }
 
 QVBoxLayout *CreatePartyView::getLayout() {

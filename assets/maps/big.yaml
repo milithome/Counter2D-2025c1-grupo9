@@ -2,8 +2,8 @@ map:
   name: big
   width: 30
   height: 20
-  background_path: ../assets/gfx/backgrounds/sand1.jpg
-  sprite_path: ../assets/gfx/tiles/default_dust.png
+  background_path: /var/taller/gfx/backgrounds/sand1.jpg
+  sprite_path: /var/taller/gfx/tiles/default_dust.png
 
   tiles:
     - [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]

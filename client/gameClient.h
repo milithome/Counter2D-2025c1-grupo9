@@ -6,8 +6,8 @@
 #include "client/views/qtwindow.h"
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
-#include "client/controllers/message_event.h"
-#include "client/controllers/action_event.h"
+#include "client/controllers/messages/message_event.h"
+#include "client/controllers/messages/action_event.h"
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
@@ -40,22 +40,19 @@ using namespace SDL2pp;
 class GameClient {
 public:
     GameClient(
-        Game& game,
         Map& map,
         GameView& gameView,
         std::vector<std::string> players,
         Queue<Response>& recv_queue, 
         Queue<std::shared_ptr<MessageEvent>>& send_queue,
         std::string const clientName,
-        SDL &sdl,
-        bool pulse_available
+        InitialData data,
+        bool audio_available
     );
 
     bool run();
 
 private:
-    SDL& sdl;
-    Game& game;
     GameController gameController; 
     Map& map;
     GameView& gameView;

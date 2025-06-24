@@ -1,14 +1,25 @@
 #include "player.h"
 #include <iostream>
 
-std::string Player::getName() const { return name; }
+Player::Player(const std::string &name, GameRules &gameRules)
+    : gameRules(gameRules), name(name), x(0),
+      y(0), hitbox{x, y, PLAYER_WIDTH, PLAYER_HEIGHT},
+      role(Role::COUNTER_TERRORIST), rotation(0) {
+  money = gameRules.initial_money;
+  bulletsPrimary = gameRules.initial_primary_ammo;
+  bulletsSecondary = gameRules.initial_secondary_ammo;
+  health = gameRules.max_health;
 
-float Player::getX() const { return x; }
+  knife = gameRules.weapons[WeaponName::KNIFE];
+  primaryWeapon = gameRules.weapons[WeaponName::NONE];
+  secondaryWeapon = gameRules.weapons[WeaponName::GLOCK];
 
-float Player::getY() const { return y; }
+  typeEquipped = WeaponType::SECONDARY;
+  equipped = secondaryWeapon;
+}
 
 void Player::move(float deltaTime, bool onlyX, bool onlyY) {
-  float totalSpeed = SPEED + aceleration;
+  float totalSpeed = gameRules.speed + aceleration;
   float dx = 0.0f;
   float dy = 0.0f;
 
@@ -49,7 +60,7 @@ std::pair<float, float> Player::tryMove(float deltaTime) {
   dirY /= magnitude;
 
   float boost = 0.1f;
-  float baseSpeed = SPEED + boost;
+  float baseSpeed = gameRules.speed + boost;
   float totalSpeed = baseSpeed + aceleration;
 
   float newX = x + dirX * deltaTime * totalSpeed;
@@ -59,46 +70,27 @@ std::pair<float, float> Player::tryMove(float deltaTime) {
 }
 
 void Player::setPosition(float x, float y) {
-  // coordenadas literales en las que quiero que se encuentre
   this->x = x;
   this->y = y;
   hitbox.x = x;
   hitbox.y = y;
 }
 
-float Player::getRotation() const { return rotation; }
-
-void Player::setRotation(float currentRotation) { rotation = currentRotation; }
-
-const Hitbox &Player::getHitbox() const { return hitbox; }
-
 void Player::updateHealth(int value) {
   health += value;
-  if (health <= 0){
+  if (health <= 0) {
     health = 0;
-    alive=false;
+    alive = false;
+  } else {
+    alive = true;
   }
 }
 
-void Player::setHasSpike(bool hasSpike){
-  hasTheSpike=hasSpike;
-}
-
-void Player::restoreHealth(){
-  health = MAX_HEALTH;
-}
-
-void Player::setIsAlive(bool isAlive){
-  alive=isAlive;
-}
+void Player::restoreHealth() { health = gameRules.max_health; }
 
 void Player::updateMovement(float deltaTime, bool onlyX, bool onlyY) {
   move(deltaTime, onlyX, onlyY);
 }
-
-int Player::getHealth() const { return health; }
-
-bool Player::isAlive() const { return alive; }
 
 void Player::updateVelocity(float newVx, float newVy) {
   if (newVx != 0.0f || newVy != 0.0f) {
@@ -128,35 +120,27 @@ void Player::updateAceleration(float deltaTime) {
     aceleration = MAX_ACELERATION;
 }
 
-void Player::stopShooting() { shooting = false; }
-
-void Player::startShooting() { shooting = true; }
-
 void Player::updateCooldown(float deltaTime) {
   if (shootCooldown > 0.0f) {
     shootCooldown -= deltaTime;
   }
 }
 
-float Player::getShootCooldown() { return shootCooldown; }
-
-void Player::resetCooldown() { // cuando acaba de salir una bala
-  shootCooldown = equipped.cooldown;
+void Player::resetCooldown() { shootCooldown = equipped.cooldown; }
+std::pair<float, float> Player::getDamageRange() const {
+  return std::make_pair(equipped.minDamage, equipped.maxDamage);
 }
-
-bool Player::isShooting() { return shooting; }
 
 std::tuple<float, float, float, float, float, float> Player::shoot() {
   timeLastBullet = 0.0f;
-  Hitbox hb = getHitbox();
 
-  float origin_x = hb.x + hb.width / 2.0f;
-  float origin_y = hb.y + hb.height / 2.0f;
+  float origin_x = hitbox.x + hitbox.width / 2.0f;
+  float origin_y = hitbox.y + hitbox.height / 2.0f;
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<float> dist(getRotation() - getSpreadAngle(),
-                                             getRotation() + getSpreadAngle());
+  std::uniform_real_distribution<float> dist(rotation - getSpreadAngle(),
+                                             rotation + getSpreadAngle());
   float angle = dist(gen);
   float angle_rad = angle * M_PI / 180.0f;
   float max_distance;
@@ -173,10 +157,6 @@ int Player::getBulletsPerShoot() { return equipped.bulletsPerShoot; }
 
 float Player::getSpreadAngle() { return equipped.spreadAngle; }
 
-std::pair<float, float> Player::getDamageRange() const{
-  return std::make_pair(equipped.minDamage, equipped.maxDamage);
-}
-
 void Player::changeWeapon(WeaponType newEquippedWeapon) {
   if (newEquippedWeapon == WeaponType::PRIMARY) {
     equipped = primaryWeapon;
@@ -185,46 +165,22 @@ void Player::changeWeapon(WeaponType newEquippedWeapon) {
   } else {
     equipped = knife;
   }
-  typeEquipped=newEquippedWeapon; 
+  typeEquipped = newEquippedWeapon;
 }
 
 void Player::replaceWeapon(WeaponName weapon) {
-  primaryWeapon = Weapons::getWeapon(weapon);
+  primaryWeapon = gameRules.weapons[weapon];
 }
-
-uint32_t Player::getLastMoveId() const { return lastMoveId; }
-void Player::setLastMoveId(uint32_t id) { lastMoveId = id; }
-
-WeaponName Player::getPrimaryWeaponName() const { return primaryWeapon.name; }
-WeaponName Player::getSecondaryWeaponName() const {
-  return secondaryWeapon.name;
-}
-
-int Player::getBulletsPrimary() const { return bulletsPrimary; }
-
-int Player::getBulletsSecondary() const { return bulletsSecondary; }
-
-int Player::getMoney() const { return this->money; }
 
 void Player::updateMoney(int value) { money += value; }
 
-void Player::updatePrimaryBullets(int value) {
-  bulletsPrimary += value;
-}
-void Player::updateSecondaryBullets(int value) {
-  bulletsSecondary += value;
-}
+void Player::updatePrimaryBullets(int value) { bulletsPrimary += value; }
+void Player::updateSecondaryBullets(int value) { bulletsSecondary += value; }
 
-void Player::resetPrimaryBullets() { // llenar cargador
-  bulletsPrimary = primaryWeapon.maxAmmo;
-}
-void Player::resetSecondaryBullets() { // llenar cargador
+void Player::resetPrimaryBullets() { bulletsPrimary = primaryWeapon.maxAmmo; }
+void Player::resetSecondaryBullets() {
   bulletsSecondary = secondaryWeapon.maxAmmo;
 }
-
-WeaponType Player::getTypeEquipped() const { return typeEquipped; }
-
-float Player::getTimeLastBullet() { return timeLastBullet; }
 
 void Player::updateTimeLastBullet(float deltaTime) {
   timeLastBullet += deltaTime;
@@ -232,47 +188,14 @@ void Player::updateTimeLastBullet(float deltaTime) {
 
 void Player::resetTimeLastBullet() { timeLastBullet = 0; }
 
-Weapon Player::getEquipped() { return equipped; }
-
-int Player::getBurstFireBullets() { return burstFireBullets; }
 void Player::updateBurstFireBullets(int value) { burstFireBullets += value; }
-bool Player::getHasTheSpike() { return hasTheSpike; }
 
-void Player::updateIsPlanting(bool isPlanting) { planting = isPlanting; }
-void Player::updateIsDefusing(bool isDefusing){ defusing = isDefusing; }
-
-bool Player::getAlreadyShot() { return alreadyShot; }
-
-void Player::setAlreadyShot(bool value) { alreadyShot = value; }
-
-int Player::getBullets(){
-  if (typeEquipped== WeaponType::PRIMARY) {
+int Player::getBullets() {
+  if (typeEquipped == WeaponType::PRIMARY) {
     return bulletsPrimary;
   } else if (typeEquipped == WeaponType::SECONDARY) {
     return bulletsSecondary;
   } else {
     return 1;
   }
-}
-
-void Player::setTeam(bool terrorist){
-  team=terrorist;
-}
-
-Role Player::getRole(){
-  return role;
-}
-void Player::setRole(Role newRole){
-  role=newRole;
-}
-
-bool Player::isPlanting(){
-  return planting;
-}
-bool Player::isDefusing(){
-  return defusing;
-}
-
-Weapon Player::getPrimaryWeapon(){
-  return primaryWeapon;
 }

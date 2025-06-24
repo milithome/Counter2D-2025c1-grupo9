@@ -2,8 +2,9 @@ map:
   name: aztec
   width: 30
   height: 30
-  background_path: ../assets/gfx/backgrounds/aztec.png
-  sprite_path: ../assets/gfx/tiles/default_aztec.png
+  background_path: /var/taller/gfx/backgrounds/aztec.png
+  sprite_path: /var/taller/gfx/tiles/default_aztec.png
+
 
   tiles:
     - [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]

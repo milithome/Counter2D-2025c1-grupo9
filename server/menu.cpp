@@ -26,18 +26,20 @@ void Menu::run()
                     handle_list();
                     break;
                 case Type::DISCONNECT:
-                    send_response_successful(Type::DISCONNECT, "Disconnect successful");
                     admin.removeClient(client->channels.name);
                     active = false;
                     break;
+                case  Type::ACTION:
+                    // puede pasar que el clientReceiver siga pushenado acciones de la partida pasada
+                    break;
                 default:
-                    std::cerr << "Unknown message type received." << std::endl;
+                    std::cerr << "[Menu::run] Unknown message type received. " << client->channels.name << std::endl;
                     break;
             }
         }
         admin.removeMenu(client->channels.name);
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in Menu: " << e.what() << std::endl;
+    } catch (const ClosedQueue&) {
+        std::cout << "[" << client->channels.name << "]" << " Closing Menu." << std::endl;
     } catch (...) {
         std::cerr << "Unknown exception in Menu." << std::endl;
     }
@@ -67,10 +69,6 @@ void Menu::handle_join(const std::string& name) {
 void Menu::handle_list() {
     try {
         std::vector<std::string> lobbies = admin.listLobbies();
-        if (lobbies.empty()) {
-            send_response_successful(Type::LIST, "No lobbies available", 0);
-            return;
-        }
         Response response = {Type::LIST, 0, LobbyList{lobbies}, "Lobbies listed successfully"};
         send_response(response);
     } catch (const std::exception& e) {
@@ -95,4 +93,5 @@ void Menu::send_response_error(Type type, const std::string& msg, uint8_t result
 
 void Menu::stop() {
     active = false;
+    client->channels.requests->close();
 }

@@ -1,9 +1,4 @@
 #include "clientReceiverLoop.h"
-#include "client/controllers/action_event.h"
-#include "client/controllers/join_event.h"
-#include "client/controllers/leave_event.h"
-#include "client/controllers/list_event.h"
-#include "client/controllers/create_event.h"
 #include <functional>
 
 RecvLoop::RecvLoop(Protocol &proto, Queue<Response> &q) : protocol(proto), queue(q), active(true)  {}
@@ -13,17 +8,14 @@ void RecvLoop::run() {
         while (active) {
             Response msg = protocol.recv_response();
             queue.push(msg);
-
-            if (msg.type == Type::DISCONNECT) {
-                active = false;
-            } 
         }
     } catch (const std::exception& e) {
-        std::cerr << "RecvLoop exception:: run() " << e.what() << std::endl;
+        std::cerr << "RecvLoop exception in run(): " << e.what() << std::endl;
     } catch (...) {
-        std::cerr << "Exception random\n";
+        std::cerr << "Unknown exception in RecvLoop::run()." << std::endl;
     }
 }
+
 
 void RecvLoop::stop() {
     active = false;

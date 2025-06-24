@@ -1,8 +1,7 @@
 #include "client.h"
 
-Client::Client(const std::string name, const char* host, const char* port):
+Client::Client(const std::string name, const char* host, const char* port) : 
     clientName(name),
-    partida_iniciada(false),
     protocol(Socket(host, port)),
     recv_queue(100),
     send_queue(100),
@@ -11,74 +10,57 @@ Client::Client(const std::string name, const char* host, const char* port):
 {
     receiver.start();
 	sender.start();
+    protocol.send_name(clientName);
 }
 
-void Client::run() {
-    // Enviar el nombre del cliente al servidor
-    protocol.send_name(clientName);
+void Client::setName(const std::string& name) {
+    clientName = name;
+    protocol.send_name(name);
+}   
 
-    int num_audio_drivers = SDL_GetNumAudioDrivers();
-    // bool pulse_available = false;
-    // for (int i = 0; i < num_audio_drivers; ++i) {
-    //     const char* driver = SDL_GetAudioDriver(i);
-    //     if (strcmp(driver, "pulse") == 0) {
-    //         pulse_available = true;
-    //         break;
-    //     }
-    // }
+bool Client::receiveConnectionResponse() {
+    Response r;
+    while (recv_queue.try_pop(r)) {
+        if (r.result) {
+            throw std::runtime_error(r.message);
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
 
-    Uint32 flags = SDL_INIT_VIDEO;
-    if (num_audio_drivers > 0)
-        flags |= SDL_INIT_AUDIO;
-
-
-    SDL sdl(flags);
-
-    TTF_Init();
-
-    // int argc = 1;
-    // char* argv[] = {const_cast<char*>(clientName.c_str()), nullptr};
-	
+void Client::run(QApplication& app, MenuController& menuController) {
+    bool looped = false;
     while (true) { // mientras el cliente no haya decidido irse
-        MenuClient menuClient(recv_queue, send_queue, receiver, sender, protocol,  w_pos_when_game_started);
+        MenuClient menuClient(app, menuController, recv_queue, send_queue, receiver, sender, protocol);
+        InitialData initialData;
+        QObject::connect(&menuClient, &MenuClient::initialDataReceived, &menuClient, [this, &initialData, &app](InitialData data) {
+            initialData = data;
+            app.quit();
+        });
 
-        bool quit = menuClient.run();
+        bool quit = menuClient.run(looped);
+        QPoint w_pos_when_game_started = menuClient.getWindowPosition();
 
         if (quit) {
             break;
         }
 
-        Map map = Map("../assets/maps/big.yaml");  // modificar cuando este el editor (aca tendria que elegir el cliente que mapa usar)
-        
-        
-        players = menuClient.allPlayers();
-        
-        if (players.empty()) {
-            std::cerr << "No players in the lobby." << std::endl;
-            break;
-        }
-
-        Game game(map.getMapData().game_map);
-        for (size_t i = 0; i < players.size(); i++) {
-            game.addPlayer(players[i]);
-        }
+        Map map = Map(initialData.data);
 
 
-        GameView gameView = GameView(game, clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map);
-        GameClient gameClient(game, map, gameView, players, recv_queue, send_queue, clientName, sdl, num_audio_drivers > 0);
+        GameView gameView = GameView(clientName, SDL_Point{w_pos_when_game_started.x(), w_pos_when_game_started.y()}, map, initialData.weaponsInfo, initialData.shop, initialData.players);
+        GameClient gameClient(map, gameView, players, recv_queue, send_queue, clientName, initialData, true);
 
         quit = gameClient.run();
 
         if (quit) {
             break;
         }
+        looped = true;
     }
     
-    send_queue.push(std::make_shared<DisconnectEvent>());
-
-	receiver.join();
-	sender.join();
-
-	TTF_Quit();
 
 }
+

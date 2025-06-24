@@ -6,9 +6,7 @@
 #include "client/views/qtwindow.h"
 #include "client/controllers/game_controller.h"
 #include "client/controllers/menu_controller.h"
-#include "client/controllers/message_event.h"
-#include "client/controllers/disconnect_event.h"
-#include "client/controllers/action_event.h"
+#include "client/controllers/messages/message_event.h"
 #include "common/game.h"
 #include "common/player.h"
 #include "common/communication/protocol.h"
@@ -47,14 +45,27 @@ private:
     RecvLoop receiver;
     SendLoop sender;
     std::vector<std::string> players;
-    QPoint w_pos_when_game_started;
-    //Map map_selected ()  se agarraria en una ventana de los mapas en la memoria del editor
 
 public:
     // Constructor
     Client(const std::string name, const char* host, const char* port);
+    ~Client() {
+        receiver.stop();
+        sender.stop();
+        recv_queue.close();
+        send_queue.close();
+        kill();
+        receiver.join();
+        sender.join();
+    };
 
-    void run();
+    void setName(const std::string& name);
+    void run(QApplication& app, MenuController& menuController);
+    void kill() {
+        protocol.close();
+    };
+
+    bool receiveConnectionResponse();
 };
 
-#endif // CLIENT_H
+#endif

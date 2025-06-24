@@ -2,13 +2,19 @@
 #define QTVIEW_H
 
 #include <QWidget>
+#include <QMessageBox>
 
-class QtView {
+class QtView : public QWidget {
 public:
-    virtual ~QtView() = 0;
-    virtual QLayout *getLayout();
-    virtual void buildLayout();
+    virtual ~QtView() {};
+    virtual QLayout *getLayout() = 0;
+    virtual void buildLayout() = 0;
+    void showMessage(const std::string& message) {
+        QMessageBox::critical(this, "Error", message.c_str());
+    }
 private:
+protected:
+    const QString BASE_PATH = "/var/taller/";
 };
 
 #endif

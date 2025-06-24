@@ -12,6 +12,14 @@
 #include "components/menu_button.h"
 #include "components/menu_label.h"
 #include "components/translucent_container.h"
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QPixmap>
+#include <QPushButton>
 
 
 
@@ -19,10 +27,12 @@ PartyView::PartyView() {}
 
 PartyView::PartyView(const std::string& partyName, const std::vector<std::string>& players) : partyName(partyName), players(players) {
     buildLayout();
+    buildModal();
 }
 
 PartyView::PartyView(const std::string& partyName) : partyName(partyName), players({}) {
     buildLayout();
+    buildModal();
 }
 
 void PartyView::addPlayer(const std::string& player) {
@@ -31,11 +41,17 @@ void PartyView::addPlayer(const std::string& player) {
 }
 
 
+void PartyView::buildSettingsButton() {
+    settingsButton = new MenuButton("Settings");
+}
+
 void PartyView::buildLayout() {
     buildPartyNameLabel();
+    buildSettingsButton();
     buildPlayerList();
     buildStartButton();
     buildLeaveButton();
+
 
     auto createSeparator = []() {
         QFrame *separator = new QFrame();
@@ -53,19 +69,22 @@ void PartyView::buildLayout() {
 
     
     QVBoxLayout *subLayout = new QVBoxLayout();
-    
+
     subLayout->addWidget(partyNameLabel);
     subLayout->addWidget(createSeparator());
     subLayout->addWidget(playerList);
     subLayout->addWidget(createSeparator());
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->addWidget(leaveButton);
+    buttonsLayout->addWidget(settingsButton);
     buttonsLayout->addWidget(startButton);
     subLayout->addLayout(buttonsLayout);
 
     TranslucentContainer* container = new TranslucentContainer;
     container->addLayout(subLayout);
     layout->addWidget(container);
+
+    setLayout(layout);
 }
 
 QVBoxLayout* PartyView::getLayout() {
@@ -150,4 +169,154 @@ void PartyView::addPlayerToList(const std::string& playerName) {
 void PartyView::clearPlayers() {
     players.clear();
     playerList->clear();
+}
+
+
+
+
+
+
+QPushButton* PartyView::createSkinButton(const QString& imagePath) {
+    QPushButton* button = new QPushButton;
+
+    QPixmap originalPixmap(imagePath);
+
+    QPixmap croppedPixmap = originalPixmap.copy(0, 0, 32, 32);
+
+    QPixmap scaledPixmap = croppedPixmap.scaled(48, 48, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    button->setIcon(QIcon(scaledPixmap));
+    button->setIconSize(QSize(48, 48));
+    button->setFixedSize(64, 64);
+    button->setFlat(true);
+
+    return button;
+}
+
+QWidget* PartyView::createCtSkinsColumn(const std::unordered_map<ctSkin, QString>& imagePaths) {
+    QVBoxLayout* vbox = new QVBoxLayout;
+    vbox->setContentsMargins(0,0,0,0);
+
+    QLabel* label = new MenuLabel("CT Skins");
+    vbox->addWidget(label);
+
+    QGridLayout* grid = new QGridLayout;
+    grid->setContentsMargins(0,0,0,0);
+    int row = 0, col = 0;
+    for (auto [skin, imagePath] : imagePaths) {
+
+        QPushButton* skinLabel = createSkinButton(imagePath);
+        ctSkins[skin] = skinLabel;
+
+
+        grid->addWidget(skinLabel, row, col);
+        if (++col >= 2) { 
+            col = 0;
+            ++row;
+        }
+    }
+
+    QWidget* gridWidget = new QWidget;
+    gridWidget->setLayout(grid);
+    vbox->addWidget(gridWidget);
+
+    QWidget* container = new QWidget;
+    container->setLayout(vbox);
+
+    return container;
+}
+
+QWidget* PartyView::createTSkinsColumn(const std::unordered_map<tSkin, QString>& imagePaths) {
+    QVBoxLayout* vbox = new QVBoxLayout;
+    vbox->setContentsMargins(0,0,0,0);
+
+    QLabel* label = new MenuLabel("T Skins");
+    vbox->addWidget(label);
+
+    QGridLayout* grid = new QGridLayout;
+    grid->setContentsMargins(0,0,0,0);
+    int row = 0, col = 0;
+    for (auto [skin, imagePath] : imagePaths) {
+
+        QPushButton* skinLabel = createSkinButton(imagePath);
+        tSkins[skin] = skinLabel;
+
+        grid->addWidget(skinLabel, row, col);
+        if (++col >= 2) { 
+            col = 0;
+            ++row;
+        }
+    }
+
+    QWidget* gridWidget = new QWidget;
+    gridWidget->setLayout(grid);
+    vbox->addWidget(gridWidget);
+
+    QWidget* container = new QWidget;
+    container->setLayout(vbox);
+
+    return container;
+}
+
+
+void PartyView::buildModal() {
+    QDialog* dialog = new QDialog(this, Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    dialog->setWindowTitle("Settings");
+
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+
+    // Parte superior con dos columnas
+    QHBoxLayout* topLayout = new QHBoxLayout;
+    topLayout->setContentsMargins(0,0,0,0);
+    topLayout->setSpacing(32);
+    std::unordered_map<ctSkin, QString> ctSkinPaths = {
+        {
+            ctSkin::SEAL_FORCE, BASE_PATH + "gfx/player/ct1.bmp"
+        }, 
+        {
+            ctSkin::GERMAN_GSG9, BASE_PATH + "gfx/player/ct2.bmp"
+        }, 
+        {
+            ctSkin::UKSAS, BASE_PATH + "gfx/player/ct3.bmp"
+        },
+        {
+            ctSkin::FRENCH_GIGN, BASE_PATH + "gfx/player/ct4.bmp"
+        }
+    };
+    std::unordered_map<tSkin, QString> tSkinPaths = {
+        {
+            tSkin::PHOENIX, BASE_PATH + "gfx/player/t1.bmp"
+        }, 
+        {
+            tSkin::L337_KREW, BASE_PATH + "gfx/player/t2.bmp"
+        }, 
+        {
+            tSkin::ARCTIC_AVENGER, BASE_PATH + "gfx/player/t3.bmp"
+        },
+        {
+            tSkin::GUERRILLA, BASE_PATH + "gfx/player/t4.bmp"
+        }
+    };
+    
+    topLayout->addWidget(createTSkinsColumn(tSkinPaths));
+    topLayout->addWidget(createCtSkinsColumn(ctSkinPaths));
+
+    mainLayout->addLayout(topLayout);
+
+    QVBoxLayout* bottomLayout = new QVBoxLayout;
+    bottomLayout->addWidget(new MenuLabel("Seleccionar mapa"));
+
+    mapCombo = new QComboBox;
+    mapCombo->addItems({"default", "big", "aztec"});
+    bottomLayout->addWidget(mapCombo);
+
+    mainLayout->addLayout(bottomLayout);
+
+    QPushButton* closeBtn = new MenuButton("Cerrar");
+    QObject::connect(closeBtn, &QPushButton::clicked, dialog, &QDialog::accept);
+    mainLayout->addWidget(closeBtn);
+
+    dialog->setLayout(mainLayout);
+    settingsModal = dialog;
+    //dialog->setParent(this);
 }

@@ -7,7 +7,7 @@ target_sources(taller_client
     qtwindow.cpp
     search_party_view.cpp
     create_party_view.cpp
-    qtview.cpp
+    connect_to_server_view.cpp
     PUBLIC
     # .h files
     game_view.h
@@ -16,5 +16,6 @@ target_sources(taller_client
     qtwindow.h
     search_party_view.h
     create_party_view.h
+    connect_to_server_view.h
     qtview.h
     )

@@ -1,26 +1,22 @@
 #include "team.h"
 
-void Team::addPlayer(Player &player) {
-  players.push_back(&player);
+Team::Team(GameRules &gameRules) : gameRules(gameRules) {}
+
+void Team::addPlayer(std::shared_ptr<Player> player) {
+  players.push_back(player);
 }
 
 int Team::getPlayersAlive() const {
-    int aliveCount = 0;
-    for (const auto& player : players) {
-        if (player->isAlive()) {
-            aliveCount++;
-        }
+  int aliveCount = 0;
+  for (const auto &player : players) {
+    if (player->alive) {
+      aliveCount++;
     }
-    return aliveCount;
+  }
+  return aliveCount;
 }
 
-int Team::getRoundsWon() const { return roundsWon; }
-
-void Team::incrementRoundsWon() { roundsWon++; }
-
 void Team::invertRole() {
-  // cambia el rol de todos los jugadores del equipo al opuesto
-  // llamar al cambiar de ronda
   Role newRole;
   if (currentRole == Role::TERRORIST) {
     newRole = Role::COUNTER_TERRORIST;
@@ -28,36 +24,46 @@ void Team::invertRole() {
     newRole = Role::TERRORIST;
   }
   for (auto &player : players) {
-    player->setRole(newRole);
+    player->role = newRole;
+    player->replaceWeapon(WeaponName::NONE);
+    player->changeWeapon(WeaponType::SECONDARY);
+    player->bulletsPrimary = gameRules.initial_primary_ammo;
+    player->bulletsSecondary = gameRules.initial_secondary_ammo;
+    player->money = gameRules.initial_money;
+  }
+  currentRole = newRole;
+}
+
+void Team::updateMoneyAfterRound(int money) {
+  for (auto &player : players) {
+    player->updateMoney(money);
   }
 }
 
-void Team::resetSpikeCarrier(){
-  for (auto &player : players){
-    player->setHasSpike(false);
+void Team::resetSpikeCarrier() {
+  for (auto &player : players) {
+    player->hasTheSpike = false;
   }
   if (currentRole == Role::TERRORIST && !players.empty()) {
     int carrier = rand() % players.size();
-    players[carrier]->setHasSpike(true);
+    players[carrier]->hasTheSpike = true;
   }
 }
 
 void Team::setRole(Role role) {
   currentRole = role;
-  for (auto &player : players){
-    player->setRole(role);
+  for (auto &player : players) {
+    player->role = role;
   }
 }
 
-Role Team::getRole(){
-  return currentRole;
-}
+Role Team::getRole() { return currentRole; }
 
-void Team::restartPlayersAlive() { 
-  playersAlive = players.size(); 
-  for (auto &player : players){
+void Team::restartPlayersAlive() {
+  playersAlive = players.size();
+  for (auto &player : players) {
     player->restoreHealth();
-    player->setIsAlive(true);
+    player->alive = true;
   }
 }
 

@@ -3,35 +3,30 @@
 #include <filesystem>
 #include <unordered_map>
 #include <string>
-#include "components/sdl_components/sdl_container.h"
-#include "components/sdl_components/sdl_hboxcontainer.h"
-#include "components/sdl_components/sdl_vboxcontainer.h"
-#include "components/sdl_components/sdl_surfacewidget.h"
-
-
+#include <sstream>
+#include <iomanip>
 
 namespace fs = std::filesystem;
 
 
-
-GameView::GameView(Game& game, const std::string& playerName, SDL_Point window_pos, Map& map)
+GameView::GameView(const std::string& playerName, SDL_Point window_pos, Map& map, std::vector<WeaponInfo>& weapons, Shop& shop, std::vector<PlayerInfo>& players)
     : 
     window(createWindow(window_pos)), 
-    renderer(createRenderer(window)), game(game), 
-    playerName(playerName), map(map), 
+    renderer(createRenderer(window)),
+    playerName(playerName), map(map), weapons(weapons), shop(shop), players(players),
     mapTiles(Texture(renderer, map.get_sprite_path())), 
     backgroundTexture(renderer, map.get_background_path()), 
     bloodTexture(createBloodTexture()), 
     sparkTexture(createSparkTexture()),
-    akShopSprite(createShopTexture("../assets/gfx/weapons/ak47_m.bmp")),
-    m3ShopSprite(createShopTexture("../assets/gfx/weapons/m3_m.bmp")),
-    awpShopSprite(createShopTexture("../assets/gfx/weapons/awp_m.bmp")),
-    akInvSprite(createInvTexture("../assets/gfx/weapons/ak47_k.bmp")),
-    m3InvSprite(createInvTexture("../assets/gfx/weapons/m3_k.bmp")),
-    awpInvSprite(createInvTexture("../assets/gfx/weapons/awp_k.bmp")),
-    glockInvSprite(createInvTexture("../assets/gfx/weapons/glock_k.bmp")),
-    knifeInvSprite(createInvTexture("../assets/gfx/weapons/knife_k.bmp")),
-    bombInvSprite(createInvTexture("../assets/gfx/weapons/bomb_d.bmp")) {
+    akShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/ak47_m.bmp")),
+    m3ShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/m3_m.bmp")),
+    awpShopSprite(createShopTexture(BASE_PATH + "gfx/weapons/awp_m.bmp")),
+    akInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/ak47_k.bmp")),
+    m3InvSprite(createInvTexture(BASE_PATH + "gfx/weapons/m3_k.bmp")),
+    awpInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/awp_k.bmp")),
+    glockInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/glock_k.bmp")),
+    knifeInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/knife_k.bmp")),
+    bombInvSprite(createInvTexture(BASE_PATH + "gfx/weapons/bomb_d.bmp")) {
 }
 
 
@@ -52,12 +47,28 @@ Renderer GameView::createRenderer(Window& window) {
 
 void GameView::update(float deltaTime) {
     renderer.Clear();
+    phaseTimer -= deltaTime;
+
+    Entity playerEntity;
+    PlayerData playerData;
+    for (size_t i = 0; i < state.entities.size(); i++) {
+        Entity entity = state.entities[i];
+        if (entity.type == PLAYER) {
+            PlayerData data = std::get<PlayerData>(entity.data);
+            if (data.name == playerName) {
+                playerData = data;
+                playerEntity = entity;
+                break;
+            }
+        }
+    }
 
     // TODO: cambiar el tamaño de las cosas cuando se cambia el tamaño de la ventana
     // int block_size = renderer.GetOutputHeight() / 24;
     SDL_Point center = getCenterPoint();
-    float cameraX = center.x - game.getX(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
-    float cameraY = center.y - game.getY(playerName) * BLOCK_SIZE - BLOCK_SIZE/2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
+
+    float cameraX = center.x - playerEntity.x * BLOCK_SIZE - BLOCK_SIZE / 2 + (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2;
+    float cameraY = center.y - playerEntity.y * BLOCK_SIZE - BLOCK_SIZE / 2 + (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2;
 
 
     showBackground();
@@ -66,23 +77,47 @@ void GameView::update(float deltaTime) {
     showBloodEffects(cameraX, cameraY, deltaTime);
     showSparksEffects(cameraX, cameraY, deltaTime);
     showEntities(cameraX, cameraY);
-    // showDeathAnimations(cameraX, cameraY, deltaTime);
-    showNewPhase(deltaTime);
-    // showFov();
+    showDeathAnimations(cameraX, cameraY, deltaTime);
+   
+    if (bombExplosionEffect) {
+        showBombExplosion(cameraX, cameraY, deltaTime);
+    }
+
+
+    if (fovIsVisible) {
+        showFov(playerData.rotation);
+    }
+
+
+    showOnScreenMessage(deltaTime);
+
 
     if (!shopIsVisible) {
-        showInterface();
+        showInterface(playerData.inventory, playerData.equippedWeapon, playerData.health);
     }
     if (shopIsVisible) {
-        showShop();
+        showShop(playerData.inventory, playerData.money);
     }
 
     renderer.Present();
 }
 
+void GameView::showBombExplosion(float cameraX, float cameraY, float deltaTime) {
+    Rect src((bomb_explosion_effect.current_frame % 5) * 64, (bomb_explosion_effect.current_frame / 5) * 64, 64, 64);
+    Rect dst(cameraX + bomb_explosion_effect.x * BLOCK_SIZE - BLOCK_SIZE * 4, cameraY + bomb_explosion_effect.y * BLOCK_SIZE - BLOCK_SIZE * 4, BLOCK_SIZE * 8, BLOCK_SIZE * 8);
+    renderer.Copy(bombAnimationSprite, src, dst);
+    bomb_explosion_effect.time_until_next_frame -= deltaTime;
+    if (bomb_explosion_effect.time_until_next_frame < 0) {
+        bomb_explosion_effect.time_until_next_frame += 0.06;
+        bomb_explosion_effect.current_frame++;
+    }
+    if (bomb_explosion_effect.current_frame >= 25) {
+        bombExplosionEffect = false;
+    }
+}
 
-void GameView::showFov() {
-    float angle = game.getRotation(playerName);
+
+void GameView::showFov(float angle) {
     int width = renderer.GetOutputWidth() ;
     int height = renderer.GetOutputHeight();
     int tWidth = width * 3;
@@ -109,25 +144,75 @@ void GameView::showFov() {
     float half_angle = FOV / 2.0f;
     float radius = 50 * BLOCK_SIZE;
 
-    SDL_Vertex verts[3];
-    verts[0].position = {cx, cy};
-    verts[0].color = {255, 255, 255, 255};
+    SDL_Color color = {255, 255, 255, 255};
+
+    std::vector<SDL_Vertex> verts_cone;
+    verts_cone.reserve(3);
+
+    verts_cone.push_back({
+        .position = {cx, cy},
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    verts_cone.push_back({
+        .position = { 
+            cx + radius * std::cos(-half_angle), 
+            cy + radius * std::sin(-half_angle)
+        },
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    verts_cone.push_back({
+        .position = {
+            cx + radius * std::cos(half_angle),
+            cy + radius * std::sin(half_angle)
+        },
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    // uso la API raw de SDL porque SDL2pp no tiene RenderGeometry
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts_cone.data(), verts_cone.size(), nullptr, 0);
 
 
-    verts[1].position = {
-        cx + radius * std::cos(-half_angle),
-        cy + radius * std::sin(-half_angle)
-    };
-    verts[1].color = {255, 255, 255, 255};
- 
-    verts[2].position = {
-        cx + radius * std::cos(half_angle),
-        cy + radius * std::sin(half_angle)
-    };
-    verts[2].color = {255, 255, 255, 255};
+    const int NUM_SEGMENTS = 50;
 
-    // Usamos la API raw de SDL porque SDL2pp no tiene RenderGeometry
-    SDL_RenderGeometry(renderer.Get(), nullptr, verts, 3, nullptr, 0);
+    float circle_radius = 3 * BLOCK_SIZE;
+
+    std::vector<SDL_Vertex> verts_circle;
+    verts_circle.reserve(NUM_SEGMENTS + 2); 
+
+
+    // vertice central
+    verts_circle.push_back({
+        .position = {cx, cy},
+        .color = color,
+        .tex_coord = {0, 0}
+    });
+
+    // circulo
+    for (int i = 0; i <= NUM_SEGMENTS; ++i) {
+        float angle = (2.0f * M_PI * i) / NUM_SEGMENTS;
+        float x = cx + circle_radius * std::cos(angle);
+        float y = cy + circle_radius * std::sin(angle);
+        verts_circle.push_back({
+            .position = {x, y},
+            .color = color,
+            .tex_coord = {0, 0}
+        });
+    }
+
+    std::vector<int> indices;
+    for (int i = 1; i <= NUM_SEGMENTS; ++i) {
+        indices.push_back(0);        // centro
+        indices.push_back(i);
+        indices.push_back(i + 1);
+    }
+
+    SDL_RenderGeometry(renderer.Get(), nullptr, verts_circle.data(), verts_circle.size(), indices.data(), indices.size());
+
 
     renderer.SetTarget();
 
@@ -137,7 +222,6 @@ void GameView::showFov() {
         tWidth,
         tHeight);
 
-    //renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point(tWidth / 2.0f, tHeight / 2.0f), SDL_FLIP_NONE);
     renderer.Copy(visionTexture, NullOpt, dst, angle, SDL_Point{static_cast<int>(tWidth / 2.0f), static_cast<int>(tHeight / 2.0f)}, SDL_FLIP_NONE);
 }
 
@@ -355,70 +439,78 @@ void GameView::showSparksEffects(float cameraX, float cameraY, float deltaTime) 
         ++it;
     }
 }
+void GameView::showPlayer(float cameraX, float cameraY, Entity player) {
+    PlayerData data = std::get<PlayerData>(player.data);
+    PlayerInfo info = findPlayerInfo(data.name);
+    if (!data.alive) {
+        return;
+    }
+    Rect dst(cameraX + player.x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + player.y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
+    if (data.terrorist) { 
+        renderer.Copy(getTSkinSprite(info.terroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+    } else {
+        renderer.Copy(getCtSkinSprite(info.counterTerroristSkin), src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+    }
 
+    float angleRad = (data.rotation) * M_PI / 180.0f;
+    float dx = std::cos(angleRad) * BLOCK_SIZE/2;
+    float dy = std::sin(angleRad) * BLOCK_SIZE/2;
+
+    Rect weaponDst(cameraX + player.x * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2 + dx, cameraY + player.y * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2 + dy, BLOCK_SIZE, BLOCK_SIZE);
+    switch (data.equippedWeapon) {
+        case WeaponType::PRIMARY: {
+            renderer.Copy(getWeaponInGameSprite(data.inventory.primary), NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+        case WeaponType::SECONDARY: {
+            renderer.Copy(glockInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+        case WeaponType::KNIFE: {
+            renderer.Copy(knifeInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
+            break;
+        }
+    }
+}
+void GameView::showWeapon(float cameraX, float cameraY, Entity weapon) {
+    WeaponData data = std::get<WeaponData>(weapon.data);
+    Rect dst(cameraX + weapon.x * BLOCK_SIZE, cameraY + weapon.y * BLOCK_SIZE, 0, 0);
+    if (data.weapon == NONE) {
+        return;
+    }
+    Texture& weaponDroppedSprite = getWeaponDroppedSprite(data.weapon);
+    dst.SetH(weaponDroppedSprite.GetHeight());
+    dst.SetW(weaponDroppedSprite.GetWidth());
+    renderer.Copy(getWeaponDroppedSprite(data.weapon), NullOpt, dst);
+}
+
+void GameView::showBomb(float cameraX, float cameraY, Entity bomb) {
+    BombData data = std::get<BombData>(bomb.data);
+    Rect dst(cameraX + bomb.x * BLOCK_SIZE, cameraY + bomb.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+    if (data.state == BombState::PLANTED) {
+        renderer.Copy(bombInGameSprite, NullOpt, dst);
+    } else if (data.state == BombState::DROPPED) {
+        renderer.Copy(bombInvSprite, NullOpt, dst);
+    }
+}
 
 void GameView::showEntities(float cameraX, float cameraY) {
     renderer.SetDrawColor(0, 0, 0, 255);
-    std::vector<Entity> gameState = game.getState().entities;
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
-    for (size_t i = 0; i < gameState.size(); i++) {
-        switch (gameState[i].type) {
+    std::vector<Entity> entities = state.entities;
+
+    for (size_t i = 0; i < entities.size(); i++) {
+        switch (entities[i].type) {
             case PLAYER: {
-                PlayerData data = std::get<PlayerData>(gameState[i].data);
-                float playerX = gameState[i].x;
-                float playerY = gameState[i].y;
-                if (!data.alive) {
-                    continue;
-                }
-                Rect dst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2, BLOCK_SIZE, BLOCK_SIZE);
-                renderer.Copy(playerTiles, src, dst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-
-
-                float angleRad = (data.rotation) * M_PI / 180.0f;
-                float dx = std::cos(angleRad) * BLOCK_SIZE/2;
-                float dy = std::sin(angleRad) * BLOCK_SIZE/2;
-
-                Rect weaponDst(cameraX + playerX * BLOCK_SIZE - (1 - PLAYER_WIDTH) * BLOCK_SIZE / 2 + dx, cameraY + playerY * BLOCK_SIZE - (1 - PLAYER_HEIGHT) * BLOCK_SIZE / 2 + dy, BLOCK_SIZE, BLOCK_SIZE);
-                switch (data.equippedWeapon) {
-                    case WeaponType::PRIMARY: {
-                        renderer.Copy(getWeaponInGameSprite(data.inventory.primary), NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                    case WeaponType::SECONDARY: {
-                        renderer.Copy(glockInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                    case WeaponType::KNIFE: {
-                        renderer.Copy(knifeInGameSprite, NullOpt, weaponDst, data.rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
-                        break;
-                    }
-                }
+                showPlayer(cameraX, cameraY, entities[i]);
                 break;
             }
             case WEAPON: {  
-                WeaponData data = std::get<WeaponData>(gameState[i].data);
-                float weaponX = gameState[i].x;
-                float weaponY = gameState[i].y;
-                Rect dst(cameraX + weaponX * BLOCK_SIZE, cameraY + weaponY * BLOCK_SIZE, 0, 0);
-                if (data.weapon == NONE) {
-                    break;
-                }
-                Texture& weaponDroppedSprite = getWeaponDroppedSprite(data.weapon);
-                dst.SetH(weaponDroppedSprite.GetHeight());
-                dst.SetW(weaponDroppedSprite.GetWidth());
-                renderer.Copy(getWeaponDroppedSprite(data.weapon), NullOpt, dst);
+                showWeapon(cameraX, cameraY, entities[i]);
                 break;
             }
             case BOMB: {
-                BombData data = std::get<BombData>(gameState[i].data);
-                float bombX = gameState[i].x;
-                float bombY = gameState[i].y;
-                Rect dst(cameraX + bombX * BLOCK_SIZE, cameraY + bombY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                if (data.state == BombState::PLANTED) {
-                    renderer.Copy(bombInGameSprite, src, dst);
-                } else if (data.state == BombState::DROPPED) {
-                    renderer.Copy(bombInvSprite, src, dst);
-                }
+                showBomb(cameraX, cameraY, entities[i]);
                 break;
             }
         }
@@ -426,8 +518,7 @@ void GameView::showEntities(float cameraX, float cameraY) {
 }
 
 void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime) {
-
-    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE); // temporal, hasta que definamos bien como se deberian ver los jugadores
+    Rect src(0, 0, CLIP_SIZE, CLIP_SIZE);
     for (auto it = death_effects.begin(); it < death_effects.end();) {
         DeathEffect& death = *it;
 
@@ -443,7 +534,8 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
         if (death.alpha < 0) {
             death.alpha = 0;
         }
-        Texture playerTexture = Texture(renderer, sealForceS);
+        Texture playerTexture = Texture(renderer, death.dead_body_skin);
+
         playerTexture.SetAlphaMod(death.alpha);
 
         renderer.Copy(playerTexture, src, dst, death.dead_body_rotation + 90.0f, Point(BLOCK_SIZE / 2, BLOCK_SIZE / 2), SDL_FLIP_NONE);
@@ -452,19 +544,27 @@ void GameView::showDeathAnimations(float cameraX, float cameraY, float deltaTime
     }
 }
 
-void GameView::showNewPhase(float deltaTime) {
-    if (new_phase_effect.time_left <= 0) {
+void GameView::showOnScreenMessage(float deltaTime) {
+    if (on_screen_message_effect.time_left <= 0) {
         return;
     }
-    new_phase_effect.time_left -= deltaTime;
+    on_screen_message_effect.time_left -= deltaTime;
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
-    Surface& phaseLabel = getPhaseLabel(new_phase_effect.phase);
+    Surface phaseLabel = font.RenderText_Blended(on_screen_message_effect.text, Color(255, 255, 255));
+    int labelWidth = phaseLabel.GetWidth() * 2;
+    int labelHeight = phaseLabel.GetHeight() * 2;
+    const int MARGIN = 20;
+    if (labelWidth > width - MARGIN) {
+        float ratio = static_cast<float>(phaseLabel.GetHeight()) / static_cast<float>(phaseLabel.GetWidth()); 
+        labelWidth = width - MARGIN;
+        labelHeight = (width - MARGIN) * ratio;
+    };
     Rect phaseLabelRect(
-        (width - phaseLabel.GetWidth() * 2) / 2,
-        (height - phaseLabel.GetHeight() * 2) / 4,
-        phaseLabel.GetWidth() * 2,
-        phaseLabel.GetHeight() * 2
+        (width - labelWidth) / 2,
+        (height - labelHeight) / 4,
+        labelWidth,
+        labelHeight
     );
 
     Texture phaseLabelTexture(renderer, phaseLabel);
@@ -474,7 +574,7 @@ void GameView::showNewPhase(float deltaTime) {
         phaseLabelRect);
 }
 
-void GameView::showInterface() {
+void GameView::showInterface(Inventory inventory, WeaponType equippedWeapon, int health) {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 15;
@@ -495,8 +595,6 @@ void GameView::showInterface() {
 
     renderer.SetDrawColor(255, 255, 255, 0);
     renderer.FillRect(container);
-    Entity player = game.getPlayerState(playerName);
-    PlayerData playerData = std::get<PlayerData>(player.data);
 
 
 
@@ -513,7 +611,7 @@ void GameView::showInterface() {
             label.GetHeight() * text_scale 
         );
     };
-    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(playerData.health), Color(255, 255, 255));
+    Surface healthLabel = font.RenderText_Blended("Health: " + std::to_string(health), Color(255, 255, 255));
     Rect healthLabelRect = layoutLeftVBox(container, healthLabel, {});
 
     Texture healthLabelTexture(renderer, healthLabel);
@@ -524,9 +622,9 @@ void GameView::showInterface() {
 
 
         
-    switch (playerData.equippedWeapon) {
+    switch (equippedWeapon) {
         case WeaponType::PRIMARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsPrimary), Color(255, 255, 255));
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(inventory.bulletsPrimary), Color(255, 255, 255));
             Texture ammoLabelTexture(renderer, ammoLabel);
             renderer.Copy(
                 ammoLabelTexture,  
@@ -535,7 +633,7 @@ void GameView::showInterface() {
             break;
         }
         case WeaponType::SECONDARY: {
-            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(playerData.inventory.bulletsSecondary), Color(255, 255, 255));
+            Surface ammoLabel = font.RenderText_Blended("Ammo: " + std::to_string(inventory.bulletsSecondary), Color(255, 255, 255));
             Texture ammoLabelTexture(renderer, ammoLabel);
             renderer.Copy(
                 ammoLabelTexture,  
@@ -547,22 +645,40 @@ void GameView::showInterface() {
             break;
         }
     }
-    Surface timeLabel = font.RenderText_Blended("timer", Color(255, 255, 255));
+    int minutes = static_cast<int>(phaseTimer) / 60;
+    int seconds = static_cast<int>(phaseTimer) % 60;
+    std::ostringstream oss;
+    oss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
+    Surface timeLabel = font.RenderText_Blended(oss.str(), Color(255, 255, 255));
+    Surface roundsLabel = font.RenderText_Blended(
+        "Team A " +  std::to_string(state.rounds.roundsWonTeamA) + " - " + std::to_string(state.rounds.roundsWonTeamB) + " Team B", 
+        Color(255, 255, 255));
 
-    auto layoutCenterLabel = [=](Rect parent, Surface& label) {
+    auto layoutCenterVBox = [=](Rect parent, Surface& label, std::vector<Rect> parentsChildren) {
+        uint32_t relative_position = 0;
+        for (size_t i = 0; i < parentsChildren.size(); i++) {
+            relative_position += parentsChildren[i].GetH() + HEALTH_AMMO_VERTICAL_SPACING;
+        }
         return Rect(
-            parent.GetX() + parent.GetW()/2 - label.GetHeight() * text_scale / 2,
-            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN,
+            parent.GetX() + parent.GetW()/2 - label.GetWidth() * text_scale / 2,
+            parent.GetY() + parent.GetH() - label.GetHeight() * text_scale - CONTAINER_MARGIN - relative_position,
             label.GetWidth() * text_scale,
             label.GetHeight() * text_scale
         );
     };
 
     Texture timeLabelTexture(renderer, timeLabel);
+    Rect timeLabelRect = layoutCenterVBox(container, timeLabel, {});
     renderer.Copy(
         timeLabelTexture,  
         NullOpt, 
-        layoutCenterLabel(container, timeLabel));
+        timeLabelRect);
+    
+    Texture roundsLabelTexture(renderer, roundsLabel);
+    renderer.Copy(
+        roundsLabelTexture,  
+        NullOpt, 
+        layoutCenterVBox(container, roundsLabel, {timeLabelRect}));
     
     std::vector<Rect> equipamiento;
     Rect primaryWeaponContainer;
@@ -630,19 +746,19 @@ void GameView::showInterface() {
 
 
 
-    if (playerData.inventory.primary != WeaponName::NONE) { // tiene la primaria
+    if (inventory.primary != WeaponName::NONE) { // tiene la primaria
 
         Rect primaryWeaponContainer = layoutRightVBox(container, equipamiento);
         equipamiento.push_back(primaryWeaponContainer);
     
-        if (playerData.equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
+        if (equippedWeapon == WeaponType::PRIMARY) { // tiene la primaria seleccionada
             renderer.SetDrawColor(255, 255, 255, 64);
         } else {
             renderer.SetDrawColor(0, 0, 0, 64);
         }
         renderer.FillRect(primaryWeaponContainer);
 
-        Texture& primaryWeaponSprite = getWeaponInvSprite(playerData.inventory.primary);
+        Texture& primaryWeaponSprite = getWeaponInvSprite(inventory.primary);
         Rect primaryWeaponSpriteRect = createWeaponSprite(primaryWeaponContainer, primaryWeaponSprite);
         renderer.Copy(
             primaryWeaponSprite,
@@ -653,7 +769,7 @@ void GameView::showInterface() {
     Rect secondaryWeaponContainer = layoutRightVBox(container, equipamiento);
     Rect secondaryWeaponSprite = createWeaponSprite(secondaryWeaponContainer, glockInvSprite);
     equipamiento.push_back(secondaryWeaponContainer);
-    if (playerData.equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
+    if (equippedWeapon == WeaponType::SECONDARY) { // tiene la secundaria seleccionada
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(0, 0, 0, 64);
@@ -667,7 +783,7 @@ void GameView::showInterface() {
     Rect knifeSprite = createWeaponSprite(knifeContainer, knifeInvSprite);
 
     equipamiento.push_back(knifeContainer);
-    if (playerData.equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
+    if (equippedWeapon == WeaponType::KNIFE) { // tiene el cuchillo seleccionado
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(0, 0, 0, 64);
@@ -678,7 +794,7 @@ void GameView::showInterface() {
         NullOpt,
         knifeSprite);
         
-    if (playerData.inventory.has_the_bomb) {  // tiene la bomba
+    if (inventory.has_the_bomb) {  // tiene la bomba
         Rect bombContainer = layoutRightVBox(container, equipamiento);
         Rect bombSprite = createWeaponSprite(bombContainer, bombInvSprite);
         equipamiento.push_back(bombContainer);
@@ -690,17 +806,12 @@ void GameView::showInterface() {
 
 }
 
-
-void GameView::resizeHud() {
-
-}
-
 // TODO: Metodo extremadamente largo, cambiar el planteamiento para que por un lado se creen los Rect
 // y se almacenen de algun modo, y cada vez que se actualiza algo (osea, el jugador compra algo o cambia el tamaño de la ventana)
 // se vuelvan a crear los Rects. Por otro lado va a ver un metodo que grafique los sprites, los textos,
 // y los contenedores de la interfaz dentro de esos rects.
 
-void GameView::showShop() {
+void GameView::showShop(Inventory inv, int money) {
     int width = renderer.GetOutputWidth();
     int height = renderer.GetOutputHeight();
     const int MARGIN = 40;
@@ -729,7 +840,7 @@ void GameView::showShop() {
     int item_container_hbox_width = container.GetW() - CONTAINER_MARGIN * 2;
 
 
-    auto shop = game.getStore();
+
 
 
     
@@ -747,36 +858,33 @@ void GameView::showShop() {
     renderer.Copy(
         primaryWeaponSectionLabelTexture, 
         NullOpt, 
-        primaryWeaponSectionLabelRect);
+        primaryWeaponSectionLabelRect
+    );
 
 
 
     Surface BoughtLabel = font.RenderText_Blended("Comprada", Color(255, 255, 255));
     Texture BoughtLabelTexture(renderer, BoughtLabel);
 
-
-    PlayerData player = std::get<PlayerData>(game.getPlayerState(playerName).data);
-    uint32_t money = player.money;
-    Inventory inv = player.inventory;
     
     
     int itemContainerX = container.GetX() + CONTAINER_MARGIN;
-    for (size_t i = 0; i < shop.size(); i++) {
-        WeaponName weapon = shop[i].first;
-        int price = shop[i].second;
-        std::string weaponLabelText = weaponTexts[weapon];
+    for (size_t i = 0; i < shop.weapons.size(); i++) {
+        WeaponInfo weaponInfo = findWeaponInfo(shop.weapons[i]);
+        int price = weaponInfo.price;
+        std::string weaponLabelText = weaponTexts[weaponInfo.name];
 
         ////////////////////////////////////////////////////
         Rect itemContainer(
             itemContainerX, 
             container.GetY() + CONTAINER_MARGIN + primaryWeaponSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
-            (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/shop.size(), 
+            (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.weapons.size() - 1))/shop.weapons.size(), 
             container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
         //////////////////////////////////////////////////
-        weaponShopButtons[weapon] = {{itemContainer.GetX(), itemContainer.GetY()}, {itemContainer.GetW(), itemContainer.GetH()}};
+        weaponShopButtons[weaponInfo.name] = {{itemContainer.GetX(), itemContainer.GetY()}, {itemContainer.GetW(), itemContainer.GetH()}};
 
 
-        if (inv.primary == weapon) {
+        if (inv.primary == weaponInfo.name) {
             renderer.SetDrawColor(255, 255, 255, 64);
         } else {
             renderer.SetDrawColor(255, 255, 255, 32);
@@ -819,7 +927,7 @@ void GameView::showShop() {
 
 
         /////////////////////////////////////////////////////////////////////////////////////////
-        Texture& weaponSprite = getWeaponShopSprite(weapon);
+        Texture& weaponSprite = getWeaponShopSprite(weaponInfo.name);
 
 
         uint32_t weapon_image_container_x = itemContainer.GetX() + ITEM_CONTAINER_MARGIN;
@@ -875,7 +983,7 @@ void GameView::showShop() {
             BoughtLabel.GetWidth() * text_scale, 
             BoughtLabel.GetHeight() * text_scale);
         ///////////////////////////////////////////////////////////////////////////////////
-        if (inv.primary == weapon) {
+        if (inv.primary == weaponInfo.name) {
             renderer.Copy(
                 BoughtLabelTexture, 
                 NullOpt, 
@@ -884,6 +992,7 @@ void GameView::showShop() {
 
         itemContainerX = itemContainer.GetX() + itemContainer.GetW() + SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING;
     }
+    WeaponInfo primaryWeaponInfo = findWeaponInfo(inv.primary);
 
     ///////////////////////////////////////////////////////////////////////////////
     Surface ammoSectionLabel = font.RenderText_Blended("AMMO", Color(255, 255, 255));
@@ -902,12 +1011,14 @@ void GameView::showShop() {
     Rect primaryAmmoContainer(
         container.GetX() + CONTAINER_MARGIN, 
         container.GetY() + container.GetH() / 2 + CONTAINER_VERTICAL_SPACING / 2 + ammoSectionLabelRect.GetH() + SECTION_VERTICAL_SPACING, 
-        (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.size() - 1))/3, 
+        (item_container_hbox_width - SECTION_ITEM_CONTAINERS_HORIZONTAL_SPACING * (shop.weapons.size() - 1))/3, 
         container.GetH()/2 - CONTAINER_MARGIN - primaryWeaponSectionLabelRect.GetH() - SECTION_VERTICAL_SPACING - CONTAINER_VERTICAL_SPACING / 2);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     buyPrimaryAmmoButton = {{primaryAmmoContainer.GetX(), primaryAmmoContainer.GetY()}, {primaryAmmoContainer.GetW(), primaryAmmoContainer.GetH()}};
 
-    if (inv.bulletsPrimary >= Weapons::getWeapon(inv.primary).maxAmmo && inv.primary != WeaponName::NONE) {
+
+
+    if (inv.bulletsPrimary >= primaryWeaponInfo.maxAmmo && inv.primary != WeaponName::NONE) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
@@ -923,12 +1034,14 @@ void GameView::showShop() {
     //////////////////////////////////////////////////////////////////
     buySecondaryAmmoButton = {{secondaryAmmoContainer.GetX(), secondaryAmmoContainer.GetY()}, {secondaryAmmoContainer.GetW(), secondaryAmmoContainer.GetH()}};
 
-    if (inv.bulletsSecondary >= Weapons::getWeapon(inv.secondary).maxAmmo) {
+ 
+    if (inv.bulletsSecondary >= findWeaponInfo(inv.secondary).maxAmmo) {
         renderer.SetDrawColor(255, 255, 255, 64);
     } else {
         renderer.SetDrawColor(255, 255, 255, 32);
     }
     renderer.FillRect(secondaryAmmoContainer);
+
 
     Surface primaryAmmoLabel = font.RenderText_Blended("Primary", Color(255, 255, 255));
     Rect primaryAmmoLabelRect(
@@ -941,8 +1054,8 @@ void GameView::showShop() {
     Texture primaryAmmoLabelTexture(renderer, primaryAmmoLabel);
     renderer.Copy(primaryAmmoLabelTexture, NullOpt, primaryAmmoLabelRect);
 
-
-    Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    std::string ammo_price = std::to_string(shop.primaryAmmoPrice);
+    Surface primaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect primaryAmmoPriceLabelRect(
         primaryAmmoContainer.GetX() + primaryAmmoContainer.GetW() - primaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         primaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
@@ -953,9 +1066,9 @@ void GameView::showShop() {
     renderer.Copy(primaryAmmoPriceLabelTexture, NullOpt, primaryAmmoPriceLabelRect);
 
     ///////////////////////////////////////////////////////////
-    std::string ammoBoughtText;
+    std::string ammoBoughtText = "";
     if (inv.primary != WeaponName::NONE) {
-        ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(Weapons::getWeapon(inv.primary).maxAmmo);
+        ammoBoughtText = std::to_string(inv.bulletsPrimary) + "/" + std::to_string(primaryWeaponInfo.maxAmmo);
     } else {
         ammoBoughtText = "No disponible";
     }
@@ -990,7 +1103,8 @@ void GameView::showShop() {
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + std::to_string(AMMO_PRICE), Color(255, 255, 255));
+    ammo_price = std::to_string(shop.secondaryAmmoPrice);
+    Surface secondaryAmmoPriceLabel = font.RenderText_Blended("$" + ammo_price, Color(255, 255, 255));
     Rect secondaryAmmoPriceLabelRect(
         secondaryAmmoContainer.GetX() + secondaryAmmoContainer.GetW() - secondaryAmmoPriceLabel.GetWidth() * text_scale - ITEM_CONTAINER_MARGIN, 
         secondaryAmmoContainer.GetY() + ITEM_CONTAINER_MARGIN, 
@@ -1002,8 +1116,8 @@ void GameView::showShop() {
     renderer.Copy(secondaryAmmoPriceLabelTexture, NullOpt, secondaryAmmoPriceLabelRect); 
 
     ///////////////////////////////////////////////////////////
-
-    Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(Weapons::getWeapon(inv.secondary).maxAmmo), Color(255, 255, 255));
+    
+    Surface secondaryAmmoBoughtLabel = font.RenderText_Blended(std::to_string(inv.bulletsSecondary) + "/" + std::to_string(findWeaponInfo(inv.secondary).maxAmmo), Color(255, 255, 255));
     Rect secondaryAmmoBoughtLabelRect(
             secondaryAmmoContainer.GetX() + ITEM_CONTAINER_MARGIN + ((secondaryAmmoContainer.GetW() - secondaryAmmoBoughtLabel.GetWidth() * text_scale - 2 * ITEM_CONTAINER_MARGIN)/2), 
             secondaryAmmoContainer.GetY() + secondaryAmmoContainer.GetH() - secondaryAmmoBoughtLabel.GetHeight() * text_scale - ITEM_CONTAINER_MARGIN, 
@@ -1026,6 +1140,7 @@ void GameView::showShop() {
 
     Texture moneyLabelTexture(renderer, moneyLabel);
     renderer.Copy(moneyLabelTexture, NullOpt, moneyLabelRect);
+
 }
 
 
@@ -1042,17 +1157,100 @@ SDL_Point GameView::getCenterPoint() {
 void GameView::addBulletEffects(Shot shot) {
     for (size_t i = 0; i < shot.bullets.size(); i++) {
         Bullet bullet = shot.bullets[i];
-        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, BULLET_DURATION, bullet.impact});
+        bullet_effects.push_back(BulletEffect{shot.origin_x, shot.origin_y, bullet.target_x, bullet.target_y, bullet.angle, bullet.impact});
     }
 }
 
-void GameView::addDeathEffect(float x, float y, float angle) {
-    death_effects.push_back(DeathEffect{x, y, angle, DEATH_DURATION, 255});
+void GameView::addDeathEffect(float x, float y, PlayerData& data) {
+    PlayerInfo info = findPlayerInfo(data.name);
+    if (data.terrorist) {
+        Surface& s = getTSkinSpriteSurface(info.terroristSkin);
+        death_effects.push_back(DeathEffect{x, y, data.rotation, s});
+    } else {
+        Surface& s = getCtSkinSpriteSurface(info.counterTerroristSkin);
+        death_effects.push_back(DeathEffect{x, y, data.rotation, s});
+    }   
+
 }
 
-void GameView::addNewPhaseEffect(Phase phase) {
-    new_phase_effect = NewPhaseEffect{phase};
+void GameView::showNewPhaseMessage(Phase phase) {
+    std::string text;
+    switch (phase) {
+        case PURCHASE: {
+            text = "Fase de compra";
+            break;
+        }
+        case BOMB_PLANTING: {
+            text = "Inicio de ronda";
+            break;
+        }
+        case BOMB_DEFUSING: {
+            text = "Bomba plantada";
+            break;
+        }
+        case END_GAME: {
+            text = "Final de partida";
+        }
+        default: {
+            break;
+        }
+    }
+    on_screen_message_effect = OnScreenMessageEffect{text};
 }
+void GameView::showRoundEndMessage(RoundWinner winner) {
+    std::string text;
+    if (winner.team == 'a') {
+        text += "Team A wins! ";
+        switch (winner.typeEndRound) {
+            case TypeEndRound::BOMB_NOT_PLANTED: {
+                text += "Team B ran out of time";
+                break;
+            }
+            case TypeEndRound::DEAD_TEAM: {
+                text += "Team B is dead";
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    } else {
+        text += "Team B wins! ";
+        switch (winner.typeEndRound) {
+            case TypeEndRound::BOMB_NOT_PLANTED: {
+                text += "Team A ran out of time";
+                break;
+            }
+            case TypeEndRound::DEAD_TEAM: {
+                text += "Team A is dead";
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+    switch (winner.typeEndRound) {
+        case TypeEndRound::BOMB_DEFUSED: {
+            text += "Bomb defused";
+            break;
+        }
+        case TypeEndRound::BOMB_EXPLODED: {
+            text += "Bomb exploded";
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    on_screen_message_effect = OnScreenMessageEffect{text};
+}
+
+void GameView::addBombExplosionEffect(float x, float y) {
+    bomb_explosion_effect = BombExplosionEffect{x, y};
+    bombExplosionEffect = true;
+}
+
 
 void GameView::switchShopVisibility() {
     shopIsVisible = !shopIsVisible;

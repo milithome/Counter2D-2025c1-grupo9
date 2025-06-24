@@ -1,20 +1,18 @@
 #include "gameClient.h"
 
 GameClient::GameClient(
-	Game &game,
 	Map &map,
 	GameView &gameView,
 	std::vector<std::string> players,
 	Queue<Response> &recv_queue,
 	Queue<std::shared_ptr<MessageEvent>> &send_queue, 
     std::string const clientName,
-	SDL &sdl,
-	bool pulse_available
-) : sdl(sdl), 
-    game(game), 
-    gameController(gameView, game, clientName, pulse_available), 
+	InitialData data,
+	bool audio_available
+) :
+    gameController(gameView, clientName, data.times, audio_available), 
     map(map), gameView(gameView), 
-    players(players), 
+    players(players),
     recv_queue(recv_queue), 
     send_queue(send_queue) {}
 
@@ -23,7 +21,8 @@ bool GameClient::run() {
 	const std::chrono::milliseconds TICK_DURATION(16);
 
     auto lastTime = std::chrono::steady_clock::now();
-	while (game.isRunning()) {
+	bool state_available = false;
+	while (true) {
         auto currentTime = std::chrono::steady_clock::now();
         float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
         lastTime = currentTime;
@@ -33,11 +32,12 @@ bool GameClient::run() {
 			switch (msg.type) {
 				case STATE: {
 					StateGame data = std::get<StateGame>(msg.data);
+					gameView.updateState(data);
 					gameController.updateGameState(data);
+					state_available = true;
 					break;
 				}
 				case FINISH: {
-					game.stop();
 					return false;
 				}
 				default: {
@@ -45,12 +45,11 @@ bool GameClient::run() {
 				}
 			}
 		}
-
+		if (!state_available) continue;
 		bool quit = gameController.processEvents();
 		if (quit) {
 			return true;
 		}
-		gameController.update(deltaTime);
 		gameView.update(deltaTime);
 
 		while (!gameController.actionQueueIsEmpty()) {

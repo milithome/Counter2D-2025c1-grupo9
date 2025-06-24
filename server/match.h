@@ -6,6 +6,7 @@
 #include "../common/utilities/thread.h"
 #include "admin.h"
 #include "common/utilities/queue.h"
+#include "common/utilities/config.h"
 #include "common/structures.h"
 #include "../common/game.h"
 
@@ -26,26 +27,33 @@ private:
     Admin& admin;
     bool inLobby;
     bool inGame;
-    size_t maxPlayers = 2;
+    size_t minPlayers;
+    size_t maxPlayers;
+    std::string mapName = "big";
+    std::vector<PlayerInfo> playersInfo;
     std::shared_ptr<Queue<Message>> toMatch;
+    GameRules gameRules = load_game_rules("/etc/taller/config_server.yaml");
     std::unordered_set<std::shared_ptr<Client>> clients;
-
     size_t disconnectedClients;
     
     void lobbyLoop();
     void handleLobbyMessage(const Message& message);
     void handleLeave(const std::string& clientName);
+    void handleJoin(const std::string& clientName);
+    void handleAction(const Action& action, const std::string& clientName);
     void handleStart();
     void handleDisconnect(const std::string& clientName);
     void broadcastLobbyState();
+    void updateLobbyReadyStatus(bool& lobbyReadySent);
+    void sendLobbyReadyToAll();
+    void sendNotLobbyReadyToAll();
     void gameLoop();
     void waitForPlayers();
     void setupGame(Game& game);
-    void startTimeoutThread(Game& game);
     void runGameLoop(Game& game);
     void processMessages(Game& game, uint maxEvents);
     void endGame();
-    void broadcastInitialData(const MapData& mapData);
+    void broadcastInitialData(const MapData& mapData, GameRules& gameRules);
     void broadcastGameState(const StateGame& state);
     void handleGameMessage(const Message& message);
 };

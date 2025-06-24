@@ -6,6 +6,7 @@
 #include <mutex>
 #include "../structures.h"
 #include "../utilities/serializer_utils.h"
+#include "socket.h"
 
 class Protocol {
 public:
@@ -41,6 +42,11 @@ public:
     // Metodos para recibir mensajes de clientes (servidor)
     Message recv_message();
 
+    void close() {
+        skt.shutdown(SHUT_RDWR);
+        skt.close();
+    };
+
 private:
     Socket skt;
     mutable std::mutex mtx;
@@ -52,6 +58,9 @@ private:
     void serialize_action_buy_bullet(const Action& action, std::vector<uint8_t>& buffer);
     void serialize_action_buy_weapon(const Action& action, std::vector<uint8_t>& buffer);
     void serialize_action_change_weapon(const Action& action, std::vector<uint8_t>& buffer);
+    void serialize_action_select_tskin(const Action& action, std::vector<uint8_t>& buffer);
+    void serialize_action_select_ctskin(const Action& action, std::vector<uint8_t>& buffer);
+    void serialize_action_select_map(const Action& action, std::vector<uint8_t>& buffer);
 
     std::vector<uint8_t> serialize_simple(const Response& r);
     std::vector<uint8_t> serialize_list(const Response& r);
@@ -61,6 +70,7 @@ private:
     void serialize_entity(std::vector<uint8_t>& buf, const Entity& entity);
     void serialize_bullet(std::vector<uint8_t>& buf, const Bullet& b);
     void serialize_shot(std::vector<uint8_t>& buf, const Shot& s);
+    void serialize_rounds(std::vector<uint8_t>& buf, const Rounds& r);
     std::vector<uint8_t> serialize_state(const Response& r);
     std::vector<uint8_t> serialize_state_lobby(const Response& r);
     void serialize_2d_vector(const std::vector<std::vector<CellType>>& matrix, std::vector<uint8_t>& buf);
@@ -68,8 +78,13 @@ private:
     void serialize_legend_entry(const MapLegendEntry& entry, std::vector<uint8_t>& buf);
     void serialize_legend(const std::unordered_map<uint16_t, MapLegendEntry>& legend, std::vector<uint8_t>& buf);
     //void serialize_string(const std::string& str, std::vector<uint8_t>& buf); // esta y la de abajo de podrian reutilizar en otros lugares
-    void serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf);
+    //void serialize_string_vector(const std::vector<std::string>& vec, std::vector<uint8_t>& buf);
+    void serialize_shop(const Shop& shop, std::vector<uint8_t>& buf);
+    void serialize_playersInfo(const std::vector<PlayerInfo>& players, std::vector<uint8_t>& buf);
     void serialize_map_data(const MapData& map, std::vector<uint8_t>& buf);
+    void serialize_weaponsInfo(const std::vector<WeaponInfo>& weaponsInfo, std::vector<uint8_t>& buf);
+    void serialize_times(const Times& times, std::vector<uint8_t>& buf);
+
     std::vector<uint8_t> serialize_initial_data(const Response& r);
 
     Response deserialize_simple(Type type);
@@ -80,7 +95,13 @@ private:
     std::vector<std::vector<CellType>> deserialize_celltype_2d_vector();
     std::vector<std::vector<uint16_t>> deserialize_2d_vector();
     //std::string deserialize_string();
-    std::vector<std::string> deserialize_string_vector();
+    //std::vector<std::string> deserialize_string_vector();
+
+    Shop deserialize_shop();
+    std::vector<PlayerInfo> deserialize_playersInfo();
+    std::vector<WeaponInfo> deserialize_weaponsInfo();
+    Times deserialize_times();
+    
     Response deserialize_initial_data();
     PlayerData recv_player_data();
     BombData recv_bomb_data();
@@ -91,6 +112,7 @@ private:
     Entity deserialize_entity_bomb(float x, float y);
     Entity deserialize_entity_weapon(float x, float y);
     Entity deserialize_entity();
+    Rounds deserialize_rounds();
     Response deserialize_state();
     Response deserialize_state_lobby();
 
@@ -100,6 +122,9 @@ private:
     BuyBulletAction recv_buy_bullet_action();
     BuyWeaponAction recv_buy_weapon_action();
     ChangeWeaponAction recv_change_weapon_action();
+    SelectTSkin recv_select_tskin_action();
+    SelectCTSkin recv_select_ctskin_action();
+    SelectMap recv_select_map_action();
     Message deserialize_message_action();
 };
 

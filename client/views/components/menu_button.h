@@ -14,9 +14,6 @@ class MenuButton : public QPushButton {
 
 public:
 
-    ~MenuButton() {
-        delete effect;
-    }
     MenuButton(const QString &text, QWidget *parent = nullptr)
         : QPushButton(text, parent)
     {
@@ -36,7 +33,7 @@ public:
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         setAutoFillBackground(true);
         
-        int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+        int fontId = QFontDatabase::addApplicationFont("/var/taller/gfx/fonts/sourcesans.ttf");
         QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
         QFont sourceFont(fontFamily);
         sourceFont.setPointSize(11);
@@ -54,8 +51,6 @@ protected:
         if (isEnabled()) {
             effect->setColor(Qt::yellow);
         }
-
-
 
         QPushButton::enterEvent(event);
 

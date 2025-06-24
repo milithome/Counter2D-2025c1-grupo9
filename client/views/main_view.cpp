@@ -33,6 +33,8 @@ void MainView::buildLayout() {
     layout->addSpacing(50);
     layout->addWidget(container, 0, Qt::AlignHCenter);
     layout->addStretch();
+
+    setLayout(layout);
 }
 
 QVBoxLayout *MainView::getLayout() {
@@ -65,7 +67,7 @@ void MainView::buildTitleLabel() {
     shadow->setColor(Qt::yellow);
     titleLabel->setGraphicsEffect(shadow);
 
-    int fontId = QFontDatabase::addApplicationFont(":/assets/gfx/fonts/sourcesans.ttf");
+    int fontId = QFontDatabase::addApplicationFont(BASE_PATH + "gfx/fonts/sourcesans.ttf");
     QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(32);

@@ -17,14 +17,14 @@ public:
         if (pulse_available) {
             mixer = std::make_unique<Mixer>(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-            glockSound = std::make_unique<Chunk>("../assets/sfx/weapons/glock18.wav");
-            awpSound = std::make_unique<Chunk>("../assets/sfx/weapons/awp.wav");
-            akSound = std::make_unique<Chunk>("../assets/sfx/weapons/ak47.wav");
-            m3Sound = std::make_unique<Chunk>("../assets/sfx/weapons/m3.wav");
-            knifeSound = std::make_unique<Chunk>("../assets/sfx/weapons/knife_slash.wav");
-            knifeHit = std::make_unique<Chunk>("../assets/sfx/weapons/knife_hit.wav");
-            bombSound = std::make_unique<Chunk>("../assets/sfx/weapons/c4_explode.wav");
-            deathSound = std::make_unique<Chunk>("../assets/sfx/player/die1.wav");
+            glockSound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/glock18.wav");
+            awpSound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/awp.wav");
+            akSound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/ak47.wav");
+            m3Sound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/m3.wav");
+            knifeSound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/knife_slash.wav");
+            knifeHit = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/knife_hit.wav");
+            bombSound = std::make_unique<Chunk>(BASE_PATH + "sfx/weapons/c4_explode.wav");
+            deathSound = std::make_unique<Chunk>(BASE_PATH + "sfx/player/die1.wav");
 
             mixer->SetVolume(-1, MIX_MAX_VOLUME);
         }
@@ -54,6 +54,7 @@ public:
 private:
     bool pulse_available;
     std::unique_ptr<Mixer> mixer;
+    const std::string BASE_PATH = "/var/taller/";
 
     std::unique_ptr<Chunk> glockSound;
     std::unique_ptr<Chunk> awpSound;

@@ -6,7 +6,7 @@
 #include "common/utilities/queue.h"
 #include "common/structures.h"
 #include <string>
-#include "client/controllers/message_event.h"
+#include "client/controllers/messages/message_event.h"
 
 #include <variant>
 
@@ -23,6 +23,8 @@ public:
     void run() override;
 
     void stop() override;
+
+    void kill();
 };
 
 #endif
