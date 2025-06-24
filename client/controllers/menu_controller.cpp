@@ -43,13 +43,9 @@ void MenuController::listenToCreatePartyView() {
 }
 
 void MenuController::listenToConnectView() {
-    QPushButton *backButton = connectToServerView->getBackButton();
     QPushButton *connectButton = connectToServerView->getConnectButton();
     QObject::connect(connectButton, &QPushButton::clicked, [this]() {
         onConnectViewConnectButtonClicked();
-    });
-    QObject::connect(backButton, &QPushButton::clicked, [this]() {
-        onConnectViewBackButtonClicked();
     });
 }
 
@@ -150,9 +146,6 @@ void MenuController::onConnectViewConnectButtonClicked() {
 
 }
 
-void MenuController::onConnectViewBackButtonClicked() {
-    //window.clearWindow();
-}
 
 void MenuController::onSearchPartyViewJoinButtonClicked(const std::string& partyName) {
     emit newMessage(std::make_shared<JoinEvent>(partyName));

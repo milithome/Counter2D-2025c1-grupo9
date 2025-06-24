@@ -11,7 +11,6 @@ class ConnectToServerView : public QtView {
 public:
     ConnectToServerView();
     QPushButton *getConnectButton();
-    QPushButton *getBackButton();
     QLabel *getPortLabel();
     QLineEdit *getPortTextField();
     QLineEdit *getAddressTextField();
@@ -26,7 +25,6 @@ private:
     QLineEdit *addressTextField = nullptr;
     QLabel *nameLabel = nullptr;
     QLineEdit *nameTextField = nullptr;
-    QPushButton *backButton = nullptr;
     QPushButton *connectButton = nullptr;
     QVBoxLayout *layout = nullptr;
 

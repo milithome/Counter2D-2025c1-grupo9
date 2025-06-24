@@ -71,7 +71,6 @@ private:
     void onPartyViewLeaveButtonClicked();
     void onPartyViewStartButtonClicked();
     void onConnectViewConnectButtonClicked();
-    void onConnectViewBackButtonClicked();
 
     void listenToMainView();
     void listenToSearchPartyView();

@@ -262,6 +262,8 @@ QWidget* PartyView::createTSkinsColumn(const std::unordered_map<tSkin, QString>&
 void PartyView::buildModal() {
     QDialog* dialog = new QDialog(this, Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog->setWindowTitle("Settings");
+    dialog->setStyleSheet("background-color: #2e2e2e;");
+
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
 
@@ -307,7 +309,16 @@ void PartyView::buildModal() {
     bottomLayout->addWidget(new MenuLabel("Seleccionar mapa"));
 
     mapCombo = new QComboBox;
-    mapCombo->addItems({"default", "big", "aztec"});
+    mapCombo->setStyleSheet(
+        "color: white;"
+    );
+    int fontId = QFontDatabase::addApplicationFont("/var/taller/gfx/fonts/sourcesans.ttf");
+    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont sourceFont(fontFamily);
+    sourceFont.setPointSize(11);
+    mapCombo->setFont(sourceFont);
+
+    mapCombo->addItems({"big", "default", "aztec"});
     bottomLayout->addWidget(mapCombo);
 
     mainLayout->addLayout(bottomLayout);

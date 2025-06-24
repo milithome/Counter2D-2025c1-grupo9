@@ -13,9 +13,6 @@ QPushButton *ConnectToServerView::getConnectButton() {
     return connectButton;
 }
 
-QPushButton *ConnectToServerView::getBackButton() {
-    return backButton;
-}
 
 QLabel *ConnectToServerView::getPortLabel() {
     return portLabel;
@@ -62,7 +59,7 @@ void ConnectToServerView::buildPortTextField() {
 }
 
 void ConnectToServerView::buildAddressLabel() {
-    addressLabel = new MenuLabel("Direccion");
+    addressLabel = new MenuLabel("Dirección");
 }
 
 void ConnectToServerView::buildAddressTextField() {
@@ -118,9 +115,6 @@ void ConnectToServerView::buildNameTextField() {
 }
 
 
-void ConnectToServerView::buildBackButton() {
-    backButton = new MenuButton("Atrás");
-}
 
 void ConnectToServerView::buildConnectButton() {
     connectButton = new MenuButton("Conectar");
@@ -133,7 +127,6 @@ void ConnectToServerView::buildLayout() {
     buildAddressTextField();
     buildNameLabel();
     buildNameTextField();
-    buildBackButton();
     buildConnectButton();
 
     layout = new QVBoxLayout();
@@ -150,11 +143,11 @@ void ConnectToServerView::buildLayout() {
     subLayout->addWidget(portTextField);
 
 
-    QHBoxLayout *buttonsLayout = new QHBoxLayout();
+    // QHBoxLayout *buttonsLayout = new QHBoxLayout();
 
-    buttonsLayout->addWidget(backButton);
-    buttonsLayout->addWidget(connectButton);
-    subLayout->addLayout(buttonsLayout);
+    // buttonsLayout->addWidget(connectButton);
+    // subLayout->addLayout(buttonsLayout);
+    subLayout->addWidget(connectButton);
     
     TranslucentContainer *container = new TranslucentContainer();
     container->addLayout(subLayout);
