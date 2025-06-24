@@ -74,7 +74,6 @@ void ClientReceiver::handleDisconnection() {
     requests->push({
         Type::DISCONNECT,0,"",{}, clientName
     });
-    std::cout << "[" << clientName << "] Receiver disconnected."<< std::endl;
 }
 
 void ClientReceiver::changeQueue(std::shared_ptr<Queue<Message>> newQueue) {

@@ -9,6 +9,8 @@ void SendLoop::run(){
             std::shared_ptr<MessageEvent> msg = queue.pop();
             msg->send(protocol);
         }
+    } catch(const ClosedQueue& e) {
+        stop();
     } catch (const ClientClosedConnection& e) {
         stop();
         queue.close();
