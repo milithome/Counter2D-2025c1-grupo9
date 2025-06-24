@@ -4,21 +4,18 @@ EditorWindow::EditorWindow(ModoEditor modo, QWidget *parent)
     : QMainWindow(parent), modo(modo)
 {
     this->setWindowTitle("Editor de Mapas");
-    // Crear stackedWidget y vistas
     stackedWidget = new QStackedWidget(this);
     menuInicialWidget = new QWidget(this);
     seleccionSpawnPoints = new QWidget(this);
     editorMapaWidget = new QWidget(this);
     editorMapaExistenteWidget = new QWidget(this);
 
-    // Agregar las vistas al stackedWidget
     stackedWidget->addWidget(menuInicialWidget);  // menu principal == 0
     stackedWidget->addWidget(seleccionSpawnPoints); // seleccion de spawns == 1
     stackedWidget->addWidget(editorMapaWidget);   // editor (crear o modificar) == 2
     stackedWidget->addWidget(editorMapaExistenteWidget); // editor de mapa existente == 3
     setCentralWidget(stackedWidget);
 
-    // Configurar la vista inicial según el modo
     stackedWidget->setCurrentIndex(0);
     configurarVistaSegunModo(modo);
 
@@ -30,10 +27,14 @@ void EditorWindow::configurarVistaSegunModo(ModoEditor modo)
     if (modo == CrearNuevoMapa) {
         setupCustomUIConfiguracionMapa();
 
+
         aplicarEstilosResponsivos();
+            
         connect(editar_mapa_btn, &QPushButton::clicked, this, &EditorWindow::onCrearMapaClicked);
         connect(volver_menu_btn, &QPushButton::clicked, this, &EditorWindow::onSalirClicked);
 
+        QShortcut *enterShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
+        connect(enterShortcut, &QShortcut::activated, editar_mapa_btn, &QPushButton::click);
 
         actualizarFondo();
 
@@ -41,10 +42,12 @@ void EditorWindow::configurarVistaSegunModo(ModoEditor modo)
         setupCustomUIEleccionMapa();
 
         aplicarEstilosResponsivos();
-
+        
         connect(editar_mapa_btn, &QPushButton::clicked, this, &EditorWindow::onEditarMapaClicked);
         connect(volver_menu_btn, &QPushButton::clicked, this, &EditorWindow::onSalirClicked);
 
+        QShortcut *enterShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
+        connect(enterShortcut, &QShortcut::activated, editar_mapa_btn, &QPushButton::click);
 
         actualizarFondo();
 
@@ -52,66 +55,63 @@ void EditorWindow::configurarVistaSegunModo(ModoEditor modo)
         qDebug() << "No se ingreso un modo valido";
     }
 }
+
 void EditorWindow::setupCustomUIConfiguracionMapa()
 {
-    // Layout principal vertical
     QVBoxLayout *mainLayout = new QVBoxLayout(menuInicialWidget);
     mainLayout->setContentsMargins(50, 50, 50, 50);
     mainLayout->setSpacing(30);
 
-    // Spacer superior para centrar verticalmente
     QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->addItem(topSpacer);
 
-    // Layout para botones
     QVBoxLayout *btn_line_Layout = new QVBoxLayout();
     btn_line_Layout->setSpacing(20);
     btn_line_Layout->setAlignment(Qt::AlignCenter);
 
-    //Crear la linea donde el usuario pone el nombre y cant de jugadores
     nombre_mapa = new QLineEdit("Nombre del mapa",this);
+    nombre_mapa->installEventFilter(this);
     cant_jugadores = new QLineEdit(this);
     cant_jugadores->setValidator(new QIntValidator(1, 10, this));
 
-    //COnfigurar politica de tamanio para los line editor
     QSizePolicy linePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     nombre_mapa->setSizePolicy(linePolicy);
     cant_jugadores->setSizePolicy(linePolicy);
 
-    // Crear botones con tamaño fijo mínimo pero escalable
     editar_mapa_btn = new QPushButton("Crear mapa", menuInicialWidget);
     volver_menu_btn = new QPushButton("Volver al menu", menuInicialWidget);
 
-    // Configurar política de tamaño para los botones
     QSizePolicy buttonPolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     editar_mapa_btn->setSizePolicy(buttonPolicy);
     volver_menu_btn->setSizePolicy(buttonPolicy);
 
-    // Añadir lines y botones al layout
+    tituloCantJugadores = new QLabel("Cantidad de jugadores (1-10):", this);
+    tituloCantJugadores->setStyleSheet("background-color: rgba(0, 0, 0, 0); color: yellow; padding: 25px 20px; font-size: 30px;");
+    tituloCantJugadores->setAlignment(Qt::AlignCenter);
+
+    
     btn_line_Layout->addWidget(nombre_mapa);
+    btn_line_Layout->addWidget(tituloCantJugadores);
     btn_line_Layout->addWidget(cant_jugadores);
+
     btn_line_Layout->addWidget(editar_mapa_btn);
     btn_line_Layout->addWidget(volver_menu_btn);
 
     mainLayout->addLayout(btn_line_Layout);
 
-    // Spacer inferior para centrar verticalmente
     QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->addItem(bottomSpacer);
 }
 
 void EditorWindow::setupCustomUIEleccionMapa()
 {
-    // Layout principal vertical
     QVBoxLayout *mainLayout = new QVBoxLayout(menuInicialWidget);
     mainLayout->setContentsMargins(50, 50, 50, 50);
     mainLayout->setSpacing(30);
 
-    // Spacer superior para centrar verticalmente
     QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->addItem(topSpacer);
 
-    // Layout para botones
     QVBoxLayout *btn_line_Layout = new QVBoxLayout();
     btn_line_Layout->setSpacing(20);
     btn_line_Layout->setAlignment(Qt::AlignCenter);
@@ -120,45 +120,39 @@ void EditorWindow::setupCustomUIEleccionMapa()
 
     cargarArchivosYamlEnComboBox(mapasExistentes);
 
-    //COnfigurar politica de tamanio para los line editor
     QSizePolicy comboPolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     mapasExistentes->setSizePolicy(comboPolicy);
 
-    // Crear botones con tamaño fijo mínimo pero escalable
     editar_mapa_btn = new QPushButton("Editar mapa", menuInicialWidget);
     volver_menu_btn = new QPushButton("Volver al menu", menuInicialWidget);
 
-    // Configurar política de tamaño para los botones
     QSizePolicy buttonPolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     editar_mapa_btn->setSizePolicy(buttonPolicy);
     volver_menu_btn->setSizePolicy(buttonPolicy);
 
-    // Añadir lines y botones al layout
     btn_line_Layout->addWidget(mapasExistentes);
     btn_line_Layout->addWidget(editar_mapa_btn);
     btn_line_Layout->addWidget(volver_menu_btn);
 
     mainLayout->addLayout(btn_line_Layout);
 
-    // Spacer inferior para centrar verticalmente
     QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->addItem(bottomSpacer);
 }
 
 void EditorWindow::aplicarEstilosResponsivos()
 {
-    // Obtener el tamaño de la pantalla para hacer cálculos responsivos
+    
     QScreen *screen = QApplication::primaryScreen();
     QRect screenGeometry = screen->geometry();
     int screenWidth = screenGeometry.width();
 
-    // Calcular tamaños base según la resolución
-    int baseFontSize = qMax(12, screenWidth / 60); // Mínimo 12, escalable
+    int baseFontSize = qMax(12, screenWidth / 60); 
     int lineFontSize = baseFontSize*(2);
     int buttonFontSize = baseFontSize;
     int comboBoxFontSize = baseFontSize;
 
-    if(modo == CrearNuevoMapa){// Configurar fuente del line
+    if(modo == CrearNuevoMapa){
         QFont lineFont("Tahoma", lineFontSize, QFont::Bold);
         nombre_mapa->setFont(lineFont);
         if (modo == CrearNuevoMapa) {
@@ -182,9 +176,19 @@ void EditorWindow::aplicarEstilosResponsivos()
                 "}"
                 );
         }
+        QFont labelFont("Tahoma", lineFontSize, QFont::Bold);
+        tituloCantJugadores->setFont(labelFont);
+
+        tituloCantJugadores->setStyleSheet(
+            "QLabel {"
+            "background-color: rgba(0, 0, 0, 0);"
+            "color: yellow;"
+            "padding: 25px 20px;"
+            "font-size: 30px;"
+            "}"
+        );
     }
 
-    // Configurar estilo de botones
     QString buttonStyle = QString(
                               "QPushButton {"
                               "color: #ffff66;"
@@ -253,7 +257,6 @@ void EditorWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     actualizarFondo();
 
-    // Reajustar estilos según el nuevo tamaño
     aplicarEstilosResponsivos();
 }
 
@@ -272,12 +275,10 @@ void EditorWindow::actualizarFondo()
 
 void EditorWindow::inicializarSpawnsMapa() {
     
-    // Layout principal vertical para el editorMapaWidget
     QVBoxLayout *mainLayout = new QVBoxLayout(seleccionSpawnPoints);
     mainLayout->setContentsMargins(20, 20, 20, 20);
     mainLayout->setSpacing(20);
 
-    // Parte superior: herramientas (FIJA)
     QHBoxLayout* toolbarLayout = new QHBoxLayout();
     toolbarLayout->setSpacing(20);
     toolbarLayout->setAlignment(Qt::AlignCenter);
@@ -288,8 +289,6 @@ void EditorWindow::inicializarSpawnsMapa() {
     opciones->addItem("Zona de plantar bomba");
     toolbarLayout->addWidget(opciones);
 
-    // Layout para íconos
-    // Layout para íconos (dentro de un contenedor con scroll horizontal)
     iconosLayoutSpawns = new QHBoxLayout();
     iconosLayoutSpawns->setSpacing(5);
     iconosLayoutSpawns->setContentsMargins(0, 0, 0, 0);
@@ -302,65 +301,56 @@ void EditorWindow::inicializarSpawnsMapa() {
     iconosScrollArea->setWidgetResizable(true);
     iconosScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     iconosScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    iconosScrollArea->setFixedHeight(50);  // Ajustá según el alto de tus íconos
+    iconosScrollArea->setFixedHeight(50);  
 
     toolbarLayout->addWidget(iconosScrollArea);
 
 
     connect(opciones, &QComboBox::currentIndexChanged, this, [this]{
         QString seleccion = opciones->currentText();
-        qDebug() <<jugadoresMaximos;
 
         limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
 
         if (seleccion == "Zona de Spawn") {
             crearIconosSpawns();
         }
-        else if (seleccion == "Zona de plantar bomba" && cantZonaPlantable > 0) {
+        else if (seleccion == "Zona de plantar bomba") {
             crearIconosZonaBomba();
         }
     });
 
-    // Agregar la barra de herramientas al layout principal (FIJA)
     mainLayout->addLayout(toolbarLayout);
 
-    // CREAR EL SCROLL AREA - CONFIGURACIÓN CORRECTA
     QScrollArea* scrollArea = new QScrollArea();
 
-    // CRÍTICO: widgetResizable debe ser FALSE para mantener tamaños fijos
     scrollArea->setWidgetResizable(false);
 
-    // Configurar políticas de scroll
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     
-    // Establecer un tamaño máximo para el scroll area para forzar scroll
-    scrollArea->setMaximumSize(3000, 3000); // Limitar el tamaño del área visible
+    scrollArea->setMaximumSize(3000, 3000); 
     scrollArea->setMinimumSize(400, 300); 
     
-    // Widget que contendrá DIRECTAMENTE la grilla
     QWidget* gridWidget = new QWidget();
 
-    // Layout de la grilla - SIN PADDING EXTRA
     gridLayoutSpawns = new QGridLayout(gridWidget);
     gridLayoutSpawns->setSpacing(0);
     gridLayoutSpawns->setContentsMargins(0, 0, 0, 0);
 
-    // CRÍTICO: Política de tamaño fija para evitar redimensionamiento
     gridWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    // Crear la grilla con tamaños FIJOS
+   
     int filas = 20;
     int columnas = 20;
     grillasCeldasSpawns.clear();
     grillasCeldasSpawns.resize(filas);
 
-    //incializo la matriz de spawns (game)
+    
     matrizGrillaSpawns.resize(filas);
     for (int i = 0; i < filas; ++i) {
         matrizGrillaSpawns[i].resize(columnas);
         for (int j = 0; j < columnas; ++j) {
-            matrizGrillaSpawns[i][j] = 0; // Inicializar con coordenadas vacías
+            matrizGrillaSpawns[i][j] = 0;
         }
     }
 
@@ -369,7 +359,6 @@ void EditorWindow::inicializarSpawnsMapa() {
         for (int j = 0; j < columnas; ++j) {
             QLabel* celda = new QLabel();
 
-            // TAMAÑO FIJO - NO NEGOCIABLE
             celda->setFixedSize(32, 32);
             celda->setMinimumSize(32, 32);
             celda->setMaximumSize(32, 32);
@@ -382,7 +371,6 @@ void EditorWindow::inicializarSpawnsMapa() {
                 );
             celda->setAlignment(Qt::AlignCenter);
 
-            // Política de tamaño fija
             celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
             celda->setAcceptDrops(true);
@@ -398,25 +386,20 @@ void EditorWindow::inicializarSpawnsMapa() {
     }
     configurarCeldasParaDrops(grillasCeldasSpawns);
 
-    // Calcular y establecer el tamaño exacto del widget contenedor
     int anchoTotal = columnas * 32;
     int altoTotal = filas * 32;
     gridWidget->setFixedSize(anchoTotal, altoTotal);
 
-    // Establecer el widget en el scroll area
     scrollArea->setWidget(gridWidget);
 
-    // Centrar el contenido cuando sea más pequeño que el área
     scrollArea->setAlignment(Qt::AlignCenter);
 
-    // Layout para centrar completamente el scrollArea
     QWidget* centroContenedor = new QWidget();
     QGridLayout* centroLayout = new QGridLayout(centroContenedor);
     centroLayout->addWidget(scrollArea, 0, 0, Qt::AlignCenter);
     centroLayout->setContentsMargins(0, 0, 0, 0);
     centroLayout->setSpacing(0);
 
-    // Agregar el contenedor centrado al layout principal
     mainLayout->addWidget(centroContenedor, /* stretch */ 1);
 
     QHBoxLayout* resizeLayout = new QHBoxLayout();
@@ -440,7 +423,6 @@ void EditorWindow::inicializarSpawnsMapa() {
 
     mainLayout->addLayout(resizeLayout);
 
-    // CONECTAR LOS SPINBOX A CAMBIOS DINÁMICOS DEL SCROLL AREA
     connect(anchoSpin, QOverload<int>::of(&QSpinBox::valueChanged), scrollArea, [=](int w){
         scrollArea->setFixedWidth(w);
     });
@@ -449,7 +431,6 @@ void EditorWindow::inicializarSpawnsMapa() {
     });
 
 
-    // Parte inferior: botones de acción (FIJOS)
     QHBoxLayout* accionesLayout = new QHBoxLayout();
 
     guardarSpawnBtn = new QPushButton("Guardar cambios");
@@ -458,14 +439,12 @@ void EditorWindow::inicializarSpawnsMapa() {
     accionesLayout->addWidget(guardarSpawnBtn);
     mainLayout->addLayout(accionesLayout);
 
-    // Botones para agregar fila/columna
     agregarFilaBtn = new QPushButton("Agregar fila");
     agregarColumnaBtn = new QPushButton("Agregar columna");
 
     accionesLayout->addWidget(agregarFilaBtn);
     accionesLayout->addWidget(agregarColumnaBtn);
 
-    // Conectar los botones a sus slots
     connect(agregarFilaBtn, &QPushButton::clicked, this, &EditorWindow::agregarFila);
     connect(agregarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::agregarColumna);
 
@@ -478,50 +457,34 @@ void EditorWindow::inicializarSpawnsMapa() {
     connect(eliminarFilaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarFila);
     connect(eliminarColumnaBtn, &QPushButton::clicked, this, &EditorWindow::eliminarColumna);
 
-    // Agregar los botones de acción al layout principal (FIJOS)
     mainLayout->addLayout(accionesLayout);
-
-   
 
     seleccionSpawnPoints->setLayout(mainLayout);
     actualizarEstadoBotonesDimensiones();
-    actualizarOpcionesDisponibles();
 }
 
 void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMapa) {
-    // CREAR LA BARRA DE MENÚ
     miMenuBar = this->menuBar();
 
-    // Crear menú File
     fileMenu = miMenuBar->addMenu("Archivo");
 
-    // Crear acciones del menú
     guardarAction = new QAction("Guardar", this);
     guardarSalirAction = new QAction("Guardar y Salir", this);
-    borrarAction = new QAction("Borrar", this);
-    borrarTodoAction = new QAction("Borrar Todo", this);
 
-    // Añadir acciones al menú
     fileMenu->addAction(guardarAction);
-    fileMenu->addAction(guardarSalirAction);
     fileMenu->addSeparator();
-    fileMenu->addAction(borrarAction);
-    fileMenu->addAction(borrarTodoAction);
+    fileMenu->addAction(guardarSalirAction);
+    
 
-    // Conectar las acciones a sus slots
     connect(guardarAction, &QAction::triggered, this, &EditorWindow::guardarMapa);
     connect(guardarSalirAction,  &QAction::triggered, this, [this]() {                   
         this->close();  // Cerrar la ventana después de guardar
     });
-    connect(borrarAction, &QAction::triggered, this, &EditorWindow::borrarSeleccionados);
-    connect(borrarTodoAction, &QAction::triggered, this, &EditorWindow::borrarTodo);
-
-    // Layout principal vertical para el editorMapaWidget
+    
     QVBoxLayout *mainLayout = new QVBoxLayout(editorMapaWidget);
     mainLayout->setContentsMargins(20, 20, 20, 20);
     mainLayout->setSpacing(20);
 
-    // Parte superior: herramientas (FIJA)
     QHBoxLayout* toolbarLayout = new QHBoxLayout();
     toolbarLayout->setSpacing(20);
     toolbarLayout->setAlignment(Qt::AlignCenter);
@@ -532,8 +495,7 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
     categoriaCombo->addItem("Muros");
     toolbarLayout->addWidget(categoriaCombo);
 
-    // Layout para íconos
-    // Layout para íconos (dentro de un contenedor con scroll horizontal)
+    
     iconosLayout = new QHBoxLayout();
     iconosLayout->setSpacing(5);
     iconosLayout->setContentsMargins(0, 0, 0, 0);
@@ -554,7 +516,6 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
     connect(categoriaCombo, &QComboBox::currentIndexChanged, this, [this]{
         QString seleccion = categoriaCombo->currentText();
 
-        // Limpiar íconos anteriores de forma segura
         limpiarIconosAnteriores(iconosLayout, iconosActivos, iconMapper, iconoSeleccionado);
 
         if (seleccion == "Pisos") {
@@ -564,34 +525,28 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
             crearIconosMuros();
         }
     });
-    // Agregar la barra de herramientas al layout principal (FIJA)
     mainLayout->addLayout(toolbarLayout);
 
     
     QScrollArea* scrollArea = new QScrollArea();
 
-    //widgetResizable debe ser FALSE para mantener tamaños fijos
     scrollArea->setWidgetResizable(false);
 
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     
-    scrollArea->setMaximumSize(3000, 3000); // Limitar el tamaño del área visible
+    scrollArea->setMaximumSize(3000, 3000);
     scrollArea->setMinimumSize(400, 300); 
     
-    // Widget que contendrá DIRECTAMENTE la grilla
     QWidget* gridWidget = new QWidget();
 
-    // Layout de la grilla - SIN PADDING EXTRA
     gridLayout = new QGridLayout(gridWidget);
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
-    // CRÍTICO: Política de tamaño fija para evitar redimensionamiento
     gridWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     if(esNuevoMapa) {
-       // Crear la grilla con tamaños FIJOS
         grillaCeldas.clear();
         grillaCeldas.resize(filas);
 
@@ -600,7 +555,6 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
             for (int j = 0; j < columnas; ++j) {
                 QLabel* celda = new QLabel();
 
-                // TAMAÑO FIJO - NO NEGOCIABLE
                 celda->setFixedSize(32, 32);
                 celda->setMinimumSize(32, 32);
                 celda->setMaximumSize(32, 32);
@@ -613,7 +567,6 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
                     );
                 celda->setAlignment(Qt::AlignCenter);
 
-                // Política de tamaño fija
                 celda->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
                 celda->setAcceptDrops(true);
@@ -627,14 +580,12 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
                 celda->setProperty("columna", j);
             }
         }
-        // Calcular y establecer el tamaño exacto del widget contenedor
         int anchoTotal = columnas * 32;
         int altoTotal = filas * 32;
         gridWidget->setFixedSize(anchoTotal, altoTotal);
     } else {
         cargarMatrizDesdeYaml();
        
-       // Para mapa existente: calcular tamaño con las dimensiones del archivo cargado
         if (!matrizGrilla.empty()) {
             int filasReales = matrizGrilla.size();
             int columnasReales = matrizGrilla[0].size();
@@ -646,20 +597,16 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
 
     configurarCeldasParaDrops(grillaCeldas);
 
-    // Establecer el widget en el scroll area
     scrollArea->setWidget(gridWidget);
 
-    // Centrar el contenido cuando sea más pequeño que el área
     scrollArea->setAlignment(Qt::AlignCenter);
 
-    // Layout para centrar completamente el scrollArea
     QWidget* centroContenedor = new QWidget();
     QGridLayout* centroLayout = new QGridLayout(centroContenedor);
     centroLayout->addWidget(scrollArea, 0, 0, Qt::AlignCenter);
     centroLayout->setContentsMargins(0, 0, 0, 0);
     centroLayout->setSpacing(0);
 
-    // Agregar el contenedor centrado al layout principal
     mainLayout->addWidget(centroContenedor, /* stretch */ 1);
 
     QHBoxLayout* resizeLayout = new QHBoxLayout();
@@ -683,7 +630,6 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
 
     mainLayout->addLayout(resizeLayout);
 
-    // CONECTAR LOS SPINBOX A CAMBIOS DINÁMICOS DEL SCROLL AREA
     connect(anchoSpin, QOverload<int>::of(&QSpinBox::valueChanged), scrollArea, [=](int w){
         scrollArea->setFixedWidth(w);
     });
@@ -694,7 +640,6 @@ void EditorWindow::inicializarEditorMapa(int filas, int columnas, bool esNuevoMa
     if(esNuevoMapa){
         editorMapaWidget->setLayout(mainLayout);
     }else{
-        // Si es un mapa existente, usamos el layout del widget ya creado
         editorMapaExistenteWidget->setLayout(mainLayout);
     }
 
@@ -707,7 +652,7 @@ void EditorWindow::configurarCeldasParaDrops(QVector<QVector<QLabel*>>& grilla) 
     int numeroColumnas = grilla[0].size();
     for (int fila = 0; fila < numeroFilas; ++fila) {
         for (int columna = 0; columna < numeroColumnas; ++columna) {
-            QLabel* celda = grilla[fila][columna]; // Ajusta según tu estructura
+            QLabel* celda = grilla[fila][columna];
             celda->setAcceptDrops(true);
         }
     }
@@ -749,21 +694,17 @@ bool EditorWindow::eventSpawns(QObject* obj, QEvent* event)
 
 bool EditorWindow::alClickearIzquierdoSpawns(QLabel*& celda)
 {
-    // Obtener fila y columna de la celda
     int fila = celda->property("fila").toInt();
     int columna = celda->property("columna").toInt();
 
-    // Limpiar la celda
    celda->clear();
 
     if (!bloqueSeleccionadoSpawns.isEmpty()) {
-        // Caso para bloques con string (si lo usas)
         QPixmap pixmap(bloqueSeleccionadoSpawns);
         if (!pixmap.isNull()) {
             celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     } else if (!pixmapSeleccionadoSpawns.isNull()) { 
-        // MODIFICACIÓN: Guardar las coordenadas en la matriz
         if(coordenadasSeleccionadasSpawns.first == 4 && coordenadasSeleccionadasSpawns.second == 7) {
             matrizGrillaSpawns[fila][columna] = 3; // Zona de spawnA
             ++terroristas;
@@ -776,14 +717,12 @@ bool EditorWindow::alClickearIzquierdoSpawns(QLabel*& celda)
         }
         else if(coordenadasSeleccionadasSpawns.first == 0 && coordenadasSeleccionadasSpawns.second == 0) {
             matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
-            --cantZonaPlantable;
+            ++cantZonaPlantable;
             verificarCondicionFinal(); 
-            actualizarOpcionesDisponibles();
         }
         
         celda->setPixmap(pixmapSeleccionadoSpawns.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         
-        // Debug para verificar que se guarden correctamente
         qDebug() << "Bloque colocado en (" << fila << "," << columna 
                 << ") con coordenadas del tileset (" 
                 << coordenadasSeleccionadasSpawns.first << "," 
@@ -795,15 +734,12 @@ bool EditorWindow::alClickearIzquierdoSpawns(QLabel*& celda)
 }
 bool EditorWindow::alClickearDerechoSpawns(QLabel*& celda)
 {
-    // Obtener fila y columna de la celda
     int fila = celda->property("fila").toInt();
     int columna = celda->property("columna").toInt();
 
-    // Limpiar la celda
     celda->clear();
-    celda->setPixmap(QPixmap()); // Asegurar que no hay pixmap
+    celda->setPixmap(QPixmap()); 
     
-    // Restaurar el estilo base
     celda->setStyleSheet(
         "background-color: #f0f0f0; "
         "border: 0.5px solid #999999; "
@@ -812,23 +748,17 @@ bool EditorWindow::alClickearDerechoSpawns(QLabel*& celda)
     );
     celda->setAlignment(Qt::AlignCenter);
     
-    // Restaurar valores en la matriz según el tipo anterior
     int valorAnterior = matrizGrillaSpawns[fila][columna];
     if (valorAnterior == 3) {
-        // Era zona de spawn terrorista
         --terroristas;
-        verificarCondicionFinal(); // Aumentar el contador de jugadores
-
+        verificarCondicionFinal(); 
     } else if (valorAnterior == 4) {
-        // Era zona de spawn antiterrorista
         --antiterroristas;
-        verificarCondicionFinal();  // Aumentar el contador de jugadores
+        verificarCondicionFinal();  
 
     } else if (valorAnterior == 2) {
-        // Era zona plantable
-        ++cantZonaPlantable;
-        verificarCondicionFinal(); // Reducir el contador de zonas plantables
-        actualizarOpcionesDisponibles();
+        --cantZonaPlantable;
+        verificarCondicionFinal(); 
 
     }
     
@@ -865,33 +795,27 @@ bool EditorWindow::eventEditar(QObject* obj, QEvent* event)
 
 bool EditorWindow::alClickearIzquierdo(QLabel*& celda)
 {
-    // Obtener fila y columna de la celda
     int fila = celda->property("fila").toInt();
     int columna = celda->property("columna").toInt();
 
-    // Limpiar la celda
     celda->clear();
 
     if (!bloqueSeleccionado.isEmpty()) {
-        // Caso para bloques con string (si lo usas)
         QPixmap pixmap(bloqueSeleccionado);
         if (!pixmap.isNull()) {
             celda->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     } else if (!pixmapSeleccionado.isNull()) {
         if((matrizGrillaSpawns[fila][columna] == 3 || matrizGrillaSpawns[fila][columna] == 4 || matrizGrillaSpawns[fila][columna] == 2) && solid_blocks.contains(coordenadasSeleccionadas)) {
-            QMessageBox::warning(this,                      // parent
-                             "Zona de spawn/plantado de bomba",     // título
-                             "No podés colocar un bloque tipo muro en este casillero."); // mensaje
-            // Deshabilitar la celda
-            alClickearDerecho(celda); // Limpiar la celda
+            QMessageBox::warning(this,                      
+                             "Zona de spawn/plantado de bomba",     
+                             "No podés colocar un bloque tipo muro en este casillero."); 
+            alClickearDerecho(celda); 
         } else {
-            // MODIFICACIÓN: Guardar las coordenadas en la matriz
             matrizGrilla[fila][columna] = coordenadasSeleccionadas;
             
             celda->setPixmap(pixmapSeleccionado.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             
-            // Debug para verificar que se guarden correctamente
             qDebug() << "Bloque colocado en (" << fila << "," << columna 
                     << ") con coordenadas del tileset (" 
                     << coordenadasSeleccionadas.first << "," 
@@ -906,15 +830,12 @@ bool EditorWindow::alClickearIzquierdo(QLabel*& celda)
 
 bool EditorWindow::alClickearDerecho(QLabel*& celda)
 {
-    // Obtener fila y columna de la celda
     int fila = celda->property("fila").toInt();
     int columna = celda->property("columna").toInt();
 
-    // Limpiar la celda
     celda->clear();
     celda->setPixmap(QPixmap());
     
-    // Restaurar el estilo base
     celda->setStyleSheet(
         "background-color: #f0f0f0; "
         "border: 0.5px solid #999999; "
@@ -923,7 +844,6 @@ bool EditorWindow::alClickearDerecho(QLabel*& celda)
     );
     celda->setAlignment(Qt::AlignCenter);
     
-    // Resetear la matriz a valor base
     matrizGrilla[fila][columna] = std::make_pair(0, 0); // o el valor que uses como base
     
     qDebug() << "Celda restaurada en (" << fila << "," << columna << ")";
@@ -933,12 +853,10 @@ bool EditorWindow::alClickearDerecho(QLabel*& celda)
 bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
 {
     QLabel* celda = qobject_cast<QLabel*>(obj);
-    // =============== MANEJO DE DRAG AND DROP ===============
     if (event->type() == QEvent::DragEnter) {
         QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
         if (dragEvent->mimeData()->hasFormat("application/x-tile-coords")) {
             dragEvent->acceptProposedAction();
-            // Opcional: cambiar apariencia de la celda durante el drag
             QString estiloOriginal = celda->styleSheet();
             if (estiloOriginal.contains("background-color: #f0f0f0")) {
                 celda->setStyleSheet(estiloOriginal.replace("#f0f0f0", "#e0e0ff"));
@@ -949,7 +867,6 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
     }
     
     if (event->type() == QEvent::DragLeave) {
-        // Restaurar apariencia original solo si la celda está vacía
         if (celda->pixmap().isNull()) {
             celda->setStyleSheet(
                 "background-color: #f0f0f0; "
@@ -969,11 +886,9 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
             int dragFila, dragColumna;
             dataStream >> dragFila >> dragColumna;
             
-            // Obtener coordenadas de la celda destino
             int fila = celda->property("fila").toInt();
             int columna = celda->property("columna").toInt();
             
-            // Crear el pixmap desde las coordenadas del drag
             QPixmap originalPixmap("/var/taller/gfx/tiles/dust.bmp");
             int tileWidth = 32;
             int tileHeight = 32;
@@ -981,14 +896,11 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
             int y = dragFila * tileHeight;
             QPixmap croppedPixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
             
-            // Limpiar la celda y aplicar el nuevo tile
             celda->clear();
             celda->setPixmap(croppedPixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             celda->setAlignment(Qt::AlignCenter);
             
-            // Aplicar lógica según el área activa
             if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
-                // Lógica específica para spawns
                 if(dragFila == 4 && dragColumna == 7) {
                     matrizGrillaSpawns[fila][columna] = 3; // Zona de spawn terrorista
                     ++terroristas;
@@ -1001,11 +913,9 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
                 }
                 else if(dragFila == 0 && dragColumna == 0) {
                     matrizGrillaSpawns[fila][columna] = 2; // Zona de plantar bomba
-                    --cantZonaPlantable;
+                    ++cantZonaPlantable;
                     verificarCondicionFinal(); 
-                    actualizarOpcionesDisponibles();
                 } else {
-                    // Para otros tiles en spawn area, usar valor por defecto
                     matrizGrillaSpawns[fila][columna] = 1;
                 }
             } else {
@@ -1016,13 +926,11 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
                     matrizGrillaSpawns[fila][columna] == 2) && 
                     solid_blocks.contains(coord)) {
                     
-                    QMessageBox::warning(this,                      // parent
-                             "Zona de spawn/plantado de bomba",     // título
-                             "No podés colocar un bloque tipo muro en este casillero."); // mensaje
-                    // Deshabilitar la celda
-                    alClickearDerecho(celda); // Limpiar la celda
+                    QMessageBox::warning(this,                      
+                             "Zona de spawn/plantado de bomba",    
+                             "No podés colocar un bloque tipo muro en este casillero."); 
+                    alClickearDerecho(celda); 
                 } else {
-                    // Área normal - guardar coordenadas del tileset
                     matrizGrilla[fila][columna] = {dragFila, dragColumna};
                 }
             
@@ -1041,81 +949,51 @@ bool EditorWindow::manejoDragAndDrop(QObject *obj, QEvent *event)
 
 
 bool EditorWindow::eventFilter(QObject* obj, QEvent* event) {
-    
-    if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
-        return eventSpawns(obj, event);
-        
-    } else {
-        return eventEditar(obj, event);
+    if(stackedWidget->currentWidget() == menuInicialWidget){
+        if(modo == CrearNuevoMapa) {
+            if (obj == nombre_mapa && event->type() == QEvent::FocusIn) {
+                if (nombre_mapa->text() == "Nombre del mapa") {
+                    nombre_mapa->clear();
+                }
+            }
+            if (obj == nombre_mapa && event->type() == QEvent::FocusOut) {
+                if (nombre_mapa->text().isEmpty()) {
+                    nombre_mapa->setText("Nombre del mapa");
+                }
+            }
+            if (obj == cant_jugadores && event->type() == QEvent::FocusIn) {
+                if (nombre_mapa->text() == "Nombre del mapa") {
+                    nombre_mapa->clear();
+                }
+            }
+            if (obj == cant_jugadores && event->type() == QEvent::FocusOut) {
+                if (nombre_mapa->text().isEmpty()) {
+                    nombre_mapa->setText("Nombre del mapa");
+                }
+            }
+        }else{
+
+        }
+        return QMainWindow::eventFilter(obj, event);
+    }else{
+        if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
+            return eventSpawns(obj, event);
+            
+        } else {
+            return eventEditar(obj, event);
+        }
     }
 }
 
-void EditorWindow::actualizarOpcionesDisponibles()
-{
-    if (!opciones) return;
-    
-    // Guardar la selección actual
-    QString seleccionActual = opciones->currentText();
-    
-    // Determinar qué opciones deberían estar disponibles
-    QStringList opcionesNecesarias;
-    opcionesNecesarias << "Elegir bloque:";
-    
-    if (terroristas < jugadoresMaximos|| antiterroristas < jugadoresMaximos) {
-        opcionesNecesarias << "Zona de Spawn";
-    }
-    
-    if (cantZonaPlantable > 0) {
-        opcionesNecesarias << "Zona de plantar bomba";
-    }
-    
-    // Obtener opciones actuales del ComboBox
-    QStringList opcionesActuales;
-    for (int i = 0; i < opciones->count(); ++i) {
-        opcionesActuales << opciones->itemText(i);
-    }
-    
-    // Solo actualizar si las opciones han cambiado
-    if (opcionesActuales != opcionesNecesarias) {
-        // Bloquear señales para evitar triggers innecesarios
-        bool senalesBlocked = opciones->blockSignals(true);
-        
-        opciones->clear();
-        opciones->addItems(opcionesNecesarias);
-        
-        // Intentar restaurar la selección si sigue siendo válida
-        int indiceSeleccion = opciones->findText(seleccionActual);
-        if (indiceSeleccion != -1) {
-            opciones->setCurrentIndex(indiceSeleccion);
-        } else {
-            // Si la selección anterior ya no es válida, resetear
-            opciones->setCurrentIndex(0);
-            limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
-        }
-        
-        // Restaurar señales
-        opciones->blockSignals(senalesBlocked);
-    }
-    
-    // Verificar si la selección actual sigue siendo válida
-    QString nuevaSeleccion = opciones->currentText();
-    if ((nuevaSeleccion == "Zona de plantar bomba" && cantZonaPlantable <= 0)) {
-        opciones->setCurrentIndex(0);
-        limpiarIconosAnteriores(iconosLayoutSpawns, iconosActivosSpawns, iconMapperSpawns, iconoSeleccionadoSpawns);
-    }
-}
 
 void EditorWindow::actualizarSeleccionVisual(ClickableLabel* nuevoSeleccionado, 
                                              QList<ClickableLabel*>& iconsActivs, ClickableLabel*& iconSelec) {
-    // Verificar que el nuevo seleccionado no sea nullptr
     if (!nuevoSeleccionado) return;
 
-    // Si había uno seleccionado antes, le saco el borde
     if (iconSelec && iconsActivs.contains(iconSelec)) {
         iconSelec->setStyleSheet("border: 1px solid #999999;");
     }
 
-    // Poner borde al nuevo seleccionado
     nuevoSeleccionado->setStyleSheet("border: 2px solid yellow; background-color: rgba(255, 255, 0, 0.2);");
     iconSelec = nuevoSeleccionado;
 }
@@ -1128,7 +1006,6 @@ void EditorWindow::actualizarTamanoGridWidget() {
     int anchoTotal = columnas * 32;
     int altoTotal = filas * 32;
 
-    // Buscar el widget contenedor de la grilla y actualizar su tamaño
     QWidget* gridWidget = gridLayoutSpawns->parentWidget();
     if (gridWidget) {
         gridWidget->setFixedSize(anchoTotal, altoTotal);
@@ -1142,7 +1019,7 @@ void EditorWindow::verificarCondicionFinal() {
 
     if (terroristas == jugadoresMaximos && 
         antiterroristas == jugadoresMaximos && 
-        cantZonaPlantable == 0) {
+        cantZonaPlantable>=4) {
         guardarSpawnBtn->setEnabled(true);
         qDebug() << "Condición final cumplida.";
     } else {
@@ -1152,10 +1029,8 @@ void EditorWindow::verificarCondicionFinal() {
 
 
 
-// Agregar estas nuevas funciones a la clase EditorWindow:
 
 void EditorWindow::limpiarIconosAnteriores(QHBoxLayout*& iconosLay, QList<ClickableLabel*>& iconosActivs, QSignalMapper*& iconMapperSs, ClickableLabel*& iconoSelec) {
-    // Desconectar todas las señales de los íconos actuales
     for (ClickableLabel* icono : iconosActivs) {
         if (icono) {
             disconnect(icono, nullptr, this, nullptr);
@@ -1163,23 +1038,20 @@ void EditorWindow::limpiarIconosAnteriores(QHBoxLayout*& iconosLay, QList<Clicka
     }
     iconosActivs.clear();
 
-    // Limpiar el layout
     QLayoutItem* child;
     while ((child = iconosLay->takeAt(0)) != nullptr) {
         if (child->widget()) {
-            child->widget()->deleteLater(); // Usar deleteLater() en lugar de delete
+            child->widget()->deleteLater();
         }
         delete child;
     }
 
-    // Eliminar el iconMapper de forma segura
     if (iconMapperSs) {
         disconnect(iconMapperSs, nullptr, this, nullptr);
-        iconMapperSs->deleteLater(); // Usar deleteLater() en lugar de delete
+        iconMapperSs->deleteLater();
         iconMapperSs = nullptr;
     }
 
-    // Resetear la selección visual
     iconoSelec = nullptr;
 }
 
@@ -1226,11 +1098,10 @@ void EditorWindow::crearIconosPisos() {
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
-                coordenadasSeleccionadas = {fila, columna}; // NUEVA LÍNEA
+                coordenadasSeleccionadas = {fila, columna}; 
                 actualizarSeleccionVisual(icono, iconosActivos, iconoSeleccionado);
             });
         }
@@ -1272,7 +1143,6 @@ void EditorWindow::crearIconosMuros() {
             iconosActivos.append(icono);
             iconosLayout->addWidget(icono);
 
-            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 bloqueSeleccionado = "";
                 pixmapSeleccionado = croppedPixmap;
@@ -1365,7 +1235,6 @@ void EditorWindow::crearIconosZonaBomba() {
             iconosActivosSpawns.append(icono);
             iconosLayoutSpawns->addWidget(icono);
 
-            // MODIFICACIÓN: Capturar las coordenadas del bloque válido
             connect(icono, &ClickableLabel::clicked, this, [this, croppedPixmap, icono, fila, columna]() {
                 qDebug() << "Ícono seleccionado para spawn: coordenadas del sprite:"
                  << fila << columna;
@@ -1387,14 +1256,12 @@ void EditorWindow::agregarFila() {
     grillasCeldasSpawns[nuevasFilas - 1].resize(columnas);
 
 
-    // Actualizar matrizGrilla
     matrizGrillaSpawns.resize(nuevasFilas);
     matrizGrillaSpawns[nuevasFilas - 1].resize(columnas, 0);
 
     for (int j = 0; j < columnas; ++j) {
         QLabel* celda = new QLabel();
 
-        // TAMAÑO FIJO
         celda->setFixedSize(32, 32);
         celda->setMinimumSize(32, 32);
         celda->setMaximumSize(32, 32);
@@ -1420,7 +1287,6 @@ void EditorWindow::agregarFila() {
 
     qDebug() << grillasCeldasSpawns.size();
 
-    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
 }
@@ -1434,12 +1300,10 @@ void EditorWindow::agregarColumna() {
     for (int i = 0; i < filas; ++i) {
         grillasCeldasSpawns[i].resize(nuevasColumnas);
 
-        // Actualizar matrizGrilla
         matrizGrillaSpawns[i].resize(nuevasColumnas, 0);
 
         QLabel* celda = new QLabel();
 
-        // TAMAÑO FIJO
         celda->setFixedSize(32, 32);
         celda->setMinimumSize(32, 32);
         celda->setMaximumSize(32, 32);
@@ -1465,7 +1329,6 @@ void EditorWindow::agregarColumna() {
 
     qDebug() << grillasCeldasSpawns[0].size();
 
-    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
     
@@ -1484,12 +1347,10 @@ void EditorWindow::eliminarFila() {
     }
 
     grillasCeldasSpawns.removeLast();
-    // Actualizar matrizGrilla
     matrizGrillaSpawns.removeLast();
 
     qDebug() << grillasCeldasSpawns.size();
 
-    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
     
@@ -1506,13 +1367,11 @@ void EditorWindow::eliminarColumna() {
         gridLayoutSpawns->removeWidget(celda);
         delete celda;
         grillasCeldasSpawns[i].removeLast();
-        // Actualizar matrizGrilla
         matrizGrillaSpawns[i].removeLast();
     }
 
     
     qDebug() << grillasCeldasSpawns[0].size();
-    // ACTUALIZAR EL TAMAÑO DEL CONTENEDOR
     actualizarTamanoGridWidget();
     actualizarEstadoBotonesDimensiones();
     
@@ -1571,17 +1430,28 @@ MapData EditorWindow::crearMapData() {
 
 void EditorWindow::crearArchivoYamlInicial() {
     
+    QString directorioMaps = "/var/taller/maps";
+    
     QString nombreMapa = nombre_mapa->text();
     QString nombreArchivo = nombreMapa;
     nombreArchivo.replace(" ", "_");
-    nombreArchivo += ".yaml";
+    QString baseNombreArchivo = nombreArchivo;
+    QString extension = ".yaml";
+    QString rutaArchivo = QDir::cleanPath(directorioMaps + "/" + nombreArchivo + extension);
+
+    int contador = 1;
+    while (QFile::exists(rutaArchivo)) {
+        nombreArchivo = baseNombreArchivo + "_" + QString::number(contador);
+        rutaArchivo = QDir::cleanPath(directorioMaps + "/" + nombreArchivo + extension);
+        ++contador;
+    }
+
+    rutaArchivoActual = rutaArchivo;
+
     
-    QString directorioMaps = "/var/taller/maps";
     
-    // Verificar permisos de escritura
     QFileInfo dirInfo(directorioMaps);
     if (!dirInfo.isWritable()) {
-        // Intentar solicitar permisos al usuario
         QMessageBox::StandardButton respuesta = QMessageBox::question(this, 
             "Permisos requeridos",
             "El directorio /var/taller/maps no tiene permisos de escritura.\n\n"
@@ -1590,7 +1460,6 @@ void EditorWindow::crearArchivoYamlInicial() {
             QMessageBox::Yes | QMessageBox::No);
         
         if (respuesta == QMessageBox::Yes) {
-            // Intentar ejecutar comando para cambiar permisos
             QString comando = QString("pkexec chown %1:%1 /var/taller/maps && pkexec chmod 775 /var/taller/maps")
                             .arg(qgetenv("USER"));
             
@@ -1600,7 +1469,6 @@ void EditorWindow::crearArchivoYamlInicial() {
             
             if (proceso.exitCode() == 0) {
                 QMessageBox::information(this, "Éxito", "Permisos configurados correctamente.");
-                // Volver a verificar permisos
                 dirInfo.refresh();
             } else {
                 QMessageBox::critical(this, "Error", 
@@ -1619,7 +1487,6 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
     
-    // Continuar con la creación del archivo
     rutaArchivoActual = QDir::cleanPath(directorioMaps + "/" + nombreArchivo);
     
     QFile archivo(rutaArchivoActual);
@@ -1630,7 +1497,6 @@ void EditorWindow::crearArchivoYamlInicial() {
         return;
     }
     
-    // Resto del código...
     QTextStream stream(&archivo);
     
     int filas = matrizGrillaSpawns.size();
@@ -1671,20 +1537,17 @@ void EditorWindow::diagnosticarDirectorio() {
     qDebug() << "Grupo:" << dirInfo.group();
     qDebug() << "Permisos:" << QString::number(dirInfo.permissions(), 8);
     
-    // Verificar directorio padre
     QFileInfo parentInfo("/var/taller");
     qDebug() << "¿Existe /var/taller?" << parentInfo.exists();
     qDebug() << "¿Es escribible /var/taller?" << parentInfo.isWritable();
 }
 
 void EditorWindow::guardarProgresoEnYaml() {
-    // Verificar que tenemos una ruta válida
     if (rutaArchivoActual.isEmpty()) {
         QMessageBox::critical(this, "Error", "No hay un archivo activo para guardar.");
         return;
     }
     
-    // Verificar que el directorio existe y es escribible
     QFileInfo archivoInfo(rutaArchivoActual);
     QString directorio = archivoInfo.absolutePath();
     
@@ -1721,7 +1584,6 @@ void EditorWindow::guardarProgresoEnYaml() {
                 return;
             }
             
-            // Refrescar información del directorio
             dirInfo.refresh();
         } else {
             QMessageBox::information(this, "Información", 
@@ -1734,7 +1596,6 @@ void EditorWindow::guardarProgresoEnYaml() {
     
     qDebug() << "Intentando guardar archivo en:" << rutaArchivoActual;
     
-    // Crear el archivo
     QFile archivo(rutaArchivoActual);
     if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QString errorDetallado = QString("No se pudo abrir el archivo YAML para guardar:\n"
@@ -1751,21 +1612,19 @@ void EditorWindow::guardarProgresoEnYaml() {
     
     QTextStream stream(&archivo);
     
-    // Verificar que tenemos datos válidos para guardar
     if (matrizGrilla.empty() || matrizGrilla[0].empty()) {
         archivo.close();
         QMessageBox::critical(this, "Error", "No hay datos válidos para guardar.");
         return;
     }
     
-    // Obtener dimensiones actuales
     int filas = matrizGrilla.size();
     int columnas = matrizGrilla[0].size();
     
     try {
         
         MapData mapData = crearMapData();
-        // Escribir encabezado YAML
+        
         stream << "map:" << "\n";
         stream << "  name: " << nombreArchivoActual << "\n";
         stream << "  width: " << columnas << "\n";
@@ -1777,39 +1636,37 @@ void EditorWindow::guardarProgresoEnYaml() {
         stream << "  tiles:" << "\n";
         
 
-        // Escribir tiles_map
         for (int i = 0; i < filas; ++i) {
             if (i != 0) {
-                stream << "\n"; // Añadir nueva línea para separar filas
+                stream << "\n";
             }
-            stream << "  - ["; // Indentación para cada fila
+            stream << "  - ["; 
             for (int j = 0; j < columnas; ++j) {
                 stream << mapData.tiles_map[i][j];
                 if (j < columnas - 1) {
-                    stream << ","; // Mantener el formato correcto
+                    stream << ","; 
                 }
             }
             if (i < filas) {
-                stream << "]"; // Cerrar la fila
+                stream << "]"; 
             }
         }
         stream << "\n\n";
         
         stream << "  game:" << "\n";
-        // Escribir game_map
         for (int i = 0; i < filas; ++i) {
             if (i != 0) {
-                stream << "\n"; // Añadir nueva línea para separar filas
+                stream << "\n";
             }
-            stream << "  - ["; // Indentación para cada fila
+            stream << "  - ["; 
             for (int j = 0; j < columnas; ++j) {
                 stream << static_cast<int>(mapData.game_map[i][j]);
                 if (j < columnas - 1) {
-                    stream << ","; // Mantener el formato correcto
+                    stream << ","; 
                 }
             }
             if (i < filas) {
-                stream << "]"; // Cerrar la fila
+                stream << "]";
             }
         }
         stream << "\n\n";
@@ -1821,7 +1678,6 @@ void EditorWindow::guardarProgresoEnYaml() {
             stream << "    y: " << entry.y << "\n";
         }
         
-        // Verificar que se escribió correctamente
         if (stream.status() != QTextStream::Ok) {
             archivo.close();
             QMessageBox::critical(this, "Error", "Error al escribir datos en el archivo.");
@@ -1837,7 +1693,6 @@ void EditorWindow::guardarProgresoEnYaml() {
     
     archivo.close();
     
-    // Verificar que el archivo se guardó correctamente
     QFileInfo savedFileInfo(rutaArchivoActual);
     if (!savedFileInfo.exists() || savedFileInfo.size() == 0) {
         QMessageBox::critical(this, "Error", 
@@ -1856,7 +1711,6 @@ void EditorWindow::onCrearMapaClicked() {
 
     QString name = nombre_mapa->text();
 
-    // Validar que el nombre no esté vacío y no sea el placeholder
     if (name.isEmpty() || name == "Nombre del mapa") {
         QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
         return;
@@ -1864,22 +1718,14 @@ void EditorWindow::onCrearMapaClicked() {
 
     QString textoCantJugadores = cant_jugadores->text();
     jugadoresMaximos = textoCantJugadores.toInt();
+
     terroristas = 0;
     antiterroristas = 0;
-    cantZonaPlantable = 4;
-
-    // Validar cantidad de jugadores
-    if (jugadoresMaximos <= 0 || jugadoresMaximos > 10) {
-        QMessageBox::warning(this, "Error", "La cantidad de jugadores debe ser entre 1 y 10");
-        return;
-    }
-
-    //jugadoresMaximos = jugadoresMaximos*2;
+    cantZonaPlantable = 0;
 
     inicializarSpawnsMapa();
 
 
-    // Conectar los botones a sus slots
     connect(guardarSpawnBtn, &QPushButton::clicked, this, &EditorWindow::onGuardarSpawnMapa);
     
     stackedWidget->setCurrentIndex(1);
@@ -1892,8 +1738,7 @@ void EditorWindow::onEditarMapaClicked() {
         QMessageBox::warning(this, "Error", "Por favor ingresa un nombre válido para el mapa");
         return;
     }
-
-    // Configurar referencias del archivo
+        
     nombreArchivoActual = mapasExistentes->currentText();
     const std::string& ruta = rutaArchivoActual.toStdString();
 
@@ -1911,7 +1756,6 @@ void EditorWindow::onSalirClicked()
 
 void EditorWindow::onGuardarSpawnMapa()
 {
-    // Crear el archivo YAML inicial
     crearArchivoYamlInicial();
     
     int filas = grillasCeldasSpawns.size();
@@ -1937,12 +1781,7 @@ void EditorWindow::guardarMapa()
 
     guardarProgresoEnYaml();
 }
-void EditorWindow::borrarSeleccionados(){
 
-}
-void EditorWindow::borrarTodo(){
-
-}
 
 void EditorWindow::closeEvent(QCloseEvent* event) {
 
@@ -1986,29 +1825,22 @@ void EditorWindow::closeEvent(QCloseEvent* event) {
 void EditorWindow::cargarArchivosYamlEnComboBox(QComboBox* comboBox) {
     QDir dir("/var/taller/maps");
 
-    // Filtro: solo archivos .yaml
     QStringList filtros;
     filtros << "*.yaml";
     dir.setNameFilters(filtros);
 
-    // Obtener la lista de archivos
     QStringList archivos = dir.entryList(QDir::Files);
 
-    // Limpiar el comboBox antes de cargar (opcional)
     comboBox->clear();
     comboBox->addItem("Elegir mapa:");
     mapasExistentes->setStyleSheet(comboBoxStyle);
 
-    // Agregar los nombres de archivos al comboBox
     for (const QString& archivo : archivos) {
-        comboBox->addItem(archivo, dir.absoluteFilePath(archivo)); // nombre visible + path oculto
+        comboBox->addItem(archivo, dir.absoluteFilePath(archivo));
     }
 }
 
 
-
-
-// Función auxiliar para limpiar la grilla existente
 void EditorWindow::limpiarGrillaExistente() {
     if (!grillaCeldas.isEmpty()) {
         for (int i = 0; i < grillaCeldas.size(); ++i) {
@@ -2024,30 +1856,19 @@ void EditorWindow::limpiarGrillaExistente() {
     }
 }
 
-// Función auxiliar para crear la grilla visual
 void EditorWindow::crearGrillaVisual(int filas, int columnas) {
     qDebug() << "Creando grilla visual:" << filas << "x" << columnas;
     
-    // Redimensionar grillaCeldas
     grillaCeldas.resize(filas);
     for (int i = 0; i < filas; ++i) {
         grillaCeldas[i].resize(columnas);
     }
     
-    // Cargar tileset
-    /* QPixmap originalPixmap("/var/taller/gfx/tiles/dust.bmp");
-    if (originalPixmap.isNull()) {
-        qDebug() << "Error: No se pudo cargar el tileset desde /var/taller/gfx/tiles/dust.bmp";
-        return;
-    } */
     
-    
-    // Crear las celdas visuales
     for (int fila = 0; fila < filas; ++fila) {
         for (int columna = 0; columna < columnas; ++columna) {
             QLabel* celda = new QLabel();
             
-            // TAMAÑO FIJO - NO NEGOCIABLE
             celda->setFixedSize(32, 32);
             celda->setMinimumSize(32, 32);
             celda->setMaximumSize(32, 32);
@@ -2064,14 +1885,11 @@ void EditorWindow::crearGrillaVisual(int filas, int columnas) {
             celda->setAcceptDrops(true);
             celda->setAttribute(Qt::WA_DeleteOnClose);
             
-            // Propiedades para identificar la celda
             celda->setProperty("fila", fila);
             celda->setProperty("columna", columna);
             
-            // Instalar event filter
             celda->installEventFilter(this);
             
-            // Agregar al layout y a la matriz
             gridLayout->addWidget(celda, fila, columna);
             grillaCeldas[fila][columna] = celda;
         }
@@ -2090,7 +1908,6 @@ void EditorWindow::cargarMatrizDesdeYaml()
         std::vector<std::vector<uint16_t>> tiles_map = mapa.get_tiles_map();
         std::vector<std::vector<CellType>> game_map = mapa.get_game_map();
         
-        // Limpiar matrices existentes
         matrizGrilla.clear();
         matrizGrillaSpawns.clear();
         
@@ -2099,10 +1916,8 @@ void EditorWindow::cargarMatrizDesdeYaml()
         
         qDebug() << "Dimensiones del mapa cargado: " << filas << "x" << columnas;
         
-        // PRIMERO: Limpiar la grilla visual existente si existe
         limpiarGrillaExistente();
         
-        // SEGUNDO: Redimensionar matrices de datos
         matrizGrilla.resize(filas);
         matrizGrillaSpawns.resize(filas);
 
@@ -2110,21 +1925,20 @@ void EditorWindow::cargarMatrizDesdeYaml()
             matrizGrilla[i].resize(columnas);
             matrizGrillaSpawns[i].resize(columnas);
             for (int j = 0; j < columnas; ++j) {
-                // Convertir el valor del mapa a coordenadas de tileset
                 
                 int fila = mapa.get_tiles_legend(tiles_map[i][j]).x / 32;
                 int columna = mapa.get_tiles_legend(tiles_map[i][j]).y / 32;
                 matrizGrilla[i][j] = {fila, columna};
                 
-                // Asignar el tipo de celda segun el game_map
+
                 matrizGrillaSpawns[i][j] = static_cast<int>(game_map[i][j]);
             }
         }
         
-        // TERCERO: Crear la grilla visual con las nuevas dimensiones
+
         crearGrillaVisual(filas, columnas);
         
-        // CUARTO: Actualizar la grilla visual con los datos cargados
+
         actualizarGrillaVisualDesdeMatriz();
         
         qDebug() << "Matriz cargada exitosamente desde YAML";
@@ -2154,23 +1968,20 @@ void EditorWindow::actualizarGrillaVisualDesdeMatriz() {
     for (int i = 0; i < filas; ++i) {
         for (int j = 0; j < columnas; ++j) {
             if (grillaCeldas[i][j]) {
-                // Obtener las coordenadas del tile desde matrizGrilla
+                
                 int tileRow = matrizGrilla[i][j].first;
                 int tileCol = matrizGrilla[i][j].second;
                 if (tileRow == 0 && tileCol == 0) {
-                    continue; // Saltar a la siguiente iteración
+                    continue; 
                 }
                 
-                // Calcular la posición en el tileset (ya están divididas por 32)
                 int x = tileCol * tileWidth;
                 int y = tileRow * tileHeight;
                 
-                // Verificar que las coordenadas sean válidas
                 if (x >= 0 && y >= 0 && 
                     x + tileWidth <= originalPixmap.width() && 
                     y + tileHeight <= originalPixmap.height()) {
                     
-                    // Extraer el tile del tileset
                     QPixmap tilePixmap = originalPixmap.copy(x, y, tileWidth, tileHeight);
                     
                     if (!tilePixmap.isNull()) {
@@ -2179,13 +1990,8 @@ void EditorWindow::actualizarGrillaVisualDesdeMatriz() {
                         qDebug() << "Error al extraer tile en posición:" << i << j << "- Tile coords:" << tileRow << tileCol;
                     }
                 } else {
-                    // Para coordenadas (0,0) o inválidas, dejar la celda vacía o con un tile por defecto
-                    if (tileRow == 0 && tileCol == 0) {
-                        grillaCeldas[i][j]->clear(); // Celda vacía
-                    } else {
-                        qDebug() << "Coordenadas de tile fuera de rango:" << x << y << "en posición:" << i << j;
-                        grillaCeldas[i][j]->clear(); // Celda vacía por seguridad
-                    }
+                    qDebug() << "Coordenadas de tile fuera de rango:" << x << y << "en posición:" << i << j;
+                        grillaCeldas[i][j]->clear();
                 }
             }
         }

@@ -9,7 +9,7 @@
 #include <QWidget>
 #include <QSizePolicy>
 #include <QSpacerItem>
-#include "editorWindow.h"  // Para ModoEditor
+#include "editorWindow.h"  
 
 class MainWindow : public QMainWindow
 {
@@ -25,7 +25,6 @@ private slots:
 
 private:
 
-    // Widgets personalizados para mejor control
     QWidget *centralWidget;
     QLabel *tituloLabel;
     QPushButton *crearMapaBtn;
