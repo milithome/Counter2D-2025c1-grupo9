@@ -9,7 +9,6 @@
 #include <iostream>
 
 
-
 QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     resize(width, height);
     setWindowTitle(QString::fromStdString(window_name));
@@ -55,9 +54,6 @@ QtWindow::QtWindow(const std::string& window_name, int width, int height) {
     player->play();
 
     QObject::connect(muteButton, &QPushButton::clicked, this, [this]() mutable {
-        //bool isMuted = audioOutput->isMuted();
-        //audioOutput->setMuted(!isMuted);
-        //muteButton->setText(isMuted ? "Mute" : "Unmute");
         muted = !muted;
         audioOutput->setMuted(muted);
         muteButton->setText(!muted ? "Mute" : "Unmute");
@@ -95,6 +91,10 @@ void QtWindow::quit() {
     muted = true;
     audioOutput->setMuted(muted);
     muteButton->setText("Unmute");
+    QSize hint = muteButton->sizeHint();
+    QSize extraSize(hint.width() + 10, hint.height() + 4);
+    muteButton->setMinimumSize(extraSize);
+    muteButton->setMaximumSize(extraSize);
 }
 
 QPoint QtWindow::getPosition() {
