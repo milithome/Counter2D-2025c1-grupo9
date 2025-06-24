@@ -20,6 +20,7 @@
 #include <QComboBox>
 #include <QPixmap>
 #include <QPushButton>
+#include <QDir>
 
 
 
@@ -317,8 +318,8 @@ void PartyView::buildModal() {
     QFont sourceFont(fontFamily);
     sourceFont.setPointSize(11);
     mapCombo->setFont(sourceFont);
-
-    mapCombo->addItems({"big", "default", "aztec"});
+    mapCombo->addItems(getMaps());
+    mapCombo->setCurrentText("big");
     bottomLayout->addWidget(mapCombo);
 
     mainLayout->addLayout(bottomLayout);
@@ -329,5 +330,21 @@ void PartyView::buildModal() {
 
     dialog->setLayout(mainLayout);
     settingsModal = dialog;
-    //dialog->setParent(this);
+}
+
+
+QStringList PartyView::getMaps() {
+    QDir dir("/var/taller/maps/");
+    dir.setFilter(QDir::Files);
+    dir.setNameFilters(QStringList() << "*.yaml");
+
+    QStringList fileNames = dir.entryList();
+    QStringList baseNames;
+
+    for (const QString& name : fileNames) {
+        QFileInfo fileInfo(name);
+        baseNames << fileInfo.completeBaseName(); // elimina la extension .yaml
+    }
+
+    return baseNames;
 }
