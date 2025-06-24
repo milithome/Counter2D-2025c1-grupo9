@@ -108,6 +108,7 @@ void MenuController::onPartyViewStartButtonClicked() {
 
 void MenuController::onGameStarted() {
     window.clearWindow();
+    window.quit();
 }
 
 void MenuController::onMainViewCreatePartyButtonClicked() {

@@ -28,7 +28,11 @@ private:
     QStackedLayout* stackedLayout = new QStackedLayout(this);
     QWidget *background = new QWidget(this);
     QtView *currentView = nullptr;
+
     QPushButton *muteButton = new MenuButton("Mute", this);
+    QMediaPlayer* player = new QMediaPlayer(this);
+    QAudioOutput* audioOutput = new QAudioOutput(this);
+    bool muted = false;
 
     void closeEvent(QCloseEvent* event) override {
         emit windowClosed();
