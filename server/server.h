@@ -6,14 +6,14 @@
 
 class Server {
 public:
-    explicit Server(const ServerConfig& config);
-    ~Server();
+  explicit Server(const ServerConfig &config);
+  ~Server();
 
-    void start(std::istream& input = std::cin);
+  void start(std::istream &input = std::cin);
 
 private:
-    Admin admin;
-    Acceptor acceptor;
+  Admin admin;
+  Acceptor acceptor;
 };
 
 #endif
