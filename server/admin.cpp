@@ -7,13 +7,10 @@ Admin::Admin(ServerConfig serverConfig) : serverConfig(serverConfig) {}
 Admin::~Admin(){}
 
 void Admin::stop() {
-    //std::lock_guard<std::mutex> lock(mtx);
-    // Paro los hilos
     for (const auto& pair : menus) {
         pair.second->stop();
     }
 
-    // Espero que paren los hilos de los clientes
     for (const auto& client : clients) {
         client->receiver->stop();
         client->sender->stop();
@@ -23,7 +20,6 @@ void Admin::stop() {
         pair.second->stop();
     }
 
-    // Espero que paren los hilos
     for (const auto& pair : menus) {
         pair.second->join();
     }
@@ -37,7 +33,6 @@ void Admin::stop() {
         pair.second->join();
     }
 
-    // Limpio los arreglos
     menus.clear();
     clients.clear();
     matches.clear();
