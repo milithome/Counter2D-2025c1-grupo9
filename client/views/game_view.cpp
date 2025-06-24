@@ -250,6 +250,9 @@ void GameView::showMap(float cameraX, float cameraY) {
         for (size_t j = 0; j < tiles_map[i].size(); j++) {
             uint16_t tile = tiles_map[i][j];
             MapLegendEntry clip = map.get_tiles_legend(tile);
+            if (clip.x == 0 && clip.y == 0) {
+                continue;
+            }
             Rect src(clip.x, clip.y, CLIP_SIZE, CLIP_SIZE);
             Rect dst(cameraX + j * BLOCK_SIZE, cameraY + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
             renderer.Copy(mapTiles, src, dst);
