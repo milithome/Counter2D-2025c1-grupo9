@@ -1849,3 +1849,16 @@ void EditorWindow::borrarSeleccionados(){
 void EditorWindow::borrarTodo(){
 
 }
+
+void EditorWindow::closeEvent(QCloseEvent* event) {
+    
+    if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
+        QMessageBox::warning(this, "Error", "No hay archivo YAML asociado a este mapa");
+        event->ignore(); // Ignorar el evento de cierre
+        return;
+    }
+    guardarProgresoEnYaml();  
+    event->accept();
+    // Si quisieras cancelar el cierre (por ejemplo, si el usuario no confirma), usarías:
+    // event->ignore();
+}
