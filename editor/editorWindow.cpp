@@ -1851,14 +1851,20 @@ void EditorWindow::borrarTodo(){
 }
 
 void EditorWindow::closeEvent(QCloseEvent* event) {
-    
+
     if (stackedWidget->currentWidget() == seleccionSpawnPoints) {
-        QMessageBox::warning(this, "Error", "No hay archivo YAML asociado a este mapa");
-        event->ignore(); // Ignorar el evento de cierre
-        return;
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Confirmar salida",
+                                    "¿Estás seguro de que querés cerrar la ventana? \n Se borrara el progreso actual.",
+                                    QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::Yes) {
+            event->accept();
+        } else {
+            event->ignore();
+        }
+
     }
     guardarProgresoEnYaml();  
     event->accept();
-    // Si quisieras cancelar el cierre (por ejemplo, si el usuario no confirma), usarías:
-    // event->ignore();
 }
