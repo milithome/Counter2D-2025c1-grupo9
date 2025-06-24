@@ -1,8 +1,7 @@
 #include "clientSender.h"
-#include "admin.h"
 
-ClientSender::ClientSender(Protocol& protocol, const std::string& clientName, Admin& admin, std::shared_ptr<Queue<Response>> requests)
-    : protocol(protocol), clientName(clientName), active(true), admin(admin), requests(std::move(requests)) {}
+ClientSender::ClientSender(Protocol& protocol, const std::string& clientName, std::shared_ptr<Queue<Response>> requests)
+    : protocol(protocol), clientName(clientName), active(true), requests(std::move(requests)) {}
 
 ClientSender::~ClientSender() {}
 

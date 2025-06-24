@@ -4,7 +4,7 @@
 #include "gameMap.h"
 #include "player.h"
 #include "store.h"
-#include "structures.h"
+#include "../../common/structures.h"
 #include "team.h"
 #include <algorithm>
 #include <cmath>

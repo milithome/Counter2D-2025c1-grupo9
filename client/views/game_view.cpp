@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include "../../common/structures.h"
 
 namespace fs = std::filesystem;
 

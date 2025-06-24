@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_set>
-#include "../common/communication/protocol.h"
+#include "common/communication/protocol.h"
 #include "serverStructures.h"
 
 

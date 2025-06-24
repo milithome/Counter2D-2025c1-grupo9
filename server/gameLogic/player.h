@@ -2,7 +2,7 @@
 #define PLAYER_H
 #include "gameConstants.h"
 #include "hitbox.h"
-#include "structures.h"
+#include "../../common/structures.h"
 #include <cmath>
 #include <random>
 #include <string>

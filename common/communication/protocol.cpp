@@ -174,14 +174,6 @@ void Protocol::send_start() {
     }
 }
 
-void Protocol::send_disconnect() {
-    uint8_t type = Type::DISCONNECT;
-
-    if (skt.sendall(&type, sizeof(type)) <= 0) {
-        throw std::runtime_error("Error sending DISCONNECT message");
-    }
-}
-
 std::vector<uint8_t> Protocol::serialize_simple(const Response& r) {
     std::vector<uint8_t> buffer = {static_cast<uint8_t>(r.type)};
     
@@ -469,7 +461,6 @@ void Protocol::send_response(const Response& r) {
         case Type::START:
         case Type::LOBBY_READY:
         case Type::FINISH:
-        case Type::DISCONNECT:
         case Type::NAME:
         case Type::NOT_LOBBY_READY:
             buffer = serialize_simple(r);
@@ -861,7 +852,6 @@ Response Protocol::recv_response() {
         case Type::START:
         case Type::FINISH:
         case Type::LOBBY_READY:
-        case Type::DISCONNECT:
         case Type::NAME:
         case Type::NOT_LOBBY_READY:
             return deserialize_simple(type);
@@ -991,7 +981,6 @@ Message Protocol::recv_message() {
         case Type::LIST:
         case Type::LEAVE:
         case Type::START:
-        case Type::DISCONNECT:
             msg.type = type;
             return msg;
         default:

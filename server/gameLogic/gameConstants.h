@@ -1,6 +1,6 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
-#include "structures.h"
+#include "../../common/structures.h"
 enum class Role { TERRORIST, COUNTER_TERRORIST };
 
 struct Position {
@@ -27,12 +27,6 @@ struct DroppedWeapon {
 
 enum class EquippedWeapon { KNIFE, PRIMARY, SECONDARY };
 
-#define PLAYER_WIDTH 0.7f
-#define PLAYER_HEIGHT 0.7f
-#define WEAPON_WIDTH 0.7f
-#define WEAPON_HEIGHT 0.7f
-#define BOMB_WIDTH 0.7f
-#define BOMB_HEIGHT 0.7f
 
 #define SPEED 5.0f
 #define MAX_PLAYERS_PER_TEAM 5
