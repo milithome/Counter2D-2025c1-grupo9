@@ -1405,17 +1405,15 @@ MapData EditorWindow::crearMapData() {
     int hor_tile_amount = tiles.width() / 32;
     for (int i = 0; i < filas; ++i) {
         for (int j = 0; j < columnas; ++j) {
-            int numeric_value = matrizGrilla[i][j].first % hor_tile_amount +  matrizGrilla[i][j].second * hor_tile_amount;
+            int numeric_value = matrizGrilla[i][j].second % hor_tile_amount +  matrizGrilla[i][j].first * hor_tile_amount;
             tiles_map[i][j] = numeric_value;
             if (!legend_tiles.contains(numeric_value)) {
-                legend_tiles[numeric_value] = MapLegendEntry{matrizGrilla[i][j].first * 32, matrizGrilla[i][j].second * 32};
-            }
-            if (solid_blocks.contains(matrizGrilla[i][j])) {
-                game_map[i][j] = CellType::Blocked;
-            } else {
-                game_map[i][j] = CellType::Walkable;
+                legend_tiles[numeric_value] = MapLegendEntry{matrizGrilla[i][j].second * 32, matrizGrilla[i][j].first * 32};
             }
             game_map[i][j] = static_cast<CellType>(matrizGrillaSpawns[i][j]);
+            if (solid_blocks.contains(matrizGrilla[i][j])) {
+                game_map[i][j] = CellType::Blocked;
+            }
         }
     }
     mapData.background_path = "/var/taller/gfx/backgrounds/dust.png";
@@ -1487,7 +1485,7 @@ void EditorWindow::crearArchivoYamlInicial() {
         }
     }
     
-    rutaArchivoActual = QDir::cleanPath(directorioMaps + "/" + nombreArchivo);
+    rutaArchivoActual = QDir::cleanPath(directorioMaps + "/" + nombreArchivo + extension);
     
     QFile archivo(rutaArchivoActual);
     if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
