@@ -24,3 +24,6 @@ Los binarios se ubican en `/bin/`, los assets en `/var/taller/` y las configurac
 Se utilizó el repositorio https://github.com/eldipa/hands-on-sockets-in-cpp otorgado por la cátedra para la implementación de la clase Sockets con fines didácticos.
 
 Se utilizó el repositorio https://github.com/eldipa/hands-on-threads otorgado por la cátedra para la implementación de la clase Threads con fines didácticos.
+
+# Video Demo
+https://youtu.be/7Py7PGDutgI 
