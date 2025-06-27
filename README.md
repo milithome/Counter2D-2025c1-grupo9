@@ -26,4 +26,4 @@ Se utilizó el repositorio https://github.com/eldipa/hands-on-sockets-in-cpp oto
 Se utilizó el repositorio https://github.com/eldipa/hands-on-threads otorgado por la cátedra para la implementación de la clase Threads con fines didácticos.
 
 # Video Demo
-https://youtu.be/7Py7PGDutgI 
+[https://youtu.be/7Py7PGDutgI ](https://youtu.be/jA83kRnRX8A)
